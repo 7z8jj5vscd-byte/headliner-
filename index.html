@@ -177,6 +177,12 @@ tr.me td{background:color-mix(in srgb,var(--gold) 12%,transparent)}
 .appic:active i{transform:scale(.92)}
 .appic .bdg{position:absolute;top:-5px;right:calc(50% - 36px);background:#ff3b30;color:#fff;border-radius:10px;font-size:11px;padding:1px 6px;font-weight:800;min-width:18px}
 .phone-on #app>.top{position:relative;top:auto}
+.pthumb{width:44px;height:44px;object-fit:cover;border-radius:8px}
+.ptile img,.thumb img,.tokcard img{object-fit:cover}
+.thumb{overflow:hidden}.thumb img{position:absolute;inset:0;width:100%;height:100%}.thumb>span{position:relative;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.cimg{width:100%;border-radius:12px;max-height:420px;object-fit:cover}
+.artsel{max-width:120px;font-size:12px}
+.crow .art{width:34px;height:34px}
 .pwidget{margin:auto 14px 16px;background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:13px}
 .abar{display:flex;align-items:center;gap:8px;padding:6px 12px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
 .abar b{font-size:17px;flex:1}
@@ -1326,7 +1332,7 @@ function makePost(){
   const sat=clamp(1-acc.f/(S.fans*P.ratio*4+5000),.05,1);acc.f+=Math.round(newF*sat);addFans(reach*rnd(.005,.015));S.hype=clamp(S.hype+type.h*(viral?3:1),0,100);
   if(k==='tube')S.money+=Math.round(reach*2*.0015);
   const ncom=viral?4:ri(1,3);const comments=[];for(let i=0;i<ncom;i++)comments.push({u:'@'+pick(HANDLES)+pick(HANDLE2)+ri(1,99),x:pick(COMMENTS).replace('{stage}',S.stage).replace('{fandom}',S.fandom)});
-  acc.posts.unshift({id:S.nextId++,type:type.id,label:type.l,cap,likes,views:Math.round(reach*rnd(1.5,3)),shares:Math.round(likes*rnd(.02,.1)),comments,t:S.t,viral,song:song?song.title:'',hue:ri(0,359)});
+  acc.posts.unshift({id:S.nextId++,type:type.id,label:type.l,cap,likes,views:Math.round(reach*rnd(1.5,3)),shares:Math.round(likes*rnd(.02,.1)),comments,t:S.t,viral,song:song?song.title:'',songId:song?song.id:null,img:UI.postImg||null,hue:ri(0,359)});UI.postImg=null;
   acc.posts=acc.posts.slice(0,40);
   S.stats.posts++;S.era.prog.posts=(S.era.prog.posts||0)+1;
   if(type.apology&&S.era.id==='hate'){S.era.prog.apology=1;extra='The apology is landing better than expected.'}
@@ -1520,11 +1526,13 @@ function postHTML(p,k,mine){
   if(!mine)return `<div class="post">${head}<div>${esc(p.text)}</div><div class="acts"><button class="likebtn ${p.liked?'on':''}" data-a="like" data-id="${p.id}">♥ ${fmt(p.likes)}</button><span>${PLAT[p.plat].name}</span></div></div>`;
   let media='';
   const tileBg=`background:linear-gradient(150deg,hsl(${p.hue||S.hue} 75% 50%),hsl(${(p.hue||S.hue)+80} 70% 22%))`;
+  const pimg=postImg(p);
+  if(k==='chirp'&&pimg)media=`<img class="cimg" src="${pimg}" alt="">`;
   if(k!=='chirp'){
-    const useAv=S.avatar&&(p.type==='selfie'||p.type==='flex'||p.type==='vlog');
+    const useAv=!pimg&&S.avatar&&(p.type==='selfie'||p.type==='flex'||p.type==='vlog');
     const song=p.mvSong?S.songs.find(s=>s.id===p.mvSong):null;
     const txt=p.type==='mv'?(song?song.title:'Music video'):p.song||p.label;
-    media=`<div class="ptile ${P.shape}" style="${tileBg}">${useAv?`<img src="${S.avatar}" alt="">`:''}<span>${esc(txt)}</span></div>`;
+    media=`<div class="ptile ${P.shape}" style="${tileBg}">${pimg?`<img src="${pimg}" alt="">`:useAv?`<img src="${S.avatar}" alt="">`:''}${p.img&&pimg?'':`<span>${esc(txt)}</span>`}</div>`;
   }
   const song=p.mvSong?S.songs.find(s=>s.id===p.mvSong):null;
   const views=song?song.mvViews:p.views;
@@ -3003,8 +3011,8 @@ function prodView(){
 function artView(){
   const o=artOpts(),url=coverURL(o),chips=(k,list)=>`<div class="stack" style="gap:6px"><span class="label">${({pose:'Pose',expr:'Expression',cam:'Camera',filter:'Filter',font:'Font',tpos:'Text position',tsize:'Text size',frame:'Frame'})[k]}</span><div class="chips">${list.map(([v,n])=>`<button class="chip ${o[k]===v?'on':''}" data-a="art" data-k="${k}" data-v="${v}">${n}</button>`).join('')}</div></div>`;
   const albums=S.albums;
-  return `<div class="section"><div class="between"><h2>Album art</h2><span class="muted">${S.covers.length}/12 saved</span></div><p class="muted">Design covers starring your 3D character. Save them to your library, then use one on your next release or swap the art on an old one. Albums with custom art get a small boost from critics.</p>
-  <div class="artgrid"><div class="stack"><img class="artprev" src="${url}" alt="Album cover preview" width="400" height="400"><div class="row"><button class="btn" data-a="artSave">Save to library</button><button class="btn ghost" data-a="artRandom">Surprise me</button></div></div>
+  return `<div class="section"><div class="between"><h2>Album art</h2><span class="muted">${S.covers.length}/12 saved</span></div><p class="muted">Design covers starring your 3D character. Save them to your library or upload your own art, then use one on your next album or put it on any single or album. Art syncs to Streamify, Tunes, your posts and the charts. Albums with custom art get a small boost from critics.</p>
+  <div class="artgrid"><div class="stack"><img class="artprev" src="${url}" alt="Album cover preview" width="400" height="400"><div class="row"><button class="btn" data-a="artSave">Save to library</button><button class="btn ghost" data-a="artRandom">Surprise me</button><span class="filebtn btn ghost">⬆ Upload your own<input type="file" accept="image/*" data-upload="cover"></span></div></div>
   <div class="card">
     <div class="row"><label class="field"><span class="label">Title on cover</span><input type="text" id="art-title" value="${esc(o.title)}" placeholder="Untitled" maxlength="40"></label></div>
     <div class="chips"><button class="chip ${o.showName?'on':''}" data-a="art" data-k="showName">Show artist name</button><button class="chip ${o.sticker?'on':''}" data-a="art" data-k="sticker">Explicit sticker</button></div>
@@ -3014,7 +3022,7 @@ function artView(){
     <div class="stack" style="gap:6px"><span class="label">Text color</span><div class="sws">${ART_COLS.map(c=>`<button class="sw ${o.tcol===c?'on':''}" style="background:${c}" data-a="art" data-k="tcol" data-v="${c}" aria-label="Text color ${c}"></button>`).join('')}</div></div>
     ${chips('tpos',ART_OPTS.tpos)}${chips('tsize',ART_OPTS.tsize)}${chips('frame',ART_OPTS.frame)}
   </div></div></div>
-  <div class="section"><h2>Your covers</h2>${S.covers.length?`<div class="shop">${S.covers.map(c=>`<div class="card"><img class="cover" src="${c.img}" alt="${esc(c.title)} cover"><b>${esc(c.title)}</b>${String(UI.coverPick)===String(c.id)?'<span class="pill gold">Next album</span>':`<button class="btn sm" data-a="coverNext" data-id="${c.id}">Use on next album</button>`}${albums.length?`<div class="row"><select id="apply-${c.id}" aria-label="Album to apply this cover to">${albums.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join('')}</select><button class="btn sm ghost" data-a="coverApply" data-id="${c.id}">Apply</button></div>`:''}<button class="btn sm ghost" data-a="coverDel" data-id="${c.id}">Delete</button></div>`).join('')}</div>`:'<div class="empty">No saved covers yet. Design one above and press Save to library.</div>'}</div>`;
+  <div class="section"><h2>Your covers</h2>${S.covers.length?`<div class="shop">${S.covers.map(c=>`<div class="card"><img class="cover" src="${c.img}" alt="${esc(c.title)} cover"><b>${esc(c.title)}</b>${String(UI.coverPick)===String(c.id)?'<span class="pill gold">Next album</span>':`<button class="btn sm" data-a="coverNext" data-id="${c.id}">Use on next album</button>`}${relOptions()?`<div class="row"><select id="apply-${c.id}" aria-label="Release to apply this cover to">${relOptions()}</select><button class="btn sm ghost" data-a="coverApply" data-id="${c.id}">Apply</button></div>`:''}<button class="btn sm ghost" data-a="coverDel" data-id="${c.id}">Delete</button></div>`).join('')}</div>`:'<div class="empty">No saved covers yet. Design one above and press Save to library.</div>'}</div>`;
 }
 function prodWeek(r){if(S.dancers.length)earn(r,'Dancer pay',-sum(S.dancers,d=>d.salary))}
 
@@ -3037,7 +3045,7 @@ Object.assign(A,{
   artRandom:()=>{const o=artOpts(),r=l=>pick(l)[0];Object.assign(o,{pose:r(ART_OPTS.pose),expr:r(ART_OPTS.expr),cam:r(ART_OPTS.cam),bg:pick([...COVER_BG,...COVER_SCENES])[0],filter:r(ART_OPTS.filter),font:r(ART_OPTS.font),tcol:pick(ART_COLS),tpos:r(ART_OPTS.tpos),frame:pick(['none','none','border','polaroid','film'])})},
   artSave:()=>{const o=artOpts();S.covers.unshift({id:S.nextId++,title:(o.title||'Untitled').trim(),img:coverURL(o)});S.covers=S.covers.slice(0,12);save();toast('Cover saved to your library.')},
   coverNext:d=>{UI.coverPick=String(d.id);toast('This cover will be used on your next album or EP.')},
-  coverApply:d=>{const c=S.covers.find(x=>x.id==d.id),sel=$('#apply-'+d.id);const a=sel&&S.albums.find(x=>x.id==sel.value);if(c&&a){a.cover=c.img;toast(`New art on "${a.title}".`)}},
+  coverApply:d=>{const c=S.covers.find(x=>x.id==d.id),sel=$('#apply-'+d.id);const n=c&&sel&&applyCover(c.img,sel.value);if(n)toast(`New art on "${n}". It is synced to Streamify, Tunes and your posts.`)},
   coverDel:d=>{S.covers=S.covers.filter(x=>x.id!=d.id);if(String(UI.coverPick)===String(d.id))UI.coverPick=''},
 });
 
@@ -3143,6 +3151,38 @@ function wrappedHTML(w){return `<div class="wrapped"><span class="label">Streami
   ${w.top.length?`<div class="stack" style="gap:4px"><span class="label">Your top songs</span>${w.top.map((x,i)=>`<div class="between"><span>${i+1}. ${esc(x.t)}</span><span class="num">${fmt(x.n)}</span></div>`).join('')}</div>`:''}
   <div class="between"><span>Top city</span><b>${esc(w.city)}</b></div><div class="between"><span>Monthly listeners</span><b>${fmt(w.ml)}</b></div><div class="between"><span>Editorial playlist adds</span><b>${w.adds}</b></div></div>`}
 
+/* ---- uploaded photos (kept in IndexedDB so they never bloat the save) ---- */
+const PHOTOS={};let _mdb=null;
+function mdb(){return _mdb||(_mdb=new Promise((res,rej)=>{try{const r=indexedDB.open('headliner_media',1);r.onupgradeneeded=()=>r.result.createObjectStore('m');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}))}
+function mediaPut(id,url){PHOTOS[id]=url;mdb().then(db=>db.transaction('m','readwrite').objectStore('m').put(url,id)).catch(()=>{})}
+function mediaLoadAll(){mdb().then(db=>{const rq=db.transaction('m').objectStore('m').openCursor();rq.onsuccess=()=>{const c=rq.result;if(c){PHOTOS[c.key]=c.value;c.continue()}else if(S&&UI.tab==='social')render()}}).catch(()=>{})}
+mediaLoadAll();
+function songArtURL(s){if(!s)return null;const a=s.album?S.albums.find(x=>x.id===s.album):null;return (a&&a.cover)||s.cover||null}
+function postImg(p){if(p.img&&PHOTOS[p.img])return PHOTOS[p.img];
+  if(['cover','announce','snippet','acoustic','dance','mv'].includes(p.type)){const s=S.songs.find(x=>x.id===(p.songId||p.mvSong))||S.songs.find(x=>x.title===p.song);const u=songArtURL(s);if(u)return u}
+  return null}
+function readImage(file,max,square,done){const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas'),g=c.getContext('2d');
+  if(square){const m=Math.min(img.width,img.height);c.width=c.height=max;g.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,max,max)}
+  else{const k=Math.min(1,max/Math.max(img.width,img.height));c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);g.drawImage(img,0,0,c.width,c.height)}
+  done(c.toDataURL('image/jpeg',.82))};img.onerror=()=>toast('That file could not be read as an image.');img.src=rd.result};rd.readAsDataURL(file)}
+function mediaUpload(t){const f=t.files[0];
+  if(t.dataset.upload==='post')readImage(f,1000,false,url=>{const id='m'+Date.now().toString(36)+ri(100,999);mediaPut(id,url);UI.postImg=id;render()});
+  else readImage(f,500,true,url=>{S.covers.unshift({id:S.nextId++,title:(t.dataset.title||'Uploaded cover'),img:url});S.covers=S.covers.slice(0,12);save();toast('Cover added to your library. Apply it to a release below.');render()})}
+function photoPicker(){const u=UI.postImg&&PHOTOS[UI.postImg];
+  return `<div class="row"><span class="filebtn btn ghost sm">📷 ${u?'Change photo':'Upload a photo'}<input type="file" accept="image/*" data-upload="post"></span>${u?`<img class="pthumb" src="${u}" alt="Photo to post"><button class="btn sm ghost" data-a="clearPostImg">Remove</button>`:'<small class="muted">Optional. Use your own picture instead of the preset graphic.</small>'}</div>`}
+function relOptions(){return (S.albums.length?`<optgroup label="Albums & EPs">${S.albums.map(a=>`<option value="a:${a.id}">${esc(a.title)}</option>`).join('')}</optgroup>`:'')+
+  (S.songs.some(s=>s.status!=='demo')?`<optgroup label="Singles">${S.songs.filter(s=>s.status!=='demo').map(s=>`<option value="s:${s.id}">${esc(s.title)}${s.status==='released'?'':' (unreleased)'}</option>`).join('')}</optgroup>`:'')}
+function applyCover(img,v){const [k,id]=String(v).split(':');
+  if(k==='a'){const a=S.albums.find(x=>x.id==id);if(a){a.cover=img;return a.title}}
+  if(k==='s'){const s=S.songs.find(x=>x.id==id);if(s){s.cover=img;return s.title}}return null}
+function artworkCard(){const rel=[...S.albums.map(a=>({k:'a',id:a.id,t:a.title,sub:a.type,img:a.cover})),...S.songs.filter(s=>s.status!=='demo'&&!s.album).map(s=>({k:'s',id:s.id,t:s.title,sub:s.status==='released'?'Single':'Unreleased',img:s.cover}))];
+  return `<div class="pcard"><h3>Artwork</h3><small class="muted">The art you set here shows on Streamify, Tunes, your posts and the charts. Design covers in the Album Art tab or upload your own.</small>
+  <span class="filebtn btn ghost sm">⬆ Upload cover art<input type="file" accept="image/*" data-upload="cover"></span>
+  ${rel.length?rel.map(r=>`<div class="trk">${r.img?`<img class="art" src="${r.img}" alt="" style="width:44px;height:44px">`:`<span class="art" style="width:44px;height:44px;background:#333"></span>`}<span class="tt"><b>${esc(r.t)}</b><small>${r.sub}${r.img?'':' · no art yet'}</small></span>${S.covers.length?`<select data-k="${r.k}" data-id="${r.id}" class="artsel" aria-label="Cover for ${esc(r.t)}"><option value="">Set art…</option>${S.covers.map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join('')}</select>`:''}</div>`).join(''):'<small class="muted">Record a song first.</small>'}
+  ${S.covers.length?'':'<small class="muted">Your cover library is empty. Upload art above or design one in the Album Art tab.</small>'}</div>`}
+Object.assign(A,{clearPostImg:()=>{UI.postImg=null}});
+document.addEventListener('change',e=>{const t=e.target;if(!t.classList||!t.classList.contains('artsel')||!S)return;const c=S.covers.find(x=>x.id==t.value);if(!c)return;const n=applyCover(c.img,t.dataset.k+':'+t.dataset.id);if(n){save();toast(`New art on "${n}". It is synced to every app.`);render()}});
+
 /* ---- phone shell ---- */
 const APPS=[
   {id:'insta',n:'InstaPic',ico:'◎',bg:'linear-gradient(45deg,#f9a825,#e1306c 50%,#833ab4)'},
@@ -3186,7 +3226,7 @@ function composeHTML(k){
   return `<div class="pcard"><h3>New ${P.name} ${k==='tube'?'video':'post'}</h3><small class="muted">8 energy. Posts build followers and hype. Song posts can go viral.</small>
     <label class="field"><span class="label">Type</span><select data-ui="postType" id="post-type">${P.types.map(t=>`<option value="${t.id}" ${type.id===t.id?'selected':''}>${t.l}</option>`).join('')}</select></label>
     ${type.song?`<label class="field"><span class="label">Song</span><select data-ui="postSong" id="post-song"><option value="">Choose a song</option>${songs.map(s=>`<option value="${s.id}" ${UI.postSong==s.id?'selected':''}>${esc(s.title)} (${s.status})</option>`).join('')}</select></label>`:''}
-    <label class="field"><span class="label">Caption</span><textarea id="post-cap" maxlength="200" placeholder="Leave blank for a suggested caption"></textarea></label>
+    ${photoPicker()}<label class="field"><span class="label">Caption</span><textarea id="post-cap" maxlength="200" placeholder="Leave blank for a suggested caption"></textarea></label>
     <button class="btn pink" data-a="post">${k==='tube'?'Upload':k==='chirp'?'Chirp it':'Share'}</button></div>`}
 function profHead(k,lbl){const acc=S.social[k];
   return `<div class="iprof">${storyRing(avatar(78,S))}<div class="pstats"><div><b>${acc.posts.length}</b><span>posts</span></div><div><b>${fmt(acc.f)}</b><span>${lbl||'followers'}</span></div><div><b>${ri(80,400)}</b><span>following</span></div></div></div>
@@ -3204,7 +3244,7 @@ function feedPost(x,k){return x.mine?postHTML(x.p,k,true).replace('<div class="p
 const APP_VIEW={
   insta(){UI.social='insta';const t=curTab('home'),acc=S.social.insta;let b;
     if(t==='home')b=`<div class="stories"><button class="st me" data-a="story">${storyRing(avatar(54,S))}<small>Your story</small></button>${S.npcs.slice(0,8).map(n=>`<span class="st"><span class="ring">${npcAv(n.name,54)}</span><small>${esc(n.name.split(' ')[0])}</small></span>`).join('')}</div>${mixedFeed('insta').slice(0,25).map(x=>feedPost(x,'insta')).join('')||'<div class="empty">Your feed fills up as the weeks go by.</div>'}`;
-    else if(t==='me')b=profHead('insta')+`<div class="igrid">${acc.posts.map(p=>`<button class="gt" style="${tileBg(p)}" data-a="openPost" data-k="insta" data-id="${p.id}">${S.avatar&&['selfie','flex'].includes(p.type)?`<img src="${S.avatar}" alt="">`:''}<span>${esc(tileTxt(p))}</span>${p.viral?'<em>🔥</em>':''}</button>`).join('')}</div>${acc.posts.length?'':'<div class="empty">No posts yet. Tap + to share one.</div>'}`;
+    else if(t==='me')b=profHead('insta')+`<div class="igrid">${acc.posts.map(p=>`<button class="gt" style="${tileBg(p)}" data-a="openPost" data-k="insta" data-id="${p.id}">${postImg(p)?`<img src="${postImg(p)}" alt="">`:S.avatar&&['selfie','flex'].includes(p.type)?`<img src="${S.avatar}" alt="">`:''}${p.img&&postImg(p)?'':`<span>${esc(tileTxt(p))}</span>`}${p.viral?'<em>🔥</em>':''}</button>`).join('')}</div>${acc.posts.length?'':'<div class="empty">No posts yet. Tap + to share one.</div>'}`;
     else if(t==='new')b=composeHTML('insta');
     else b=activity('insta');
     return appShell('InstaPic',[['home','Home','⌂'],['new','Post','＋'],['act','Activity','♡'],['me','Profile','◉']],b)},
@@ -3216,17 +3256,17 @@ const APP_VIEW={
     return appShell('Chirp',[['home','Home','⌂'],['trend','Explore','#'],['new','Chirp','✎'],['me','Profile','◉']],b)},
   tok(){UI.social='tok';const t=curTab('fyp'),acc=S.social.tok;let b;
     if(t==='fyp'){const L=mixedFeed('tok').slice(0,30);const i=clamp(UI.tokI||0,0,Math.max(0,L.length-1));const x=L[i];
-      b=x?`<div class="tokcard" style="${x.mine?tileBg(x.p):`background:linear-gradient(160deg,hsl(${phash(x.p.who)%360} 60% 35%),#050505)`}">${x.mine&&S.avatar?`<img src="${S.avatar}" alt="">`:''}
+      b=x?`<div class="tokcard" style="${x.mine?tileBg(x.p):`background:linear-gradient(160deg,hsl(${phash(x.p.who)%360} 60% 35%),#050505)`}">${x.mine&&postImg(x.p)?`<img src="${postImg(x.p)}" alt="">`:x.mine&&S.avatar?`<img src="${S.avatar}" alt="">`:''}
         <div class="tokside"><span>♥<b>${fmt(x.p.likes)}</b></span><span>💬<b>${fmt(x.mine?x.p.comments.length*ri(20,90):ri(30,900))}</b></span><span>↗<b>${fmt(x.mine?x.p.shares:Math.round(x.p.likes*.05))}</b></span></div>
         <div class="tokcap"><b>${esc(handle(x.mine?S.stage:x.p.who))}</b>${x.mine&&x.p.viral?' <span class="viral">Viral</span>':''}<div>${esc(x.mine?x.p.cap:x.p.text)}</div>${x.mine?`<small>▶ ${fmt(x.p.views)} views · ♪ ${esc(x.p.song||'original sound')}</small>`:''}</div></div>
         <div class="row" style="justify-content:center"><button class="btn sm ghost" data-a="tokNav" data-v="-1" ${i<=0?'disabled':''}>▲ Prev</button><span class="muted num">${i+1}/${L.length}</span><button class="btn sm ghost" data-a="tokNav" data-v="1" ${i>=L.length-1?'disabled':''}>Next ▼</button></div>`:'<div class="empty">Nothing on your For You page yet.</div>'}
-    else if(t==='me')b=profHead('tok')+`<div class="igrid tall">${acc.posts.map(p=>`<button class="gt" style="${tileBg(p)}" data-a="openPost" data-k="tok" data-id="${p.id}"><span>${esc(tileTxt(p))}</span><em>▶ ${fmt(p.views)}</em></button>`).join('')}</div>`;
+    else if(t==='me')b=profHead('tok')+`<div class="igrid tall">${acc.posts.map(p=>`<button class="gt" style="${tileBg(p)}" data-a="openPost" data-k="tok" data-id="${p.id}">${postImg(p)?`<img src="${postImg(p)}" alt="">`:''}<span>${esc(tileTxt(p))}</span><em>▶ ${fmt(p.views)}</em></button>`).join('')}</div>`;
     else if(t==='new')b=composeHTML('tok')+`<div class="pcard"><h3>Go LIVE</h3><small class="muted">15 energy. Fans tip you and loyalty goes up.</small><button class="btn" data-a="golive">● Start livestream</button></div>`;
     else b=activity('tok');
     return appShell('TokTune',[['fyp','For You','⌂'],['new','Create','＋'],['act','Inbox','✉'],['me','Profile','◉']],b)},
   tube(){UI.social='tube';const t=curTab('home'),acc=S.social.tube;
     const vids=acc.posts.map(p=>{const s=p.mvSong?S.songs.find(x=>x.id===p.mvSong):null;return {p,views:s?s.mvViews:p.views}});let b;
-    if(t==='home')b=vids.length?vids.map(v=>`<button class="yt" data-a="openPost" data-k="tube" data-id="${v.p.id}"><span class="thumb" style="${tileBg(v.p)}">${esc(tileTxt(v.p))}<em>${ri(2,4)}:${String(ri(0,59)).padStart(2,'0')}</em></span><span class="ytm">${avatar(32,S)}<span><b>${esc(v.p.cap)}</b><small class="muted">${esc(S.stage)} · ${fmt(v.views)} views · ${S.t-v.p.t<=0?'this week':(S.t-v.p.t)+' weeks ago'}</small></span></span></button>`).join(''):'<div class="empty">Upload your first video.</div>';
+    if(t==='home')b=vids.length?vids.map(v=>`<button class="yt" data-a="openPost" data-k="tube" data-id="${v.p.id}"><span class="thumb" style="${tileBg(v.p)}">${postImg(v.p)?`<img src="${postImg(v.p)}" alt="">`:''}<span>${v.p.img&&postImg(v.p)?'':esc(tileTxt(v.p))}</span><em>${ri(2,4)}:${String(ri(0,59)).padStart(2,'0')}</em></span><span class="ytm">${avatar(32,S)}<span><b>${esc(v.p.cap)}</b><small class="muted">${esc(S.stage)} · ${fmt(v.views)} views · ${S.t-v.p.t<=0?'this week':(S.t-v.p.t)+' weeks ago'}</small></span></span></button>`).join(''):'<div class="empty">Upload your first video.</div>';
     else if(t==='new')b=composeHTML('tube');
     else if(t==='studio'){const tv=sum(vids,v=>v.views),top=vids.slice().sort((a,b)=>b.views-a.views)[0];const r=S.report||{};
       b=`<div class="pcard"><h3>Channel analytics</h3><div class="kv"><div><span class="label">Subscribers</span><b>${fmt(acc.f)}</b></div><div><span class="label">Total views</span><b>${fmt(tv)}</b></div><div><span class="label">Views last week</span><b>${fmt(r.views||0)}</b></div><div><span class="label">Ad revenue last week</span><b>${cash((r.inc||{})['MeTube ad revenue']||0)}</b></div></div>${top?`<small class="muted">Top video: ${esc(top.p.cap)} (${fmt(top.views)} views)</small>`:''}</div>
@@ -3246,7 +3286,7 @@ const APP_VIEW={
     <div class="pcard"><h3>Last week</h3><div class="lines">${Object.entries(r.inc||{}).filter(([k,v])=>Math.round(v)).map(([k,v])=>`<div><span>${esc(k)}</span><span class="good">+${cash(v)}</span></div>`).join('')}${Object.entries(r.exp||{}).filter(([k,v])=>Math.round(v)).map(([k,v])=>`<div><span>${esc(k)}</span><span class="bad">-${cash(v)}</span></div>`).join('')||''}</div>${r.inc?'':'<small class="muted">Finish a week to see your statement.</small>'}</div>`;
     return appShell('Wallet',[],b)},
   fanclub(){return appShell('Fan Club',[],socialExtras())},
-  charts(){const b=`<div class="pcard"><h3>Hot 20 · this week</h3>${S.charts.s.slice(0,20).map((e,i)=>`<div class="crow ${e.me?'me':''}"><b>${i+1}</b><span><b>${esc(e.title)}</b><small class="muted">${esc(e.artist)}</small></span><small class="num">${fmt(e.v)}</small></div>`).join('')}</div><button class="btn ghost sm" data-a="tab" data-v="charts">Open full charts & rivals</button>`;return appShell('Charts',[],b)},
+  charts(){const b=`<div class="pcard"><h3>Hot 20 · this week</h3>${S.charts.s.slice(0,20).map((e,i)=>`<div class="crow ${e.me?'me':''}"><b>${i+1}</b>${e.me&&S.songs.find(s=>s.title===e.title)?songArt(S.songs.find(s=>s.title===e.title),34):`<span class="art" style="width:34px;height:34px;background:hsl(${phash(e.title)%360} 45% 30%)"></span>`}<span><b>${esc(e.title)}</b><small class="muted">${esc(e.artist)}</small></span><small class="num">${fmt(e.v)}</small></div>`).join('')}</div><button class="btn ghost sm" data-a="tab" data-v="charts">Open full charts & rivals</button>`;return appShell('Charts',[],b)},
   cam(){return appShell('Story',[],`<div class="pcard"><h3>Post a story</h3><small class="muted">3 energy. Stories show on InstaPic for a week: a small follower and hype boost, and loyal fans love them.</small>${S.dsp.story&&S.dsp.story.t===S.t?`<div class="good">Your story is live. ${fmt(S.dsp.story.v)} views so far.</div>`:''}<div class="row"><button class="btn pink" data-a="story">Share a story</button></div></div>`)}
 };
 function activity(k){const acc=S.social[k];const L=[];
@@ -3261,7 +3301,7 @@ function trends(){const L=[];const rec=S.songs.filter(s=>s.status==='released').
   return L.slice(0,10)}
 
 /* ---- streaming apps ---- */
-function songArt(s,size){const a=s.album?S.albums.find(x=>x.id===s.album):null;const h=(a&&a.hue)||(s.id*47)%360;return a&&a.cover?`<img class="art" src="${a.cover}" alt="" style="width:${size}px;height:${size}px">`:`<span class="art" style="width:${size}px;height:${size}px;background:linear-gradient(150deg,hsl(${h} 75% 52%),hsl(${h+80} 70% 22%))"></span>`}
+function songArt(s,size){const a=s.album?S.albums.find(x=>x.id===s.album):null;const h=(a&&a.hue)||(s.id*47)%360;const u=songArtURL(s);return u?`<img class="art" src="${u}" alt="" style="width:${size}px;height:${size}px">`:`<span class="art" style="width:${size}px;height:${size}px;background:linear-gradient(150deg,hsl(${h} 75% 52%),hsl(${h+80} 70% 22%))"></span>`}
 function dspApp(app){
   const C=DSP[app],D=S.dsp,t=curTab('artist'),rel=S.songs.filter(s=>s.status==='released');const sh=C.share;
   D.seen[app]=S.t;
@@ -3283,7 +3323,7 @@ function dspApp(app){
     <div class="pcard"><h3>Weekly streams</h3>${h.length?`<div class="bars g" style="--c:${C.c1}">${h.map(x=>`<i style="height:${Math.max(3,x/mx*100)}%" title="${fmt(x*sh)}"></i>`).join('')}</div><small class="muted">Last ${h.length} weeks on ${C.name}</small>`:'<small class="muted">Finish a week to see your stream graph.</small>'}</div>
     <div class="pcard"><h3>Pitch to editors</h3><small class="muted">Pitch a recorded, unreleased song. If you release it while the pitch is active, its chance of landing on editorial playlists (on both apps) more than doubles. 5 energy.</small>
       ${D.pitch?`<div class="good">Pitched: "${esc((S.songs.find(s=>s.id===D.pitch)||{}).title||'')}". Release it to give it the boost.</div>`:recs.length?`<div class="row"><select id="pitch-sel" aria-label="Song to pitch">${recs.map(s=>`<option value="${s.id}">${esc(s.title)} (Q${s.q})</option>`).join('')}</select><button class="btn sm" data-a="pitch" style="background:${C.c1};color:${C.ink}">Pitch</button></div>`:'<small class="muted">Record a song in the Studio first.</small>'}</div>
-    <div class="pcard"><h3>Plaques</h3>${Object.entries(D.plaq).length?Object.entries(D.plaq).map(([id,l])=>{const s=S.songs.find(x=>x.id==id);return s?`<div class="between"><span>${esc(s.title)}</span><span class="pill gold">${['1M','10M','100M','1B'][l-1]} streams</span></div>`:''}).join(''):'<small class="muted">Plaques arrive when a song passes 1M, 10M, 100M and 1B streams.</small>'}</div>
+    ${artworkCard()}<div class="pcard"><h3>Plaques</h3>${Object.entries(D.plaq).length?Object.entries(D.plaq).map(([id,l])=>{const s=S.songs.find(x=>x.id==id);return s?`<div class="between"><span>${esc(s.title)}</span><span class="pill gold">${['1M','10M','100M','1B'][l-1]} streams</span></div>`:''}).join(''):'<small class="muted">Plaques arrive when a song passes 1M, 10M, 100M and 1B streams.</small>'}</div>
     ${D.wrapped.length?`<div class="pcard"><h3>Wrapped</h3><div class="row">${D.wrapped.map((w,i)=>`<button class="btn sm ghost" data-a="openWrapped" data-v="${i}">Year ${w.y}</button>`).join('')}</div></div>`:`<div class="pcard"><h3>Wrapped</h3><small class="muted">Your yearly Wrapped arrives at the end of each year.</small></div>`}`;
   }else if(t==='pl'){
     const id=UI.plOpen;const p=PLAYLISTS.find(x=>x.id===id&&x.app===app);
@@ -3345,6 +3385,7 @@ document.addEventListener('change',e=>{
   if(t.id==='art-title'&&S){artOpts().title=t.value;render();return}
   if(t.dataset.s&&S&&t.tagName==='SELECT'){S[t.dataset.s]=t.value;save();render();return}
   if(t.dataset.ui){UI[t.dataset.ui]=t.value;if(t.dataset.ui==='postType')UI.postSong='';render();return}
+  if((t.dataset.upload==='post'||t.dataset.upload==='cover')&&t.files&&t.files[0]){mediaUpload(t);t.value='';return}
   if(t.dataset.upload&&t.files&&t.files[0]){
     const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const n=256;c.width=n;c.height=n;const g=c.getContext('2d');const m=Math.min(img.width,img.height);g.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,n,n);const url=c.toDataURL('image/jpeg',.85);
       if(t.dataset.upload==='draft'){UI.draft.name=$('#f-name')?.value??UI.draft.name;UI.draft.stage=$('#f-stage')?.value??UI.draft.stage;UI.draft.fandom=$('#f-fandom')?.value??UI.draft.fandom;UI.draft.avatar=url}else{S.avatar=url;save();toast('Profile picture updated everywhere.')}render()};img.onerror=()=>toast('That file could not be read as an image.');img.src=rd.result};rd.readAsDataURL(t.files[0]);
