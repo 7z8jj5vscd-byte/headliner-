@@ -340,6 +340,24 @@ tr.me td{background:color-mix(in srgb,var(--gold) 12%,transparent)}
 .confetti i{position:absolute;top:-24px;border-radius:2px;animation:cfall 2s ease-in forwards}
 @keyframes cfall{to{transform:translateY(110vh) rotate(720deg)}}
 
+.cal{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+@media (max-width:640px){.cal{grid-template-columns:repeat(4,1fr)}}
+.calm{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);text-align:center;font-size:11px}
+.calm i{font-style:normal;font-size:20px}.calm small{color:var(--muted);font-size:10px;line-height:1.2}
+.calm.on{border-color:rgba(167,139,250,.7);background:rgba(139,92,246,.14)}
+.reel{position:fixed;inset:0;z-index:300;background:#07060b}
+.reel-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;animation:reelIn .6s ease-out;text-align:center}
+.reel-in img{height:min(44vh,420px);filter:drop-shadow(0 20px 40px rgba(0,0,0,.6));animation:reelZoom 3.6s ease-out}
+.reel-t{display:flex;flex-direction:column;gap:8px;align-items:center}
+.reel-t h1{font-size:clamp(30px,7vw,60px);font-weight:800;letter-spacing:-.03em;line-height:1.05}
+.reel-t p{color:#e6e1f0;max-width:42ch;font-size:16px}
+.reel-dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}.reel-dots i{width:16px;height:3px;background:rgba(255,255,255,.2);border-radius:2px}.reel-dots i.on{background:#fff}
+.reel-x{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:16px}
+@keyframes reelIn{from{opacity:0}to{opacity:1}}@keyframes reelZoom{from{transform:scale(.9)}to{transform:scale(1.03)}}
+.photobar{position:absolute;left:8px;right:8px;bottom:8px;z-index:6;background:rgba(14,13,20,.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:6px;max-height:75%;overflow:auto;max-width:560px}
+.photobar .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.photobar .chip{padding:5px 10px;font-size:12px;white-space:nowrap}
+body.photo-on .panel,body.photo-on .scap,body.photo-on .ticker{display:none!important}
+
 /* venues */
 .venue{display:flex;flex-direction:column;gap:8px}
 .venue .facts{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
@@ -1049,7 +1067,7 @@ function nextWeek(silent=false,fromLive=false){
     const age=S.t-s.rel;const decay=Math.pow(.86,age)+.015;
     let st=(S.fans*.8+150)*Math.pow(s.q/100,2)*3*decay*pr*hm*(s.recvM||1)*(1+(s.mv||0)/120)*rnd(.85,1.15);
     if(s.featPower)st+=s.featPower*.12*decay;
-    if(s.boost>0){st*=3;s.boost--}
+    st*=seasonMult(s);if(s.boost>0){st*=3;s.boost--}
     s.week=st;wk+=st;
   });
   const capS=(S.fans*5+3000)*Math.sqrt(pr*hm);const sc=wk>capS?capS/wk:1;wk=0;
@@ -1072,7 +1090,7 @@ function nextWeek(silent=false,fromLive=false){
   S.social.tube.f+=Math.round(views*.002);
   // merch
   let msold=0;
-  MERCH.forEach(m=>{const st=S.merch[m.id];if(!st||!st.stock)return;const n=Math.min(st.stock,Math.round(S.fans*.0005*m.appeal*hm*rnd(.6,1.4)));st.stock-=n;st.sold+=n;msold+=n;add(r.inc,'Online merch',n*m.price)});
+  MERCH.forEach(m=>{const st=S.merch[m.id];if(!st||!st.stock)return;const n=Math.min(st.stock,Math.round(S.fans*.0005*m.appeal*hm*seasonMerch()*rnd(.6,1.4)));st.stock-=n;st.sold+=n;msold+=n;add(r.inc,'Online merch',n*m.price)});
   S.stats.merch+=msold;
   // expenses
   const h=house();
@@ -1232,7 +1250,7 @@ function writeSong(bonus=0,feat=null){
   const theme=$('#song-theme')?.value||pick(THEMES);
   let title=($('#song-title')?.value||'').trim()||songTitle();
   const tempo=$('#song-tempo')?.value||pick(TEMPOS),inst=$('#song-inst')?.value||pick(INSTS),fit=GFIT[S.genre]||[];if(fit[0]===tempo)bonus+=3;if(fit[1]===inst)bonus+=3;if(S.breakupBoost&&!feat){bonus+=8;S.breakupBoost=0}if(S.mentor&&S.mentor.until>S.t)bonus+=3;
-  const s={id:S.nextId++,title,theme,tempo,inst,lyric:pick(LYR[theme]||LYR.Love),q:songQuality(bonus+(feat?0:(()=>{const b=S.oppBonus||0;S.oppBonus=0;return b})())),status:'demo',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null};
+  const s={id:S.nextId++,title,theme,tempo,inst,lyric:pick(LYR[theme]||LYR.Love),q:songQuality(bonus+(feat?0:takeStudioBonus())),status:'demo',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null};
   S.songs.unshift(s);S.stats.written++;
   S.skills.songwriting=Math.min(100,S.skills.songwriting+.6*(1-S.skills.songwriting/130));
   return s;
@@ -2520,6 +2538,13 @@ const HELP=[
   {id:'charts',n:'Charts & rivals',h:()=>`
     <div class="card"><h3>Charts</h3><ul class="hl"><li>The Hot 20 ranks weekly streams. The album chart ranks weekly sales.</li><li>Charting gives you extra fans every week. A #1 is a huge moment.</li><li>Album certifications: Gold at 500K, Platinum at 1M, Diamond at 10M.</li></ul></div>
     <div class="card"><h3>Rivals</h3><ul class="hl"><li>Three acts rise alongside you. Heat shows how hostile the rivalry is.</li><li><b>Throw shade</b> on Chirp, write a <b>diss track</b> (a Hit wins the feud), or start a <b>chart battle</b> by releasing your next song against theirs.</li><li>Losing feuds can start a Hate Train. A <b>truce</b> unlocks collabs, tour slots and even dating.</li></ul></div>`},
+  {id:'endgame',n:'Endgame, label & extras',h:()=>`
+    <div class="card"><h3>Legend goals & story events</h3><ul class="hl"><li>Home → Legend goals lists big career goals. Each one pays a bonus when you hit it.</li><li>From Level 6, big offers arrive every few months: a Vegas residency, a documentary, a halftime show, a memoir, your own fashion line, a world-record concert, mentoring a rookie or taking a hiatus. Each runs for a few weeks.</li><li>Watch your career reel any time from Legend goals. It also plays when you retire.</li></ul></div>
+    <div class="card"><h3>Your own record label</h3><ul class="hl"><li>Unlocks at Level 7 (Star) and costs $5M to launch, in Business.</li><li>Sign prospects, set their marketing, feature them on your songs and watch them grow. You keep a cut of what they earn. You can sell the label later.</li></ul></div>
+    <div class="card"><h3>Seasons</h3><ul class="hl"><li>Every month has a bonus: Valentine's love songs, the Song of the Summer race, Black Friday merch and holiday songs that come back every December.</li><li>The Holiday theme can be picked when writing.</li></ul></div>
+    <div class="card"><h3>Studio marketplace & side jobs</h3><ul class="hl"><li>Book a producer or songwriter in Studio → Marketplace. They boost your next song. Songwriters take a cut.</li><li>Side jobs in Live pay the rent early on and can get you discovered.</li></ul></div>
+    <div class="card"><h3>Fans, PR and habits</h3><ul class="hl"><li>Chirp → Fans shows your community, stan accounts and fan wars. Big communities throw streaming parties when you release.</li><li>Business → PR & image: press releases, interviews, stunts, damage control, media training and a PR firm.</li><li>Personal → Habits: partying, drinking, gambling and spending can become problems. Support groups, therapy and rehab help.</li></ul></div>
+    <div class="card"><h3>Photo mode & cloud save</h3><ul class="hl"><li>Tap 📸 on the stage, pick a pose, face and filter, and take a photo. Save it, post it or use it as your profile picture.</li><li>Home → Goals & saves → Cloud save keeps your career in a private file on your GitHub account so you can play on any device.</li></ul></div>`},
   {id:'social',n:'Social & fans',h:()=>`
     <div class="card"><h3>Posting</h3><ul class="hl"><li>Each post costs 8 energy. Posting several times in one week has diminishing returns.</li><li>Song snippets, dance challenges and covers can go viral. Your first viral moment can bring tens of thousands of fans.</li><li>During a Hate Train, posts can draw backlash. Post an apology on Chirp to start fixing it.</li></ul></div>
     <div class="card"><h3>Your fan community</h3><ul class="hl"><li><b>Loyalty</b> softens scandals and boosts your businesses. It rises with fan meets, livestreams, fair tickets and following fan polls.</li><li>The fan club pays every week. Higher prices bring in fewer members.</li><li>Fan polls pick a theme for your next single. Release a song with that theme before the poll closes.</li></ul></div>`},
@@ -3240,7 +3265,7 @@ function onLists(id){return PLAYLISTS.map(p=>({p,e:(S.dsp.pl[p.id]||[]).find(x=>
 function dspWeek(r){
   const D=S.dsp;if(!D)return;
   D.hist.push(r.wk||0);if(D.hist.length>104)D.hist.shift();
-  ['streamify','tunes'].forEach(k=>{const t=S.fans*DSP[k].share*.45;D.fol[k]=Math.max(0,Math.round(D.fol[k]+(t-D.fol[k])*.12+ri(0,3)))});
+  Object.keys(DSP).forEach(k=>{D.fol[k]??=0;const t=S.fans*DSP[k].share*.45;D.fol[k]=Math.max(0,Math.round(D.fol[k]+(t-D.fol[k])*.12+ri(0,3)))});
   // fans found through playlists
   const plS=sum(S.songs,s=>s.status==='released'?(s.plWk||0):0);D.plWk=plS;
   if(plS>0){const g=addFans(plS*.003);if(g>=50)r.ev.push(`Playlist listeners became ${fmt(g)} new fans`)}
@@ -3671,9 +3696,9 @@ Object.assign(A,{
     if(s==='Perfect')sfx('ach');if(W.taps.length<3)wsNewZone();wsSet()},
   wsFinish:()=>{const W=UI.ws;const inp=$('#ws-title');const title=((inp&&inp.value.trim())||W.title||songTitle()).slice(0,40);const fit=GFIT[S.genre]||[];
     let bonus=W.hooks[W.hook].v+sum(W.taps,t=>t.s==='Perfect'?4:t.s==='Great'?2:0)+(easy()?2:0);
-    let extra=0;if(fit[0]===W.tempo)extra+=3;if(fit[1]===W.inst)extra+=3;if(S.breakupBoost){extra+=8;S.breakupBoost=0}if(S.mentor&&S.mentor.until>S.t)extra+=3;if(S.oppBonus){extra+=S.oppBonus;S.oppBonus=0}
+    let extra=0;if(fit[0]===W.tempo)extra+=3;if(fit[1]===W.inst)extra+=3;if(S.breakupBoost){extra+=8;S.breakupBoost=0}if(S.mentor&&S.mentor.until>S.t)extra+=3;extra+=takeStudioBonus();
     const s={id:S.nextId++,title,theme:W.theme,tempo:W.tempo,inst:W.inst,lyric:W.hooks[W.hook].t,q:songQuality(bonus+extra),status:'demo',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null};
-    S.songs.unshift(s);S.stats.written++;S.skills.songwriting=Math.min(100,S.skills.songwriting+.9*(1-S.skills.songwriting/130));
+    applyCredit(s);S.songs.unshift(s);S.stats.written++;S.skills.songwriting=Math.min(100,S.skills.songwriting+.9*(1-S.skills.songwriting/130));
     W.song=s.id;W.bonus=bonus+extra;W.step=4;log(`Wrote "${s.title}" in a writing session (${grade(s.q)}).`,'good');setMood('grin',4);
     if(grade(s.q)==='S'||grade(s.q)==='A')setTimeout(()=>confetti(),80);sfx('release');wsSet()},
   wsRecord:()=>{UI.ws=null;UI.modal=UI.queue.shift()||null;UI.tab='studio';UI.sub=UI.sub||{};UI.sub.studio='Song library';window.scrollTo(0,0)},
@@ -3712,9 +3737,373 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610232234';
+const APP_VER='202610232304';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
+/* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
+{const _mig=migrate;migrate=function(s){_mig(s);
+  s.story??=null;s.storyDone??=[];s.storyCd??={};s.legend??={};
+  s.habits??={party:0,drink:0,gamble:0,shop:0};s.habitWarn??={};
+  s.nextProd??=null;s.mylabel??=null;s.image??=60;s.prTrain??=0;s.prFirm??=false;
+  s.stan??={posts:[],war:null,parties:0};s.jobsDone??=0;s.dl??={total:0,week:0};s.sots??={};s.comeback??=0;s.brandLine??=null;
+  if(s.dsp){Object.keys(DSP).forEach(k=>{s.dsp.fol[k]??=Math.round(s.fans*DSP[k].share*.3)});PLAYLISTS.forEach(p=>s.dsp.pl[p.id]??=[])}
+  return s}}
+const imgAdj=v=>{S.image=clamp((S.image??60)+v*(v<0?1-.2*(S.prTrain||0):1),0,100)};
+
+/* ---- more streaming services ---- */
+Object.assign(DSP,{
+  soundcrowd:{name:'SoundCrowd',share:.07,c1:'#ff7a1a',c2:'#4a2200',bg:'#131313',ink:'#fff',ml:'monthly listeners',ico:'☁'},
+  tidalwave:{name:'Tidalwave',share:.04,c1:'#33e1ff',c2:'#06303a',bg:'#050708',ink:'#00141a',ml:'monthly listeners',ico:'≈'},
+  deezr:{name:'Deezr',share:.04,c1:'#a238ff',c2:'#2a0d4a',bg:'#121016',ink:'#fff',ml:'monthly fans',ico:'♪'}});
+DSP.streamify.share=.5;DSP.tunes.share=.25;
+PLAYLISTS.push(
+  {id:'scbuzz',app:'soundcrowd',n:'Buzzing Up',d:'Underground artists on the rise. Under 300K fans, first month.',f:()=>4.5e5,c:'#ff7a1a',fresh:1,base:.3},
+  {id:'scindie',app:'soundcrowd',n:'Bedroom Pop & Beyond',d:'Raw, homemade and real.',f:()=>1.1e6,c:'#ffb36b',fit:s=>s.studio==='Bedroom setup'||s.q<70,base:.1},
+  {id:'tdrise',app:'tidalwave',n:'Rising',d:'Hand-picked new releases.',f:()=>3e5,c:'#33e1ff',isNew:1,lv:1,base:.15},
+  {id:'tdmaster',app:'tidalwave',n:'Masters',d:'Top-quality recordings only (Q85+).',f:()=>6e5,c:'#ffffff',minQ:()=>85,base:.35},
+  {id:'dzhits',app:'deezr',n:'Hits of the Moment',d:'Reach the Hot 20.',f:()=>2.4e6,c:'#a238ff',top:20},
+  {id:'dzflow',app:'deezr',n:'Flow Picks',d:'Personal picks for new listeners.',f:()=>8e5,c:'#d38bff',isNew:1,base:.18});
+APPS.splice(6,0,{id:'soundcrowd',n:'SoundCrowd',ico:'☁',bg:'linear-gradient(160deg,#ff9a3c,#ff5500)'},{id:'tidalwave',n:'Tidalwave',ico:'≈',bg:'#000',bd:1},{id:'deezr',n:'Deezr',ico:'♪',bg:'linear-gradient(160deg,#a238ff,#ef5466)'},{id:'itones',n:'iTones',ico:'♬',bg:'linear-gradient(160deg,#fb5c74,#fa233b)'});
+APP_VIEW.soundcrowd=()=>dspApp('soundcrowd');APP_VIEW.tidalwave=()=>dspApp('tidalwave');APP_VIEW.deezr=()=>dspApp('deezr');
+APP_VIEW.itones=function(){const t=curTab('top'),rel=S.songs.filter(s=>s.status==='released');
+  const mine=rel.map(s=>({t:s.title,a:S.stage,d:s.dlWk||0,me:1,s})),npc=S.npcs.slice(0,25).map(n=>({t:n.single,a:n.name,d:Math.round((n.week||n.power*.02)*.0025)}));
+  const top=[...mine,...npc].sort((a,b)=>b.d-a.d).slice(0,20);let b;
+  if(t==='top')b=`<div class="pcard"><h3>Top Songs · this week</h3>${top.map((e,i)=>`<div class="crow ${e.me?'me':''}"><b>${i+1}</b>${e.me?songArt(e.s,34):`<span class="art" style="width:34px;height:34px;background:hsl(${phash(e.t)%360} 45% 32%)"></span>`}<span><b>${esc(e.t)}</b><small class="muted">${esc(e.a)}</small></span><small class="num">${fmt(e.d)}</small></div>`).join('')}</div>`;
+  else b=`<div class="kv"><div><span class="label">Downloads this week</span><b>${fmt(S.dl.week)}</b></div><div><span class="label">All-time downloads</span><b>${fmt(S.dl.total)}</b></div><div><span class="label">Price</span><b>$1.29</b></div><div><span class="label">You earn per sale</span><b>${cash(1.29*.7*share())}</b></div></div>
+    <div class="pcard"><h3>Your songs</h3>${rel.length?rel.slice().sort((a,b)=>(b.dl||0)-(a.dl||0)).map(s=>`<div class="trk">${songArt(s,40)}<span class="tt"><b>${esc(s.title)}</b><small>${fmt(s.dl||0)} sold · ${fmt(s.dlWk||0)} this week</small></span></div>`).join(''):'<small class="muted">Release a song to sell it here.</small>'}</div><small class="muted">Downloads spike in a song's first two weeks and when it charts. Sales are paid out weekly.</small>`;
+  return appShell('iTones',[['top','Top Songs','★'],['me','Your Store','♬']],b)};
+{const _ab=appBadge;appBadge=function(id){if(DSP[id]&&id!=='streamify'&&id!=='tunes'){const D=S.dsp,seen=D.seen[id]||0;return PLAYLISTS.filter(p=>p.app===id&&!p.auto).reduce((a,p)=>a+(D.pl[p.id]||[]).filter(e=>e.at>seen).length,0)}return _ab(id)}}
+
+/* ---- seasons ---- */
+THEMES.push('Holiday');LYR.Holiday=['snow on the skyline, you on my mind','all I want is the lights and you'];HOOKS.Holiday=['wrap me up in December','sleigh bells and city lights','home for the holidays'];
+const SEASONS=[
+  {m:0,ic:'🎆',n:'New Year, New You',d:'Skill training gives 50% more.'},
+  {m:1,ic:'💘',n:"Valentine's",d:'Love and Heartbreak songs stream 60% more.'},
+  {m:2,ic:'🌸',n:'Spring break',d:'Pop-up shows and busking pay 30% more.'},
+  {m:3,ic:'🏆',n:'Award buzz',d:'Run FYC campaigns in Business before next year\'s Golden Mics.'},
+  {m:4,ic:'🎓',n:'Festival lineups drop',d:'Festival applications open for summer.'},
+  {m:5,ic:'☀️',n:'Song of the Summer race',d:'Party and Freedom songs stream 50% more. Top summer song gets crowned in September.'},
+  {m:6,ic:'☀️',n:'Song of the Summer race',d:'Party and Freedom songs stream 50% more.'},
+  {m:7,ic:'☀️',n:'Song of the Summer race',d:'Last month to claim the summer.'},
+  {m:8,ic:'📚',n:'Back to school',d:'College campus busking draws twice the fans.'},
+  {m:9,ic:'🎃',n:'Halloween',d:'Posts get 50% more reach. Holiday songs can be written now.'},
+  {m:10,ic:'🛍',n:'Black Friday',d:'Merch sells twice as fast. Holiday songs start climbing.'},
+  {m:11,ic:'🎄',n:'Holiday season',d:'Holiday songs stream 3x every December, forever. Year-end lists drop.'}];
+const curMonth=()=>gameDate().getMonth();
+function seasonMult(s){const m=curMonth();let k=1;
+  if(m===1&&['Love','Heartbreak'].includes(s.theme))k*=1.6;
+  if(m>=5&&m<=7&&['Party','Freedom'].includes(s.theme))k*=1.5;
+  if(s.theme==='Holiday')k*=m===11?3:m===10?1.5:.35;return k}
+const seasonMerch=()=>curMonth()===10?2:1;
+{const _tr=A.train;A.train=function(d){const k=d.v,b=S.skills[k];const r=_tr(d);if(curMonth()===0&&S.skills[k]>b)S.skills[k]=Math.min(100,S.skills[k]+(S.skills[k]-b)*.5);return r}}
+{const _bk=A.busk;A.busk=function(d){const m=S.money,f=S.fans;const r=_bk(d);const mo=curMonth();if(mo===2&&S.money>m)S.money+=Math.round((S.money-m)*.3);if(mo===8&&/Campus/.test(BUSK[+UI.busk].n)&&S.fans>f)addFans((S.fans-f));return r}}
+{const _po=makePost;makePost=function(){const k=UI.social,f=S.social[k].f;const r=_po();if(curMonth()===9&&S.social[k].f>f)S.social[k].f+=Math.round((S.social[k].f-f)*.5);return r}}
+function calendarCard(){const m=curMonth(),cur=SEASONS[m];
+  return `<div class="section"><div class="between"><h2>Season calendar</h2><span class="muted">${fmtDate()}</span></div>
+  <div class="card"><div class="between"><div><span class="label">This month</span><h3>${cur.ic} ${esc(cur.n)}</h3></div></div><p>${esc(cur.d)}</p>
+  <div class="cal">${SEASONS.map(s=>`<div class="calm ${s.m===m?'on':''}"><i>${s.ic}</i><b>${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][s.m]}</b><small>${esc(s.n)}</small></div>`).join('')}</div>
+  ${Object.keys(S.sots).length?`<small class="muted">Songs of the Summer: ${Object.entries(S.sots).map(([y,t])=>`Y${y} "${esc(t)}"`).join(' · ')}</small>`:''}</div></div>`}
+function seasonWeek(r){const m=curMonth(),d=gameDate();
+  // track summer streams
+  if(m>=5&&m<=7)S.songs.forEach(s=>{if(s.status==='released')s.summer=(s.summer||0)+s.week});
+  if(m===8&&d.getDate()<=7&&!S.sots[year()]){const best=S.songs.filter(s=>s.summer).sort((a,b)=>b.summer-a.summer)[0];const rv=S.rivals.slice().sort((a,b)=>b.fans-a.fans)[0];
+    if(best){const rvS=rv?rv.fans*13*1.2:0;if(best.summer>rvS){S.sots[year()]=best.title;const g=addFans(S.fans*.06+2000);log(`"${best.title}" is the Song of the Summer! +${fmt(g)} fans.`,'big');r.ev.push(`Song of the Summer: "${best.title}"`);confetti();S.legend.sots=1}else{log(`${rv.name} won Song of the Summer. Your "${best.title}" came close.`,'bad')}}
+    S.songs.forEach(s=>s.summer=0)}
+}
+
+/* ---- side jobs ---- */
+const JOBS=[
+  {id:'barista',n:'Barista shift',ic:'☕',e:20,pay:[60,120],d:'Steady tips. Regulars sometimes ask about your music.',disc:.04},
+  {id:'delivery',n:'Delivery driver',ic:'🛵',e:20,pay:[70,150],d:'Easy money if you have wheels.',disc:.02},
+  {id:'teacher',n:'Music lessons',ic:'🎹',e:20,pay:[80,190],sk:'songwriting',d:'Teach kids. Songwriting up a little.',disc:.03},
+  {id:'wedding',n:'Wedding singer',ic:'💍',e:25,pay:[150,400],sk:'vocals',d:'Big pay on weekends. Vocals up a little.',disc:.06},
+  {id:'dj',n:'Bar DJ night',ic:'🎧',e:20,pay:[100,260],sk:'production',d:'Spin records till 2am. Production up.',disc:.05},
+  {id:'session',n:'Session musician',ic:'🎸',e:25,pay:[120,320],sk:'instrument',d:'Play on other artists\' records.',disc:.07},
+  {id:'backup',n:'Backup vocalist',ic:'🎤',e:25,pay:[220,560],sk:'vocals',lv:2,d:'Sing behind a touring star.',disc:.1}];
+function jobPay(j){return Math.round(rnd(j.pay[0],j.pay[1])*(1+Math.min(S.level,4)*.25))}
+function jobsCard(){return `<div class="section"><div class="between"><h2>Side jobs</h2><span class="muted">${S.jobsDone} shifts worked</span></div><p class="muted">Pay the rent before the music does. Each shift has a small chance of getting you discovered.${S.level>=5?' You are famous now, so expect to be recognized.':''}</p>
+  <div class="grid">${JOBS.map(j=>{const lock=j.lv&&S.level<j.lv;return `<div class="card"><h3>${j.ic} ${esc(j.n)}</h3><small class="muted">${esc(j.d)}</small><div class="between"><span class="num">${cash(Math.round(j.pay[0]*(1+Math.min(S.level,4)*.25)))}–${cash(Math.round(j.pay[1]*(1+Math.min(S.level,4)*.25)))}</span><button class="btn sm" data-a="job" data-v="${j.id}" ${lock?'disabled':''}>${lock?lockTxt(j.lv):'Work · '+j.e+'E'}</button></div></div>`}).join('')}</div></div>`}
+A.job=d=>{const j=JOBS.find(x=>x.id===d.v);if(!j||(j.lv&&S.level<j.lv))return;if(!spend(j.e))return;const p=jobPay(j);S.money+=p;S.stats.earned+=p;S.jobsDone++;if(j.sk)S.skills[j.sk]=Math.min(100,S.skills[j.sk]+.5);S.stress=clamp((S.stress||0)+3,0,100);
+  let msg=`${j.n}: earned ${cash(p)}.`;
+  if(S.level>=5&&Math.random()<.5){S.hype=clamp(S.hype+4,0,100);msg+=' Customers recognized you and posted about it. Hype +4.'}
+  else if(Math.random()<j.disc){const r=Math.random();if(r<.4){const g=addFans(200+S.fans*.05);msg+=` Someone filmed you and it spread. +${fmt(g)} fans!`}else if(r<.75){S.nextProd={n:pick(PRODS).n,bonus:5,genre:'',type:'prod'};msg+=' A producer heard you and offered a free session. Your next song gets a boost.'}else{S.hype=clamp(S.hype+10,0,100);msg+=' A music blogger wrote about you. Hype +10.'}log(msg,'good')}
+  toast(msg)};
+SCENE_ON.job=d=>({k:d.v==='dj'||d.v==='wedding'?'club':d.v==='session'?'studio':'street',cap:(JOBS.find(j=>j.id===d.v)||{}).n,pose:d.v==='wedding'||d.v==='backup'?'perform':d.v==='session'?'busk':'idle',fill:.4});
+{const _pa=planActs;planActs=function(){return [..._pa(),...JOBS.filter(j=>!j.lv||S.level>=j.lv).map(j=>({g:'Side jobs',a:'job',v:j.id,ic:j.ic,l:j.n,e:j.e,d:j.d}))]}}
+
+/* ---- producer & songwriter marketplace ---- */
+const PRODS=[['Max Volta','Pop'],['Lil Metronome','Hip-Hop'],['Nova Keys','R&B'],['DJ Sable','EDM'],['Kenji Kaze','K-Pop'],['Rhea Synth','Pop'],['Boone Hollow','Country'],['Static Saints','Rock'],['Marisol Beat','Latin'],['Quinn Fader','Indie'],['Atlas 808','Hip-Hop'],['Velvet Pulse','R&B'],['Juno Tracks','EDM'],['Hayes Brothers','Rock'],['Sora Lee','K-Pop']].map(([n,g],i)=>({n,genre:g,tier:1+i%5,type:'prod'}));
+const WRITERS=[['Ellie Quill','Pop'],['Dante Rhymes','Hip-Hop'],['June Arbor','Country'],['Kai Moon','K-Pop'],['Rosa Vega','Latin'],['Theo Pen','Indie'],['Ivy Hart','R&B'],['Miles Verse','Rock']].map(([n,g],i)=>({n,genre:g,tier:1+(i*2)%5,type:'writer'}));
+const TIERF=[0,800,4000,18000,70000,260000],TIERB=[0,4,7,10,14,19];
+function mkFee(p){let f=TIERF[p.tier]*(p.type==='writer'?.5:1);if(hotPick(p))f*=.7;return Math.round(f)}
+function hotPick(p){return (phash(p.n)+S.t)%7===0}
+function mkCard(p){const lock=S.level<p.tier*2-2,fit=p.genre===S.genre;const bonus=(p.type==='writer'?Math.round(TIERB[p.tier]*.75):TIERB[p.tier])+(fit?3:0);
+  return `<div class="card"><div class="between"><h3>${esc(p.n)}</h3>${hotPick(p)?'<span class="pill pink">Hot · 30% off</span>':''}</div><small class="muted">${'★'.repeat(p.tier)}${'☆'.repeat(5-p.tier)} · ${esc(p.genre)}${fit?' · <span class="good">your genre</span>':''}</small>
+  <div class="between"><span>+${bonus} quality${p.type==='writer'?` · takes ${10+p.tier*3}% of the song`:''}</span><span class="num">${cash(mkFee(p))}</span></div>
+  <button class="btn sm" data-a="book" data-v="${esc(p.n)}" ${lock?'disabled':''}>${lock?lockTxt(p.tier*2-2):S.nextProd&&S.nextProd.n===p.n?'Booked':'Book for next song'}</button></div>`}
+function marketCard(){const t=UI.mkt||'prod';return `<div class="section"><div class="between"><h2>Marketplace</h2>${S.nextProd?`<span class="pill gold">Booked: ${esc(S.nextProd.n)}</span>`:''}</div><p class="muted">Hire producers and songwriters for your next song (writing session or quick write). Bigger names cost more and add more quality. Songwriters are cheaper but take a cut of the song.</p>
+  <div class="chips"><button class="chip ${t==='prod'?'on':''}" data-a="mktTab" data-v="prod">Producers</button><button class="chip ${t==='writer'?'on':''}" data-a="mktTab" data-v="writer">Songwriters</button></div>
+  <div class="grid">${(t==='prod'?PRODS:WRITERS).slice().sort((a,b)=>(b.genre===S.genre)-(a.genre===S.genre)||a.tier-b.tier).map(mkCard).join('')}</div></div>`}
+Object.assign(A,{mktTab:d=>{UI.mkt=d.v},
+  book:d=>{const p=[...PRODS,...WRITERS].find(x=>x.n===d.v);if(!p)return;const fee=mkFee(p);if(S.money<fee){toast(`You need ${cash(fee)}.`);return}S.money-=fee;S.nextProd={n:p.n,genre:p.genre,type:p.type,bonus:p.type==='writer'?Math.round(TIERB[p.tier]*.75):TIERB[p.tier],cut:p.type==='writer'?(10+p.tier*3)/100:0};toast(`${p.n} is booked for your next song.`)}});
+function takeStudioBonus(){let b=S.oppBonus||0;S.oppBonus=0;const p=S.nextProd;if(p){b+=p.bonus+(p.genre===S.genre?3:0);S._credit=p;S.nextProd=null}return b}
+function applyCredit(s){const p=S._credit;if(!p)return;S._credit=null;if(p.type==='prod')s.prod=p.n;else{s.cowriter=p.n;s.cut=p.cut}toast(`${p.type==='prod'?'Produced':'Co-written'} by ${p.n}.`)}
+{const _w=writeSong;writeSong=function(...a){const s=_w(...a);applyCredit(s);return s}}
+{const _rs=releaseSingle;releaseSingle=function(s){const r=_rs(s);if(s.cut)s.share=(s.share??share())*(1-s.cut);stanRelease(s);return r}}
+
+/* ---- vices ---- */
+const VICES={party:{n:'Partying',ic:'🥳'},drink:{n:'Drinking',ic:'🍸'},gamble:{n:'Gambling',ic:'🎰'},shop:{n:'Spending',ic:'🛍'}};
+const viceLvl=v=>v>=85?'Crisis':v>=60?'Problem':v>=30?'Habit':v>5?'Casual':'None';
+Object.assign(DRAMA,{
+  vParty:{t:'After-party invite',b:()=>`The show is over and everyone is heading to a rooftop after-party. Your manager says you have an early start.`,opts:[
+    {l:'Go all night',cls:'pink',f:()=>{S.habits.party+=12;S.happy=clamp(S.happy+8,0,100);S.stress=clamp((S.stress||0)-10,0,100);S.health=clamp(S.health-6,0,100);if(Math.random()<.25){S.hype=clamp(S.hype+6,0,100);return 'Wild night. Photos leaked, and people loved them. Hype +6, but you feel rough.'}return 'You danced until sunrise. Happiness +8, health -6.'}},
+    {l:'Stay an hour, then leave',f:()=>{S.habits.party+=3;S.happy=clamp(S.happy+3,0,100);return 'You networked, then slipped out. Smart.'}},
+    {l:'Go home and rest',f:()=>{S.health=clamp(S.health+4,0,100);return 'Early night. Health +4.'}}]},
+  vDrink:{t:'Pre-show nerves',b:()=>`Big night ahead and your hands are shaking. Someone in the green room offers you a drink to take the edge off.`,opts:[
+    {l:'Take a couple of drinks',cls:'pink',f:()=>{S.habits.drink+=10;S.stress=clamp((S.stress||0)-12,0,100);if(Math.random()<S.habits.drink/150){imgAdj(-6);S.hype=clamp(S.hype-5,0,100);return 'You slurred a lyric on stage and it went around online. Image -6.'}return 'You felt looser on stage. Stress -12.'}},
+    {l:'Breathing exercises instead',f:()=>{S.stress=clamp((S.stress||0)-5,0,100);return 'It helped a little. Stress -5.'}}]},
+  vGamble:{t:'Casino night',b:()=>`You are in Vegas and a friend invites you to the high-roller tables.`,opts:[
+    {l:'Bet big',cls:'pink',f:()=>{S.habits.gamble+=15;const stake=Math.round(Math.min(S.money*.15,2e6));if(Math.random()<.4){S.money+=stake;return `You won ${cash(stake)}! The rush was incredible.`}S.money-=stake;return `You lost ${cash(stake)}. You want to win it back.`}},
+    {l:'Small bets for fun',f:()=>{S.habits.gamble+=3;const c=Math.round(Math.min(2000,S.money*.01));S.money-=c;return `Fun night. Down ${cash(c)}.`}},
+    {l:'Skip it',f:()=>'You watched a show instead.'}]},
+  vShop:{t:'Retail therapy',b:()=>`It has been a stressful week. A luxury store just opened a private shopping night for you.`,opts:[
+    {l:'Buy everything',cls:'pink',f:()=>{S.habits.shop+=12;const c=Math.round(S.money*rnd(.05,.12));S.money-=c;S.happy=clamp(S.happy+7,0,100);return `You spent ${cash(c)}. Happiness +7.`}},
+    {l:'One nice thing',f:()=>{const c=Math.round(Math.min(5000,S.money*.02));S.money-=c;S.happy=clamp(S.happy+3,0,100);return `A treat for ${cash(c)}.`}},
+    {l:'Not tonight',f:()=>'You saved your money.'}]},
+  vIntervene:{t:'Intervention',b:x=>`Your family, friends and team sit you down. They are worried about your ${VICES[x].n.toLowerCase()}. It is hurting your health, your money and your music.`,opts:[
+    {l:'Go to rehab (4 weeks)',cls:'pink',f:x=>{const c=Math.round(20000+S.money*.02);S.money-=c;Object.keys(S.habits).forEach(k=>S.habits[k]=Math.round(S.habits[k]*.15));S.rehab=S.t+4;S.health=clamp(S.health+25,0,100);S.stress=10;imgAdj(4);bump('loyalty',4);log('You checked into rehab. Fans flooded you with support.','good');return `You checked in (${cash(c)}). For 4 weeks you will have less energy, then you come back stronger. Fans are sending love.`}},
+    {l:'Therapy and a support group',f:x=>{S.habits[x]=Math.round(S.habits[x]*.55);const c=8000;S.money-=c;S.stress=clamp((S.stress||0)-15,0,100);return `It is a start. ${VICES[x].n} is down, and you have people in your corner.`}},
+    {l:'I am fine',f:x=>{S.health=clamp(S.health-15,0,100);imgAdj(-10);bump('loyalty',-4);if(Math.random()<.4){S.fans*=.96;log('Tabloids ran a story about your struggles.','bad');return 'You pushed everyone away. The tabloids found out. Fans -4%, image -10.'}return 'You pushed everyone away. Health -15.'}}]},
+});
+function viceWeek(r){const V=S.habits;if(typeof S.vice==='number')V.party=Math.max(V.party,S.vice);
+  if(S.rehab&&S.t<S.rehab){S.energy=Math.min(S.energy,Math.round(maxEnergy()*.5));return}
+  if(S.rehab&&S.t>=S.rehab){S.rehab=0;S.comeback=Math.max(S.comeback,6);log('You finished rehab. Your comeback starts now: next release gets a boost.','big');r.ev.push('Finished rehab')}
+  let tot=0;for(const k in V){if(V[k]>=30)V[k]=Math.min(100,V[k]+.8);else V[k]=Math.max(0,V[k]-1.2);tot+=V[k]}
+  if(V.party+V.drink>40){S.health=clamp(S.health-(V.party+V.drink)/40,0,100);S.readiness*=.92}
+  if(V.gamble>30){const l=Math.round(Math.min(S.money*V.gamble/4000,5e5));if(l>0){S.money-=l;r.ev.push(`Gambling losses: ${cash(l)}`)}}
+  if(V.shop>30){const l=Math.round(Math.min(S.money*V.shop/5000,3e5));if(l>0){S.money-=l;r.ev.push(`Spending spree: ${cash(l)}`)}}
+  if(tot>80&&Math.random()<tot/900){imgAdj(-5);log('A gossip site posted about your nights out.','bad')}
+  for(const k in V){if(V[k]>=60&&!S.habitWarn[k]){S.habitWarn[k]=1;openModal('Your manager is worried',`<p>Your ${VICES[k].n.toLowerCase()} has become a problem. It is costing you health and money. Check the Habits section in Personal for ways to get help.</p><button class="btn" data-a="closeModal">OK</button>`)}
+    if(V[k]>=85&&!S.dramaQ){choice('vIntervene',k);S.habitWarn[k]=1;break}
+    if(V[k]<40)S.habitWarn[k]=0}
+  if(Math.random()<.11+(S.stress||0)/700){const pool=[];if(S.stats.gigs>3)pool.push('vParty','vDrink');if(S.money>2e4)pool.push('vGamble');if(S.money>5000)pool.push('vShop');if(S.level>=2&&pool.length)choice(pick(pool))}
+}
+function habitsCard(){const V=S.habits,any=Object.values(V).some(v=>v>=30);
+  return `<div class="section"><div class="between"><h2>Habits</h2>${S.rehab&&S.t<S.rehab?`<span class="pill">In rehab · ${S.rehab-S.t} wk left</span>`:''}</div><p class="muted">Fame comes with temptations. Habits grow on their own once they pass 30 and hurt your health, money and image. Getting help early is cheaper.</p>
+  <div class="card">${Object.entries(VICES).map(([k,v])=>`<div><div class="between"><span>${v.ic} ${v.n}</span><span class="${V[k]>=60?'bad':V[k]>=30?'goldc':'muted'}">${viceLvl(V[k])}</span></div>${meter(V[k],100,V[k]>=60?'pink':'')}</div>`).join('')}
+  <div class="row"><button class="btn sm ghost" data-a="vHelp" data-v="group">Support group · 10E</button><button class="btn sm ghost" data-a="vHelp" data-v="therapy">Therapy · ${cash(1500+S.level*500)}</button><button class="btn sm pink" data-a="vHelp" data-v="rehab" ${any?'':'disabled'}>Rehab (4 weeks)</button></div>
+  <small class="muted">This is part of the game, but if you or someone you know is struggling for real, help is out there. In the US you can call or text 988, or the SAMHSA helpline at 1-800-662-4357.</small></div></div>`}
+A.vHelp=d=>{if(d.v==='group'){if(!spend(10))return;for(const k in S.habits)S.habits[k]=Math.max(0,S.habits[k]-6);S.stress=clamp((S.stress||0)-5,0,100);toast('The group helped. All habits down a little.')}
+  else if(d.v==='therapy'){const c=1500+S.level*500;if(S.money<c){toast(`You need ${cash(c)}.`);return}S.money-=c;for(const k in S.habits)S.habits[k]=Math.max(0,S.habits[k]-10);S.stress=clamp((S.stress||0)-15,0,100);S.happy=clamp(S.happy+4,0,100);toast('Good session. Habits down, stress down.')}
+  else{const k=Object.keys(S.habits).sort((a,b)=>S.habits[b]-S.habits[a])[0];DRAMA.vIntervene.opts[0].f(k);toast('You checked into rehab. 4 weeks of recovery.')}};
+
+/* ---- stan culture, communities and fan wars (Chirp) ---- */
+const STAN_POSTS=['streaming party tonight, 9pm, bring your playlists','we are NOT letting {rival} outsell us this week','{stage} really said "thank you" in the story, I am crying','fancam thread 🧵','HAPPY {stage} DAY','the vocals on the new one... we are so blessed','reminder: buy on iTones, stream on Streamify, request on radio','who else is going to the tour?? section 104 gang','{stage} outfit last night 😭','we hit {n} followers, thank you {fandom}'];
+function community(){return Math.round(S.fans*.035*(.5+(S.loyalty||50)/100)+20)}
+function stanAccts(){const c=community(),st=S.stage.replace(/\s+/g,'');return [[`${st}Updates`,'News and updates',.4],[`${S.fandom.replace(/\s+/g,'')}HQ`,'The official fan base',.3],[`${st}Charts`,'Chart and streaming data',.18],[`daily${st.toLowerCase()}`,'A new photo every day',.12]].map(([h,d,f])=>({h:'@'+h,d,f:Math.round(c*f*2.4)}))}
+function stanView(){const W=S.stan.war,rv=W?S.rivals.find(r=>r.id===W.rival):null;
+  return `<div class="pcard"><div class="between"><h3>${esc(S.fandom)} Community</h3><span class="num">${fmt(community())} members</span></div><small class="muted">Your official fan community on Chirp. Post here to raise loyalty. Stans organise streaming parties when you release music.</small>
+    <button class="btn sm" data-a="commPost">Post in community · 3E</button></div>
+  ${W&&rv?`<div class="pcard" style="border:1px solid rgba(248,113,113,.4)"><div class="between"><h3>⚔ Fan war: ${esc(S.fandom)} vs ${esc(rv.name)} fans</h3><span class="bad">${W.left} wk</span></div>${meter(W.heat,100,'pink')}<small class="muted">Wars bring hype and loyalty, but they hurt your image.</small>
+    <div class="row"><button class="btn sm ghost" data-a="war" data-v="peace">Call for peace</button><button class="btn sm ghost" data-a="war" data-v="silent">Stay silent</button><button class="btn sm pink" data-a="war" data-v="fuel">Fuel it</button></div></div>`:''}
+  <div class="pcard"><h3>Fan accounts</h3>${stanAccts().map(a=>`<div class="between"><span><b>${esc(a.h)}</b><br><small class="muted">${esc(a.d)}</small></span><span class="num">${fmt(a.f)}</span></div>`).join('')}</div>
+  <div class="pcard"><h3>Community feed</h3>${(S.stan.posts.length?S.stan.posts:[{u:stanAccts()[0].h,x:'welcome to the community!',t:S.t}]).slice(0,12).map(p=>`<div class="post"><div class="ph">${npcAv(p.u.slice(1),30)}<div><b>${esc(p.u)}</b> <small>${S.t-p.t<=0?'this week':(S.t-p.t)+'w ago'}</small></div></div><div>${esc(p.x)}</div>${p.me?'<span class="pill pink">You posted</span>':''}</div>`).join('')}</div>`}
+function stanPost2(){const rv=pick(S.rivals)||{name:'the haters'};S.stan.posts.unshift({u:pick(stanAccts()).h,x:pick(STAN_POSTS).replace('{stage}',S.stage).replace('{rival}',rv.name).replace('{fandom}',S.fandom).replace('{n}',fmt(community())),t:S.t});S.stan.posts=S.stan.posts.slice(0,30)}
+function stanRelease(s){if(community()>1500&&(S.loyalty||0)>45){s.boost=Math.max(s.boost||0,1);S.stan.parties++;stanPost2();S.stan.posts[0].x=`STREAMING PARTY for "${s.title}" starts NOW 🎉`;toast(`${S.fandom} threw a streaming party for "${s.title}"!`)}}
+function stanWeek(r){if(Math.random()<.7)stanPost2();const W=S.stan.war;
+  if(W){W.left--;S.hype=clamp(S.hype+2+W.heat/40,0,100);bump('loyalty',.8);imgAdj(-W.heat/50);if(W.left<=0||W.heat<=5){log(`The fan war with ${(S.rivals.find(x=>x.id===W.rival)||{}).name} fans cooled off.`);S.stan.war=null}}
+  else{const rv=S.rivals.filter(x=>x.heat>45).sort((a,b)=>b.heat-a.heat)[0];if(rv&&S.level>=2&&Math.random()<.12){S.stan.war={rival:rv.id,heat:ri(40,70),left:ri(3,5)};log(`Fan war! ${S.fandom} and ${rv.name}'s fans are fighting on Chirp.`,'bad');r.ev.push(`Fan war with ${rv.name}'s fans`)}}}
+Object.assign(A,{
+  commPost:()=>{if(!spend(3))return;bump('loyalty',1.5);S.stan.posts.unshift({u:'@'+S.stage.replace(/\s+/g,''),x:pick(['love you all, new music soon 🤍','thank you for everything','what song should open the tour?','I read all your posts 🥹']),t:S.t,me:1});addFans(community()*.01);toast('Your community went wild. Loyalty up.')},
+  war:d=>{const W=S.stan.war;if(!W)return;if(d.v==='peace'){S.stan.war=null;imgAdj(5);bump('loyalty',-1);toast('You asked fans to be kind. Image +5. The war ended.')}else if(d.v==='silent'){W.heat=Math.max(0,W.heat-15);toast('You stayed out of it. Things cooled a little.')}else{W.heat=Math.min(100,W.heat+20);S.hype=clamp(S.hype+10,0,100);imgAdj(-6);const rv=S.rivals.find(x=>x.id===W.rival);if(rv)rv.heat=clamp(rv.heat+10,0,100);toast('You fuelled it. Hype +10, image -6.')}}});
+APP_VIEW.chirp=function(){UI.social='chirp';const t=curTab('home');let b;
+  if(t==='home')b=mixedFeed('chirp').slice(0,30).map(x=>feedPost(x,'chirp')).join('')||'<div class="empty">Quiet on Chirp. Post something.</div>';
+  else if(t==='trend')b=`<div class="pcard"><h3>Trending</h3>${trends().map((x,i)=>`<div class="trend"><small class="muted">${i+1} · Trending in Music</small><b>${esc(x.t)}</b><small class="muted">${fmt(x.n)} chirps</small></div>`).join('')}</div>`;
+  else if(t==='stan')b=stanView();
+  else if(t==='new')b=composeHTML('chirp');
+  else b=profHead('chirp')+(S.social.chirp.posts.map(p=>postHTML(p,'chirp',true)).join('')||'<div class="empty">No chirps yet.</div>');
+  return appShell('Chirp',[['home','Home','⌂'],['trend','Explore','#'],['stan','Fans','★'],['new','Chirp','✎'],['me','Profile','◉']],b)};
+
+/* ---- collab requests ---- */
+Object.assign(DRAMA,{
+  collabReq:{t:'Collab request',b:x=>{const n=S.npcs.find(y=>y.name===x);const big=n&&n.power>S.fans*2;return `<b>${esc(x)}</b> wants to make a song with you. ${big?'They are bigger than you, so this could put you in front of their fans.':`They will pay you ${cash(collabFee(n||{power:1e5})*2)} for the feature.`}`},opts:[
+    {l:'Let\'s do it',cls:'pink',f:x=>{const n=S.npcs.find(y=>y.name===x);if(!n)return 'They moved on.';const big=n.power>S.fans*2;if(!big){S.money+=collabFee(n)*2}const s={id:S.nextId++,title:songTitle(),theme:pick(THEMES.slice(0,8)),q:songQuality(6),status:'recorded',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null,feat:n.name,featPower:n.power};S.songs.unshift(s);S.stats.written++;return `You recorded "${s.title}" ft. ${n.name}. It is in your Studio, ready to release.`}},
+    {l:'Pass',f:()=>'You politely passed.'}]},
+  rivalDuet:{t:'An unexpected call',b:x=>`<b>${esc(RV(x).name)}</b> reached out privately: "This beef is getting old. Want to make something together instead?"`,opts:[
+    {l:'Record a duet',cls:'pink',f:x=>{const rv=RV(x);rv.heat=0;rv.truce=1;const s={id:S.nextId++,title:pick(['Truce','Same Side','Olive Branch','Bury It','No More Smoke']),theme:'Freedom',q:songQuality(10),status:'recorded',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null,feat:rv.name,featPower:rv.fans*3};S.songs.unshift(s);S.hype=clamp(S.hype+18,0,100);imgAdj(6);log(`The duet nobody saw coming: "${s.title}" with ${rv.name}.`,'big');return `You and ${rv.name} recorded "${s.title}". The internet is losing it. Release it from your Studio.`}},
+    {l:'Keep the rivalry going',f:x=>{const rv=RV(x);rv.heat=clamp(rv.heat+10,0,100);return 'You left them on read. The beef continues.'}}]}});
+function collabWeek(){if(S.level<2||Math.random()>.09)return;const rv=S.rivals.find(r=>r.heat>40&&!r.truce);if(rv&&Math.random()<.3){choice('rivalDuet',rv.id);return}const n=pick(S.npcs.slice(0,20));choice('collabReq',n.name);S.dsp&&S.dsp.dms.unshift({id:S.nextId++,from:n.name,kind:'ind',text:'sent you a collab request 👀',t:S.t})}
+
+/* ---- PR ---- */
+function prCard(){const im=Math.round(S.image??60);
+  return `<div class="section"><div class="between"><h2>PR & image</h2><span class="${im>=70?'good':im<40?'bad':''}">Public image ${im}/100</span></div><p class="muted">Your public image affects brand deals, how hard scandals hit and how kindly the press treats you.</p>${meter(im,100,im<40?'pink':'good')}
+  <div class="grid">
+   <div class="card"><h3>Press release</h3><small class="muted">Announce what you are working on. Hype +6.</small><button class="btn sm" data-a="pr" data-v="release">Send · 5E · ${cash(500*(S.level+1))}</button></div>
+   <div class="card"><h3>Exclusive interview</h3><small class="muted">A sit-down with a big outlet. Charisma decides how it lands.</small><button class="btn sm" data-a="pr" data-v="interview">Do it · 15E</button></div>
+   <div class="card"><h3>PR stunt</h3><small class="muted">Big risk, big buzz. Pick a stunt.</small><button class="btn sm pink" data-a="pr" data-v="stunt">Plan a stunt · 10E</button></div>
+   <div class="card"><h3>Damage control</h3><small class="muted">A full campaign to fix your image after a scandal.</small><button class="btn sm" data-a="pr" data-v="damage" ${im>=70?'disabled':''}>Launch · ${cash(Math.round(3000+S.fans*.03))}</button></div>
+   <div class="card"><h3>Media training</h3><small class="muted">Each level makes scandals hurt 20% less (${S.prTrain}/3).</small><button class="btn sm" data-a="pr" data-v="train" ${S.prTrain>=3?'disabled':''}>Train · 20E · ${cash(10000*(S.prTrain+1))}</button></div>
+   <div class="card"><h3>PR firm</h3><small class="muted">Image slowly improves every week. ${cash(2000+S.level*3000)} a week.</small><button class="btn sm ${S.prFirm?'ghost':''}" data-a="pr" data-v="firm">${S.prFirm?'Let them go':'Hire'}</button></div>
+  </div></div>`}
+Object.assign(DRAMA,{prStunt:{t:'Pick a PR stunt',b:()=>'Your team pitched four ideas.',opts:[
+  {l:'Tease a surprise drop',f:()=>{S.hype=clamp(S.hype+15,0,100);return 'Fans are refreshing every hour. Hype +15.'}},
+  {l:'Fake dating rumor with a celeb',cls:'pink',f:()=>{S.hype=clamp(S.hype+20,0,100);imgAdj(-6);bump('loyalty',-2);if(Math.random()<.3){imgAdj(-8);return 'Someone leaked that it was fake. Image -14 in total, but hype +20.'}return 'Everyone is talking. Hype +20, image -6.'}},
+  {l:'Charity livestream',f:()=>{const c=Math.round(2000+S.fans*.01);S.money-=c;imgAdj(9);bump('loyalty',3);return `You raised money for a good cause (${cash(c)} of your own). Image +9, loyalty +3.`}},
+  {l:'Billboard in Times Square',f:()=>{const c=50000;if(S.money<c)return 'You cannot afford it yet.';S.money-=c;const g=addFans(S.fans*.03+500);S.hype=clamp(S.hype+10,0,100);return `It went viral. +${fmt(g)} fans, hype +10.`}}]}});
+A.pr=d=>{const v=d.v;
+  if(v==='release'){if(!spend(5,500*(S.level+1)))return;S.hype=clamp(S.hype+6,0,100);imgAdj(1);toast('Press release sent. Hype +6.')}
+  else if(v==='interview'){if(!spend(15))return;if(Math.random()<.45+S.skills.charisma/200){const g=addFans(S.fans*.015+100);imgAdj(4);toast(`Great interview. +${fmt(g)} fans, image +4.`)}else{imgAdj(-4);toast('You said something awkward and it got clipped. Image -4.')}}
+  else if(v==='stunt'){if(!spend(10))return;choice('prStunt')}
+  else if(v==='damage'){const c=Math.round(3000+S.fans*.03);if(S.money<c){toast(`You need ${cash(c)}.`);return}S.money-=c;imgAdj(14);if(S.era.id==='hate')S.era.prog.apology=1;toast('Damage control worked. Image +14.')}
+  else if(v==='train'){if(S.prTrain>=3)return;if(!spend(20,10000*(S.prTrain+1)))return;S.prTrain++;S.skills.charisma=Math.min(100,S.skills.charisma+1.5);toast('Media training done. Scandals hurt less now.')}
+  else if(v==='firm'){S.prFirm=!S.prFirm;toast(S.prFirm?'PR firm hired.':'PR firm let go.')}};
+SCENE_ON.pr=d=>d.v==='interview'||d.v==='release'?{k:'press',cap:d.v==='interview'?'Exclusive interview':'Press release',pose:'press'}:null;
+function prWeek(r){if(S.prFirm){const c=2000+S.level*3000;S.money-=c;r.exp&&(r.exp['PR firm']=(r.exp['PR firm']||0)+c);imgAdj(1.5)}S.image=clamp((S.image??60)+((60-(S.image??60))*.02),0,100)}
+
+/* ---- own record label ---- */
+const LBL_MIN=5e6,LBL_LV=6;
+function prospect(){const g=pick(Object.keys(GENRES)),pot=ri(25,95);return {id:S.nextId++,name:rName().split(' ')[0]+' '+pick(['Rae','Vex','Nova','Kid','Saint','Echo','Blue','Jett','Lux','Moss']),genre:g,pot,fans:ri(500,25000),ask:Math.round(pot*pot*120+ri(2e4,9e4)),stars:clamp(Math.round(pot/20+rnd(-.8,.8)),1,5)}}
+function labelCard(){const L=S.mylabel;
+  if(!L){const ok=S.level>=LBL_LV&&S.money>=LBL_MIN;return `<div class="section"><h2>Your record label</h2><div class="card"><p>Start your own label, sign new artists and turn them into stars. You earn a cut of everything they make.</p><ul class="hl"><li>Requires Level ${LBL_LV+1} (${LEVELS[LBL_LV].n}) <span class="${S.level>=LBL_LV?'good':'bad'}">${S.level>=LBL_LV?'✓':'✗'}</span></li><li>Requires ${cash(LBL_MIN)} to launch <span class="${S.money>=LBL_MIN?'good':'bad'}">${S.money>=LBL_MIN?'✓':'✗'}</span></li></ul>
+    <label class="field"><span class="label">Label name</span><input type="text" id="lbl-name" maxlength="30" placeholder="${esc(S.stage)} Records"></label><button class="btn" data-a="lblLaunch" ${ok?'':'disabled'}>Launch label · ${cash(LBL_MIN)}</button></div></div>`}
+  const cap=3+Math.floor(L.rep/25),val=labelValue();
+  return `<div class="section"><div class="between"><h2>${esc(L.name)}</h2><span class="muted">Valued at ${cash(val)}</span></div>
+  <div class="card"><div class="kv"><div><span class="label">Reputation</span><b>${Math.round(L.rep)}</b></div><div><span class="label">Roster</span><b>${L.roster.length}/${cap}</b></div><div><span class="label">Earned</span><b>${cash(L.earned)}</b></div><div><span class="label">Hits</span><b>${L.hits}</b></div></div>
+   <div class="row"><button class="btn sm ghost" data-a="lblScout">Scout new talent · ${cash(25000)}</button><button class="btn sm ghost" data-a="lblSell">Sell the label for ${cash(val)}</button></div></div>
+  <h3>Roster</h3>${L.roster.length?`<div class="grid">${L.roster.map(a=>`<div class="card"><div class="between"><h3>${esc(a.name)}</h3><span class="pill">${esc(a.genre)}</span></div><small class="muted">${'★'.repeat(a.stars)}${'☆'.repeat(5-a.stars)} potential · ${fmt(a.fans)} fans · ${a.hits} hits</small><small>Last week: ${cash(a.rev||0)} for you</small>
+     <div class="row"><button class="btn sm ${a.mkt?'':'ghost'}" data-a="lblMkt" data-id="${a.id}">Marketing: ${['Off','Low','Mid','Max'][a.mkt]}</button><button class="btn sm ghost" data-a="lblFeat" data-id="${a.id}">Feature them · 25E</button><button class="btn sm ghost" data-a="lblDrop" data-id="${a.id}">Drop</button></div></div>`).join('')}</div>`:'<div class="empty">No artists yet. Sign someone below.</div>'}
+  <h3>Prospects</h3><div class="grid">${L.pool.map(p=>`<div class="card"><div class="between"><h3>${esc(p.name)}</h3><span class="pill">${esc(p.genre)}</span></div><small class="muted">Scouts say ${'★'.repeat(p.stars)}${'☆'.repeat(5-p.stars)} · ${fmt(p.fans)} fans</small><button class="btn sm" data-a="lblSign" data-id="${p.id}" ${L.roster.length>=cap?'disabled':''}>Sign · ${cash(p.ask)}</button></div>`).join('')||'<div class="empty">Scout for new talent.</div>'}</div></div>`}
+function labelValue(){const L=S.mylabel;return Math.round(LBL_MIN*.5+L.rep*4e4+sum(L.roster,a=>a.fans*3)+L.earned*.5)}
+function myLabelWeek(r2){const L=S.mylabel;if(!L)return;let rev=0;
+  L.roster.forEach(a=>{const mk=[0,.4,.8,1.3][a.mkt],cost=[0,2e4,6e4,1.5e5][a.mkt];S.money-=cost;
+    a.fans=Math.round(a.fans*(1+.012*a.pot/50*(1+mk))+a.pot*6*(1+mk));
+    if(S.t-(a.last||0)>=5&&Math.random()<.35){a.last=S.t;const hit=Math.random()<a.pot/140+mk*.08+L.rep/500;if(hit){a.hits++;L.hits++;a.fans=Math.round(a.fans*1.35+a.pot*400);L.rep=clamp(L.rep+4,0,100);log(`${L.name}: ${a.name}'s new single is a hit!`,'big');r2.ev.push(`${a.name} (your label) scored a hit`);if(a.fans>=1e6)S.legend.labelstar=1}else{L.rep=clamp(L.rep-1,0,100);log(`${L.name}: ${a.name}'s single flopped.`,'bad')}}
+    a.rev=Math.round(a.fans*.32*.55);rev+=a.rev});
+  S.money+=rev;L.earned+=rev;if(rev)r2.inc&&(r2.inc['Your label']=(r2.inc['Your label']||0)+rev);
+  if(S.t%4===0)L.pool=[prospect(),prospect(),prospect()]}
+Object.assign(A,{
+  lblLaunch:()=>{if(S.level<LBL_LV||S.money<LBL_MIN)return;const nm=(($('#lbl-name')||{}).value||'').trim()||S.stage+' Records';S.money-=LBL_MIN;S.mylabel={name:nm,rep:30,roster:[],pool:[prospect(),prospect(),prospect()],earned:0,hits:0,founded:S.t};log(`You launched your own label: ${nm}.`,'big');confetti();toast(`${nm} is open for business!`)},
+  lblScout:()=>{const L=S.mylabel;if(S.money<25000){toast('You need $25K.');return}S.money-=25000;L.pool=[prospect(),prospect(),prospect(),prospect()];toast('Your scouts found new talent.')},
+  lblSign:d=>{const L=S.mylabel,p=L.pool.find(x=>x.id==d.id);if(!p)return;if(S.money<p.ask){toast(`You need ${cash(p.ask)}.`);return}S.money-=p.ask;L.pool=L.pool.filter(x=>x!==p);L.roster.push(Object.assign(p,{mkt:1,hits:0,last:S.t-3}));toast(`You signed ${p.name}!`)},
+  lblMkt:d=>{const a=S.mylabel.roster.find(x=>x.id==d.id);if(a)a.mkt=(a.mkt+1)%4},
+  lblDrop:d=>{const L=S.mylabel;L.roster=L.roster.filter(x=>x.id!=d.id);L.rep=clamp(L.rep-2,0,100)},
+  lblFeat:d=>{const a=S.mylabel.roster.find(x=>x.id==d.id);if(!a||!spend(25))return;const s={id:S.nextId++,title:songTitle(),theme:pick(THEMES.slice(0,8)),q:songQuality(4),status:'recorded',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null,feat:a.name,featPower:a.fans*2};S.songs.unshift(s);a.fans=Math.round(a.fans*1.1+S.fans*.01);toast(`Recorded "${s.title}" ft. ${a.name}. Both of you gain from it.`)},
+  lblSell:()=>{const v=labelValue();if(!confirm(`Sell ${S.mylabel.name} for ${cash(v)}?`))return false;S.money+=v;log(`You sold ${S.mylabel.name} for ${cash(v)}.`,'big');S.mylabel=null}});
+
+/* ---- story arcs and legend goals ---- */
+const STORIES=[
+  {id:'residency',n:'Vegas residency',lv:6,weeks:8,offer:()=>`A Las Vegas casino wants you for an 8-week residency. Huge weekly paychecks, a stage built just for you, but it is exhausting.`,go:'Sign the residency',week:r=>{const p=Math.round(4e5+S.fans*.08);S.money+=p;r.inc['Vegas residency']=(r.inc['Vegas residency']||0)+p;S.stress=clamp((S.stress||0)+4,0,100);if(Math.random()<.15)choice('vGamble')},done:()=>{S.legend.residency=1;addFans(S.fans*.03);return 'Your Vegas residency wrapped. Sold out every night.'},sc:{k:'theater',pose:'perform',fill:1,cap:'Vegas residency'}},
+  {id:'halftime',n:'Halftime show',lv:7,weeks:3,when:()=>[0,1].includes(curMonth()),offer:()=>`The biggest game of the year wants you for the halftime show. 100 million viewers. You have 3 weeks to prepare.`,go:'Say yes',week:()=>{S.readiness=Math.min(100,S.readiness+20)},done:()=>{const sc=showScore()+(S.readiness>60?10:0);const g=addFans(S.fans*(sc>75?.15:.07)+1e5);S.hype=100;S.legend.halftime=1;confetti();return sc>75?`A legendary halftime show. +${fmt(g)} fans and every song is streaming again.`:`A solid halftime show. +${fmt(g)} fans.`},sc:{k:'stadium',pose:'perform',fill:1,cap:'Halftime show'}},
+  {id:'doc',n:'Documentary',lv:6,weeks:4,offer:()=>`A streaming giant wants to film a documentary about your life. Four weeks of cameras everywhere.`,go:'Start filming',week:()=>{S.stress=clamp((S.stress||0)+3,0,100)},done:()=>{const honest=Object.values(S.habits).some(v=>v>40);const g=addFans(S.fans*.06+20000);S.songs.forEach(s=>{if(s.status==='released')s.boost=Math.max(s.boost||0,1)});imgAdj(honest?6:3);bump('loyalty',5);S.legend.doc=1;return `Your documentary is the #1 show on streaming. +${fmt(g)} fans and your catalog is surging.${honest?' Fans loved how open you were about your struggles.':''}`},sc:{k:'press',pose:'press',cap:'Documentary shoot'}},
+  {id:'memoir',n:'Memoir',lv:5,weeks:3,offer:()=>`A publisher offers a big advance for your memoir.`,go:'Write it',week:()=>{S.skills.songwriting=Math.min(100,S.skills.songwriting+.6)},done:()=>{const m=Math.round(2e5+S.fans*.05);S.money+=m;addFans(S.fans*.02);return `Your memoir is a bestseller. ${cash(m)} in royalties.`}},
+  {id:'brand',n:'Fashion & fragrance line',lv:6,weeks:2,cost:1e6,offer:()=>`Launch your own fashion and fragrance line for ${cash(1e6)}. It pays every week after launch, more if your image is good.`,go:'Invest $1M',start:()=>{if(S.money<1e6)return false;S.money-=1e6},done:()=>{S.brandLine={since:S.t};return 'Your line launched and sold out in hours. It now pays every week.'}},
+  {id:'hiatus',n:'Hiatus and comeback',lv:5,weeks:6,cond:()=>(S.stress||0)>55||S.health<50,offer:()=>`You are burnt out. Your team suggests a 6-week hiatus. Fans will miss you, but your comeback will hit harder.`,go:'Take a break',week:()=>{S.health=clamp(S.health+8,0,100);S.stress=clamp((S.stress||0)-10,0,100);S.happy=clamp(S.happy+4,0,100);S.energy=Math.round(maxEnergy()*.4)},done:()=>{S.comeback=12;S.hype=80;return 'You are back. Hype is at 80 and your next release gets a big comeback boost.'}},
+  {id:'mentor',n:'Mentor a rookie',lv:5,weeks:4,offer:()=>`A talented 17-year-old busker sent you a demo and asks you to mentor them.`,go:'Mentor them',week:()=>{S.happy=clamp(S.happy+2,0,100)},done:()=>{imgAdj(5);if(S.mylabel){S.mylabel.roster.push(Object.assign(prospect(),{pot:90,stars:5,mkt:1,hits:0,last:S.t,name:'Little '+pick(['Wren','Sky','June','Ash'])}));return 'Your mentee signed to your label. Big things ahead.'}addFans(S.fans*.01);return 'Your mentee thanked you in their first viral video. Image +5.'}},
+  {id:'record',n:'World record show',lv:7,weeks:2,offer:()=>`Your team wants to break the record for the biggest single-artist concert ever. It costs ${cash(3e6)} to stage.`,go:'Go for the record',start:()=>{if(S.money<3e6)return false;S.money-=3e6},done:()=>{const ok=Math.random()<.55+S.readiness/300;if(ok){const g=addFans(S.fans*.1);S.money+=8e6;S.legend.record=1;confetti();return `World record broken! ${cash(8e6)} gross and +${fmt(g)} fans.`}S.money+=2e6;return 'So close! Attendance fell just short of the record.'},sc:{k:'stadium',pose:'cheer',fill:1,cap:'World record attempt'}},
+];
+Object.assign(DRAMA,{story:{t:'A big opportunity',b:x=>{const s=STORIES.find(y=>y.id===x);return `<b>${esc(s.n)}</b><br>${s.offer()}`},opts:[
+  {l:'Accept',cls:'pink',f:x=>{const s=STORIES.find(y=>y.id===x);if(s.start&&s.start()===false)return 'You cannot afford it right now. Maybe next time.';S.story={id:x,left:s.weeks};if(s.sc)UI.scene=s.sc;return `${s.n}: it begins. ${s.weeks} weeks to go.`}},
+  {l:'Not now',f:x=>{S.storyCd[x]=S.t+26;return 'Maybe later.'}}]}});
+function storyWeek(r){const st=S.story;
+  if(st){const s=STORIES.find(y=>y.id===st.id);if(s.week)s.week(r);st.left--;if(st.left<=0){const t=s.done();S.story=null;S.storyDone.push(s.id);log(t,'big');r.ev.push(t);openModal(s.n,`<p>${esc(t)}</p><button class="btn" data-a="closeModal">Amazing</button>`)}return}
+  if(Math.random()>.14)return;const ok=STORIES.filter(s=>S.level>=s.lv&&(!s.when||s.when())&&(!s.cond||s.cond())&&(S.storyCd[s.id]||0)<=S.t&&!(S.storyDone.includes(s.id)&&['halftime','doc','memoir','brand','record'].includes(s.id)));
+  if(ok.length)choice('story',pick(ok).id)}
+const LEGEND=[
+  ['billion','A song with 1 billion streams',()=>Math.max(0,...S.songs.map(s=>s.streams))>=1e9],
+  ['diamonds','3 Diamond albums',()=>S.albums.filter(a=>a.sales>=1e7).length>=3],
+  ['ones10','10 #1 singles',()=>S.stats.ones>=10],
+  ['awards10','10 Golden Mics',()=>S.stats.awards.length>=10],
+  ['billionaire','Earn $1 billion',()=>S.stats.earned>=1e9],
+  ['fans100','100 million fans',()=>S.fans>=1e8],
+  ['worlds3','3 world tours',()=>S.stats.worldTours>=3],
+  ['residency','Finish a Vegas residency',()=>S.legend.residency],
+  ['halftime','Headline a halftime show',()=>S.legend.halftime],
+  ['doc','Release a documentary',()=>S.legend.doc],
+  ['record','Break the concert world record',()=>S.legend.record],
+  ['sots','Win Song of the Summer',()=>S.legend.sots],
+  ['labelstar','Make a label signee a star (1M fans)',()=>S.legend.labelstar],
+  ['image','Reach a 90+ public image',()=>(S.image??0)>=90]];
+function legendWeek(r){LEGEND.forEach(([id,n,f])=>{if(!S.legend['g_'+id]&&f()){S.legend['g_'+id]=S.t;const m=Math.round(1e5+S.fans*.02);S.money+=m;addFans(S.fans*.01);log(`Legend goal: ${n}! +${cash(m)}.`,'big');r.ev.push(`Legend goal: ${n}`);toast(`🏆 Legend goal: ${n}`,'ach');confetti()}})}
+function legendCard(){const done=LEGEND.filter(([id])=>S.legend['g_'+id]).length,st=S.story,s=st&&STORIES.find(y=>y.id===st.id);
+  return `<div class="section"><div class="between"><h2>Legend goals</h2><span class="muted">${done}/${LEGEND.length} complete</span></div>
+  ${s?`<div class="card" style="border-color:rgba(167,139,250,.6)"><span class="label">Current story</span><h3>${esc(s.n)}</h3>${meter(s.weeks-st.left,s.weeks)}<small class="muted">${st.left} week${st.left>1?'s':''} to go</small></div>`:`<p class="muted">${S.level<5?'Big story events like residencies, documentaries and halftime shows start showing up at Level 6.':'Keep playing. Big story offers arrive every few months.'}</p>`}
+  <div class="card"><div class="list">${LEGEND.map(([id,n])=>`<div class="between"><span>${S.legend['g_'+id]?'🏆':'○'} ${esc(n)}</span>${S.legend['g_'+id]?'<span class="pill gold">Done</span>':''}</div>`).join('')}</div></div>
+  <div class="row"><button class="btn ghost sm" data-a="reel">▶ Watch your career reel</button></div></div>`}
+
+/* ---- retirement highlight reel ---- */
+function reelSlides(){const yrs=year(),top=S.songs.filter(s=>s.status==='released').sort((a,b)=>b.streams-a.streams);const alb=S.albums.slice().sort((a,b)=>b.sales-a.sales)[0];const big=S.log.filter(l=>l.kind==='big').slice(0,40).reverse();
+  const L=[{t:S.stage,s:`${yrs} year${yrs>1?'s':''} in music · ${S.genre}`,p:'cheer'}];
+  if(S.stats.written)L.push({t:`${fmt(S.stats.written)} songs written`,s:top[0]?`It all built to "${top[0].title}", ${fmt(top[0].streams)} streams`:'Every one of them a step up',p:'studio'});
+  if(alb)L.push({t:`"${alb.title}"`,s:`${fmt(alb.sales)} sold${cert(alb.sales)?' · '+cert(alb.sales):''}`,p:'trophy'});
+  if(S.stats.gigs)L.push({t:`${fmt(S.stats.gigs)} shows`,s:`${S.stats.tours} tours · ${S.stats.worldTours} world tours`,p:'perform'});
+  if(S.stats.ones)L.push({t:`${S.stats.ones} #1 hit${S.stats.ones>1?'s':''}`,s:'Top of the Hot 20',p:'cheer'});
+  if(S.stats.awards.length)L.push({t:`${S.stats.awards.length} Golden Mic${S.stats.awards.length>1?'s':''}`,s:S.stats.awards.slice(0,3).map(a=>a.cat).join(' · '),p:'trophy'});
+  big.slice(-4).forEach(l=>L.push({t:'Remember this?',s:l.text,p:pick(['press','cheer','perform'])}));
+  L.push({t:`${fmt(S.fans)} fans`,s:`${cash(S.stats.earned)} earned. Thank you, ${S.fandom}.`,p:'press'});
+  return L}
+function playReel(){const L=reelSlides();let i=0;const el=document.createElement('div');el.className='reel';document.body.appendChild(el);
+  const top=S.songs.filter(s=>s.status==='released').sort((a,b)=>b.streams-a.streams)[0];try{if(top)playSong(top)}catch(e){}
+  const show=()=>{const s=L[i];let pic='';try{pic=G3.ok?snap(S.look,s.p,{rot:.25}):''}catch(e){}el.innerHTML=`<div class="reel-in" style="background:radial-gradient(circle at 30% 20%,hsl(${(S.hue||280)+i*40} 70% 35%),#07060b 70%)">${pic?`<img src="${pic}" alt="">`:''}<div class="reel-t"><span class="label">${i+1} / ${L.length}</span><h1>${esc(s.t)}</h1><p>${esc(s.s)}</p></div><div class="reel-dots">${L.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div><button class="btn ghost sm reel-x" data-reelx="1">Close</button></div>`};
+  show();const iv=setInterval(()=>{i++;if(i>=L.length){clearInterval(iv);setTimeout(()=>el.remove(),5000);return}show()},3600);el.addEventListener('click',e=>{if(e.target.closest('[data-reelx]')){clearInterval(iv);el.remove()}})}
+A.reel=()=>{playReel();return false};
+{const _rc=retireCareer;retireCareer=function(...a){const r=_rc.apply(this,a);setTimeout(playReel,400);return r}}
+
+/* ---- photo mode ---- */
+const PH_POSES=[['idle','Stand'],['press','Wave'],['perform','Sing'],['cheer','Arms up'],['dance','Dance'],['trophy','Trophy'],['busk','Guitar']],PH_EXPR=[['smile','Smile'],['grin','Grin'],['wink','Wink'],['sing','Sing'],['surprised','Shocked'],['focus','Cool']],PH_FILT=[['none','None'],['warm','Warm'],['cool','Cool'],['bw','B&W'],['vintage','Vintage']];
+{const _cs=curScene;curScene=function(){const sc=_cs();return UI.photo?{...sc,pose:UI.photo.pose}:sc}}
+{const _eb=emoteBar;emoteBar=function(){if(!G3.ok)return '';if(!UI.photo)return _eb().replace('</div>',`<button class="emo" data-a="photoMode" aria-label="Photo mode">📸</button></div>`);const P=UI.photo,ch=(k,list)=>`<div class="chips">${list.map(([v,l])=>`<button class="chip ${P[k]===v?'on':''}" data-a="photoSet" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  return `<div class="photobar"><div class="row" style="justify-content:space-between"><b>📸 Photo mode</b><span class="muted" style="font-size:12px">Drag to turn</span></div>${ch('pose',PH_POSES)}${ch('expr',PH_EXPR)}${ch('filter',PH_FILT)}<div class="row"><button class="btn" data-a="photoSnap">Take photo</button><button class="btn ghost sm" data-a="photoMode">Done</button></div></div>`}}
+function phFilter(url,f,done){if(f==='none')return done(url);const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const g=c.getContext('2d');g.drawImage(im,0,0);const d=g.getImageData(0,0,c.width,c.height),p=d.data;
+  for(let i=0;i<p.length;i+=4){let r=p[i],gg=p[i+1],b=p[i+2];if(f==='bw'){const l=r*.3+gg*.59+b*.11;r=gg=b=l*1.05}else if(f==='warm'){r*=1.1;b*=.88}else if(f==='cool'){r*=.9;b*=1.12}else if(f==='vintage'){const l=r*.3+gg*.59+b*.11;r=l*1.07+25;gg=l*.95+12;b=l*.8}p[i]=Math.min(255,r);p[i+1]=Math.min(255,gg);p[i+2]=Math.min(255,b)}
+  g.putImageData(d,0,0);done(c.toDataURL('image/jpeg',.9))};im.src=url}
+Object.assign(A,{
+  photoMode:()=>{if(UI.photo){UI.photo=null;G3.mood=null}else{const sc=curScene();UI.photo={pose:sc.pose||'idle',expr:'smile',filter:'none'};setMood('smile',9999)}document.body.classList.toggle('photo-on',!!UI.photo)},
+  photoSet:d=>{UI.photo[d.k]=d.v;if(d.k==='expr')setMood(d.v,9999)},
+  photoSnap:()=>{if(!G3.ok)return false;G3.r.render(G3.scene,G3.cam);const raw=G3.r.domElement.toDataURL('image/jpeg',.92);sfx('ach');
+    phFilter(raw,UI.photo.filter,url=>{UI.lastPhoto=url;openModal('Your photo',`<img src="${url}" alt="Photo" style="width:100%;border-radius:12px"><small class="muted">On iPhone, press and hold the photo to save it to Photos.</small><div class="row"><a class="btn ghost sm" href="${url}" download="headliner-photo.jpg">Download</a><button class="btn sm" data-a="photoPost">Post to InstaPic</button><button class="btn sm ghost" data-a="photoPfp">Use as profile picture</button><button class="btn sm ghost" data-a="closeModal">Close</button></div>`);render()});return false},
+  photoPost:()=>{const id='m'+Date.now().toString(36);mediaPut(id,UI.lastPhoto);UI.postImg=id;UI.modal=null;UI.photo=null;document.body.classList.remove('photo-on');UI.tab='social';UI.app='insta';UI.appTab='new';UI.social='insta';toast('Photo attached. Add a caption and share.')},
+  photoPfp:()=>{readImage(dataURLtoFile(UI.lastPhoto),256,true,u=>{S.avatar=u;save();toast('Profile picture updated everywhere.');render()});UI.modal=null},
+});
+function dataURLtoFile(u){const [h,b]=u.split(',');const bin=atob(b),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new File([a],'photo.jpg',{type:h.match(/:(.*?);/)[1]})}
+
+/* ---- cloud save (private GitHub Gist) ---- */
+const CLOUD_DESC='Headliner cloud save';
+const ghTok=()=>{try{return localStorage.getItem('headliner_gh_token')||''}catch(e){return ''}};
+async function gh(path,opt={}){const r=await fetch('https://api.github.com'+path,Object.assign({},opt,{headers:Object.assign({'Authorization':'token '+ghTok(),'Accept':'application/vnd.github+json'},opt.body?{'Content-Type':'application/json'}:{})}));if(!r.ok)throw new Error(r.status===401?'That token was rejected. Check that it has the "gist" scope.':'GitHub error '+r.status);return r.json()}
+async function findGist(){let id='';try{id=localStorage.getItem('headliner_gist')||''}catch(e){}if(id)return id;const L=await gh('/gists?per_page=100');const g=L.find(x=>x.description===CLOUD_DESC);if(g){try{localStorage.setItem('headliner_gist',g.id)}catch(e){}return g.id}return ''}
+async function cloudSave(quiet){if(!ghTok()||!S)return;try{const content=JSON.stringify({v:1,at:Date.now(),S});const file=`slot-${S.slot||1}.json`;let id=await findGist();
+  if(id)await gh('/gists/'+id,{method:'PATCH',body:JSON.stringify({files:{[file]:{content}}})});else{const g=await gh('/gists',{method:'POST',body:JSON.stringify({description:CLOUD_DESC,public:false,files:{[file]:{content}}})});try{localStorage.setItem('headliner_gist',g.id)}catch(e){}}
+  try{localStorage.setItem('headliner_cloud_at',String(Date.now()))}catch(e){}if(!quiet)toast('Saved to the cloud ☁');UI.cloudErr='';}catch(e){UI.cloudErr=e.message;if(!quiet)toast('Cloud save failed: '+e.message)}if(!quiet)render()}
+async function cloudLoad(){try{const id=await findGist();if(!id){toast('No cloud save found yet.');return}const g=await gh('/gists/'+id);const files=Object.values(g.files).filter(f=>/^slot-\d\.json$/.test(f.filename));if(!files.length){toast('No cloud save found yet.');return}
+  UI.cloudFiles=await Promise.all(files.map(async f=>{const txt=f.truncated?await (await fetch(f.raw_url)).text():f.content;const d=JSON.parse(txt);return {file:f.filename,at:d.at,S:d.S}}));
+  openModal('Load from cloud',`<div class="stack">${UI.cloudFiles.map((f,i)=>`<button class="pact" data-a="cloudPick" data-v="${i}"><i>☁</i><span><b>${esc(f.S.stage)} · ${f.file.replace('.json','').replace('-',' ')}</b><small>Level ${f.S.level+1} · ${fmt(f.S.fans)} fans · saved ${new Date(f.at).toLocaleString()}</small></span></button>`).join('')}</div><small class="muted">Loading replaces the career in that slot on this device.</small><button class="btn ghost sm" data-a="closeModal">Cancel</button>`);render()}catch(e){toast('Cloud load failed: '+e.message)}}
+function cloudCard(){const on=!!ghTok();let at='';try{at=localStorage.getItem('headliner_cloud_at')||''}catch(e){}
+  return `<div class="card"><div class="between"><h2>☁ Cloud save</h2>${on?'<span class="pill good">Connected</span>':''}</div>
+  ${on?`<p class="muted">Your career saves to a private file on your GitHub account at the end of every week. Load it on any device with the same token.${at?` Last saved ${new Date(+at).toLocaleString()}.`:''}</p>${UI.cloudErr?`<small class="bad">${esc(UI.cloudErr)}</small>`:''}<div class="row"><button class="btn sm" data-a="cloudSave">Save now</button><button class="btn sm ghost" data-a="cloudLoad">Load from cloud</button><button class="btn sm ghost" data-a="cloudOff">Disconnect</button></div>`
+  :`<p class="muted">Keep your career safe and play on any device. It uses a private file (a "gist") on your GitHub account.</p><ol class="hl"><li><a href="https://github.com/settings/tokens/new?scopes=gist&description=Headliner%20cloud%20save" target="_blank" rel="noopener">Create a GitHub token</a> (the "gist" box is already ticked). Set expiration to "No expiration", then tap Generate token.</li><li>Copy the token and paste it here.</li></ol><div class="row"><input type="password" id="gh-token" placeholder="ghp_…" autocomplete="off" style="flex:1"><button class="btn sm" data-a="cloudOn">Connect</button></div><small class="muted">Your token stays on this device only. Use the same token on your other devices.</small>`}</div>`}
+Object.assign(A,{
+  cloudOn:()=>{const t=(($('#gh-token')||{}).value||'').trim();if(!t){toast('Paste your token first.');return}try{localStorage.setItem('headliner_gh_token',t);localStorage.removeItem('headliner_gist')}catch(e){}cloudSave(false);return false},
+  cloudOff:()=>{try{localStorage.removeItem('headliner_gh_token');localStorage.removeItem('headliner_gist')}catch(e){}toast('Cloud save disconnected on this device.')},
+  cloudSave:()=>{cloudSave(false);return false},cloudLoad:()=>{cloudLoad();return false},
+  cloudPick:d=>{const f=UI.cloudFiles&&UI.cloudFiles[+d.v];if(!f)return;S=migrate(f.S);S.slot=+(f.file.match(/\d/)||[1])[0];levelCheck(true);UI.modal=null;UI.queue=[];UI.live.on=false;UI.live.day=0;save();toast(`Loaded ${S.stage} from the cloud.`)}});
+
+/* ---- weekly hook ---- */
+{const _xw=extraWeek;extraWeek=function(r){_xw(r);try{seasonWeek(r);viceWeek(r);stanWeek(r);myLabelWeek(r);prWeek(r);storyWeek(r);legendWeek(r);collabWeek();
+  if(S.brandLine){const p=Math.round((S.fans*.012)*(S.image/60));S.money+=p;r.inc['Fashion & fragrance']=(r.inc['Fashion & fragrance']||0)+p}
+  if(S.comeback>0)S.comeback--;
+  const rel=S.songs.filter(s=>s.status==='released');let dl=0;rel.forEach(s=>{const age=S.t-s.rel;s.dlWk=Math.round(s.week*.0025*(age<=2?2.2:1)*(s.peak&&s.peak<=10?1.5:1));s.dl=(s.dl||0)+s.dlWk;dl+=s.dlWk});S.dl.week=dl;S.dl.total+=dl;const rv=Math.round(dl*1.29*.7*share());if(rv){S.money+=rv;S.stats.earned+=rv;r.inc['Download sales']=(r.inc['Download sales']||0)+rv}
+  }catch(e){console.error(e)}
+  if(ghTok())setTimeout(()=>cloudSave(true),300)}}
+{const _ro2=releaseOutcome;releaseOutcome=function(q,kind,title){const cb=S.comeback>0?12:0;if(cb){S.comeback=0;log('Comeback release! Everyone was waiting for this.','big')}return _ro2(q+cb,kind,title)}}
+
+/* ---- section hooks ---- */
+{const _he=homeExtras;homeExtras=function(){return legendCard()+calendarCard()+_he().replace(`${slotsCard()}`,`${slotsCard()}${cloudCard()}`)}}
+{const _le=liveExtras;liveExtras=function(){return _le()+jobsCard()}}
+{const _be=bizExtras;bizExtras=function(){return _be()+labelCard()+prCard()}}
+{const _pe=personalExtras;personalExtras=function(){return _pe()+habitsCard()}}
+{const _se=studioExtras;studioExtras=function(){return marketCard()+_se()}}
+SUB_ICONS.unshift([/legend/i,'👑'],[/season|calendar/i,'📆'],[/side job/i,'☕'],[/marketplace/i,'🎛'],[/habit/i,'🫧'],[/pr & image/i,'📣'],[/record label|records$/i,'🏷']);
+
 function render(){
   const app=$('#app');
   if(!S){app.innerHTML=setupView()+modalHTML()+setupTipHTML();return}
