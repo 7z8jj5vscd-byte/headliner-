@@ -2737,7 +2737,7 @@ function headGeo(r,ws,hsg,ps,pl,ts,tl){const g=new THREE.SphereGeometry(r,ws,hsg
 function hairBuild(h,m,hs){
   if(h==='bald')return;
   const A=(geo,x,y,z,rx=0,ry=0,rz=0,s,o)=>{const k=add(hs,geo,m,x,y,z);if(o)k.rotation.order=o;k.rotation.set(rx,ry,rz);if(s)k.scale.set(s[0],s[1],s[2]);return k};
-  const ears=['short','spiky','curly','buzz','mohawk'].includes(h);
+  const ears=['buzz','mohawk'].includes(h);
   const shell=(r,front,back)=>{A(new THREE.SphereGeometry(r,11,7,0,Math.PI*2,0,front),0,.035,-.015);const g=ears?.42:0;A(new THREE.SphereGeometry(r*.992,11,9,Math.PI+g,Math.PI-g*2,0,back),0,.035,-.02)};
   const lock=(x,y,z,len,w,tilt,ry,sw,th=.4)=>{const k=A(new THREE.ConeGeometry(w,len,3),x,y,z,Math.PI+tilt,ry,sw,[1,1,th],'YXZ');k.translateY(len*.46);return k};
   const bangs=(sweep=1,n=6,len=.3)=>{for(let i=0;i<n;i++){const t=i/(n-1),a=-1.05+t*2.1,r=.392;lock(Math.sin(a)*r*.97,.28-Math.abs(a)*.06,Math.cos(a)*r*.97,len*(1-Math.abs(a)*.22),.12,-.22,a,sweep*.3-a*.12,.3)}};
@@ -2747,8 +2747,7 @@ function hairBuild(h,m,hs){
   if(h==='afro'){A(new THREE.IcosahedronGeometry(.5,1),0,.17,-.12,0,0,0,[1,.95,1]);return}
   if(h==='buzz'){shell(.371,1.25,2.2);return}
   if(h==='mohawk'){shell(.368,1.1,2.1);A(BX(.12,.1,.74),0,.35,-.04,-.25);for(let i=0;i<5;i++)A(new THREE.ConeGeometry(.08,.34,4),0,.47-Math.abs(i-1.5)*.03,.24-i*.13,-.35+i*.17,0,0,[1,1,.5]);return}
-  shell(.395,1.18,2.25);
-  if(h!=='curly'){const hl=m.clone();hl.color=m.color.clone().lerp(C3('#ffffff'),.32);hl.emissive=m.color.clone().multiplyScalar(.2);const ring=add(hs,new THREE.TorusGeometry(.287,.024,4,22,Math.PI*1.3),hl,0,.29,-.015);ring.rotation.set(Math.PI/2,0,-Math.PI*.15);ring.scale.set(1,1,.6)}
+  shell(.395,1.18,2.25);for(const [p0,pl] of[[-.12,Math.PI*.36+.12],[Math.PI*.64,Math.PI*.36+.12]])A(new THREE.SphereGeometry(.394,9,5,p0,pl,.95,.62),0,.035,-.015);
   if(h==='short'){bangs(1,6,.17);for(const s of[-1,1])lock(s*.375,.14,.06,.2,.08,.05,s*1.2,0,.45)}
   if(h==='long'){bangs(1,7,.21);sides(.7,.12);backFall(.06,.82,.405,.47)}
   if(h==='bob'){bangs(-1,7,.2);sides(.42,.12);backFall(.04,.46,.405,.45)}
@@ -3713,7 +3712,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610232225';
+const APP_VER='202610232234';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 function render(){
