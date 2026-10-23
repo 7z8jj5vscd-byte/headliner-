@@ -159,6 +159,125 @@ tr.me td{background:color-mix(in srgb,var(--gold) 12%,transparent)}
 .pos{font-family:var(--display);font-size:18px;width:34px}
 .mv-up{color:var(--good)} .mv-dn{color:var(--bad)} .mv-new{color:var(--cyan);font-weight:800;font-size:10px}
 
+
+/* phone */
+.phonewrap{display:flex;justify-content:center}
+.phone{width:100%;max-width:420px;background:#050407;border:1px solid var(--line);border-radius:38px;padding:9px;box-shadow:0 24px 60px rgba(0,0,0,.55)}
+.pscreen{border-radius:30px;overflow:hidden;height:min(760px,calc(100svh - 120px));min-height:560px;display:flex;flex-direction:column;position:relative;color:#fff;background:radial-gradient(120% 70% at 20% 0%,#5a2a8a 0%,transparent 60%),radial-gradient(90% 60% at 100% 100%,#0b5563 0%,transparent 60%),#0d0a14}
+.pscreen.in-app{background:#000}
+.pscreen.app-streamify{background:#121212}.pscreen.app-tunes{background:#1c1c1e}.pscreen.app-tube{background:#0f0f0f}.pscreen.app-chirp{background:#000}.pscreen.app-buzz{background:#14110a}
+.psb{display:flex;justify-content:space-between;align-items:center;padding:9px 22px 4px;font-size:12px;font-weight:800;font-family:var(--mono)}
+.psb .notch{width:90px;height:22px;background:#000;border-radius:14px;border:1px solid #222}
+.pclock{text-align:center;padding:14px 0 4px;display:flex;flex-direction:column}
+.pclock b{font-size:56px;font-weight:300;letter-spacing:-.02em;line-height:1}
+.pclock span{font-size:13px;opacity:.8}
+.apps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 6px;padding:18px 12px}
+.appic{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:#fff;cursor:pointer;font-size:11px;font-weight:700;position:relative;font-family:var(--body)}
+.appic i{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;font-style:normal;font-size:26px;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.appic:active i{transform:scale(.92)}
+.appic .bdg{position:absolute;top:-5px;right:calc(50% - 36px);background:#ff3b30;color:#fff;border-radius:10px;font-size:11px;padding:1px 6px;font-weight:800;min-width:18px}
+.phone-on #app>.top{position:relative;top:auto}
+.pwidget{margin:auto 14px 16px;background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.abar{display:flex;align-items:center;gap:8px;padding:6px 12px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.abar b{font-size:17px;flex:1}
+.abar .back{background:none;border:0;color:#0a84ff;font-weight:700;cursor:pointer;font-size:14px;padding:4px 2px;font-family:var(--body)}
+.dlogo{font-size:22px;font-weight:900}
+.abody{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.abody>*{flex-shrink:0}
+.abody h3{font-size:17px;margin-top:4px}
+.anav{display:flex;justify-content:space-around;border-top:1px solid rgba(255,255,255,.1);padding:8px 4px 12px;background:rgba(0,0,0,.6)}
+.anav button{background:none;border:0;color:#fff;opacity:.5;font-size:10px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:var(--body)}
+.anav button span{font-size:19px;line-height:1}
+.anav button.on{opacity:1}
+.app-tunes .anav button.on{color:#fc3c5f}.app-streamify .anav button.on{color:#1ed760}.app-tube .anav button.on{color:#ff0033}.app-chirp .anav button.on{color:#1d9bf0}.app-tok .anav button.on{color:#25f4ee}
+.pcard{background:rgba(255,255,255,.06);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.abody .post{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08)}
+.abody .post[data-a]{cursor:pointer}
+.abody input[type=text],.abody textarea,.abody select{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:#fff}
+.abody .kv{grid-template-columns:1fr 1fr}
+.vbadge{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#1d9bf0;color:#fff;font-size:10px;font-weight:900;vertical-align:middle}
+/* insta */
+.stories{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.st{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:#fff;font-size:11px;cursor:pointer;flex:none}
+.ring{display:inline-block;padding:2px;border-radius:50%;background:linear-gradient(45deg,#f9a825,#e1306c,#833ab4)}
+.ring>*{display:block;border:2px solid #000;border-radius:50%}
+.iprof{display:flex;align-items:center;gap:16px}
+.iprof .pstats{display:flex;gap:14px;flex:1;justify-content:space-around;text-align:center}
+.iprof .pstats b{display:block;font-size:17px}
+.iprof .pstats span{font-size:11px;opacity:.7}
+.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.gt{aspect-ratio:1/1;border:0;position:relative;overflow:hidden;cursor:pointer;color:#fff;font-family:var(--display);text-transform:uppercase;font-size:12px;display:flex;align-items:flex-end;padding:6px;text-align:left}
+.igrid.tall .gt{aspect-ratio:3/4}
+.gt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gt span{position:relative;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.gt em{position:absolute;top:5px;right:6px;font-style:normal;font-family:var(--body);font-size:11px;font-weight:800}
+.act-i{background:none;border:0;border-bottom:1px solid rgba(255,255,255,.06);color:#fff;text-align:left;padding:8px 2px;cursor:pointer;font-size:13px;font-family:var(--body)}
+/* chirp */
+.trend{display:flex;flex-direction:column;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+/* tok */
+.tokcard{position:relative;aspect-ratio:9/14;border-radius:14px;overflow:hidden;display:flex;align-items:flex-end}
+.tokcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85}
+.tokside{position:absolute;right:8px;bottom:90px;display:flex;flex-direction:column;gap:14px;font-size:22px;text-align:center}
+.tokside b{display:block;font-size:11px}
+.tokcap{position:relative;padding:14px 60px 14px 14px;background:linear-gradient(transparent,rgba(0,0,0,.75));width:100%;font-size:13px;display:flex;flex-direction:column;gap:3px}
+/* tube */
+.yt{background:none;border:0;color:#fff;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:0;font-family:var(--body)}
+.thumb{aspect-ratio:16/9;border-radius:12px;display:flex;align-items:flex-end;padding:10px;font-family:var(--display);text-transform:uppercase;font-size:20px;position:relative;width:100%}
+.thumb em{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.8);font-style:normal;font-family:var(--mono);font-size:11px;padding:1px 5px;border-radius:4px}
+.ytm{display:flex;gap:10px;align-items:flex-start}
+.ytm>span{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.ytban{height:80px;border-radius:12px}
+/* streaming */
+.dban{margin:-12px -12px 0;height:230px;position:relative;display:flex;align-items:flex-end;overflow:hidden}
+.dban>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75}
+.dban .dfig{position:absolute;top:24px;left:50%;transform:translateX(-50%)}
+.dname{position:relative;padding:14px;display:flex;flex-direction:column;background:linear-gradient(transparent,rgba(0,0,0,.7));width:100%}
+.dname b{font-size:40px;font-weight:900;line-height:1.05;letter-spacing:-.02em;font-family:var(--body)}
+.dname span,.dname small{font-size:13px;opacity:.85}
+.dplay{margin-left:auto;width:52px;height:52px;border-radius:50%;border:0;font-size:20px;cursor:pointer;font-weight:900}
+.trk{display:flex;align-items:center;gap:10px;font-size:13px}
+.trk .n{width:20px;text-align:right;opacity:.6;font-family:var(--mono)}
+.trk .tt{flex:1;min-width:0;display:flex;flex-direction:column}
+.trk .tt b,.trk .tt small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk .tt small{opacity:.65}
+.trk.me{background:rgba(255,255,255,.08);border-radius:8px;padding:4px;border-left:3px solid var(--c)}
+.art{border-radius:4px;flex:none;display:inline-block;object-fit:cover}
+.hscroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}
+.disc{flex:none;width:120px;display:flex;flex-direction:column;gap:3px;font-size:12px}
+.disc img,.disc>span,.disc .art{width:120px;height:120px;border-radius:6px;object-fit:cover;display:flex;align-items:flex-end;padding:6px;font-family:var(--display);text-transform:uppercase;font-size:13px}
+.disc b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.disc small{opacity:.65}
+.plc{flex:none;width:130px;background:none;border:0;color:#fff;cursor:pointer;display:flex;flex-direction:column;gap:4px;text-align:left;font-family:var(--body);font-size:12px}
+.plc span{height:130px;border-radius:6px;display:flex;align-items:flex-end;padding:8px;font-weight:900;font-size:15px}
+.plrow{display:flex;gap:10px;align-items:center;background:none;border:0;color:#fff;text-align:left;cursor:pointer;padding:6px;border-radius:8px;font-family:var(--body)}
+.plrow.on{background:rgba(255,255,255,.07);box-shadow:inset 3px 0 0 var(--c)}
+.plrow .tt{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}
+.plrow .tt b{font-size:14px}
+.plart{width:56px;height:56px;border-radius:6px;flex:none}
+.plhead{border-radius:12px;padding:40px 14px 14px;display:flex;flex-direction:column;gap:4px}
+.plhead b{font-size:26px;font-weight:900}
+.bars{display:flex;align-items:flex-end;gap:3px;height:110px}
+.bars i{flex:1;background:var(--good);border-radius:3px 3px 0 0;min-width:4px}
+.bars i.neg{background:var(--bad)}
+.bars.g i{background:var(--c)}
+.wrapped{background:linear-gradient(150deg,#1ed760,#5b4cff 60%,#ff4f8b);color:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.wrapped .big{font-size:46px;font-family:var(--display);line-height:1}
+.wrapped .label{color:rgba(255,255,255,.85)}
+/* misc apps */
+.dm{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.dm.done{opacity:.7}
+.dmb{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.dmb .mine{align-self:flex-end;background:#0a84ff;border-radius:14px;padding:5px 10px}
+.news-i{display:flex;flex-direction:column;gap:3px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.news-i b{font-size:15px;line-height:1.3}
+.wcard{background:linear-gradient(135deg,#2b2b2b,#0d0d0d);border:1px solid #333;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px}
+.wcard b{font-size:34px;font-family:var(--mono)}
+.wcard small{opacity:.7}
+.crow{display:flex;gap:10px;align-items:center;font-size:13px;padding:3px 0}
+.crow>b{width:22px;font-family:var(--mono)}
+.crow span{flex:1;display:flex;flex-direction:column;min-width:0}
+.crow.me{color:var(--gold)}
+@media (max-width:480px){.phone{border-radius:0;border:0;padding:0;background:none;box-shadow:none;width:100%;max-width:none}.pscreen{border-radius:22px;height:calc(100svh - 24px)}}
+
 /* venues */
 .venue{display:flex;flex-direction:column;gap:8px}
 .venue .facts{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
@@ -797,7 +916,7 @@ function nextWeek(silent=false,fromLive=false){
     s.week=st;wk+=st;
   });
   const capS=(S.fans*5+3000)*Math.sqrt(pr*hm);const sc=wk>capS?capS/wk:1;wk=0;
-  S.songs.forEach(s=>{if(s.status!=='released')return;s.week=Math.round(s.week*sc);s.streams+=s.week;wk+=s.week});
+  S.songs.forEach(s=>{if(s.status!=='released')return;s.week=Math.round(s.week*sc)+plStreams(s);s.streams+=s.week;wk+=s.week});
   S.stats.streams+=wk;
   add(r.inc,'Streaming royalties',sum(S.songs,s=>s.status==='released'?s.week*.004*(s.share??sh):0));
   let fg=0;
@@ -868,7 +987,7 @@ function nextWeek(silent=false,fromLive=false){
   S.report=r;
   S.history.push({t:S.t,fans:Math.round(S.fans),money:Math.round(S.money)});if(S.history.length>260)S.history.shift();
   if((S.t-1)%52===0){S.age++;awards()}
-  extraWeek(r);
+  dspWeek(r);extraWeek(r);
   eraCheck();levelCheck();checkAch();
   save();
   if(!silent&&S.settings.recap)openModal(`Week ${wkOfYear()} · Year ${year()}`,recapHTML(r));
@@ -1703,7 +1822,7 @@ function hud(){
   const showM=!G3.ok&&S.members.length&&BAND_SCENES.includes(sc.k);
   const mem=showM?S.members.slice(0,4).map((m,i)=>`<div class="mem">${figure(memberLook(m),memberPose(m,i),{name:S.stage})}</div>`):[];
   const half=Math.ceil(mem.length/2);
-  const tabs=[['home','Home'],['studio','Studio'],['artwork','Album Art'],['live','Live'],['production','Production'],['business','Business'+(nIn?`<span class="badge">${nIn}</span>`:'')],['charts','Charts & Rivals'],['social','Social'],['style','Style'],['personal','Personal'],['help','Help']];
+  const tabs=[['home','Home'],['studio','Studio'],['artwork','Album Art'],['live','Live'],['production','Production'],['business','Business'+(nIn?`<span class="badge">${nIn}</span>`:'')],['charts','Charts & Rivals'],['social','Phone'+(S.dsp&&(appBadge('msgs')+appBadge('streamify')+appBadge('tunes'))?`<span class="badge">${appBadge('msgs')+appBadge('streamify')+appBadge('tunes')}</span>`:'')],['style','Style'],['personal','Personal'],['help','Help']];
   return `<div class="top"><div class="stagebox">${G3.ok?'<div class="scene3d" id="scene3d"></div>':`<div class="scene">${sceneSVG(sc.k)}</div>
     <div class="figs">${mem.slice(0,half).join('')}<div class="me p-${sc.pose||'idle'}">${figure(S.look,sc.pose||'idle',{name:S.stage})}</div>${mem.slice(half).join('')}</div>`}
     <div class="scap">${esc(sc.cap||'')}</div>${tickerHTML()}
@@ -2220,7 +2339,7 @@ const TUT=[
   {tab:'production',t:'Production: build your tour',b:'Design your stage shape, video wall, lights, effects and set pieces, and audition dancers. The stage above shows your design live, and it is what fans see on tour.'},
   {tab:'business',t:'Business: deals and money',b:'Record deals, sponsorships and collab requests arrive in your inbox here. Hire a team, sell merch, book TV spots, and later run your own label and businesses.'},
   {tab:'charts',t:'Charts and rivals',b:'Follow the Hot 20 and keep an eye on your three rivals. Win chart battles and feuds, or make peace and work together.'},
-  {tab:'social',t:'Social: grow your fanbase',b:'Post on InstaPic, Chirp, TokTune and MeTube. Song posts can go viral, and one viral clip can make you famous overnight. Your fan club and fan forum live here.'},
+  {tab:'social',t:'Phone: your apps',b:'Your phone has working apps. Post on InstaPic, Chirp, TokTune and MeTube, where one viral clip can make you famous overnight. Check your monthly listeners and playlist adds on Streamify and Tunes, answer DMs in Messages, and find your fan club in Fan Club.'},
   {tab:'style',t:'Style: your look',b:'Change your character and buy outfits. Style points make your shows and posts stronger. Today\'s date sits right next to this tab.'},
   {tab:'personal',t:'Personal: your life',b:'Train skills, rest, move house, date, start a family and keep stress under control. A burned-out artist makes worse music.'},
   {tab:'help',t:'Need a reminder?',b:'The Help tab explains every system. Your first move: go to the Studio and write a song, then busk on the Live tab until your energy runs out. Good luck!'},
@@ -2923,13 +3042,290 @@ Object.assign(A,{
 });
 
 /* ============ render & events ============ */
+/* ============ phone, streaming apps & DMs ============ */
+const DSP={
+  streamify:{name:'Streamify',share:.62,c1:'#1ed760',c2:'#0d3b22',bg:'#121212',ink:'#04150a',ml:'monthly listeners',ico:'≋'},
+  tunes:{name:'Tunes',share:.28,c1:'#fc3c5f',c2:'#4d0f1f',bg:'#1c1c1e',ink:'#fff',ml:'listeners this month',ico:'♫'}};
+const PLAYLISTS=[
+  {id:'rr',app:'streamify',n:'Release Radar',d:'New music from artists you follow. Every follower sees your new release.',f:()=>Math.max(400,S.dsp.fol.streamify),auto:1,c:'#5b4cff'},
+  {id:'nmf',app:'streamify',n:'New Music Friday',d:'The best new releases of the week. Only songs out this week qualify.',f:()=>4.1e6,c:'#e2b93b',isNew:1,lv:1,base:.12},
+  {id:'ff',app:'streamify',n:'Fresh Finds',d:'Emerging artists under 300K fans, in their first month.',f:()=>9.2e5,c:'#27ae60',fresh:1,base:.2},
+  {id:'gen',app:'streamify',n:()=>S.genre+' Hits',d:'The biggest songs in your genre. Needs strong quality for your level.',f:()=>6e6,c:'#eb5757',minQ:()=>45+S.level*4,base:.1,lv:2},
+  {id:'chill',app:'streamify',n:'Late Night Feels',d:'Love, heartbreak, nostalgia and ballads.',f:()=>7.5e6,c:'#2d9cdb',fit:s=>['Love','Heartbreak','Nostalgia','Hometown'].includes(s.theme)||s.tempo==='Ballad',base:.07,lv:1},
+  {id:'gym',app:'streamify',n:'Beast Mode',d:'Party, hustle and uptempo bangers.',f:()=>5.2e6,c:'#f2994a',fit:s=>['Party','Hustle','Rebellion','Freedom'].includes(s.theme)||s.tempo==='Uptempo',base:.07,lv:1},
+  {id:'viral',app:'streamify',n:'Viral 50',d:'Songs blowing up on TokTune and beyond. Go viral with a song post to get on.',f:()=>3.3e6,c:'#bb6bd9',viral:1},
+  {id:'tth',app:'streamify',n:"Today's Top Hits",d:'The hottest songs on the planet. Reach the Hot 20 top 10.',f:()=>3.4e7,c:'#1ed760',top:10},
+  {id:'up',app:'tunes',n:'Up Next',d:'Artists to watch. Under 300K fans, first month of a release.',f:()=>6e5,c:'#ff6b9a',fresh:1,base:.18},
+  {id:'nim',app:'tunes',n:'New in Music Daily',d:'Fresh releases, hand picked. Release week only.',f:()=>2.2e6,c:'#ff9f43',isNew:1,lv:1,base:.12},
+  {id:'gnow',app:'tunes',n:()=>S.genre+' Now',d:'Your genre, right now. Needs strong quality for your level.',f:()=>3.1e6,c:'#a55eea',minQ:()=>45+S.level*4,base:.1,lv:2},
+  {id:'atl',app:'tunes',n:"Today's A-List",d:'The songs everyone is playing. Reach the Hot 20 top 15.',f:()=>1.2e7,c:'#fc3c5f',top:15},
+];
+const plName=p=>typeof p.n==='function'?p.n():p.n;
+const PLAQ=[1e6,1e7,1e8,1e9];
+const DM_FAN=['your music got me through the hardest year of my life','I learned guitar because of you','PLEASE come to {city}','I made a fan edit, check your tags','my little sister screams your songs in the car','can you follow me back 🥺','just saw you live. still shaking','I got your lyrics tattooed lol','when is the next album','you replied to my friend, now I am jealous'];
+const DM_PERSON=['proud of you. call me sometime','saw you on my feed again! famous now?','dinner this weekend?','remember us little people when you are on top','mom says to eat something real this week'];
+const DM_IND=['loved your last release. studio sometime?','my team has been playing your stuff all week','we should do something together','congrats on the run you are having'];
+const DM_REPLY=['thank you so much ❤️','this means the world','love you more','you are the reason','see you soon 🫶'];
+const NEWS_SRC=['PopBuzz Daily','The Setlist','Chart Watch','Backstage Pass','Hot Mic','Gossip Grid'];
+const TRENDS=['#NewMusicFriday','#TourLife','#AwardSeason','#StudioSessions','#ThrowbackThursday','#UnpopularOpinion','#ConcertOutfit','#VinylCollection'];
+function phash(s){let h=7;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h}
+function initDsp(s){
+  s.dsp??={};const D=s.dsp;D.pl??={};D.hist??=[];D.fol??={streamify:Math.round(s.fans*.2),tunes:Math.round(s.fans*.08)};D.pitch??=null;D.plaq??={};D.dms??=[];D.news??=[];D.wrapped??=[];D.ystart??={};D.adds??=0;D.story??=null;D.seen??={};D.plWk??=0;
+  PLAYLISTS.forEach(p=>D.pl[p.id]??=[]);return s}
+{const _mig=migrate;migrate=function(s){_mig(s);initDsp(s);return s}}
+function plStreams(s){
+  if(!S.dsp)return 0;let n=0;
+  PLAYLISTS.forEach(p=>{const e=(S.dsp.pl[p.id]||[]).find(x=>x.s===s.id);if(!e)return;n+=p.f()*(p.auto?.25:.03*(51-e.pos)/50*(s.q/100))*rnd(.85,1.15)});
+  s.plWk=Math.round(n);return s.plWk;
+}
+function monthly(app){const D=S.dsp,h=D.hist.slice(-4);return Math.round(sum(h,x=>x)*DSP[app].share/4.2+S.fans*DSP[app].share*.2)}
+function topCities(app){
+  const ml=monthly(app),wide=S.fans>8e5||S.stats.worldTours>0;let h=phash(S.stage+app);
+  const pool=wide?CITIES.world.slice():CITIES.na.slice();const out=[];
+  for(let i=0;i<5;i++){h=(h*16807+11)%2147483647;out.push(pool.splice(h%pool.length,1)[0])}
+  const pct=[.16,.11,.085,.065,.05];return out.map((c,i)=>({c,n:Math.round(ml*pct[i])}));
+}
+function chartPos(t){const i=S.charts.s.findIndex(e=>e.me&&e.title===t);return i<0?99:i+1}
+function onLists(id){return PLAYLISTS.map(p=>({p,e:(S.dsp.pl[p.id]||[]).find(x=>x.s===id)})).filter(x=>x.e)}
+function dspWeek(r){
+  const D=S.dsp;if(!D)return;
+  D.hist.push(r.wk||0);if(D.hist.length>104)D.hist.shift();
+  ['streamify','tunes'].forEach(k=>{const t=S.fans*DSP[k].share*.45;D.fol[k]=Math.max(0,Math.round(D.fol[k]+(t-D.fol[k])*.12+ri(0,3)))});
+  // fans found through playlists
+  const plS=sum(S.songs,s=>s.status==='released'?(s.plWk||0):0);D.plWk=plS;
+  if(plS>0){const g=addFans(plS*.003);if(g>=50)r.ev.push(`Playlist listeners became ${fmt(g)} new fans`)}
+  // age playlist spots
+  PLAYLISTS.forEach(p=>{D.pl[p.id]=(D.pl[p.id]||[]).filter(e=>{e.wk--;e.pos=clamp(e.pos+ri(-5,6),1,50);return e.wk>0&&S.songs.some(s=>s.id===e.s)})});
+  // new adds
+  S.songs.filter(s=>s.status==='released').forEach(s=>{const age=S.t-s.rel;
+    PLAYLISTS.forEach(p=>{const L=D.pl[p.id];if(L.some(e=>e.s===s.id))return;
+      let ch=0;
+      if(p.auto)ch=age<=1?1:0;
+      else if(p.top)ch=chartPos(s.title)<=p.top?.65:0;
+      else if(p.viral)ch=s.boost>0?.75:0;
+      else{if(p.lv&&S.level<p.lv)return;if(age>(p.isNew?1:p.fresh?4:10))return;if(p.fresh&&S.fans>3e5)return;if(p.minQ&&s.q<p.minQ())return;if(p.fit&&!p.fit(s))return;
+        ch=p.base*(s.q/60)*(1+S.hype/100)*promo()*(D.pitch===s.id?2.2:1)*(s.recvM||1)}
+      if(Math.random()>=Math.min(.9,ch))return;
+      const pos=p.auto?ri(1,6):clamp(Math.round(48-s.q*.35-S.hype*.08+rnd(-6,8)),1,50);
+      L.push({s:s.id,pos,wk:p.auto?1:p.top||p.viral?ri(3,6):ri(4,9),at:S.t});
+      if(p.auto)return;
+      D.adds++;const txt=`"${s.title}" was added to ${plName(p)} on ${DSP[p.app].name} at #${pos}`;
+      D.news.unshift({t:S.t,src:DSP[p.app].name,text:txt});r.ev.push(txt);
+      if(p.top||p.isNew||p.fresh){log(`"${s.title}" landed on ${plName(p)}.`,'good');toast(`Playlist add: ${plName(p)}!`)}
+    })});
+  if(D.pitch){const s=S.songs.find(x=>x.id===D.pitch);if(!s||(s.status==='released'&&S.t-s.rel>1))D.pitch=null}
+  // plaques
+  S.songs.forEach(s=>{const lvl=PLAQ.filter(x=>s.streams>=x).length;if(lvl>(D.plaq[s.id]||0)){D.plaq[s.id]=lvl;const m=['1 million','10 million','100 million','1 billion'][lvl-1];log(`"${s.title}" passed ${m} streams. A plaque is on its way.`,'big');r.ev.push(`"${s.title}" hit ${m} streams`);D.news.unshift({t:S.t,src:pick(NEWS_SRC),text:`${S.stage}'s "${s.title}" crosses ${m} streams`})}});
+  // DMs
+  const n=ri(1,S.fans>5e4?3:2);
+  for(let i=0;i<n;i++){
+    const roll=Math.random(),pp=S.people.filter(p=>p.kind!=='ex');
+    if(roll<.25&&pp.length){const p=pick(pp);D.dms.unshift({id:S.nextId++,from:p.name,kind:'person',pid:p.id,text:pick(DM_PERSON),t:S.t})}
+    else if(roll<.38&&S.fans>3e4){const a=pick(S.npcs);D.dms.unshift({id:S.nextId++,from:a.name,kind:'ind',text:pick(DM_IND),t:S.t})}
+    else D.dms.unshift({id:S.nextId++,from:'@'+pick(HANDLES)+pick(HANDLE2)+ri(1,99),kind:'fan',text:pick(DM_FAN).replace('{city}',pick(CITIES.na)),t:S.t});
+  }
+  D.dms=D.dms.slice(0,30);
+  // gossip
+  if(Math.random()<.5){const rv=S.rivals&&S.rivals.length?pick(S.rivals):null,a=pick(S.npcs);
+    D.news.unshift({t:S.t,src:pick(NEWS_SRC),text:pick([`${a.name} spotted in the studio with a mystery producer`,`${a.name}'s "${a.single}" is still everywhere`,rv?`${rv.name} fans and the ${S.fandom} are at war again`:`Who will win Song of the Year?`,`Is ${S.stage} the next big thing? Fans think so`,`${a.name} teases a world tour`])})}
+  D.news=D.news.slice(0,40);
+  // year end
+  if((S.t-1)%52===0&&S.t>1)makeWrapped();
+}
+function makeWrapped(){
+  const D=S.dsp,y=year()-1;
+  const ys=S.songs.filter(s=>s.status==='released').map(s=>({t:s.title,n:s.streams-(D.ystart[s.id]||0)})).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+  const total=sum(D.hist.slice(-52),x=>x);
+  if(total>0){const w={y,total,minutes:Math.round(total*3.1),top:ys.slice(0,3),ml:monthly('streamify'),city:topCities('streamify')[0].c,adds:D.adds,fans:Math.round(S.fans)};D.wrapped.unshift(w);D.wrapped=D.wrapped.slice(0,10);openModal(`Your ${year()-1>0?'Year '+y:''} Wrapped`,wrappedHTML(w)+'<button class="btn" data-a="closeModal">Nice</button>')}
+  D.ystart={};S.songs.forEach(s=>{D.ystart[s.id]=s.streams});D.adds=0;
+}
+function wrappedHTML(w){return `<div class="wrapped"><span class="label">Streamify Wrapped · Year ${w.y}</span><b class="big">${fmt(w.total)}</b><span>streams this year, about ${fmt(w.minutes)} minutes of listening</span>
+  ${w.top.length?`<div class="stack" style="gap:4px"><span class="label">Your top songs</span>${w.top.map((x,i)=>`<div class="between"><span>${i+1}. ${esc(x.t)}</span><span class="num">${fmt(x.n)}</span></div>`).join('')}</div>`:''}
+  <div class="between"><span>Top city</span><b>${esc(w.city)}</b></div><div class="between"><span>Monthly listeners</span><b>${fmt(w.ml)}</b></div><div class="between"><span>Editorial playlist adds</span><b>${w.adds}</b></div></div>`}
+
+/* ---- phone shell ---- */
+const APPS=[
+  {id:'insta',n:'InstaPic',ico:'◎',bg:'linear-gradient(45deg,#f9a825,#e1306c 50%,#833ab4)'},
+  {id:'chirp',n:'Chirp',ico:'✦',bg:'#1d9bf0'},
+  {id:'tok',n:'TokTune',ico:'♪',bg:'linear-gradient(135deg,#111 40%,#25f4ee 41%,#111 55%,#fe2c55 56%,#111 70%)'},
+  {id:'tube',n:'MeTube',ico:'▶',bg:'#ff0033'},
+  {id:'streamify',n:'Streamify',ico:'≋',bg:'#1ed760',ink:'#04150a'},
+  {id:'tunes',n:'Tunes',ico:'♫',bg:'linear-gradient(160deg,#fc5c7d,#fc3c5f)'},
+  {id:'msgs',n:'Messages',ico:'✉',bg:'#34c759'},
+  {id:'buzz',n:'Buzz',ico:'✸',bg:'#ffb627',ink:'#1d1405'},
+  {id:'wallet',n:'Wallet',ico:'$',bg:'#111',bd:1},
+  {id:'fanclub',n:'Fan Club',ico:'★',bg:'#ff4f8b'},
+  {id:'charts',n:'Charts',ico:'↑',bg:'#4fd6e8',ink:'#06222a'},
+  {id:'cam',n:'Story',ico:'●',bg:'linear-gradient(135deg,#833ab4,#fd1d1d)'},
+];
+function appBadge(id){const D=S.dsp,seen=D.seen[id]||0;
+  if(id==='msgs')return D.dms.filter(m=>m.t>seen&&!m.replied).length;
+  if(id==='buzz')return D.news.filter(m=>m.t>seen).length;
+  if(id==='streamify'||id==='tunes')return PLAYLISTS.filter(p=>p.app===id&&!p.auto).reduce((a,p)=>a+(D.pl[p.id]||[]).filter(e=>e.at>seen).length,0);
+  return 0}
+function phoneView(){
+  const D=S.dsp,a=UI.app;
+  const d=gameDate(),tm=['9:41','12:30','3:15','6:02','8:47','10:20','11:58'][d.getDay()];
+  let inner;
+  if(!a||!APP_VIEW[a]){
+    inner=`<div class="pclock"><b>${tm}</b><span>${d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</span></div>
+    <div class="apps">${APPS.map(x=>{const b=appBadge(x.id);return `<button class="appic" data-a="openApp" data-v="${x.id}"><i style="background:${x.bg};color:${x.ink||'#fff'}${x.bd?';border:1px solid #444':''}">${x.ico}</i>${esc(x.n)}${b?`<span class="bdg">${b>9?'9+':b}</span>`:''}</button>`}).join('')}</div>
+    <div class="pwidget"><div class="between"><span class="label">Streamify</span><span class="num">${fmt(monthly('streamify'))} monthly</span></div><div class="between"><span class="label">Followers</span><span class="num">${fmt(sum(Object.values(S.social),x=>x.f))}</span></div><div class="between"><span class="label">Balance</span><span class="num">${cash(S.money)}</span></div></div>`;
+  }else inner=APP_VIEW[a]();
+  return `<div class="section"><div class="between"><h2>Phone</h2><span class="muted">Tap an app. Everything here runs on your real career.</span></div>
+  <div class="phonewrap"><div class="phone"><div class="pscreen ${a?'in-app app-'+a:''}"><div class="psb"><span>${tm}</span><span class="notch"></span><span>▮▮▮ ${Math.round(S.energy)}%</span></div>${inner}</div></div></div></div>`;
+}
+function appShell(title,tabs,body,opt={}){
+  const cur=UI.appTab||(tabs[0]||[])[0];
+  return `<div class="abar"><button class="back" data-a="openApp" data-v="">‹ Home</button><b>${title}</b>${opt.right||''}</div><div class="abody">${body}</div>${tabs.length>1?`<div class="anav">${tabs.map(([id,l,ic])=>`<button class="${cur===id?'on':''}" data-a="appTab" data-v="${id}"><span>${ic}</span>${l}</button>`).join('')}</div>`:''}`}
+function curTab(def){return UI.appTab||def}
+function handle(n){return '@'+String(n).replace(/\s+/g,'').toLowerCase()}
+function verified(){return S.fans>=1e4?'<span class="vbadge" title="Verified">✓</span>':''}
+function composeHTML(k){
+  const P=PLAT[k];const type=P.types.find(t=>t.id===UI.postType)||P.types[0];const songs=S.songs.filter(s=>s.status!=='demo');
+  return `<div class="pcard"><h3>New ${P.name} ${k==='tube'?'video':'post'}</h3><small class="muted">8 energy. Posts build followers and hype. Song posts can go viral.</small>
+    <label class="field"><span class="label">Type</span><select data-ui="postType" id="post-type">${P.types.map(t=>`<option value="${t.id}" ${type.id===t.id?'selected':''}>${t.l}</option>`).join('')}</select></label>
+    ${type.song?`<label class="field"><span class="label">Song</span><select data-ui="postSong" id="post-song"><option value="">Choose a song</option>${songs.map(s=>`<option value="${s.id}" ${UI.postSong==s.id?'selected':''}>${esc(s.title)} (${s.status})</option>`).join('')}</select></label>`:''}
+    <label class="field"><span class="label">Caption</span><textarea id="post-cap" maxlength="200" placeholder="Leave blank for a suggested caption"></textarea></label>
+    <button class="btn pink" data-a="post">${k==='tube'?'Upload':k==='chirp'?'Chirp it':'Share'}</button></div>`}
+function profHead(k,lbl){const acc=S.social[k];
+  return `<div class="iprof">${storyRing(avatar(78,S))}<div class="pstats"><div><b>${acc.posts.length}</b><span>posts</span></div><div><b>${fmt(acc.f)}</b><span>${lbl||'followers'}</span></div><div><b>${ri(80,400)}</b><span>following</span></div></div></div>
+  <div><b>${esc(S.stage)}</b> ${verified()}<div class="muted" style="font-size:12px">${esc(S.genre)} · ${esc(S.fandom)}</div><div style="font-size:13px">${esc(S.bio||'')}</div></div>
+  <input type="text" data-s="bio" value="${esc(S.bio)}" placeholder="Write your bio" maxlength="80">
+  <span class="filebtn btn ghost sm">Change profile picture<input type="file" accept="image/*" id="avatar-in2" data-upload="game"></span>`}
+function storyRing(h){return S.dsp.story&&S.dsp.story.t===S.t?`<span class="ring">${h}</span>`:h}
+function tileBg(p){const h=p.hue||S.hue||300;return `background:linear-gradient(150deg,hsl(${h} 75% 50%),hsl(${h+80} 70% 22%))`}
+function tileTxt(p){const song=p.mvSong?S.songs.find(s=>s.id===p.mvSong):null;return p.type==='mv'?(song?song.title:'Music video'):p.song||p.label}
+function npcFeed(k){return S.feed.filter(p=>p.plat===k)}
+function mixedFeed(k){return [...S.social[k].posts.map(p=>({p,mine:1})),...npcFeed(k).map(p=>({p,mine:0}))].sort((a,b)=>b.p.t-a.p.t||(b.mine-a.mine))}
+function feedPost(x,k){return x.mine?postHTML(x.p,k,true).replace('<div class="post">',`<div class="post" data-a="openPost" data-k="${k}" data-id="${x.p.id}">`):postHTML(x.p,k,false)}
+
+/* ---- social apps ---- */
+const APP_VIEW={
+  insta(){UI.social='insta';const t=curTab('home'),acc=S.social.insta;let b;
+    if(t==='home')b=`<div class="stories"><button class="st me" data-a="story">${storyRing(avatar(54,S))}<small>Your story</small></button>${S.npcs.slice(0,8).map(n=>`<span class="st"><span class="ring">${npcAv(n.name,54)}</span><small>${esc(n.name.split(' ')[0])}</small></span>`).join('')}</div>${mixedFeed('insta').slice(0,25).map(x=>feedPost(x,'insta')).join('')||'<div class="empty">Your feed fills up as the weeks go by.</div>'}`;
+    else if(t==='me')b=profHead('insta')+`<div class="igrid">${acc.posts.map(p=>`<button class="gt" style="${tileBg(p)}" data-a="openPost" data-k="insta" data-id="${p.id}">${S.avatar&&['selfie','flex'].includes(p.type)?`<img src="${S.avatar}" alt="">`:''}<span>${esc(tileTxt(p))}</span>${p.viral?'<em>🔥</em>':''}</button>`).join('')}</div>${acc.posts.length?'':'<div class="empty">No posts yet. Tap + to share one.</div>'}`;
+    else if(t==='new')b=composeHTML('insta');
+    else b=activity('insta');
+    return appShell('InstaPic',[['home','Home','⌂'],['new','Post','＋'],['act','Activity','♡'],['me','Profile','◉']],b)},
+  chirp(){UI.social='chirp';const t=curTab('home');let b;
+    if(t==='home')b=mixedFeed('chirp').slice(0,30).map(x=>feedPost(x,'chirp')).join('')||'<div class="empty">Quiet on Chirp. Post something.</div>';
+    else if(t==='trend')b=`<div class="pcard"><h3>Trending</h3>${trends().map((x,i)=>`<div class="trend"><small class="muted">${i+1} · Trending in Music</small><b>${esc(x.t)}</b><small class="muted">${fmt(x.n)} chirps</small></div>`).join('')}</div>`;
+    else if(t==='new')b=composeHTML('chirp');
+    else b=profHead('chirp')+(S.social.chirp.posts.map(p=>postHTML(p,'chirp',true)).join('')||'<div class="empty">No chirps yet.</div>');
+    return appShell('Chirp',[['home','Home','⌂'],['trend','Explore','#'],['new','Chirp','✎'],['me','Profile','◉']],b)},
+  tok(){UI.social='tok';const t=curTab('fyp'),acc=S.social.tok;let b;
+    if(t==='fyp'){const L=mixedFeed('tok').slice(0,30);const i=clamp(UI.tokI||0,0,Math.max(0,L.length-1));const x=L[i];
+      b=x?`<div class="tokcard" style="${x.mine?tileBg(x.p):`background:linear-gradient(160deg,hsl(${phash(x.p.who)%360} 60% 35%),#050505)`}">${x.mine&&S.avatar?`<img src="${S.avatar}" alt="">`:''}
+        <div class="tokside"><span>♥<b>${fmt(x.p.likes)}</b></span><span>💬<b>${fmt(x.mine?x.p.comments.length*ri(20,90):ri(30,900))}</b></span><span>↗<b>${fmt(x.mine?x.p.shares:Math.round(x.p.likes*.05))}</b></span></div>
+        <div class="tokcap"><b>${esc(handle(x.mine?S.stage:x.p.who))}</b>${x.mine&&x.p.viral?' <span class="viral">Viral</span>':''}<div>${esc(x.mine?x.p.cap:x.p.text)}</div>${x.mine?`<small>▶ ${fmt(x.p.views)} views · ♪ ${esc(x.p.song||'original sound')}</small>`:''}</div></div>
+        <div class="row" style="justify-content:center"><button class="btn sm ghost" data-a="tokNav" data-v="-1" ${i<=0?'disabled':''}>▲ Prev</button><span class="muted num">${i+1}/${L.length}</span><button class="btn sm ghost" data-a="tokNav" data-v="1" ${i>=L.length-1?'disabled':''}>Next ▼</button></div>`:'<div class="empty">Nothing on your For You page yet.</div>'}
+    else if(t==='me')b=profHead('tok')+`<div class="igrid tall">${acc.posts.map(p=>`<button class="gt" style="${tileBg(p)}" data-a="openPost" data-k="tok" data-id="${p.id}"><span>${esc(tileTxt(p))}</span><em>▶ ${fmt(p.views)}</em></button>`).join('')}</div>`;
+    else if(t==='new')b=composeHTML('tok')+`<div class="pcard"><h3>Go LIVE</h3><small class="muted">15 energy. Fans tip you and loyalty goes up.</small><button class="btn" data-a="golive">● Start livestream</button></div>`;
+    else b=activity('tok');
+    return appShell('TokTune',[['fyp','For You','⌂'],['new','Create','＋'],['act','Inbox','✉'],['me','Profile','◉']],b)},
+  tube(){UI.social='tube';const t=curTab('home'),acc=S.social.tube;
+    const vids=acc.posts.map(p=>{const s=p.mvSong?S.songs.find(x=>x.id===p.mvSong):null;return {p,views:s?s.mvViews:p.views}});let b;
+    if(t==='home')b=vids.length?vids.map(v=>`<button class="yt" data-a="openPost" data-k="tube" data-id="${v.p.id}"><span class="thumb" style="${tileBg(v.p)}">${esc(tileTxt(v.p))}<em>${ri(2,4)}:${String(ri(0,59)).padStart(2,'0')}</em></span><span class="ytm">${avatar(32,S)}<span><b>${esc(v.p.cap)}</b><small class="muted">${esc(S.stage)} · ${fmt(v.views)} views · ${S.t-v.p.t<=0?'this week':(S.t-v.p.t)+' weeks ago'}</small></span></span></button>`).join(''):'<div class="empty">Upload your first video.</div>';
+    else if(t==='new')b=composeHTML('tube');
+    else if(t==='studio'){const tv=sum(vids,v=>v.views),top=vids.slice().sort((a,b)=>b.views-a.views)[0];const r=S.report||{};
+      b=`<div class="pcard"><h3>Channel analytics</h3><div class="kv"><div><span class="label">Subscribers</span><b>${fmt(acc.f)}</b></div><div><span class="label">Total views</span><b>${fmt(tv)}</b></div><div><span class="label">Views last week</span><b>${fmt(r.views||0)}</b></div><div><span class="label">Ad revenue last week</span><b>${cash((r.inc||{})['MeTube ad revenue']||0)}</b></div></div>${top?`<small class="muted">Top video: ${esc(top.p.cap)} (${fmt(top.views)} views)</small>`:''}</div>
+      <div class="pcard"><h3>Monetization</h3><small class="muted">${acc.f>=1000?'Your channel earns money from every view. Music videos earn the most.':`Reach 1,000 subscribers to look like a real channel. You have ${fmt(acc.f)}.`}</small></div>`}
+    else b=`<div class="ytban" style="${tileBg({hue:S.hue})}"></div>`+profHead('tube','subscribers');
+    return appShell('MeTube',[['home','Videos','▶'],['new','Upload','＋'],['studio','Studio','▤'],['me','Channel','◉']],b)},
+  streamify(){return dspApp('streamify')},
+  tunes(){return dspApp('tunes')},
+  msgs(){const D=S.dsp;S.dsp.seen.msgs=S.t;
+    const b=D.dms.length?D.dms.map(m=>`<div class="dm ${m.replied?'done':''}">${m.kind==='person'?npcAv(m.from,40):m.kind==='ind'?npcAv(m.from,40):`<span class="av" style="width:40px;height:40px;background:hsl(${phash(m.from)%360} 60% 40%)">${esc(m.from.charAt(1).toUpperCase())}</span>`}<div class="dmb"><div class="between"><b>${esc(m.from)}</b><small class="muted">${S.t-m.t<=0?'now':(S.t-m.t)+'w'}</small></div><small class="muted">${m.kind==='person'?'Friends & family':m.kind==='ind'?'Industry':'Fan'}</small><div>${esc(m.text)}</div>${m.replied?`<div class="mine">${esc(m.replied)}</div>`:`<div class="row"><button class="btn sm ghost" data-a="dmLike" data-id="${m.id}">${m.liked?'♥ Liked':'♡ Like'}</button><button class="btn sm" data-a="dmReply" data-id="${m.id}">Reply · ${m.kind==='person'?2:1}E</button></div>`}</div></div>`).join(''):'<div class="empty">No messages yet. They show up as the weeks go by.</div>';
+    return appShell('Messages',[],`<small class="muted">Replying to fans raises loyalty. Replying to friends and family raises your relationship with them.</small>${b}`)},
+  buzz(){S.dsp.seen.buzz=S.t;const L=[...S.dsp.news.map(n=>({...n})),...S.log.filter(l=>l.kind==='big'||l.kind==='bad').map(l=>({t:l.t,src:l.kind==='bad'?'Gossip Grid':'Chart Watch',text:l.text}))].sort((a,b)=>b.t-a.t).slice(0,40);
+    return appShell('Buzz',[],L.length?L.map(n=>`<div class="news-i"><small class="muted">${esc(n.src)} · Y${Math.floor((n.t-1)/52)+1} W${((n.t-1)%52)+1}</small><b>${esc(n.text)}</b></div>`).join(''):'<div class="empty">No headlines about you yet.</div>')},
+  wallet(){const r=S.report||{inc:{},exp:{}};const hist=S.history.slice(-26);const mx=Math.max(1,...hist.map(h=>Math.abs(h.money)));
+    const b=`<div class="wcard"><span class="label">Balance</span><b>${cash(S.money)}</b><small>Lifetime earnings ${cash(S.stats.earned)}</small></div>
+    <div class="pcard"><h3>Balance, last ${hist.length} weeks</h3><div class="bars">${hist.map(h=>`<i class="${h.money<0?'neg':''}" style="height:${Math.max(3,Math.abs(h.money)/mx*100)}%"></i>`).join('')}</div></div>
+    <div class="pcard"><h3>Last week</h3><div class="lines">${Object.entries(r.inc||{}).filter(([k,v])=>Math.round(v)).map(([k,v])=>`<div><span>${esc(k)}</span><span class="good">+${cash(v)}</span></div>`).join('')}${Object.entries(r.exp||{}).filter(([k,v])=>Math.round(v)).map(([k,v])=>`<div><span>${esc(k)}</span><span class="bad">-${cash(v)}</span></div>`).join('')||''}</div>${r.inc?'':'<small class="muted">Finish a week to see your statement.</small>'}</div>`;
+    return appShell('Wallet',[],b)},
+  fanclub(){return appShell('Fan Club',[],socialExtras())},
+  charts(){const b=`<div class="pcard"><h3>Hot 20 · this week</h3>${S.charts.s.slice(0,20).map((e,i)=>`<div class="crow ${e.me?'me':''}"><b>${i+1}</b><span><b>${esc(e.title)}</b><small class="muted">${esc(e.artist)}</small></span><small class="num">${fmt(e.v)}</small></div>`).join('')}</div><button class="btn ghost sm" data-a="tab" data-v="charts">Open full charts & rivals</button>`;return appShell('Charts',[],b)},
+  cam(){return appShell('Story',[],`<div class="pcard"><h3>Post a story</h3><small class="muted">3 energy. Stories show on InstaPic for a week: a small follower and hype boost, and loyal fans love them.</small>${S.dsp.story&&S.dsp.story.t===S.t?`<div class="good">Your story is live. ${fmt(S.dsp.story.v)} views so far.</div>`:''}<div class="row"><button class="btn pink" data-a="story">Share a story</button></div></div>`)}
+};
+function activity(k){const acc=S.social[k];const L=[];
+  acc.posts.slice(0,8).forEach(p=>{(p.comments||[]).slice(0,3).forEach(c=>L.push({t:p.t,h:`<b>${esc(c.u)}</b> commented: ${esc(c.x)}`,id:p.id}));L.push({t:p.t,h:`<b>${fmt(p.likes)}</b> people liked your post "${esc(p.cap.slice(0,40))}"`,id:p.id})});
+  return L.length?`<div class="pcard">${L.slice(0,30).map(x=>`<button class="act-i" data-a="openPost" data-k="${k}" data-id="${x.id}">${x.h}</button>`).join('')}</div>`:'<div class="empty">No activity yet.</div>'}
+function trends(){const L=[];const rec=S.songs.filter(s=>s.status==='released').sort((a,b)=>b.rel-a.rel)[0];
+  if(rec&&S.t-rec.rel<=3)L.push({t:'#'+rec.title.replace(/[^A-Za-z0-9]/g,''),n:rec.week*.02+S.fans*.01});
+  L.push({t:S.fandom,n:S.fans*.02+ri(100,900)});
+  const v=S.social.chirp.posts.find(p=>p.viral&&S.t-p.t<=2);if(v)L.unshift({t:S.stage,n:v.likes*3});
+  (S.rivals||[]).slice(0,2).forEach(r=>L.push({t:r.name,n:r.fans*.01}));
+  TRENDS.forEach(t=>L.push({t,n:ri(8e3,4e5)}));
+  return L.slice(0,10)}
+
+/* ---- streaming apps ---- */
+function songArt(s,size){const a=s.album?S.albums.find(x=>x.id===s.album):null;const h=(a&&a.hue)||(s.id*47)%360;return a&&a.cover?`<img class="art" src="${a.cover}" alt="" style="width:${size}px;height:${size}px">`:`<span class="art" style="width:${size}px;height:${size}px;background:linear-gradient(150deg,hsl(${h} 75% 52%),hsl(${h+80} 70% 22%))"></span>`}
+function dspApp(app){
+  const C=DSP[app],D=S.dsp,t=curTab('artist'),rel=S.songs.filter(s=>s.status==='released');const sh=C.share;
+  D.seen[app]=S.t;
+  let b;
+  if(t==='artist'){
+    const pop=rel.slice().sort((a,b)=>b.streams-a.streams).slice(0,5);
+    const singles=rel.filter(s=>!s.album).sort((a,b)=>b.rel-a.rel);
+    const on=PLAYLISTS.filter(p=>p.app===app&&(D.pl[p.id]||[]).length);
+    b=`<div class="dban" style="background:linear-gradient(180deg,${C.c2},${C.bg})">${S.avatar?`<img src="${S.avatar}" alt="">`:`<span class="dfig">${avatar(120,S)}</span>`}<div class="dname">${verified()?`<small>✓ Verified Artist</small>`:''}<b>${esc(S.stage)}</b><span>${fmt(monthly(app))} ${C.ml}</span></div></div>
+    <div class="row"><span class="pill">${fmt(D.fol[app])} followers</span><button class="dplay" style="background:${C.c1};color:${C.ink}" data-a="dspPlay" aria-label="Play">▶</button></div>
+    <h3>Popular</h3>${pop.length?pop.map((s,i)=>`<div class="trk"><span class="n">${i+1}</span>${songArt(s,40)}<span class="tt"><b>${esc(s.title)}</b><small>${Math.round(s.streams*sh).toLocaleString('en-US')}${onLists(s.id).some(x=>x.p.app===app&&!x.p.auto)?' · <span style="color:'+C.c1+'">on playlists</span>':''}</small></span><button class="btn sm ghost" data-a="preview" data-id="${s.id}">▶</button></div>`).join(''):'<div class="empty">Release a song to show up here.</div>'}
+    ${S.albums.length||singles.length?`<h3>Discography</h3><div class="hscroll">${S.albums.map(a=>`<div class="disc">${a.cover?`<img src="${a.cover}" alt="">`:`<span style="background:linear-gradient(150deg,hsl(${a.hue} 75% 52%),hsl(${a.hue+80} 70% 22%))">${esc(a.title)}</span>`}<b>${esc(a.title)}</b><small>${a.type} · Year ${Math.floor((a.rel-1)/52)+1}</small></div>`).join('')}${singles.map(s=>`<div class="disc">${songArt(s,120)}<b>${esc(s.title)}</b><small>Single · Year ${Math.floor((s.rel-1)/52)+1}</small></div>`).join('')}</div>`:''}
+    <h3>Featured on</h3>${on.length?`<div class="hscroll">${on.map(p=>`<button class="plc" data-a="openPl" data-v="${p.id}"><span style="background:linear-gradient(150deg,${p.c},#111)">${esc(plName(p))}</span><small>${fmt(p.f())} saves</small></button>`).join('')}</div>`:'<div class="empty">No playlists yet. Release strong songs, pitch them in For Artists, and go viral.</div>'}
+    <h3>About</h3><div class="pcard"><b>${fmt(monthly(app))} ${C.ml}</b><div>${esc(S.bio||S.stage+' · '+S.genre)}</div>${monthly(app)<100?'<small class="muted">Top cities show up once you have 100 listeners.</small>':topCities(app).map(c=>`<div class="between"><span>${esc(c.c)}</span><small class="num">${fmt(c.n)} listeners</small></div>`).join('')}</div>`;
+  }else if(t==='stats'){
+    const h=D.hist.slice(-12),mx=Math.max(1,...h);const recs=S.songs.filter(s=>s.status==='recorded');
+    const last4=sum(D.hist.slice(-4),x=>x)*sh;
+    b=`<div class="kv"><div><span class="label">Streams, 28 days</span><b>${fmt(last4)}</b></div><div><span class="label">Listeners</span><b>${fmt(monthly(app))}</b></div><div><span class="label">Followers</span><b>${fmt(D.fol[app])}</b></div><div><span class="label">From playlists / wk</span><b>${fmt(D.plWk*sh)}</b></div></div>
+    <div class="pcard"><h3>Weekly streams</h3>${h.length?`<div class="bars g" style="--c:${C.c1}">${h.map(x=>`<i style="height:${Math.max(3,x/mx*100)}%" title="${fmt(x*sh)}"></i>`).join('')}</div><small class="muted">Last ${h.length} weeks on ${C.name}</small>`:'<small class="muted">Finish a week to see your stream graph.</small>'}</div>
+    <div class="pcard"><h3>Pitch to editors</h3><small class="muted">Pitch a recorded, unreleased song. If you release it while the pitch is active, its chance of landing on editorial playlists (on both apps) more than doubles. 5 energy.</small>
+      ${D.pitch?`<div class="good">Pitched: "${esc((S.songs.find(s=>s.id===D.pitch)||{}).title||'')}". Release it to give it the boost.</div>`:recs.length?`<div class="row"><select id="pitch-sel" aria-label="Song to pitch">${recs.map(s=>`<option value="${s.id}">${esc(s.title)} (Q${s.q})</option>`).join('')}</select><button class="btn sm" data-a="pitch" style="background:${C.c1};color:${C.ink}">Pitch</button></div>`:'<small class="muted">Record a song in the Studio first.</small>'}</div>
+    <div class="pcard"><h3>Plaques</h3>${Object.entries(D.plaq).length?Object.entries(D.plaq).map(([id,l])=>{const s=S.songs.find(x=>x.id==id);return s?`<div class="between"><span>${esc(s.title)}</span><span class="pill gold">${['1M','10M','100M','1B'][l-1]} streams</span></div>`:''}).join(''):'<small class="muted">Plaques arrive when a song passes 1M, 10M, 100M and 1B streams.</small>'}</div>
+    ${D.wrapped.length?`<div class="pcard"><h3>Wrapped</h3><div class="row">${D.wrapped.map((w,i)=>`<button class="btn sm ghost" data-a="openWrapped" data-v="${i}">Year ${w.y}</button>`).join('')}</div></div>`:`<div class="pcard"><h3>Wrapped</h3><small class="muted">Your yearly Wrapped arrives at the end of each year.</small></div>`}`;
+  }else if(t==='pl'){
+    const id=UI.plOpen;const p=PLAYLISTS.find(x=>x.id===id&&x.app===app);
+    if(p){const mine=(D.pl[p.id]||[]).slice().sort((a,b)=>a.pos-b.pos);const rows=[];const npc=S.npcs.slice().sort((a,b)=>b.power-a.power);
+      let k=0;for(let pos=1;pos<=12;pos++){const m=mine.find(e=>e.pos===pos);if(m){const s=S.songs.find(x=>x.id===m.s);rows.push({pos,me:1,title:s.title,artist:S.stage,s})}else{const n=npc[(k++ + phash(p.id))%npc.length];rows.push({pos,title:n.single,artist:n.name})}}
+      mine.filter(e=>e.pos>12).forEach(e=>{const s=S.songs.find(x=>x.id===e.s);rows.push({pos:e.pos,me:1,title:s.title,artist:S.stage,s,gap:1})});
+      b=`<button class="btn sm ghost" data-a="openPl" data-v="">‹ All playlists</button><div class="plhead" style="background:linear-gradient(160deg,${p.c},${C.bg})"><b>${esc(plName(p))}</b><small>${esc(p.d)}</small><small>${fmt(p.f())} saves · ${C.name}</small></div>
+      ${rows.map(r=>`${r.gap?'<div class="muted" style="text-align:center">···</div>':''}<div class="trk ${r.me?'me':''}" style="${r.me?'--c:'+C.c1:''}"><span class="n">${r.pos}</span>${r.me?songArt(r.s,40):`<span class="art" style="width:40px;height:40px;background:hsl(${phash(r.title)%360} 50% 35%)"></span>`}<span class="tt"><b>${esc(r.title)}</b><small>${esc(r.artist)}</small></span>${r.me?`<small class="num">${fmt((r.s.plWk||0)*sh)}/wk</small>`:''}</div>`).join('')}`;
+    }else b=`<small class="muted">Editorial playlists on ${C.name}. Getting added brings new listeners every week, and new listeners become fans.</small>`+PLAYLISTS.filter(p=>p.app===app).map(p=>{const on=(D.pl[p.id]||[]).length;return `<button class="plrow ${on?'on':''}" data-a="openPl" data-v="${p.id}" style="${on?'--c:'+C.c1:''}"><span class="plart" style="background:linear-gradient(150deg,${p.c},#111)"></span><span class="tt"><b>${esc(plName(p))}</b><small>${fmt(p.f())} saves${on?' · You are on this':''}</small><small class="muted">${esc(p.d)}</small></span></button>`}).join('');
+  }
+  return appShell(C.name,[['artist','Artist','◉'],['pl','Playlists','≡'],['stats','For Artists','▤']],b,{right:`<span class="dlogo" style="color:${C.c1}">${C.ico}</span>`});
+}
+function openPostModal(k,id){
+  const p=S.social[k].posts.find(x=>x.id==id);if(!p)return;
+  openModal(PLAT[k].name,postHTML(p,k,true)+`<div class="row"><button class="btn sm" data-a="replyCmt" data-k="${k}" data-id="${p.id}" ${p.replied?'disabled':''}>${p.replied?'You replied to comments':'Reply to comments · 2E'}</button><button class="btn sm ghost" data-a="closeModal">Close</button></div>`);
+}
+Object.assign(A,{
+  openApp:d=>{requestAnimationFrame(()=>{const e=document.querySelector('.phone');if(e)window.scrollTo(0,e.getBoundingClientRect().top+scrollY-8)});UI.app=d.v||null;UI.appTab=null;UI.plOpen=null;UI.tokI=0;if(d.v&&PLAT[d.v])UI.social=d.v,UI.postType='';if(d.v==='cam'){}},
+  appTab:d=>{UI.appTab=d.v;if(d.v==='pl')UI.plOpen=null},
+  openPl:d=>{UI.appTab='pl';UI.plOpen=d.v||null},
+  tokNav:d=>{UI.tokI=Math.max(0,(UI.tokI||0)+(+d.v))},
+  openPost:d=>{openPostModal(d.k,d.id)},
+  replyCmt:d=>{const p=S.social[d.k].posts.find(x=>x.id==d.id);if(!p||p.replied)return;if(!spend(2))return;p.replied=1;p.comments.push({u:handle(S.stage),x:pick(DM_REPLY)});bump('loyalty',1.5);p.likes+=Math.round(p.likes*.05);UI.modal=null;openPostModal(d.k,d.id);toast('Fans loved hearing back from you. Loyalty up.')},
+  story:()=>{if(S.dsp.story&&S.dsp.story.t===S.t){toast('You already have a story up this week.');return}if(!spend(3))return;const acc=S.social.insta;const v=Math.round(acc.f*rnd(.15,.35)+ri(5,30));S.dsp.story={t:S.t,v};acc.f+=Math.round(v*rnd(.005,.02));S.hype=clamp(S.hype+2,0,100);bump('loyalty',.5);toast(`Story posted. ${fmt(v)} views.`)},
+  dmLike:d=>{const m=S.dsp.dms.find(x=>x.id==d.id);if(!m)return;if(!m.liked&&m.kind==='fan')bump('loyalty',.2);m.liked=!m.liked},
+  dmReply:d=>{const m=S.dsp.dms.find(x=>x.id==d.id);if(!m||m.replied)return;if(!spend(m.kind==='person'?2:1))return;m.replied=pick(DM_REPLY);
+    if(m.kind==='person'){const p=S.people.find(x=>x.id===m.pid);if(p){p.rel=clamp(p.rel+4,0,100);toast(`${p.name} was happy to hear from you.`)}}
+    else if(m.kind==='ind'){const n=S.npcs.find(x=>x.name===m.from);if(n&&Math.random()<.3){addFans(n.power*.0004);toast(`${m.from} shared your music with their fans.`)}else toast('They hearted your reply.')}
+    else{bump('loyalty',1);if(Math.random()<.15){S.hype=clamp(S.hype+5,0,100);toast('The fan posted your reply. It is going around. Hype +5.')}else toast('You made their whole year. Loyalty up.')}},
+  pitch:()=>{const sel=$('#pitch-sel');const s=sel&&S.songs.find(x=>x.id==sel.value);if(!s)return;if(!spend(5))return;S.dsp.pitch=s.id;toast(`"${s.title}" pitched to editors. Release it to use the boost.`)},
+  openWrapped:d=>{const w=S.dsp.wrapped[+d.v];if(w)openModal(`Year ${w.y} Wrapped`,wrappedHTML(w)+'<button class="btn" data-a="closeModal">Close</button>')},
+  dspPlay:()=>{const s=S.songs.filter(x=>x.status==='released').sort((a,b)=>b.streams-a.streams)[0];if(s)playSong(s);else toast("Release a song first.");return false},
+});
+
 function render(){
   const app=$('#app');
   if(!S){app.innerHTML=setupView()+modalHTML()+setupTipHTML();return}
-  const views={production:prodView,artwork:artView,help:helpView,style:styleView,home:()=>(S.retired?`<div class="section">${retireCard()}</div>`:'')+homeView()+homeExtras(),studio:()=>studioView()+studioExtras(),live:()=>liveView()+liveExtras(),business:()=>businessView()+bizExtras(),charts:chartsView,social:()=>socialView()+socialExtras(),personal:()=>personalView()+personalExtras()};
+  const views={production:prodView,artwork:artView,help:helpView,style:styleView,home:()=>(S.retired?`<div class="section">${retireCard()}</div>`:'')+homeView()+homeExtras(),studio:()=>studioView()+studioExtras(),live:()=>liveView()+liveExtras(),business:()=>businessView()+bizExtras(),charts:chartsView,social:phoneView,personal:()=>personalView()+personalExtras()};
   app.innerHTML=hud()+`<main class="wrap">${(views[UI.tab]||homeView)()}</main>`+modalHTML()+tutHTML();
   const tb=document.querySelector('.tabs .tut-hl')||document.querySelector('.tabs .tab.on');if(tb)tb.parentElement.scrollLeft=Math.max(0,tb.offsetLeft-40);
   stage3dMount();
+  document.body.classList.toggle('phone-on',!!S&&UI.tab==='social');
 }
 function modalHTML(){if(!UI.modal)return '';return `<div class="scrim" data-a="scrim"><div class="modal" role="dialog" aria-modal="true"><h2>${esc(UI.modal.title)}</h2>${UI.modal.html}</div></div>`}
 
