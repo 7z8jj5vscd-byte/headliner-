@@ -284,6 +284,62 @@ tr.me td{background:color-mix(in srgb,var(--gold) 12%,transparent)}
 .crow.me{color:var(--gold)}
 @media (max-width:480px){.phone{border-radius:0;border:0;padding:0;background:none;box-shadow:none;width:100%;max-width:none}.pscreen{border-radius:22px;height:calc(100svh - 24px)}}
 
+/* v11 */
+.section[hidden]{display:none!important}
+.subnav{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin:16px 0 0}
+.subt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;min-height:72px;border:1px solid var(--line);background:var(--panel);border-radius:12px;color:var(--fg);font-weight:800;font-size:12px;cursor:pointer;text-align:center;font-family:var(--body);line-height:1.2}
+.subt i{font-style:normal;font-size:22px}
+.subt.on{border-color:var(--gold);background:var(--panel2);color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.card.acc>.acc-h{cursor:pointer;position:relative;padding-right:26px}
+.card.acc>.acc-h::after{content:'▾';position:absolute;right:2px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px}
+.card.acc.shut>.acc-h::after{content:'▸'}
+.card.acc.shut{gap:0}
+.card.acc.shut>*:not(.acc-h){display:none!important}
+.planner{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+@media (max-width:640px){.planner{grid-template-columns:repeat(4,1fr)}}
+.pday{border:1px dashed var(--line);background:var(--bg2);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--fg);cursor:pointer;min-height:108px;position:relative;font-family:var(--body);text-align:center}
+.pday.set{border-style:solid;border-color:var(--cyan)}
+.pday.now{box-shadow:0 0 0 2px var(--gold)}
+.pday.done{opacity:.55;cursor:default}
+.pday i{font-style:normal;font-size:24px;line-height:1.2}
+.pday i.add{color:var(--dim)}
+.pday b{font-size:11px;line-height:1.2;overflow-wrap:anywhere}
+.pday em{position:absolute;top:4px;right:6px;color:var(--good);font-style:normal;font-weight:900}
+.opps{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.opp{display:flex;gap:10px;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px}
+.opp i,.pact i{font-style:normal;font-size:22px}
+.opp>div{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.opp.used{opacity:.6}
+.pact{display:flex;gap:10px;align-items:center;width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--fg);cursor:pointer;text-align:left;font-family:var(--body);margin-top:6px}
+.pact span{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.pact small{color:var(--muted);font-size:11px}
+.pact em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--cyan);white-space:nowrap}
+.pact.opp-b{border-color:var(--gold)}
+.pgrp summary{cursor:pointer;font-weight:800;padding:8px 0 2px}
+.wsteps{display:flex;gap:6px;flex-wrap:wrap}
+.wsteps span{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted);font-weight:700}
+.wsteps .on{border-color:var(--pink);color:var(--pink)}.wsteps .ok{color:var(--good)}
+.hook{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--fg);cursor:pointer;font-family:var(--body);font-size:15px;font-style:italic}
+.hook.on{border-color:var(--pink);box-shadow:0 0 0 1px var(--pink) inset}
+.hook b{color:var(--gold);white-space:nowrap;font-style:normal}.hook b i{color:var(--dim);font-style:normal}
+.tbar{position:relative;height:46px;background:var(--bg2);border:1px solid var(--line);border-radius:23px;overflow:hidden}
+.tz{position:absolute;top:0;bottom:0;background:rgba(255,182,39,.25)}
+.tz i{position:absolute;top:0;bottom:0;background:rgba(255,182,39,.7)}
+.tn{position:absolute;top:5px;bottom:5px;width:6px;margin-left:-3px;border-radius:3px;background:#fff;box-shadow:0 0 12px #fff;animation:tn 1s ease-in-out infinite alternate}
+@keyframes tn{from{left:2%}to{left:98%}}
+.big-tap{font-size:18px;padding:14px 30px}
+.wsreveal{display:flex;gap:16px;align-items:center}
+.grade.big{width:84px;height:84px;font-size:46px;flex:none;border-radius:16px;animation:gpop .5s ease-out}
+@keyframes gpop{0%{transform:scale(.2) rotate(-20deg)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.emotes{position:absolute;left:8px;bottom:8px;display:flex;flex-direction:column;gap:5px;z-index:4}
+.emo{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.28);background:rgba(14,11,20,.62);font-size:16px;cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(6px);color:#fff;padding:0}
+.emo.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+#scene3d{touch-action:pan-y;cursor:grab}
+@media (max-width:640px){.emotes{left:4px;bottom:6px;gap:4px}.emo{width:28px;height:28px;font-size:13px}}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
+.confetti i{position:absolute;top:-24px;border-radius:2px;animation:cfall 2s ease-in forwards}
+@keyframes cfall{to{transform:translateY(110vh) rotate(720deg)}}
+
 /* venues */
 .venue{display:flex;flex-direction:column;gap:8px}
 .venue .facts{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
@@ -733,7 +789,7 @@ function defaultFandom(stage){const w=(stage||'Fans').replace(/[^A-Za-z ]/g,'').
 const year=()=>Math.floor((S.t-1)/52)+1;
 const wkOfYear=()=>((S.t-1)%52)+1;
 const house=()=>HOUSES.find(h=>h.id===S.house);
-const maxEnergy=()=>Math.round(house().energy*(.55+S.health/220));
+const maxEnergy=()=>Math.round(house().energy*(.55+S.health/220)*(easy()?1.2:1));
 const tier=()=>{let n=TIERS[0][1];TIERS.forEach(([f,l])=>{if(S.fans>=f)n=l});return n};
 const labelOf=c=>c?LABELS.find(l=>l.id===c.id):null;
 const share=()=>S.contract?S.contract.share:.9;
@@ -825,13 +881,13 @@ function clipChance(p,src){
   if(Math.random()<p*(1+(S.skills.performance+S.skills.charisma)/150)){const rel=S.songs.filter(x=>x.status==='released');breakout(src,rel.length&&Math.random()<.7?pick(rel):null)}
 }
 function releaseOutcome(q,kind,title){
-  const ex=30+S.level*7.5;
+  const ex=30+S.level*7.5-(easy()?7:0);
   let sc=q+S.hype/10+rnd(-14,14)+(eraFx().recv||0)+(S.contract?(S.contract.promo-1)*3:0);
   if(S.t-S.lastRelease<2)sc-=8;
   const d=sc-ex,k=d>=20?'smash':d>=6?'hit':d>=-10?'solid':'flop';
   const R=RECV[k],mult=kind==='album'?1.5:1;
   let g;
-  if(k==='flop'){g=-S.fans*.03;S.fans+=g;S.happy=clamp(S.happy-8,0,100)}
+  if(k==='flop'){g=-S.fans*(easy()?.012:.03);S.fans+=g;S.happy=clamp(S.happy-8,0,100)}
   else g=addFans((S.fans*R.f*mult+R.flat*(1+S.level)*mult)*(q/100+.5));
   if(k==='hit'||k==='smash'){S.stats.hits++;S.hype=clamp(S.hype+(k==='smash'?25:12),0,100)}
   S.relN++;S.rel.push({n:S.relN,t:S.t,k,kind,title});S.rel=S.rel.slice(-20);
@@ -840,7 +896,7 @@ function releaseOutcome(q,kind,title){
   eraCheck(true);
   return {k,g};
 }
-function fanMult(){return S.origin==='rich'?.9:1}
+function fanMult(){return (S.origin==='rich'?.9:1)*(easy()?1.3:1)}
 function addFans(n){if(n>0)n*=fanMult()*Math.max(0,1-S.fans/4e8)*(eraFx().fans||1);S.fans=Math.max(0,S.fans+n);return n}
 function songQuality(bonus=0){
   const k=GENRES[S.genre],sk=S.skills;
@@ -952,11 +1008,12 @@ function nextWeek(silent=false,fromLive=false){
   add(r.exp,'Living costs',60+Math.min(4000,S.fans*.0005));
   if(S.lux.length)add(r.exp,'Vehicle & toy upkeep',sum(S.lux,id=>LUX.find(l=>l.id===id).price*.0008));
   // apply money
+  if(easy())for(const k in r.inc)r.inc[k]*=1.2;
   const incT=sum(Object.values(r.inc),x=>x),expT=sum(Object.values(r.exp),x=>x);
   S.money+=incT-expT;S.stats.earned+=incT;
   // fans & social
   addFans(fg);
-  {const ch=eraFx().churn||0;if(ch){const l=S.fans*ch;S.fans-=l;if(l>=1)r.ev.push(`${ERAS[S.era.id].n}: lost ${fmt(l)} fans`)}}
+  {const ch=(eraFx().churn||0)*(easy()?.5:1);if(ch){const l=S.fans*ch;S.fans-=l;if(l>=1)r.ev.push(`${ERAS[S.era.id].n}: lost ${fmt(l)} fans`)}}
   Object.entries(S.social).forEach(([k,a])=>{const target=S.fans*PLAT[k].ratio;if(target>a.f)a.f=Math.round(a.f+(target-a.f)*.06+ri(0,5))});
   // npc feed
   for(let i=0;i<3;i++){const n=pick(S.npcs);S.feed.unshift({id:S.nextId++,who:n.name,plat:pick(Object.keys(PLAT)),text:pick(NPC_POSTS).replace('{song}',n.single),likes:Math.round(n.power*rnd(.002,.01)),liked:false,t:S.t})}
@@ -1100,7 +1157,7 @@ function writeSong(bonus=0,feat=null){
   const theme=$('#song-theme')?.value||pick(THEMES);
   let title=($('#song-title')?.value||'').trim()||songTitle();
   const tempo=$('#song-tempo')?.value||pick(TEMPOS),inst=$('#song-inst')?.value||pick(INSTS),fit=GFIT[S.genre]||[];if(fit[0]===tempo)bonus+=3;if(fit[1]===inst)bonus+=3;if(S.breakupBoost&&!feat){bonus+=8;S.breakupBoost=0}if(S.mentor&&S.mentor.until>S.t)bonus+=3;
-  const s={id:S.nextId++,title,theme,tempo,inst,lyric:pick(LYR[theme]||LYR.Love),q:songQuality(bonus),status:'demo',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null};
+  const s={id:S.nextId++,title,theme,tempo,inst,lyric:pick(LYR[theme]||LYR.Love),q:songQuality(bonus+(feat?0:(()=>{const b=S.oppBonus||0;S.oppBonus=0;return b})())),status:'demo',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null};
   S.songs.unshift(s);S.stats.written++;
   S.skills.songwriting=Math.min(100,S.skills.songwriting+.6*(1-S.skills.songwriting/130));
   return s;
@@ -1441,7 +1498,7 @@ function studioView(){
       <label class="field"><span class="label">Title</span><input type="text" id="song-title" placeholder="Leave blank for a random title" maxlength="40"></label>
       <label class="field"><span class="label">Theme</span><select id="song-theme">${THEMES.filter(t=>t!=='Family'||S.kids).map(t=>`<option>${t}</option>`).join('')}</select></label>
       <div class="row"><label class="field"><span class="label">Tempo</span><select id="song-tempo">${TEMPOS.map(t=>`<option ${(GFIT[S.genre]||[])[0]===t?'selected':''}>${t}</option>`).join('')}</select></label><label class="field"><span class="label">Lead instrument</span><select id="song-inst">${INSTS.map(t=>`<option ${(GFIT[S.genre]||[])[1]===t?'selected':''}>${t}</option>`).join('')}</select></label></div><small class="muted">${esc(S.genre)} fans like ${(GFIT[S.genre]||[]).join(' and ').toLowerCase()} songs (+3 each).${S.breakupBoost?' Your heartbreak will make the next song +8.':''}</small>
-      <div><button class="btn" data-a="write">Write song</button></div></div>
+      <div class="row"><button class="btn pink" data-a="wsStart">🎵 Start writing session</button><button class="btn ghost sm" data-a="write">Quick write</button></div><small class="muted">Writing sessions are a mini-game: pick the vibe, choose a hook, nail the melody. Good sessions add up to +18 quality.</small></div>
     <div class="card"><h3>Songwriting retreat</h3><p class="muted">Spend the whole week in a cabin and come back with <b>2 new songs</b>, each with +5 quality. Costs $250 and needs 30 energy. Ends the week.</p><div><button class="btn" data-a="retreat">Go on retreat</button></div></div>
     <div class="card"><h3>Collaborate</h3>${S.level<3?`<span class="lock">${lockTxt(3)}</span>`:''}<p class="muted">Pitch a feature to a charting artist. Their fans stream the song too. 25 energy plus their fee (refunded if they pass).</p>
       <select data-ui="collab" id="collab-sel"><option value="">Choose an artist</option>${npcs.map(n=>`<option value="${esc(n.name)}" ${UI.collab===n.name?'selected':''}>${esc(n.name)} · ${cash(collabFee(n))} · ${Math.round(collabChance(n)*100)}% chance</option>`).join('')}</select>
@@ -1833,7 +1890,7 @@ function hud(){
   const tabs=[['home','Home'],['studio','Studio'],['artwork','Album Art'],['live','Live'],['production','Production'],['business','Business'+(nIn?`<span class="badge">${nIn}</span>`:'')],['charts','Charts & Rivals'],['social','Phone'+(S.dsp&&(appBadge('msgs')+appBadge('streamify')+appBadge('tunes'))?`<span class="badge">${appBadge('msgs')+appBadge('streamify')+appBadge('tunes')}</span>`:'')],['style','Style'],['personal','Personal'],['help','Help']];
   return `<div class="top"><div class="stagebox">${G3.ok?'<div class="scene3d" id="scene3d"></div>':`<div class="scene">${sceneSVG(sc.k)}</div>
     <div class="figs">${mem.slice(0,half).join('')}<div class="me p-${sc.pose||'idle'}">${figure(S.look,sc.pose||'idle',{name:S.stage})}</div>${mem.slice(half).join('')}</div>`}
-    <div class="scap">${esc(sc.cap||'')}</div>${tickerHTML()}
+    ${emoteBar()}<div class="scap">${esc(sc.cap||'')}</div>${tickerHTML()}
     ${panelHTML()}
   </div>
   <nav class="tabs wrap">${tabs.map(([k,l])=>`<button class="tab ${UI.tab===k?'on':''} ${UI.tut!=null&&TUT[UI.tut].tab===k&&k!=='home'?'tut-hl':''}" data-a="tab" data-v="${k}">${l}</button>${k==='style'?dateChip():''}`).join('')}</nav></div>`;
@@ -2231,7 +2288,7 @@ function retireCard(){
   return `<div class="card"><h2>Retirement</h2><p class="muted">End the career whenever you like. A farewell world tour sells 50% more tickets and ends with your career recap. Reaching Star (Level 7) or winning 3 awards puts you in the Hall of Fame.</p><div class="row"><button class="btn sm" data-a="farewell" ${S.level<6?'disabled':''}>Farewell world tour</button><button class="btn sm ghost" data-a="retireAsk">Retire</button></div>${S.level<6?`<span class="lock">Farewell tour: ${lockTxt(6)}</span>`:''}</div>`;
 }
 function hofCard(){let H=[];try{H=JSON.parse(localStorage.getItem('headliner_hof')||'[]')}catch(e){}if(!H.length)return '';return `<div class="card"><h2>Hall of Fame</h2><div class="list">${H.map(h=>`<div class="between"><span><b>${esc(h.stage)}</b> <small class="muted">${esc(h.genre)} · Lv ${h.level} · ${fmt(h.fans)} fans · ${h.awards} awards · ${h.ones} #1s</small></span>${h.hof?'<span class="pill gold">Inducted</span>':'<span class="pill">Retired</span>'}</div>`).join('')}</div></div>`}
-function homeExtras(){return `<div class="section"><div class="grid">${goalsCard()}${retireCard()}${slotsCard()}${hofCard()}</div></div>`}
+function homeExtras(){return `<div class="section" data-title="Goals & saves"><div class="grid">${goalsCard()}${retireCard()}${slotsCard()}${hofCard()}</div></div>`}
 
 /* ---- weekly hook ---- */
 function extraWeek(r){prodWeek(r);
@@ -3358,11 +3415,222 @@ Object.assign(A,{
   dspPlay:()=>{const s=S.songs.filter(x=>x.status==='released').sort((a,b)=>b.streams-a.streams)[0];if(s)playSong(s);else toast("Release a song first.");return false},
 });
 
+/* ============ v11: easy mode, compartments, planner, writing sessions, emotes ============ */
+const easy=()=>!S||!S.settings||S.settings.easy!==false;
+{const _mig=migrate;migrate=function(s){_mig(s);s.plan??=[null,null,null,null,null,null,null];s.planDone??=[];s.opps??=[];s.settings??={};return s}}
+
+/* ---- confetti ---- */
+function confetti(n=90){if(reduceMotion&&reduceMotion())return;const box=document.createElement('div');box.className='confetti';const cols=['#ffb627','#ff4f8b','#4fd6e8','#62dd94','#ffffff','#a55eea'];
+  for(let i=0;i<n;i++){const p=document.createElement('i');p.style.cssText=`left:${rnd(0,100)}%;background:${pick(cols)};animation-delay:${rnd(0,.6)}s;animation-duration:${rnd(1.6,2.8)}s;transform:rotate(${ri(0,360)}deg);width:${ri(6,10)}px;height:${ri(10,16)}px`;box.appendChild(p)}
+  document.body.appendChild(box);setTimeout(()=>box.remove(),3600)}
+{const _ro=releaseOutcome;releaseOutcome=function(...a){const r=_ro.apply(this,a);if(r&&r.k==='smash')setTimeout(()=>confetti(),60);return r}}
+{const _sf=sfx;sfx=function(k){_sf(k);if(k==='level')setTimeout(()=>confetti(120),60)}}
+
+/* ---- compartments: tabs open one section at a time, cards fold ---- */
+const SUB_ICONS=[[/plan/i,'📅'],[/era/i,'🌀'],[/saves/i,'💾'],[/challenge|goal/i,'🎯'],[/^studio$/i,'🎙'],[/library/i,'📚'],[/album or ep/i,'💿'],[/discography/i,'🗂'],[/more studio/i,'✨'],[/street/i,'🎸'],[/venue/i,'🏟'],[/^tours/i,'🚌'],[/festival/i,'🎪'],[/map/i,'🗺'],[/recent/i,'🕘'],[/show planning/i,'📋'],[/production/i,'💡'],[/dancer/i,'💃'],[/inbox/i,'📥'],[/label/i,'🏷'],[/team/i,'👥'],[/merch/i,'👕'],[/media/i,'📺'],[/empire/i,'🏢'],[/rival/i,'⚔'],[/hot 20/i,'📈'],[/albums/i,'💿'],[/^style/i,'🪞'],[/wardrobe/i,'🧥'],[/boutique/i,'🛍'],[/skill/i,'📊'],[/relationship/i,'❤'],[/housing/i,'🏠'],[/garage|luxur/i,'🚗'],[/life|wellbeing/i,'🧘'],[/album art/i,'🎨'],[/covers/i,'🖼']];
+function subIcon(t){const m=SUB_ICONS.find(([r])=>r.test(t));return m?m[1]:'▸'}
+function compartments(){
+  const m=document.querySelector('main.wrap');if(!m||!S||['social','help'].includes(UI.tab))return;
+  UI.sub=UI.sub||{};UI.cards=UI.cards||{};const tab=UI.tab;
+  const secs=[...m.children].filter(c=>c.querySelector('h2'));
+  if(secs.length>1){
+    const titles=secs.map(s=>s.dataset.title||s.querySelector('h2').textContent.trim());let cur=UI.sub[tab];
+    if(!titles.includes(cur))cur=titles[0];
+    secs.forEach((s,i)=>{if(titles[i]!==cur)s.hidden=true});
+    const nav=document.createElement('div');nav.className='subnav';
+    nav.innerHTML=titles.map(t=>`<button class="subt ${t===cur?'on':''}" data-a="sub" data-v="${esc(t)}"><i>${subIcon(t)}</i><span>${esc(t)}</span></button>`).join('');
+    m.prepend(nav);
+  }
+  (secs.length?secs.filter(s=>!s.hidden):[m]).forEach(sec=>{
+    const cards=[...sec.querySelectorAll('.card')].filter(c=>!c.parentElement.closest('.card'));
+    const heads=cards.map(c=>{const h=c.querySelector('h3');if(!h)return null;return h.parentElement===c?h:h.parentElement.parentElement===c?h.parentElement:null});
+    if(heads.filter(Boolean).length<3)return;
+    let first=true;
+    cards.forEach((c,i)=>{const hd=heads[i];if(!hd)return;const key=tab+'|'+c.querySelector('h3').textContent.trim();
+      const open=UI.cards[key]??first;first=false;
+      hd.classList.add('acc-h');hd.dataset.a='card';hd.dataset.k=key;hd.setAttribute('role','button');hd.setAttribute('aria-expanded',open);
+      c.classList.add('acc');if(!open)c.classList.add('shut')});
+  });
+}
+Object.assign(A,{
+  sub:d=>{UI.sub=UI.sub||{};UI.sub[UI.tab]=d.v;requestAnimationFrame(()=>{const n=document.querySelector('.subnav');if(n&&n.getBoundingClientRect().top<0)n.scrollIntoView({block:'start'})})},
+  card:(d,el)=>{UI.cards=UI.cards||{};const c=el.closest('.card');UI.cards[d.k]=c?c.classList.contains('shut'):true},
+  setEasy:d=>{S.settings.easy=d.v==='1';save();toast(d.v==='1'?'Easy mode on: more fans, more money, kinder critics.':'Normal mode on.')},
+});
+
+/* ---- week planner ---- */
+const DAYN=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const OPPS=[
+  {k:'showcase',ic:'🎛',l:'Producer showcase',d:'Play your demos for a hot producer. Your next song gets +6 quality.',e:15,sc:{k:'studio',pose:'studio'},f:()=>{S.oppBonus=(S.oppBonus||0)+6;return 'The producer loved your demos. Your next song gets +6 quality.'}},
+  {k:'radio',ic:'📻',l:'Local radio drop-in',d:'A quick on-air chat and a live song.',e:10,sc:{k:'radio',pose:'press'},f:()=>{const g=addFans(S.fans*.02+ri(40,160));S.hype=clamp(S.hype+5,0,100);return `Radio drop-in: +${fmt(g)} fans, hype +5.`}},
+  {k:'picnic',ic:'🧺',l:'Fan picnic',d:'Hang out with your biggest fans in the park.',e:10,sc:{k:'street',pose:'cheer'},f:()=>{bump('loyalty',4);const g=addFans(S.fans*.008+ri(10,60));S.happy=clamp(S.happy+5,0,100);return `Fan picnic: loyalty +4, +${fmt(g)} fans.`}},
+  {k:'brand',ic:'📸',l:'Brand photo shoot',d:'A clothing brand wants you for a campaign.',e:15,sc:{k:'press',pose:'press'},f:()=>{const m=Math.round(300+S.level*1800+S.fans*.02);S.money+=m;return `Brand shoot paid ${cash(m)}.`}},
+  {k:'camp',ic:'✍',l:'Songwriting camp',d:'A day of writing with other artists. Songwriting skill up.',e:20,sc:{k:'studio',pose:'studio'},f:()=>{const g=rnd(2,3.5);S.skills.songwriting=Math.min(100,S.skills.songwriting+g);return `Songwriting camp: Songwriting +${g.toFixed(1)}.`}},
+  {k:'party',ic:'🥂',l:'Industry party',d:'Rub shoulders with people who matter.',e:15,sc:{k:'club',pose:'cheer',fill:.6},f:()=>{S.hype=clamp(S.hype+7,0,100);const g=addFans(S.fans*.01+ri(20,90));return `Industry party: hype +7, +${fmt(g)} fans from the photos.`}},
+  {k:'challenge',ic:'🕺',l:'Viral dance challenge',d:'Start a challenge and hope it catches on.',e:12,sc:{k:'mvset',pose:'dance'},f:()=>{if(Math.random()<.3+S.skills.dance/300){const g=addFans(S.fans*.06+250);S.stats.virals++;return `The challenge caught on! +${fmt(g)} fans.`}const g=addFans(S.fans*.005+ri(10,40));return `The challenge was cute. +${fmt(g)} fans.`}},
+  {k:'charity',ic:'💛',l:'Charity gig',d:'Play for a good cause. Loyalty, hype and happiness.',e:20,sc:{k:'bar',pose:'perform',fill:.9},f:()=>{bump('loyalty',3);S.hype=clamp(S.hype+4,0,100);S.happy=clamp(S.happy+6,0,100);return 'Charity gig: loyalty +3, hype +4, happiness +6.'}},
+  {k:'podcast',ic:'🎧',l:'Podcast guest spot',d:'Tell your story on a popular podcast.',e:10,sc:{k:'radio',pose:'press'},f:()=>{const g=addFans(S.fans*.012+ri(30,120));const m=Math.round(100+S.level*300);S.money+=m;return `Podcast: +${fmt(g)} fans and ${cash(m)}.`}},
+  {k:'master',ic:'🎓',l:'Masterclass with a legend',d:'A random skill jumps up.',e:15,sc:{k:'studio',pose:'studio'},f:()=>{const k=pick(Object.keys(SKILLS));S.skills[k]=Math.min(100,S.skills[k]+3);return `Masterclass: ${SKILLS[k]} +3.`}},
+  {k:'jam',ic:'🎷',l:'Late-night jam session',d:'Play for fun. Stage presence and happiness up.',e:10,sc:{k:'bar',pose:'busk',fill:.4},f:()=>{S.skills.performance=Math.min(100,S.skills.performance+1.5);S.happy=clamp(S.happy+5,0,100);return 'Jam session: Stage Presence +1.5, happiness +5.'}},
+  {k:'popup',ic:'🎤',l:'Pop-up street show',d:'A surprise show. Fans and tips.',e:15,sc:{k:'street',pose:'perform'},f:()=>{const g=addFans(S.fans*.012+ri(30,120));const m=Math.round(ri(80,300)*(1+S.level));S.money+=m;return `Pop-up show: +${fmt(g)} fans, ${cash(m)} in tips.`}},
+];
+function genOpps(){const L=OPPS.slice().sort(()=>Math.random()-.5).slice(0,easy()?4:3);S.opps=L.map(o=>({k:o.k,id:S.nextId++}))}
+function venueOk(v){return S.level>=LVL_VENUE[v.id]&&ready()>=v.songs}
+function planActs(){
+  const be=has('car')?10:15;const tt=trainTiers()[+UI.train||0];
+  const L=[
+    {g:'Make music',a:'ws',ic:'🎵',l:'Writing session',e:25,d:'Write a song with the mini-game. Pops up on the day.'},
+    {g:'Perform',a:'busk',ic:'🎸',l:'Busk: '+BUSK[+UI.busk||0].n,e:be,d:'Tips and new fans. Change the spot in Live.'},
+    ...VENUES.filter(venueOk).map(v=>({g:'Perform',a:'gig',v:v.id,ic:'🎤',l:v.name,e:v.id==='openmic'&&has('car')?10:v.e,d:v.desc})),
+    ...Object.entries(PLAT).map(([k,p])=>({g:'Social',a:'post',v:k,ic:'📱',l:'Post on '+p.name,e:8,d:'A quick post for followers and hype.'})),
+    {g:'Social',a:'golive',ic:'🔴',l:'Livestream',e:15,d:'Tips and loyalty.'},
+    ...(S.level>=2?[{g:'Social',a:'fanmeet',ic:'🤝',l:isK()?'Fan sign':'Meet and greet',e:20,d:'Costs $500. Hype, fans and merch sales.'}]:[]),
+    ...Object.entries(SKILLS).map(([k,n])=>({g:'Train',a:'train',v:k,ic:'📈',l:'Train '+n,e:tt.e,d:tt.n+(tt.cost?' · '+cash(tt.cost):' · free')})),
+    {g:'Rest',a:'rest',ic:'🛋',l:'Day off',e:0,d:'Health +15, happiness +8, stress down.'},
+  ];
+  return L}
+function planItem(p){if(!p)return null;if(p.a==='opp'){const o=OPPS.find(x=>x.k===p.v);return o?{ic:o.ic,l:o.l,e:o.e}:null}return planActs().find(x=>x.a===p.a&&(x.v||'')===(p.v||''))||{ic:'•',l:p.l||p.a,e:p.e||0}}
+function planEnergy(){return sum(S.plan.map((p,i)=>S.planDone[i]?null:planItem(p)).filter(Boolean),x=>x.e)}
+function planCard(){
+  if(!S.opps.length&&!S.oppsInit){S.oppsInit=1;genOpps()}
+  const L=UI.live,tot=planEnergy(),me=S.energy;
+  return `<div class="section"><div class="between"><h2>Plan your week</h2><span class="muted">${fmtDate()}</span></div>
+  <p class="muted">Pick what you do each day, then start the week. Plans happen live on their day. You can still do things instantly from any tab.</p>
+  <div class="planner">${DAYN.map((dn,i)=>{const p=S.plan[i],it=planItem(p),done=S.planDone[i],now=L.on&&L.day===i;
+    return `<button class="pday ${it?'set':''} ${done?'done':''} ${now?'now':''}" data-a="planOpen" data-v="${i}" ${done?'disabled':''}><small>${dn}</small>${it?`<i>${it.ic}</i><b>${esc(it.l)}</b><small class="num">${it.e?it.e+'E':'free'}</small>`:`<i class="add">＋</i><b class="muted">Free day</b>`}${done?'<em>✓</em>':''}</button>`}).join('')}</div>
+  <div class="between"><span class="label">Planned energy</span><span class="num ${tot>me?'bad':''}">${tot} / ${Math.round(me)}</span></div>${meter(tot,Math.max(1,me),tot>me?'pink':'')}
+  ${tot>me?'<small class="bad">Not enough energy for everything. Late plans will be skipped.</small>':''}
+  <div class="row"><button class="btn" data-a="startWeek" ${L.on?'disabled':''}>${L.on?'Week in progress…':L.day?'Resume week ›':'Start week ›'}</button><button class="btn ghost sm" data-a="planAuto">Auto-plan</button><button class="btn ghost sm" data-a="planClear">Clear</button><button class="chip ${S.planRepeat?'on':''}" data-a="planRepeat">Repeat every week</button></div>
+  ${S.opps.length?`<div class="stack" style="gap:6px"><span class="label">This week's opportunities</span><div class="opps">${S.opps.map(x=>{const o=OPPS.find(y=>y.k===x.k);const used=S.plan.some(p=>p&&p.a==='opp'&&p.id===x.id);return `<div class="opp ${used?'used':''}"><i>${o.ic}</i><div><b>${esc(o.l)}</b><small class="muted">${esc(o.d)} · ${o.e}E</small></div>${used?'<span class="pill">Planned</span>':''}</div>`}).join('')}</div><small class="muted">Tap a day to add one. They are gone after this week.</small></div>`:''}
+  </div>`}
+function planMenu(i){
+  const acts=planActs(),groups=[...new Set(acts.map(a=>a.g))];
+  const opps=S.opps.filter(x=>!S.plan.some(p=>p&&p.a==='opp'&&p.id===x.id));
+  return `<p class="muted">${DAYN[i]}day plan. Energy is spent on the day.</p>
+  ${opps.length?`<div class="stack" style="gap:6px"><span class="label">✨ Opportunities this week</span>${opps.map(x=>{const o=OPPS.find(y=>y.k===x.k);return `<button class="pact opp-b" data-a="planSet" data-day="${i}" data-act="opp" data-v="${o.k}" data-id="${x.id}"><i>${o.ic}</i><span><b>${esc(o.l)}</b><small>${esc(o.d)}</small></span><em>${o.e}E</em></button>`}).join('')}</div>`:''}
+  ${groups.map(g=>`<details class="pgrp" ${g==='Make music'||g==='Perform'?'open':''}><summary>${g}</summary>${acts.filter(a=>a.g===g).map(a=>`<button class="pact" data-a="planSet" data-day="${i}" data-act="${a.a}" data-v="${a.v||''}"><i>${a.ic}</i><span><b>${esc(a.l)}</b><small>${esc(a.d||'')}</small></span><em>${a.e?a.e+'E':'free'}</em></button>`).join('')}</details>`).join('')}
+  <div class="row">${S.plan[i]?`<button class="btn ghost sm" data-a="planSet" data-day="${i}" data-act="">Make it a free day</button>`:''}<button class="btn ghost sm" data-a="closeModal">Cancel</button></div>`}
+function runAct(a,d){const f=A[a];if(!f)return;const sig=S.energy+'|'+S.money+'|'+S.t;const res=f(d||{});if(res===false)return false;if(SCENE_ON[a]&&sig!==S.energy+'|'+S.money+'|'+S.t){const sc=SCENE_ON[a](d||{});if(sc)UI.scene=sc}return sig!==S.energy+'|'+S.money+'|'+S.t}
+function runPlanned(i){
+  if(!S.plan||S.planDone[i])return;const p=S.plan[i];S.planDone[i]=true;if(!p)return;
+  const it=planItem(p);let txt='';
+  if(p.a==='opp'){const o=OPPS.find(x=>x.k===p.v);if(!o)return;if(!spend(o.e)){txt=`Skipped ${o.l}: not enough energy.`}else{txt=o.f();UI.scene={...o.sc,cap:o.l}}}
+  else if(p.a==='rest'){S.health=clamp(S.health+15,0,100);S.happy=clamp(S.happy+8,0,100);S.stress=clamp((S.stress||0)-12,0,100);txt='Day off: health +15, happiness +8.';UI.scene={k:'home1',cap:'Day off',pose:'idle'}}
+  else if(p.a==='ws'){if(S.energy<25)txt='Skipped the writing session: not enough energy.';else{A.wsStart();return}}
+  else{const before=S.energy;
+    if(p.a==='post'){UI.social=p.v;UI.postType='';const P=PLAT[p.v];const t=P.types.find(t=>!t.song&&!t.beef&&!t.apology&&(!t.req||t.req()));UI.postType=t?t.id:P.types[0].id}
+    const ok=runAct(p.a,{v:p.v});txt=ok?`${it.l} ✓`:`Skipped ${it.l}: not enough energy or money.`;if(!ok&&S.energy===before){}}
+  UI.live.last=`${DAYN[i]}: ${txt}`;UI.live.lastDay=i;log(`${DAYN[i]}: ${txt}`);
+}
+{const _dp=dayPass;dayPass=function(){const d=UI.live.day+1;_dp();if(d<7&&UI.live.day===d&&UI.live.on){runPlanned(d);eraCheck();levelCheck();checkAch();save();render()}}}
+{const _nw=nextWeek;nextWeek=function(...a){const L=UI.live;for(let i=Math.max(0,L.day||0);i<7;i++)if(S.plan&&S.plan[i]&&!S.planDone[i]&&S.plan[i].a!=='ws')runPlanned(i);
+  const r=_nw.apply(this,a);S.planDone=[];S.plan=S.planRepeat?S.plan.map(p=>p&&p.a==='opp'?null:p):[null,null,null,null,null,null,null];genOpps();return r}}
+Object.assign(A,{
+  planOpen:d=>{UI.planDay=+d.v;openModal(`Plan ${DAYN[+d.v]}`,planMenu(+d.v))},
+  planSet:d=>{const i=+d.day;S.plan[i]=d.act?{a:d.act,v:d.v||'',id:d.id?+d.id:undefined}:null;UI.modal=UI.queue.shift()||null;save()},
+  planClear:()=>{S.plan=S.plan.map((p,i)=>S.planDone[i]?p:null)},
+  planRepeat:()=>{S.planRepeat=!S.planRepeat;toast(S.planRepeat?'Your plan will repeat every week.':'Plans now clear after each week.')},
+  planAuto:()=>{let e=S.energy;const acts=planActs();const want=[['ws'],['gig'],['post','tok'],['opp'],['gig'],['post','insta'],['rest']];
+    for(let i=0;i<7;i++){if(S.planDone[i]||S.plan[i])continue;const [a,v]=want[i];let p=null;
+      if(a==='opp'){const x=S.opps.find(x=>!S.plan.some(q=>q&&q.id===x.id));if(x){const o=OPPS.find(y=>y.k===x.k);if(o.e<=e){p={a:'opp',v:o.k,id:x.id};e-=o.e}}}
+      else if(a==='gig'){const vs=VENUES.filter(venueOk).filter(v=>v.cap>0);const v=vs[vs.length-1];const it=v?acts.find(x=>x.a==='gig'&&x.v===v.id):acts.find(x=>x.a==='busk');if(it&&it.e<=e){p={a:it.a,v:it.v||''};e-=it.e}}
+      else{const it=acts.find(x=>x.a===a&&(!v||x.v===v));if(it&&it.e<=e){p={a,v:v||''};e-=it.e}}
+      if(!p&&e>=8&&a!=='rest'){p={a:'post',v:pick(['insta','tok','chirp'])};e-=8}
+      S.plan[i]=p||(a==='rest'?{a:'rest',v:''}:null)}
+    toast('Week planned. Tweak any day, then start the week.')},
+});
+{const _sw=A.startWeek;A.startWeek=function(d){_sw(d);if(UI.live.day===0&&!S.planDone[0]){runPlanned(0)}}}
+
+/* ---- songwriting sessions ---- */
+const HOOKS={Love:['you are the song stuck in my head','hold me like the last slow dance','every light turns green with you'],Heartbreak:['I still set the table for two','you left the radio on','delete your number, keep the scars'],Party:['lose the shoes, keep the beat','we own the night till sunrise','turn the city into a dance floor'],Hustle:['no sleep, just dreams on repeat','built it brick by stubborn brick','they doubted, so I doubled'],Rebellion:['set the rulebook on fire','we were never meant to fit in','louder than the silence they sold'],Nostalgia:['mixtapes and summer rain','we were kings of the cul-de-sac','rewind me to the start'],Hometown:['dirt roads lead me back to you','the diner still knows my order','one stoplight, a million dreams'],Freedom:['open road and an open heart','no walls up here, just sky','I unlearned every cage'],Family:['you got your grandma\'s eyes','home is the sound of your laugh','I\'ll carry you like you carried me']};
+const WS_ROUNDS=['Melody','Rhythm','Hook delivery'];
+function wsSet(){UI.modal={title:'Writing session',html:wsHTML()}}
+function wsZone(){return clamp(16+S.skills.songwriting/8+(easy()?7:0),14,34)}
+function wsHTML(){const W=UI.ws,fit=GFIT[S.genre]||[];const steps=['Vibe','Hook','Melody','Title','Done'];
+  const bar=`<div class="wsteps">${steps.map((s,i)=>`<span class="${i===W.step?'on':i<W.step?'ok':''}">${i<W.step?'✓':i+1} ${s}</span>`).join('')}</div>`;
+  if(W.step===0)return bar+`<p class="muted">Set the vibe. Matching your genre's tempo and instrument adds +3 each (★).</p>
+    <span class="label">Theme</span><div class="chips">${THEMES.filter(t=>t!=='Family'||S.kids).map(t=>`<button class="chip ${W.theme===t?'on':''}" data-a="wsPick" data-k="theme" data-v="${t}">${t}${S.forum&&S.forum.poll&&!S.forum.poll.done&&S.forum.poll.win===t?' 🗳':''}</button>`).join('')}</div>
+    <span class="label">Tempo</span><div class="chips">${TEMPOS.map(t=>`<button class="chip ${W.tempo===t?'on':''}" data-a="wsPick" data-k="tempo" data-v="${t}">${t}${fit[0]===t?' ★':''}</button>`).join('')}</div>
+    <span class="label">Lead instrument</span><div class="chips">${INSTS.map(t=>`<button class="chip ${W.inst===t?'on':''}" data-a="wsPick" data-k="inst" data-v="${t}">${t}${fit[1]===t?' ★':''}</button>`).join('')}</div>
+    <div class="row"><button class="btn ghost sm" data-a="wsHear">▶ Hear the beat</button><button class="btn" data-a="wsNext" ${W.theme&&W.tempo&&W.inst?'':'disabled'}>Next: write the hook ›</button></div>`;
+  if(W.step===1)return bar+`<p class="muted">Pick the line that feels like a hit. The ✦ are your gut feeling, and higher Songwriting makes your gut more accurate.</p>
+    <div class="stack">${W.hooks.map((h,i)=>`<button class="hook ${W.hook===i?'on':''}" data-a="wsPick" data-k="hook" data-v="${i}"><span>"${esc(h.t)}"</span><b>${'✦'.repeat(h.stars)}${'<i>✦</i>'.repeat(3-h.stars)}</b></button>`).join('')}</div>
+    <div class="row"><button class="btn ghost sm" data-a="wsReroll" ${W.rerolled?'disabled':''}>↻ New lines (once)</button><button class="btn" data-a="wsNext" ${W.hook!=null?'':'disabled'}>Next: find the melody ›</button></div>`;
+  if(W.step===2){const r=W.taps.length,done=r>=3;const z=W.zone;
+    return bar+`<p class="muted">${done?'Nice work. Here is how the session went.':`Round ${r+1} of 3: <b>${WS_ROUNDS[r]}</b>. Tap <b>Hit it!</b> when the marker is in the gold zone. Dead center is Perfect.`}</p>
+    ${done?'':`<div class="tbar"><div class="tz" style="left:${z.c-z.w/2}%;width:${z.w}%"><i style="left:${50-z.w*0.2}%;width:${z.w*0.4}%"></i></div><div class="tn" id="tneedle" style="animation-duration:${W.speed}s"></div></div>`}
+    <div class="row">${W.taps.map((t,i)=>`<span class="pill ${t.s==='Perfect'?'gold':t.s==='Miss'?'bad':''}">${WS_ROUNDS[i]}: ${t.s}</span>`).join('')}</div>
+    <div class="row">${done?`<button class="btn" data-a="wsNext">Next: name it ›</button>`:`<button class="btn pink big-tap" data-a="wsTap">🎵 Hit it!</button>`}</div>`}
+  if(W.step===3)return bar+`<p class="muted">Name your song.</p><div class="chips">${W.titles.map(t=>`<button class="chip ${W.title===t?'on':''}" data-a="wsPick" data-k="title" data-v="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+    <label class="field"><span class="label">Or type your own</span><input type="text" id="ws-title" maxlength="40" value="${esc(W.custom||'')}" placeholder="Song title"></label>
+    <div class="row"><button class="btn" data-a="wsFinish">Finish song ✓</button></div>`;
+  const s=S.songs.find(x=>x.id===W.song);if(!s)return '';
+  return `<div class="wsreveal"><div class="grade big g-${grade(s.q)}">${grade(s.q)}</div><div><b style="font-size:20px">"${esc(s.title)}"</b><div class="muted">${esc(s.theme)} · ${esc(s.tempo)} · ${esc(s.inst)} · Quality ${s.q}</div><div class="lyric">"${esc(s.lyric)}"</div><small class="${W.bonus>=0?'good':'bad'}">Session bonus ${W.bonus>=0?'+':''}${W.bonus} quality</small></div></div>
+    <div class="row"><button class="btn ghost sm" data-a="preview" data-id="${s.id}">▶ Play demo</button><button class="btn" data-a="wsRecord">Go record it</button>${S.energy>=25?`<button class="btn ghost" data-a="wsAgain">Write another (25E)</button>`:''}<button class="btn ghost" data-a="wsClose">Done</button></div>`}
+function wsHooks(theme){const pool=[...(LYR[theme]||[]),...(HOOKS[theme]||HOOKS.Love)].sort(()=>Math.random()-.5).slice(0,3);const acc=S.skills.songwriting/100;
+  return pool.map(t=>{const v=Math.round(rnd(-1,7));const guess=v+rnd(-4,4)*(1-acc);return {t,v,stars:clamp(Math.round((guess+1)/3),1,3)}})}
+function wsNewZone(){UI.ws.zone={c:ri(25,75),w:wsZone()};UI.ws.speed=+(rnd(.9,1.25)*(easy()?1.25:1)).toFixed(2)}
+Object.assign(A,{
+  wsStart:()=>{if(!spend(25))return;const fit=GFIT[S.genre]||[];UI.ws={step:0,theme:'',tempo:fit[0]||'',inst:fit[1]||'',hook:null,taps:[],titles:[],title:'',custom:''};wsSet();sfx('ach')},
+  wsPick:d=>{const W=UI.ws;if(!W)return;if(d.k==='hook')W.hook=+d.v;else W[d.k]=d.v;if(d.k==='title')W.custom='';wsSet()},
+  wsHear:()=>{const W=UI.ws;playSong({id:ri(1,999),tempo:W.tempo||'Mid-tempo',inst:W.inst||'Piano',theme:W.theme||'Love',title:'your new beat'});return false},
+  wsReroll:()=>{const W=UI.ws;W.hooks=wsHooks(W.theme);W.hook=null;W.rerolled=1;wsSet()},
+  wsNext:()=>{const W=UI.ws;if(!W)return;
+    if(W.step===0)W.hooks=wsHooks(W.theme);
+    if(W.step===1)wsNewZone();
+    if(W.step===2){const base=W.theme;W.titles=[songTitle(),songTitle(),W.hooks[W.hook].t.split(' ').slice(-3).join(' ').replace(/^\w/,c=>c.toUpperCase())];W.title=W.titles[0]}
+    W.step++;wsSet()},
+  wsTap:()=>{const W=UI.ws,n=document.getElementById('tneedle');if(!W||!n)return false;const bar=n.parentElement.getBoundingClientRect(),nb=n.getBoundingClientRect();
+    const pos=(nb.left+nb.width/2-bar.left)/bar.width*100,dist=Math.abs(pos-W.zone.c);
+    const s=dist<=W.zone.w*.2?'Perfect':dist<=W.zone.w/2?'Great':'Miss';W.taps.push({s,pos});
+    if(s==='Perfect')sfx('ach');if(W.taps.length<3)wsNewZone();wsSet()},
+  wsFinish:()=>{const W=UI.ws;const inp=$('#ws-title');const title=((inp&&inp.value.trim())||W.title||songTitle()).slice(0,40);const fit=GFIT[S.genre]||[];
+    let bonus=W.hooks[W.hook].v+sum(W.taps,t=>t.s==='Perfect'?4:t.s==='Great'?2:0)+(easy()?2:0);
+    let extra=0;if(fit[0]===W.tempo)extra+=3;if(fit[1]===W.inst)extra+=3;if(S.breakupBoost){extra+=8;S.breakupBoost=0}if(S.mentor&&S.mentor.until>S.t)extra+=3;if(S.oppBonus){extra+=S.oppBonus;S.oppBonus=0}
+    const s={id:S.nextId++,title,theme:W.theme,tempo:W.tempo,inst:W.inst,lyric:W.hooks[W.hook].t,q:songQuality(bonus+extra),status:'demo',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null};
+    S.songs.unshift(s);S.stats.written++;S.skills.songwriting=Math.min(100,S.skills.songwriting+.9*(1-S.skills.songwriting/130));
+    W.song=s.id;W.bonus=bonus+extra;W.step=4;log(`Wrote "${s.title}" in a writing session (${grade(s.q)}).`,'good');setMood('grin',4);
+    if(grade(s.q)==='S'||grade(s.q)==='A')setTimeout(()=>confetti(),80);sfx('release');wsSet()},
+  wsRecord:()=>{UI.ws=null;UI.modal=UI.queue.shift()||null;UI.tab='studio';UI.sub=UI.sub||{};UI.sub.studio='Song library';window.scrollTo(0,0)},
+  wsAgain:()=>{UI.ws=null;UI.modal=null;A.wsStart()},
+  wsClose:()=>{UI.ws=null;UI.modal=UI.queue.shift()||null},
+});
+document.addEventListener('input',e=>{if(e.target.id==='ws-title'&&UI.ws){UI.ws.custom=e.target.value;UI.ws.title='';UI.modal.html=wsHTML()}});
+
+/* ---- avatar: drag to spin, emotes, people in press scenes ---- */
+G3.spinY=0;G3.spinAt=0;let _drag=null;
+document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('#scene3d');if(!h)return;_drag={x:e.clientX,y:e.clientY,s:G3.spinY,on:false}});
+document.addEventListener('pointermove',e=>{if(!_drag)return;const dx=e.clientX-_drag.x;if(!_drag.on&&Math.abs(dx)>6&&Math.abs(dx)>Math.abs(e.clientY-_drag.y))_drag.on=true;if(_drag.on){G3.spinY=_drag.s+dx*.012;G3.spinAt=performance.now()}});
+document.addEventListener('pointerup',()=>{_drag=null});document.addEventListener('pointercancel',()=>{_drag=null});
+{const _ac=animChar;animChar=function(c,t,k){_ac(c,t,k);if(c.main){if(!_drag&&performance.now()-G3.spinAt>5000)G3.spinY*=.94;if(Math.abs(G3.spinY)<.002)G3.spinY=0;c.g.rotation.y=(c.pose==='dance'?c.g.rotation.y:(c.ry0||0))+G3.spinY}}}
+const EMOTES=[['wave','👋','press','wink'],['dance','💃','dance','grin'],['sing','🎤','perform','sing'],['hype','🙌','cheer','grin'],['pose','✨','trophy','smile']];
+function emoteBar(){return G3.ok?`<div class="emotes">${EMOTES.map(([k,ic])=>`<button class="emo ${UI.emote&&UI.emote.k===k?'on':''}" data-a="emote" data-v="${k}" aria-label="${k}">${ic}</button>`).join('')}<button class="emo" data-a="spin" aria-label="Spin around">⟳</button></div>`:''}
+Object.assign(A,{
+  emote:d=>{const e=EMOTES.find(x=>x[0]===d.v);UI.emote={k:e[0],p:e[2],until:Date.now()+4500};setMood(e[3],4.5);setTimeout(()=>{if(UI.emote&&Date.now()>=UI.emote.until-50){UI.emote=null;if(S)render()}},4600)},
+  spin:()=>{const s0=G3.spinY,t0=performance.now();const step=()=>{const f=Math.min(1,(performance.now()-t0)/900);G3.spinY=s0+f*Math.PI*2;G3.spinAt=performance.now();if(f<1)requestAnimationFrame(step);else G3.spinY=s0};requestAnimationFrame(step);return false},
+});
+{const _cs=curScene;curScene=function(){const sc=_cs();if(UI.emote&&Date.now()<UI.emote.until)return {...sc,pose:UI.emote.p};return sc}}
+function npc3(g,x,z,ry,pose,o={}){if(typeof charBuild!=='function')return null;const c=charBuild(o.look||dancerLook(),pose,{});c.g.position.set(x,0,z);c.g.rotation.y=ry;c.ry0=ry;c.g.scale.setScalar(o.s||.92);c.phase=rnd(0,6);g.add(c.g);G3.anim.chars.push(c);blob(g,x,z,.34);return c}
+function camProp(c,ph){const cam=new THREE.Group();cam.position.set(0,1.86,.26);c.g.add(cam);add(cam,BX(.26,.17,.14),M('#141414'),0,0,0);add(cam,CY(.05,.05,.12,10),M('#2a2a2a'),0,0,.11).rotation.x=Math.PI/2;
+  const fl=add(cam,SP(.1,8,6),MB('#ffffff',{transparent:true,opacity:.95}),0,.02,.2);const li=new THREE.PointLight('#ffffff',0,7);li.position.set(0,0,.3);cam.add(li);G3.anim.flash.push({s:fl,l:li,ph})}
+function micProp(c){const m=new THREE.Group();m.position.set(.32,1.45,.3);c.g.add(m);add(m,CY(.022,.02,.26,8),M('#1a1a1a'),0,0,0).rotation.x=.5;add(m,SP(.05,8,6),M('#555'),0,.11,.06)}
+for(const k of ['press','tv','radio','awards']){if(!ENV[k])continue;const _e=ENV[k];ENV[k]=function(c,sc){_e.call(this,c,sc);try{const g=c.w,nar=G3.w<640;
+  if(k==='press'){const iv=npc3(g,nar?-.75:1.15,nar?-.95:.55,nar?.75:-1.1,'press');if(iv)micProp(iv);(nar?[[-1.05,-2.4,.3],[.35,-2.6,-.2]]:[[-1.25,-1.3,.25],[1.9,-1.7,-.35],[-2.2,-2.1,.15]]).forEach(([x,z,r],i)=>{const p=npc3(g,x,z,r,'idle',{s:.86});if(p)camProp(p,i*.61+.2)})}
+  else if(k==='tv'){const h=npc3(g,nar?-.75:1.2,nar?-.9:.3,nar?.7:-1.0,'press');if(h)micProp(h)}
+  else if(k==='radio'){npc3(g,nar?-.75:1.2,nar?-.9:.2,nar?.7:-1.0,'studio')}
+  else if(k==='awards'){npc3(g,nar?-.8:1.25,nar?-1:.4,nar?.7:-.9,'cheer')}
+}catch(e){}}}
+
+/* ---- difficulty card ---- */
+function diffCard(){return `<div class="card" style="margin-bottom:16px"><div class="between"><h3>Difficulty</h3><div class="row"><button class="chip ${easy()?'on':''}" data-a="setEasy" data-v="1">Easy</button><button class="chip ${easy()?'':'on'}" data-a="setEasy" data-v="0">Normal</button></div></div><small class="muted">Easy: 30% more fans from everything, 20% more income, 20% more energy, kinder critics, smaller flops, slower fan loss, an extra weekly opportunity and easier writing sessions.</small></div>`}
+{const _hv=helpView;helpView=function(){return `<div class="section">${diffCard()}</div>`+_hv()}}
+
 function render(){
   const app=$('#app');
   if(!S){app.innerHTML=setupView()+modalHTML()+setupTipHTML();return}
-  const views={production:prodView,artwork:artView,help:helpView,style:styleView,home:()=>(S.retired?`<div class="section">${retireCard()}</div>`:'')+homeView()+homeExtras(),studio:()=>studioView()+studioExtras(),live:()=>liveView()+liveExtras(),business:()=>businessView()+bizExtras(),charts:chartsView,social:phoneView,personal:()=>personalView()+personalExtras()};
+  const views={production:prodView,artwork:artView,help:helpView,style:styleView,home:()=>planCard()+(S.retired?`<div class="section">${retireCard()}</div>`:'')+homeView()+homeExtras(),studio:()=>studioView()+studioExtras(),live:()=>liveView()+liveExtras(),business:()=>businessView()+bizExtras(),charts:chartsView,social:phoneView,personal:()=>personalView()+personalExtras()};
   app.innerHTML=hud()+`<main class="wrap">${(views[UI.tab]||homeView)()}</main>`+modalHTML()+tutHTML();
+  compartments();
   const tb=document.querySelector('.tabs .tut-hl')||document.querySelector('.tabs .tab.on');if(tb)tb.parentElement.scrollLeft=Math.max(0,tb.offsetLeft-40);
   stage3dMount();
   document.body.classList.toggle('phone-on',!!S&&UI.tab==='social');
