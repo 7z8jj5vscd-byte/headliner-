@@ -3709,6 +3709,11 @@ for(const k of ['press','tv','radio','awards']){if(!ENV[k])continue;const _e=ENV
 function diffCard(){return `<div class="card" style="margin-bottom:16px"><div class="between"><h3>Difficulty</h3><div class="row"><button class="chip ${easy()?'on':''}" data-a="setEasy" data-v="1">Easy</button><button class="chip ${easy()?'':'on'}" data-a="setEasy" data-v="0">Normal</button></div></div><small class="muted">Easy: 30% more fans from everything, 20% more income, 20% more energy, kinder critics, smaller flops, slower fan loss, an extra weekly opportunity and easier writing sessions.</small></div>`}
 {const _hv=helpView;helpView=function(){return `<div class="section">${diffCard()}</div>`+_hv()}}
 
+
+/* ---- auto-update: reload when a newer version is published ---- */
+const APP_VER='202610232213';
+function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
+setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 function render(){
   const app=$('#app');
   if(!S){app.innerHTML=setupView()+modalHTML()+setupTipHTML();return}
