@@ -295,6 +295,72 @@ main.wrap{padding-top:14px;padding-bottom:calc(var(--tabh) + 92px + env(safe-are
 .livebox .pill{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.2)}
 .livebox .pill.red{background:#ff3b6b;border-color:#ff3b6b}.livebox .pill.mint{background:#18a888;border-color:#18a888}.livebox .pill.sky{background:#2f7fd6;border-color:#2f7fd6}
 @keyframes livein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* mini-game set: engine, live stage, pitch, rhyme, camera, Q&A, mishap */
+.mg{-webkit-touch-callout:none}
+.mghost{flex:1;display:flex;flex-direction:column;min-height:0;gap:8px;margin-top:6px}
+.tbar{width:70%;background:rgba(255,255,255,.15)}
+.pad.right{background:#d6fff4!important;color:var(--ink);box-shadow:0 0 0 4px #2fe0b8,0 0 24px #2fe0b8}
+.pad.wrong{background:#ffe1e6!important;color:var(--ink);animation:shake .3s}
+.pad.meh{background:#fff5cc!important;color:var(--ink)}
+.mglive{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.mglive .v3d{border-radius:16px}
+.ticker{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden}
+.ticker .pill.red{background:#ff3b6b;color:#fff;border-color:#ff3b6b}
+.ticker .tk{overflow:hidden;text-overflow:ellipsis;color:#ffd6ef}
+.ticker .tk.pop{animation:livein .3s}
+.seghead{display:flex;align-items:center;gap:8px;margin-top:6px;font-family:var(--display)}
+.seghead .se{font-size:22px}.seghead .sl{flex:1;font-size:16px;font-weight:600}.seghead .sp{color:#e6dcff;font-weight:800}
+.segcard{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;animation:posepop .3s}
+.segcard .big{font-size:60px;line-height:1}.segcard b{font-family:var(--display);font-size:21px}.segcard small{color:#e6dcff}
+.seglist{list-style:none;margin:0 auto;padding:0;display:flex;flex-direction:column;gap:4px;text-align:left;font-weight:800;font-size:14px}
+.seglist span{display:inline-block;width:28px}
+.segres{display:flex;flex-direction:column;gap:4px;width:min(340px,100%);margin:0 auto}
+.segres div{display:flex;justify-content:space-between;gap:10px;background:rgba(255,255,255,.1);border-radius:10px;padding:6px 10px;font-weight:800;font-size:13.5px;text-align:left}
+.compact .posebig{width:min(34vw,140px);height:min(34vw,140px)}
+.compact .posecard{aspect-ratio:auto;height:108px}
+.compact .posestage{gap:4px}
+.compact .pads{height:74px}
+.compact .holdpad{height:80px}
+.compact .pitchfield{min-height:110px}
+.compact .camgrid{min-height:160px}
+.compact .rhymeopt{height:58px}
+.pitchwrap{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+.pitchlyric{text-align:center;font-family:var(--display);font-size:20px;color:rgba(255,255,255,.45)}
+.pitchlyric span{transition:color .2s}.pitchlyric span.sung{color:#fff36b;text-shadow:0 0 12px rgba(255,243,107,.6)}
+.pitchfield{position:relative;flex:1;min-height:150px;border-radius:20px;background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 25%),rgba(255,255,255,.06);overflow:hidden}
+.pband{position:absolute;left:0;right:0;background:linear-gradient(90deg,rgba(127,212,255,.22),rgba(255,122,198,.34));border-top:2px solid #7fd4ff;border-bottom:2px solid #ff7ac6;display:flex;align-items:center;justify-content:flex-end;padding-right:14px;font-size:20px}
+.pdot{position:absolute;left:36%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:#fff;box-shadow:0 0 16px #fff}
+.pdot.ok{background:#fff36b;box-shadow:0 0 24px #fff36b,0 0 50px #ff7ac6}
+.pitchmeter{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-weight:900;font-size:13px}
+.pitchmeter .bar{background:rgba(255,255,255,.15)}
+.holdpad{height:96px;background:linear-gradient(135deg,#ff5fae,#a45cff);font-size:20px;font-weight:900}
+.holdpad.hit{transform:scale(.96);filter:brightness(1.3)}
+.rhymestage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.beatdots{display:flex;gap:10px}.beatdots i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.18)}.beatdots i.on{background:#ff7ac6;box-shadow:0 0 12px #ff7ac6}
+.rhymebar{background:rgba(0,0,0,.25);border-radius:18px;padding:14px 16px;font-size:17px;line-height:1.35;max-width:520px}
+.rhymebar .l1{color:#e6dcff;margin-bottom:6px}.rhymebar .l2{font-weight:800}
+.blank{display:inline-block;min-width:60px;text-align:center;border-bottom:3px solid #fff36b;color:#fff36b}.blank.ok{color:#2fe0b8;border-color:#2fe0b8}.blank.no{color:#ff9aa8;border-color:#ff9aa8}
+.rhymeopts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rhymeopt{height:70px;background:rgba(255,255,255,.95)!important;color:var(--ink);font-family:var(--display);font-size:19px}
+.camstage{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
+.camlabel{text-align:center;font-weight:900;letter-spacing:.04em}
+.camgrid{position:relative;flex:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:10px;min-height:200px}
+.cam{background:rgba(255,255,255,.1)!important;border:2px solid rgba(255,255,255,.18)!important;font-size:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative}
+.cam small{font-size:11px;font-weight:900;color:#e6dcff}
+.cam .tally{position:absolute;top:8px;right:8px;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.2)}
+.cam.standby .tally{background:#ffb020;box-shadow:0 0 10px #ffb020}
+.cam.live{border-color:#ff3b6b!important;box-shadow:0 0 22px rgba(255,59,107,.7)}
+.cam.live .tally{background:#ff3b6b;box-shadow:0 0 14px #ff3b6b;animation:blink .45s infinite alternate}
+@keyframes blink{to{opacity:.35}}
+.qastage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.qamic{font-size:44px;line-height:1}
+.qabubble{background:#fff;color:var(--ink);border-radius:20px 20px 20px 6px;padding:14px 16px;font-weight:800;font-size:17px;max-width:480px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.qaopts{display:flex;flex-direction:column;gap:8px}
+.qaopt{min-height:52px;padding:10px 14px;background:rgba(255,255,255,.95)!important;color:var(--ink);font-size:14.5px;font-weight:800;text-align:left}
+.mishap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;background:rgba(255,59,107,.12);border:2px solid rgba(255,59,107,.5);border-radius:20px;padding:14px;animation:shake .35s}
+.mishap .big{font-size:52px;line-height:1}.mishap b{font-family:var(--display);font-size:20px}
+.mopts{display:flex;flex-direction:column;gap:8px;width:100%}
+.mbtn{min-height:56px;font-size:15px;font-weight:900;background:rgba(255,255,255,.95)!important;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -542,7 +608,7 @@ function traineeWeek(){
   const a=AG(S.agency);S.debt+=420000;
   growNPCs(S.trainees,a.support);
   if(S.surv){pushTask({type:'survEp'});return}
-  if(S.week%4===0){S.months++;pushTask({type:'eval',kind:S.months%2?'vocal':'dance'});return}
+  if(S.week%4===0){S.months++;const kind=S.months%2?'vocal':'dance';pushTask({type:'eval',kind,mg:kind==='dance'?'poses':['pitch','rhythm','rhyme'][Math.floor(S.months/2)%3]});return}
   if(Math.random()<.42)randomEvent('trainee');
 }
 
@@ -631,7 +697,7 @@ function startSurvival(){
   S.surv={ep:1,cast:[...mine,...others].map(n=>Object.assign(n,{votes:0,out:false})),myVotes:0,out:false,hist:[]};
   log(`Joined the survival show ${SURV}.`);
 }
-const SURVEP={1:{n:'Level Test',mg:'rhythm',d:'Sing 16 bars in front of the judges. They grade you A to F.',k:'vocal',keep:20},
+const SURVEP={1:{n:'Level Test',mg:'pitch',d:'Sing 16 bars in front of the judges. They grade you A to F.',k:'vocal',keep:20},
   2:{n:'Group Battle',mg:'choreo',d:'Teams of five battle with the same song. The crowd votes.',k:'dance',keep:14},
   3:{n:'Position Battle',mg:'rhythm',d:'Pick your best position and prove it.',k:'pos',keep:10},
   4:{n:'Debut Finale',mg:'rhythm',d:'Live broadcast. Only the top 7 debut.',k:'vocal',keep:7}};
@@ -687,10 +753,10 @@ function prepWeek(){const p=S.prep;p.left--;p.prepQ=Math.min(12,p.prepQ+((S.allo
 function makeSong(p){const s={id:uid(),title:p.title,concept:p.concept,type:p.type,kind:p.kind,producer:p.producer,partner:p.partner||null,q:songQuality(p),w:S.week,peak:101,sales:0,wins:0,shows:0};S.songs.push(s);return s}
 const songById=id=>S.songs.find(s=>s.id===id);
 function pay(amount){amount=Math.max(0,amount);if(S.debt>0){const d=Math.min(S.debt,amount);S.debt-=d;amount-=d;if(S.debt<=0&&!S.flags.settled){S.flags.settled=true;S.debt=0;pushTask({type:'info',kick:'Payday',title:'Your first settlement!',html:`<p>Trainee debt fully repaid. For the first time, money from your work lands in your own account. You buy your parents dinner.</p>`});log('First settlement! Trainee debt paid off.')}}S.money+=amount;S.flags.earned=(S.flags.earned||0)+amount}
-function doRelease(game){
+function doRelease(game,res){
   const t=curTask();const s=songById(t.song);const g=S.group;const a=AG(S.agency);
   const first=s.kind==='group'&&!g.debutW;
-  const live=liveStage(game,t,s.kind==='solo'?'solo':'group',`"${s.title}" ${first?'debut ':''}showcase`,s.concept);game=live.sc;
+  const live=liveStage(game,t,s.kind==='solo'?'solo':'group',`"${s.title}" ${first?'debut ':''}showcase`,s.concept,res);game=live.sc;
   s.q=clamp(Math.round(s.q+(game-55)*.08+(S.costume?(S.costume.fit-72)/6:-2)),15,99);
   const before=g.fans;
   if(first){g.debutW=S.week;const P=myPos();S.fame+=8+(P.includes('Center')?10:0)+(P.includes('Visual')?6:0)+(P.includes('Main Vocal')||P.includes('Main Dancer')?4:0)+(P.includes('Maknae')?3:0);g.fans=Math.round(a.fame*(.6+game/100*.6)*(g.via==='survival'?3:1)+S.buzz*400);g.pop=clamp(25+s.q*.45+(game-50)*.2,10,90)}
@@ -710,9 +776,9 @@ function doRelease(game){
   save();render();
 }
 function pickRivals(n){return shuffle(S.rivals).slice(0,n).map(r=>({n:r.n,p:r.p+rnd(-8,8)}))}
-function doShow(game,auto){
+function doShow(game,auto,res){
   const t=curTask();const s=songById(t.song);const g=S.group;
-  const live=liveStage(game,t,s.kind==='solo'?'solo':'group',`${t.show} · "${s.title}"`,s.concept);game=live.sc;
+  const live=liveStage(game,t,s.kind==='solo'?'solo':'group',`${t.show} · "${s.title}"`,s.concept,res);game=live.sc;
   const power=s.q*.4+g.pop*.3+fanScore(g.fans)*.3+(game-50)*.2;
   const rv=pickRivals(2);const rows=[{n:s.kind==='solo'?me():s.kind==='unit'?`${me()} × ${npcById(s.partner)?.name||'unit'}`:g.name,p:power,us:1},...rv].sort((a,b)=>b.p-a.p);
   const win=rows[0].us===1;s.shows++;
@@ -964,7 +1030,7 @@ function bestConcept(list){return CONCEPTS.slice().sort((a,b)=>conceptFit(b.id,l
 /* ============ task sheets ============ */
 const TR={
   info:t=>({kick:t.kick,title:t.title,html:t.html,btns:[B('OK','done',null,'block')]}),
-  eval:t=>{const E=EVALK[t.kind];return {kick:`Monthly evaluation · Month ${S.months}`,title:E.n,html:`<p>The directors line up behind a long table. Cameras roll. ${t.kind==='vocal'?'Hit every note in time.':'Copy every pose the choreographer strikes.'}</p><div class="stack">${E.k.map(k=>`<div class="stat"><span>${SKI[k]}</span><div><b>${SKL[k]}</b>${bar(S.st[k])}</div><span class="v">${Math.round(S.st[k])}</span></div>`).join('')}</div><p class="muted"><small>Your score = 50% stage + 50% skill. Bottom two twice in a row risks getting cut.</small></p>`,
+  eval:t=>{const E=EVALK[t.kind];return {kick:`Monthly evaluation · Month ${S.months}`,title:E.n,html:`<p>The directors line up behind a long table. Cameras roll. Today's test: <b>${GAMES[t.mg||EVALK[t.kind].mg].e} ${GAMES[t.mg||EVALK[t.kind].mg].n}</b>.</p><div class="stack">${E.k.map(k=>`<div class="stat"><span>${SKI[k]}</span><div><b>${SKL[k]}</b>${bar(S.st[k])}</div><span class="v">${Math.round(S.st[k])}</span></div>`).join('')}</div><p class="muted"><small>Your score = 50% stage + 50% skill. Bottom two twice in a row risks getting cut.</small></p>`,
     btns:[B('🎬 Perform','mgEval',null,'block'),B('Quick sim','autoEval',null,'ghost block')]}},
   evalRes:t=>{const d=t.prev?t.prev-t.rank:0;return {kick:'Evaluation results',title:`Rank #${t.rank} of ${t.rows.length}`,html:`<div class="kpis"><div class="kpi"><b>${t.game}</b><small>Stage</small></div><div class="kpi"><b>${t.my}</b><small>Final score</small></div><div class="kpi"><b class="${d>0?'good':d<0?'bad':''}">${t.prev?(d>0?'▲'+d:d<0?'▼'+(-d):'–'):'new'}</b><small>Change</small></div></div>${t.fx?`<p><b>${esc(t.fx)}</b></p>`:''}${rankRows(t.rows)}`,btns:[B('Continue','afterEval',null,'block')]}},
   cut:t=>({kick:'Bad news',title:'You have been cut',html:`<p>After two months in the bottom two, ${esc(AG(S.agency).short)} ends your trainee contract. You pack your things in silence.</p><p class="muted">Your skills come with you. Another agency might see what they missed.</p>`,btns:[B('Audition somewhere else','cutAudition',null,'block'),B('Give up the dream','end','cut','ghost block')]}),
@@ -1135,7 +1201,7 @@ function mount3D(){
 }
 function loop3D(){
   if(!G3.on||!G3.r)return;const c=G3.r.domElement;if(!c.isConnected){G3.on=false;return}
-  requestAnimationFrame(loop3D);if(document.hidden||MG)return;
+  requestAnimationFrame(loop3D);if(document.hidden||(MG&&!c.closest('#mg')))return;
   const t=(performance.now()-G3.t0)/1000;const grp=G3.mode==='group';const beat=t*2.2;
   if(!G3.drag)G3.rotY*=.97;
   G3.root.rotation.y=grp?clamp(G3.rotY,-.7,.7)+Math.sin(t*.3)*.08:G3.rotY+(G3.mode==='end'?t*.6:Math.sin(t*.6)*.35);
@@ -1277,34 +1343,49 @@ function prepChips(t,fairy){
   ${S.costume?`<small class="muted">Wearing: 👗 ${esc(S.costume.n)} · comfort ${S.costume.comfort}</small>`:''}`;
 }
 function fanchant(kind){const g=S.group;if(kind==='solo'||!g)return `${me()}! ${me()}! ${me()}!`;const n=groupOrder().map(m=>m.name);return `${n.slice(0,4).join('! ')}${n.length>4?'…':''}! ${g.name}!`}
-function liveStage(game,t,kind,title,concept){
+const SEGLINE={
+  intro:['Opening pose lands on the first beat. Screams.','The opening formation comes together.','Someone is a beat late into the opening pose.'],
+  verse:['Your line is pitch-perfect. Chat spams "LIVE VOCALS".','Your line is steady and sweet.','Your voice wobbles on the high part.'],
+  rap:['Your rap verse flows like water. Chat is rewinding it.','Your rap lands cleanly.','You stumble over a bar.'],
+  killing:['Killing part: you find the live camera and the clip explodes.','Killing part: a solid close-up.','Killing part: you\'re looking at the wrong camera.'],
+  dance:['Dance break in perfect sync. The crowd screams.','The dance break is clean.','Formations drift during the dance break.'],
+  photo:['Photo wall: every reporter gets the perfect shot.','Photo wall goes smoothly.','Photo wall: you keep blinking at the flashes.'],
+  press:['Press Q&A: your answers make headlines.','Press Q&A goes fine.','Press Q&A: an awkward answer becomes a meme.'],
+  opener:['The opening number shakes the whole arena.','A strong opening number.','The opener feels a little stiff.'],
+  ballad:['You hold the ballad\'s high note and the arena goes silent.','The ballad is lovely.','Your voice cracks on the ballad\'s high note.'],
+  ment:['Your ment has the arena laughing, then crying.','A sweet ment between songs.','The ment is a bit awkward.'],
+  encore:['Encore: you find every camera and fans cry at the big screens.','The encore runs warm and happy.','Encore: you keep missing the cameras.']
+};
+function liveStage(game,t,kind,title,concept,res){
   const R=REHEARSALS.find(x=>x.id===t.reh)||REHEARSALS[0];const F=t.fairy?FAIRIES.find(x=>x.id===t.fairy):null;const g=S.group;const cos=S.costume;
-  const comfort=cos?cos.comfort:60,wow=cos?cos.wow:55;
+  const comfort=cos?cos.comfort:60,wow=cos?cos.wow:55;res=res||{segs:[],mishap:null,mg:false};const segs=res.segs||[];
   S.stamina+=R.sta||0;S.stress+=R.str||0;if(R.harm&&g)g.harmony+=R.harm;
-  let sc=game+R.bonus+(comfort-65)/8-(S.hiatus?10:0);
-  const pm=clamp(.22+(S.stamina<30?.1:0)-(R.mis||0)-(comfort-60)/300,.03,.45);let mishap=null;
-  if(!S.hiatus&&Math.random()<pm){const m=pick(MISHAPS.filter(x=>!x.w||!R.dress));const saved=S.st[m.k]+rnd(-15,15)>=55;mishap={n:m.n,saved};if(saved){sc+=2;S.fame+=1.5}else sc-=8}
+  let sc=game+R.bonus+(comfort-65)/8-(S.hiatus?10:0);const mishap=res.mishap||null;
+  if(mishap&&!res.mg)sc+=mishap.saved?2:-6;if(mishap&&mishap.saved)S.fame+=1.5;
   sc=clamp(Math.round(sc),0,100);
-  let fx=0,ft='';if(F){if(F.id==='funny'){if(Math.random()<.5){fx=6;ft='chat loses it and the clip trends worldwide'}else{fx=-2;ft='the MCs look confused. Mixed reactions'}}else if(F.fit.includes(concept)){fx=3;ft='perfect for the concept. "Ending fairy of the week"'}else{fx=1;ft='sweet, but a little off-concept'}}
+  const sg=id=>(segs.find(x=>x.id===id)||{}).s;const fs=sg('fairy');const nailed=fs==null||fs>=60;
+  let fx=0,ft='';if(F){if(F.id==='funny'){if(Math.random()<.5){fx=6;ft='chat loses it and the clip trends worldwide'}else{fx=-2;ft='the MCs look confused. Mixed reactions'}}else if(F.fit.includes(concept)){fx=3;ft='perfect for the concept. "Ending fairy of the week"'}else{fx=1;ft='sweet, but a little off-concept'}
+    if(!nailed){fx=Math.min(fx,0);ft='the camera cut to you a second too late'}}
   if(g)g.pop+=fx+(wow-55)/20;
-  const viewers=Math.round(Math.max(g?g.fans:0,AG(S.agency).fame*.6)*rnd(.35,1.1)+3000);
-  const views=Math.round(viewers*rnd(.3,.8)*(sc/60)*(R.cam||1)*(myPos().includes('Center')?1.4:1));S.fame+=clamp(views/5e5,0,3);
-  const tier=sc>=72?'hi':sc>=48?'mid':'lo';const L=[];
+  const ks=sg('killing')??sg('encore')??sg('photo');
+  const viewers=Math.round(res.viewers||(Math.max(g?g.fans:0,AG(S.agency).fame*.6)*rnd(.35,1.1)+3000));
+  const views=Math.round(viewers*rnd(.3,.8)*(sc/60)*(R.cam||1)*(ks!=null?.7+ks/100:1)*(myPos().includes('Center')?1.4:1));S.fame+=clamp(views/5e5,0,3);
+  const tier=sc>=72?'hi':sc>=48?'mid':'lo';const L=[];let tm=24;const ts=()=>{const v=`${Math.floor(tm/60)}:${String(tm%60).padStart(2,'0')}`;tm+=ri(17,31);return v};
   L.push(['0:00','🎬',`ON AIR: ${title}. ${S.fandom?S.fandom.name:'Fans'} start the fanchant: "${fanchant(kind)}"`]);
-  L.push(['0:16','✨',FLAVOR[concept]||FLAVOR.cute]);
-  L.push(['0:34','💬',`chat: ${pick(LIVECHAT[tier])}`]);
-  L.push(['0:52','🎤',sc>=72?'Your killing part lands right on the beat, and the camera finds you.':sc>=48?'Your part is solid, a little stiff on camera.':'You rush your line and miss the camera cue.']);
-  if(mishap)L.push(['1:21','⚠️',`${mishap.n}! ${mishap.saved?'You cover it like a pro, and the save clip goes viral.':'It throws you off for a few beats.'}`]);
-  L.push(['1:47','💃',sc>=75?'Dance break in perfect sync. The crowd screams.':sc>=50?'The dance break is clean.':'Formations drift during the dance break.']);
-  if(cos)L.push(['2:06','👗',`Outfit check: ${cos.n} ${wow>=80?'is trending on its own.':'looks great under the lights.'}`]);
-  L.push(['2:33','💬',`chat: ${pick(LIVECHAT[tier])}`]);
-  if(F)L.push(['3:02',F.e,`Ending fairy: ${F.n.toLowerCase()}. ${ft[0].toUpperCase()+ft.slice(1)}.`]);
-  const live={title,kind,sc,lines:L,viewers,views,mishap,w:S.week,solo:kind==='solo'};S.lastLive=live;return live;
+  L.push(['0:12','✨',FLAVOR[concept]||FLAVOR.cute]);
+  const ml=()=>L.push([ts(),'⚠️',`${mishap.n}! ${mishap.saved?'You turn it into a moment and the save clip goes viral.':mishap.safe?'You handle it quietly. Most viewers never notice.':'It throws you off for a few beats.'}`]);
+  const main=segs.filter(x=>x.id!=='fairy');
+  if(main.length)main.forEach((x,i)=>{const T=SEGLINE[x.id];L.push([ts(),x.e,T?T[x.s>=72?0:x.s>=48?1:2]:`${x.label}: ${x.s}`]);if(i===1&&mishap)ml();if(i===2)L.push([ts(),'💬',`chat: ${pick(LIVECHAT[tier])}`])});
+  else{L.push([ts(),'🎤',SEGLINE.verse[sc>=72?0:sc>=48?1:2]]);if(mishap)ml();L.push([ts(),'💃',SEGLINE.dance[sc>=75?0:sc>=50?1:2]])}
+  if(cos)L.push([ts(),'👗',`Outfit check: ${cos.n} ${wow>=80?'is trending on its own.':'looks great under the lights.'}`]);
+  L.push([ts(),'💬',`chat: ${pick(LIVECHAT[tier])}`]);
+  if(F)L.push([ts(),F.e,`Ending fairy: ${F.n.toLowerCase()}. ${ft[0].toUpperCase()+ft.slice(1)}.`]);
+  const live={title,kind,sc,lines:L,viewers,views,mishap,segs:segs.map(x=>({e:x.e,s:x.s,label:x.label})),w:S.week,solo:kind==='solo'};S.lastLive=live;return live;
 }
 function liveHTML(L,with3D){
   return `<div class="livebox">${with3D&&S.group?v3d(L.solo?'live':'group',190):''}<div class="livehead"><span class="pill red">● LIVE</span><b class="grow">${esc(L.title)}</b><small>👀 ${fmt(L.viewers)}</small></div>
   <ol class="live">${L.lines.map((x,i)=>`<li style="animation-delay:${(i*.42).toFixed(2)}s"><span class="ts">${x[0]}</span><span class="le">${x[1]}</span><span>${esc(x[2])}</span></li>`).join('')}</ol>
-  <div class="row"><span class="pill">Stage ${L.sc}</span><span class="pill sky">📹 ${fmt(L.views)} fancam views</span>${L.mishap?`<span class="pill ${L.mishap.saved?'mint':'red'}">${L.mishap.saved?'Legendary save':'Live mishap'}</span>`:''}</div></div>`;
+  ${L.segs&&L.segs.length?`<div class="row">${L.segs.map(x=>`<span class="pill" title="${esc(x.label)}">${x.e} ${x.s}</span>`).join('')}</div>`:''}<div class="row"><span class="pill">Stage ${L.sc}</span><span class="pill sky">📹 ${fmt(L.views)} fancam views</span>${L.mishap?`<span class="pill ${L.mishap.saved?'mint':'red'}">${L.mishap.saved?'Legendary save':'Live mishap'}</span>`:''}</div></div>`;
 }
 function liveCard(){const L=S.lastLive;if(!L||S.act==='trainee')return '';
   return `<section class="card"><div class="between"><h2>📺 Live update</h2><small class="muted">${dateStr(L.w)}</small></div><p><b>${esc(L.title)}</b></p>
@@ -1379,7 +1460,7 @@ function menuTab(){
   return `<section class="card"><h2>Game</h2><p class="muted">Slot ${S.slot} · saved automatically every week.</p><div class="stack">${B(S.sound?'🔊 Sound on':'🔈 Sound off','sound',null,'ghost block')}${window.THREE?B(can3D()?'🧊 3D avatars on':'🖼️ 3D avatars off (2D)','toggle3d',null,'ghost block'):''}${B('How to play','howto',null,'ghost block')}${B('Back to title','toTitle',null,'ghost block')}</div></section>
   <section class="card"><h2>About</h2><p class="muted">Debut Dream is a fan-made idol career simulator. Every agency, idol, group, show and award in it is fictional.</p></section>`;
 }
-const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm game or the Pose Match dance game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p><b>Stage life.</b> Every release starts with a fitting day: pick and tailor the era's costumes (fit, comfort, wow). Before each live stage, choose how to rehearse and plan your ending fairy, then watch the stage play out as a live broadcast, mishaps and all.</p><p class="muted"><small>Mini-games: tap the lanes as notes hit the line, or watch the move sequence and repeat it. Every stage also has a Quick sim option.</small></p>`;
+const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm game or the Pose Match dance game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p><b>Stage life.</b> Every release starts with a fitting day: pick and tailor the era's costumes (fit, comfort, wow). Before each live stage, choose how to rehearse and plan your ending fairy, then watch the stage play out as a live broadcast, mishaps and all.</p><p class="muted"><small>Trainee tests: Rhythm Lanes, Pose Match, Pitch Hold (hold to sing higher) and Rhyme Flow (finish the bar). On stage: Camera Catch and Press Q&amp;A. Showcases, music shows, concerts and the survival finale are Live Stages that chain these games section by section, with live mishaps you decide on the spot. Every stage also has a Quick sim option.</small></p>`;
 function lookEditor(L,prefix){
   const sw=(arr,key)=>`<div class="swatches">${arr.map((c,i)=>`<button class="sw ${L[key]===i?'on':''}" style="background:${c}" data-a="${prefix}" data-v="${key}|${i}" aria-label="${key} ${i+1}"></button>`).join('')}</div>`;
   const op=(arr,key)=>`<div class="opts">${arr.map((n,i)=>`<button class="opt ${L[key]===i?'on':''}" data-a="${prefix}" data-v="${key}|${i}"><b>${n}</b></button>`).join('')}</div>`;
@@ -1455,51 +1536,77 @@ function audio(){if(!S||S.sound!==false){try{AC=AC||new (window.AudioContext||wi
 function beep(f,d=.08,v=.08,type='triangle'){if(S&&S.sound===false)return;const a=AC;if(!a)return;try{const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+d+.02)}catch(e){}}
 
 /* ============ mini-games ============ */
+// Each sub-game renders into a host element and reports done(score, detail). A standalone game wraps one
+// sub-game in the overlay; the Live Stage chains several of them under a live 3D stage and chat ticker.
 let MG=null;
 const autoScore=stat=>clamp(Math.round(stat*.85+rnd(0,15)),5,98);
 const LANEC=['#ff5fae','#ffcf3f','#3fd6b5','#6fa8ff'];
 const LANEF=[523,659,784,988];
-function startMG(kind,o,cb){MG={kind,o,cb,phase:'intro',alive:true};drawMG()}
-function closeMG(){if(MG)MG.alive=false;MG=null;const el=$('#mg');if(el)el.remove()}
+const GAMES={
+  rhythm:{n:'Rhythm Lanes',e:'🎵',how:'Notes fall down four lanes. Tap the matching pad the moment a note crosses the glowing line. Perfect timing scores most.'},
+  poses:{n:'Pose Match',e:'🕺',how:'The choreographer freezes in a pose. Tap the card that matches it before the timer runs out. Fast answers score more, and three in a row starts a fever streak.'},
+  pitch:{n:'Pitch Hold',e:'🎤',how:'Hold the button to push your voice higher and let go to bring it down. Keep the glowing note inside the moving pitch band for as long as you can.'},
+  rhyme:{n:'Rhyme Flow',e:'🎧',how:'A beat plays and a bar of lyrics appears. Finish the second line with the word that rhymes before the beat runs out.'},
+  camera:{n:'Camera Catch',e:'📸',how:'The camera with the red LIVE light is on air. Tap it fast to give it your best look. Orange cameras are on standby: don\'t fall for them.'},
+  qa:{n:'Press Q&A',e:'🎙️',how:'Questions come fast. Pick the answer that charms the room before time runs out.'},
+  live:{n:'Live Stage',e:'📺',how:'The real performance, broadcast live. The song plays section by section and each section is a quick challenge. How you do is exactly what viewers see.'}
+};
+GAMES.choreo=GAMES.poses;
+const KIND_KEYS={rhythm:{d:'0',f:'1',j:'2',k:'3',ArrowLeft:'0',ArrowDown:'1',ArrowUp:'2',ArrowRight:'3'},pick3:{'1':'0','2':'1','3':'2',ArrowLeft:'0',ArrowDown:'1',ArrowRight:'2'},camera:{'1':'0','2':'1','3':'2','4':'3','5':'4','6':'5'},mishap:{'1':'0','2':'1'}};
+function startMG(kind,o,cb){MG={kind,o,cb,phase:'intro',alive:true,iv:[],seg:0};drawMG()}
+function closeMG(){if(MG){MG.alive=false;MG.iv.forEach(clearInterval)}MG=null;const el=$('#mg');if(el)el.remove()}
 function mgShell(inner){let el=$('#mg');if(!el){el=document.createElement('div');el.id='mg';el.className='mg';document.body.appendChild(el)}el.innerHTML=inner;return el}
+const mgTop=(o,score)=>`<div class="top"><b>${esc(o.title)}</b>${score?'<span class="score" id="mgs"></span>':'<span></span>'}<button class="x" data-mga="quit">✕</button></div>`;
+const setScore=t=>{const e=$('#mgs');if(e)e.textContent=t};
 function drawMG(){
-  if(!MG)return;const o=MG.o;
+  if(!MG)return;const o=MG.o,G=GAMES[MG.kind]||GAMES.rhythm;
   if(MG.phase==='intro'){
-    const how=MG.kind==='rhythm'?'Notes fall down four lanes. Tap the matching pad the moment a note crosses the glowing line. Perfect timing scores most.':'The choreographer freezes in a pose. Tap the card that matches it before the timer runs out. Fast answers score more, and three in a row starts a fever streak.';
-    mgShell(`<div class="top"><b>${esc(o.title)}</b><button class="x" data-mga="quit">✕</button></div><div class="mgintro"><div style="font-size:64px">${MG.kind==='rhythm'?'🎵':'🕺'}</div><h2>${esc(o.title)}</h2>${o.sub?`<p>${esc(o.sub)}</p>`:''}<p>${how}</p><p><small>Your skill (${Math.round(o.stat||0)}) widens the timing window and slows the cues.</small></p><button class="btn big" data-mga="go">Start ✨</button><button class="btn ghost big" data-mga="auto">Quick sim</button></div>`);
+    const segs=MG.kind==='live'?`<ol class="seglist">${o.plan.segs.map(s=>`<li><span>${s.e}</span>${esc(s.label)}</li>`).join('')}</ol>`:'';
+    mgShell(`${mgTop(o)}<div class="mgintro"><div style="font-size:60px">${G.e}</div><span class="label" style="color:#ff9ad5">${G.n}</span><h2>${esc(o.title)}</h2>${o.sub?`<p>${esc(o.sub)}</p>`:''}<p>${G.how}</p>${segs}<p><small>${MG.kind==='live'?'Each section uses the matching skill: vocal, rap, dance, visual or variety.':`Your skill (${Math.round(o.stat||0)}) gives you more time and bigger targets.`}</small></p><button class="btn big" data-mga="go">${MG.kind==='live'?'Go live 🔴':'Start ✨'}</button><button class="btn ghost big" data-mga="auto">Quick sim</button></div>`);
     return;
   }
   if(MG.phase==='done'){const s=MG.score;const r=s>=90?'PERFECT STAGE!':s>=75?'Amazing!':s>=55?'Nice!':s>=35?'Shaky...':'Rough night';
-    mgShell(`<div class="top"><b>${esc(o.title)}</b><span></span></div><div class="mgintro"><div style="font-size:64px">${s>=75?'🌟':s>=55?'✨':s>=35?'😅':'💦'}</div><h2>${r}</h2><div class="score" style="font-size:54px">${s}</div><p>${MG.detail||''}</p><button class="btn big" data-mga="ok">Continue</button></div>`);return}
+    const segs=MG.extra&&MG.extra.segs&&MG.kind==='live'?`<div class="segres">${MG.extra.segs.map(x=>`<div><span>${x.e} ${esc(x.label)}</span><b>${x.s}</b></div>`).join('')}</div>`:'';
+    mgShell(`${mgTop(o)}<div class="mgintro"><div style="font-size:60px">${s>=75?'🌟':s>=55?'✨':s>=35?'😅':'💦'}</div><h2>${r}</h2><div class="score" style="font-size:54px">${s}</div><p>${MG.detail||''}</p>${segs}<button class="btn big" data-mga="ok">Continue</button></div>`);return}
 }
-function finishMG(score){if(!MG)return;MG.alive=false;MG.score=clamp(Math.round(score),0,100);MG.phase='done';beep(MG.score>=55?880:330,.25,.1);drawMG()}
-function mgRhythm(){
-  const o=MG.o,diff=clamp(o.diff??.4,0,1),stat=o.stat||40;
-  const bpm=96+diff*44,beat=60000/bpm,travel=1750-diff*500,pw=55+stat*.35,gw=120+stat*.6,lead=1800,len=13000+diff*6000;
+function finishMG(score,extra){if(!MG)return;MG.alive=false;MG.iv.forEach(clearInterval);MG.score=clamp(Math.round(score),0,100);if(extra)MG.extra=extra;MG.phase='done';beep(MG.score>=55?880:330,.25,.1);drawMG()}
+function runGame(kind,host,o,done){MG.press=null;MG.release=null;MG.keys=null;const my=++MG.seg;const on=()=>MG&&MG.alive&&MG.seg===my;
+  ({rhythm:subRhythm,poses:subPoses,choreo:subPoses,pitch:subPitch,rhyme:subRhyme,camera:subCamera,qa:subQA,mishap:subMishap})[kind](host,o,on,done)}
+function playMG(){
+  audio();MG.phase='play';const o=MG.o;
+  if(MG.kind==='live'){runLive(o);return}
+  mgShell(`${mgTop(o,1)}<div class="mghost" id="mgh0"></div>`);
+  runGame(MG.kind,$('#mgh0'),o,(s,d)=>{MG.detail=d;finishMG(s)});
+}
+
+/* --- Rhythm Lanes --- */
+function subRhythm(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40;
+  const bpm=96+diff*44,beat=60000/bpm,travel=1750-diff*500,pw=55+stat*.35,gw=120+stat*.6,lead=1600,len=o.len||(13000+diff*6000);
   const notes=[];let t=lead,last=-1;
   while(t<lead+len){let lane=ri(0,3);if(lane===last&&Math.random()<.6)lane=(lane+ri(1,3))%4;notes.push({t,lane});if(diff>.55&&Math.random()<.12)notes.push({t,lane:(lane+2)%4});last=lane;t+=beat*pick(diff>.5?[1,1,.5,.5,1,2]:[1,1,1,2,.5])}
-  const el=mgShell(`<div class="top"><b>${esc(o.title)}</b><span class="score" id="mgs">0</span><button class="x" data-mga="quit">✕</button></div>
-  <div class="field-mg" id="mgf">${[0,1,2,3].map(i=>`<div class="lane" id="ln${i}"></div>`).join('')}<div class="hitline" id="mgh"></div><div class="judge" id="mgj"></div></div>
-  <div class="pads">${[0,1,2,3].map(i=>`<button class="pad" data-pad="${i}" style="background:${LANEC[i]}">${['♥','★','♪','◆'][i]}</button>`).join('')}</div>`);
-  const f=$('#mgf');const H=f.clientHeight;const hitY=H-46;$('#mgh').style.top=hitY+'px';$('#mgj').style.top=(hitY-70)+'px';
-  notes.forEach(n=>{const d=document.createElement('div');d.className='note';d.style.background=LANEC[n.lane];d.style.color=LANEC[n.lane];d.style.display='none';$('#ln'+n.lane).appendChild(d);n.el=d});
+  host.innerHTML=`<div class="field-mg">${[0,1,2,3].map(i=>`<div class="lane"></div>`).join('')}<div class="hitline"></div><div class="judge"></div></div>
+  <div class="pads">${[0,1,2,3].map(i=>`<button class="pad" data-pad="${i}" style="background:${LANEC[i]}">${['♥','★','♪','◆'][i]}</button>`).join('')}</div>`;
+  const f=host.querySelector('.field-mg'),lanes=host.querySelectorAll('.lane'),J=host.querySelector('.judge');const hitY=f.clientHeight-46;host.querySelector('.hitline').style.top=hitY+'px';J.style.top=Math.max(0,hitY-70)+'px';
+  notes.forEach(n=>{const d=document.createElement('div');d.className='note';d.style.background=LANEC[n.lane];d.style.color=LANEC[n.lane];d.style.display='none';lanes[n.lane].appendChild(d);n.el=d});
   const R={p:0,g:0,m:0,combo:0,max:0};const t0=performance.now()+120;let lastBeat=-1;MG.notes=notes;MG.t0=t0;
-  const judge=(txt,c)=>{const j=$('#mgj');if(!j)return;j.textContent=txt;j.style.color=c;j.style.transform='scale(1.15)';setTimeout(()=>{if(j)j.style.transform=''},90)};
+  const judge=(txt,c)=>{J.textContent=txt;J.style.color=c;J.style.transform='scale(1.15)';setTimeout(()=>{J.style.transform=''},90)};
   const score=()=>((R.p+R.g*.6)/notes.length*100+R.max/notes.length*6);
-  MG.press=lane=>{const now=performance.now()-t0;const pad=document.querySelector(`[data-pad="${lane}"]`);if(pad){pad.classList.add('hit');setTimeout(()=>pad.classList.remove('hit'),90)}
+  MG.keys=KIND_KEYS.rhythm;
+  MG.press=k=>{const lane=+k;if(!(lane>=0&&lane<4))return;const now=performance.now()-t0;const pad=host.querySelector(`[data-pad="${lane}"]`);if(pad){pad.classList.add('hit');setTimeout(()=>pad.classList.remove('hit'),90)}
     let best=null,bd=1e9;for(const n of notes){if(n.j||n.lane!==lane)continue;const d=Math.abs(now-n.t);if(d<bd){bd=d;best=n}}
-    if(best&&bd<=gw){best.j=1;best.el.style.display='none';if(bd<=pw){R.p++;judge('PERFECT','#fff36b')}else{R.g++;judge('GOOD','#9ff5d8')}R.combo++;R.max=Math.max(R.max,R.combo);beep(LANEF[lane],.12,.07);$('#mgs').textContent=Math.round(score())}
-    else{beep(150,.06,.04,'square')}};
-  const loop=()=>{if(!MG||!MG.alive)return;const now=performance.now()-t0;
+    if(best&&bd<=gw){best.j=1;best.el.style.display='none';if(bd<=pw){R.p++;judge('PERFECT','#fff36b')}else{R.g++;judge('GOOD','#9ff5d8')}R.combo++;R.max=Math.max(R.max,R.combo);beep(LANEF[lane],.12,.07);setScore(Math.round(score()))}
+    else beep(150,.06,.04,'square')};
+  const loop=()=>{if(!on())return;const now=performance.now()-t0;
     const b=Math.floor((now-lead)/beat);if(b>lastBeat&&now>=lead-beat){lastBeat=b;beep(b%4===0?220:180,.05,.03,'sine')}
     for(const n of notes){if(n.j)continue;const dt=n.t-now;if(dt<-gw){n.j=1;n.el.style.display='none';R.m++;R.combo=0;judge('MISS','#ff9aa8');continue}
       if(dt<=travel){n.el.style.display='block';n.el.style.transform=`translateY(${hitY*(1-dt/travel)}px)`}}
-    if(now>notes[notes.length-1].t+gw+600){MG.detail=`Perfect ${R.p} · Good ${R.g} · Miss ${R.m} · Max combo ${R.max}`;finishMG(score());return}
+    if(now>notes[notes.length-1].t+gw+600){done(score(),`Perfect ${R.p} · Good ${R.g} · Miss ${R.m} · Max combo ${R.max}`);return}
     requestAnimationFrame(loop)};
   requestAnimationFrame(loop);
 }
-const MOVES=[{k:'L',i:'⬅️'},{k:'U',i:'⬆️'},{k:'R',i:'➡️'},{k:'D',i:'⬇️'},{k:'C',i:'👏'},{k:'S',i:'✨'}];
-// Pose Match: the choreographer freezes in a pose, you tap the matching pose card before the timer runs out
+
+/* --- Pose Match --- */
 const POSES=[
   {n:'V up',a:[[38,26,30,12],[62,26,70,12]]},
   {n:'T arms',a:[[36,38,22,38],[64,38,78,38]]},
@@ -1517,48 +1624,214 @@ function poseSVG(p,col,skin,hair){
   <path d="${arm(0)} ${arm(1)}" stroke="${col}" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>${[0,1].map(x=>`<circle cx="${p.a[x][2]}" cy="${p.a[x][3]}" r="3.6" fill="${skin}"/>`).join('')}
   <circle cx="50" cy="21" r="10.5" fill="${skin}"/><path d="M39.5 21 Q39 9 50 9 Q61 9 60.5 21 Q57 14 50 15 Q43 14 39.5 21Z" fill="${hair}"/></svg>`;
 }
-function mgChoreo(){
-  const o=MG.o,diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=10;
-  const limit=clamp(3300-diff*900+stat*8,1900,4200);
-  const L=(S&&S.idol&&S.idol.look)||(UI.draft&&UI.draft.look)||defaultLook();
-  const skin=SKINS[L.skin]||SKINS[1],hair=HAIRC[L.hairC]||HAIRC[0],mine=OUTFITC[L.outfit]||'#ff5fae';
-  mgShell(`<div class="top"><b>${esc(o.title)}</b><span class="score" id="mgs">0/${N}</span><button class="x" data-mga="quit">✕</button></div>
-  <div class="posestage"><div class="spot"></div><div id="mgr" class="poselabel">Get ready…</div><div class="posebig" id="mgc"></div><div id="mgm" class="posemsg"></div><div class="bar" style="width:70%;background:rgba(255,255,255,.15)"><i id="mgt" style="width:100%"></i></div></div>
-  <div class="posecards" id="mgk"></div>`);
-  const C=$('#mgc'),K=$('#mgk'),T=$('#mgt'),RR=$('#mgr'),MM=$('#mgm');
-  let i=0,pts=0,hits=0,combo=0,best=0,phase='wait',t0=0,ans=0,last=-1;
-  const next=()=>{if(!MG||!MG.alive)return;if(i>=N){MG.detail=`${hits} of ${N} poses matched · best streak ${best}`;finishMG(pts/N*100);return}
+function myColors(){const L=(S&&S.idol&&soloLook('live'))||(UI.draft&&UI.draft.look)||defaultLook();return {skin:SKINS[L.skin]||SKINS[1],hair:HAIRC[L.hairC]||HAIRC[0],mine:L.oc||OUTFITC[L.outfit]||'#ff5fae'}}
+function subPoses(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||10;
+  const limit=clamp(3300-diff*900+stat*8,1900,4200);const {skin,hair,mine}=myColors();
+  host.innerHTML=`<div class="posestage"><div class="spot"></div><div class="poselabel">Get ready…</div><div class="posebig"></div><div class="posemsg"></div><div class="bar tbar"><i style="width:100%"></i></div></div><div class="posecards"></div>`;
+  const C=host.querySelector('.posebig'),K=host.querySelector('.posecards'),T=host.querySelector('.tbar i'),RR=host.querySelector('.poselabel'),MM=host.querySelector('.posemsg');
+  let i=0,pts=0,hits=0,combo=0,best=0,phase='wait',t0=0,ans=0,last=-1;MG.keys=KIND_KEYS.pick3;setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${hits} of ${N} poses matched · best streak ${best}`);return}
     let pi;do{pi=ri(0,POSES.length-1)}while(pi===last);last=pi;
     const opts=shuffle([pi,...shuffle(POSES.map((_,k)=>k).filter(k=>k!==pi)).slice(0,2)]);ans=opts.indexOf(pi);MG.answer=ans;
     RR.textContent=`POSE ${i+1} OF ${N} · COPY IT!`;C.innerHTML=poseSVG(POSES[pi],'#ffffff',skin,hair);C.classList.remove('pop');void C.offsetWidth;C.classList.add('pop');
     K.innerHTML=opts.map((k,j)=>`<button class="pad posecard" data-pad="${j}">${poseSVG(POSES[k],mine,skin,hair)}<small>${POSES[k].n}</small></button>`).join('');
     beep(500,.08,.05);phase='pick';t0=performance.now();tick()};
-  const tick=()=>{if(!MG||!MG.alive||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){resolve(-1);return}requestAnimationFrame(tick)};
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){resolve(-1);return}requestAnimationFrame(tick)};
   const resolve=j=>{phase='wait';const cards=K.querySelectorAll('.posecard');const ok=j===ans;
     if(ok){const sp=clamp(1-(performance.now()-t0)/limit,0,1);pts+=.75+.25*sp;hits++;combo++;best=Math.max(best,combo);cards[j].classList.add('right');MM.textContent=combo>=3?`FEVER ×${combo} ✨`:sp>.6?'Sharp!':'Nice!';beep(700+combo*40,.12,.07)}
     else{combo=0;if(j>=0)cards[j].classList.add('wrong');cards[ans].classList.add('right');MM.textContent=j<0?'Too slow!':'Close! That one was it.';beep(160,.15,.05,'square')}
-    $('#mgs').textContent=`${hits}/${N}`;i++;setTimeout(next,ok?520:950)};
+    setScore(`${hits}/${N}`);i++;setTimeout(next,ok?520:950)};
   MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j>=0&&j<3)resolve(j)};
-  setTimeout(next,900);
+  setTimeout(next,700);
 }
-document.addEventListener('pointerdown',e=>{const p=e.target.closest&&e.target.closest('[data-pad]');if(!p||!MG||!MG.press)return;e.preventDefault();const v=p.dataset.pad;MG.press(MG.kind==='rhythm'?+v:v)});
+
+/* --- Pitch Hold (vocal) --- */
+const LYRICS=['Shine like the stars tonight','You are my only light','Hold on, don\'t let me go','Dancing in the after-glow','Every heartbeat sings your name','Nothing will ever be the same'];
+function subPitch(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,len=o.len||11000;
+  const band=clamp(.2+stat*.0012-diff*.05,.14,.32);const words=pick(LYRICS).split(' ');
+  host.innerHTML=`<div class="pitchwrap"><div class="pitchlyric">${words.map(w=>`<span>${esc(w)}</span>`).join(' ')}</div>
+  <div class="pitchfield"><div class="pband"><span>♪</span></div><div class="pdot"></div></div>
+  <div class="pitchmeter"><span>On pitch</span><div class="bar"><i style="width:0%"></i></div><b>0%</b></div>
+  <button class="pad holdpad" data-pad="hold">🎤 HOLD to sing higher</button></div>`;
+  const Bd=host.querySelector('.pband'),D=host.querySelector('.pdot'),M=host.querySelector('.pitchmeter i'),MB=host.querySelector('.pitchmeter b'),W=host.querySelectorAll('.pitchlyric span'),HP=host.querySelector('.holdpad');
+  let y=.6,v=0,hold=false,inT=0,tot=0,last=performance.now();const t0=last+900,seed=rnd(0,6);
+  const target=t=>clamp(.5+.27*Math.sin(t*.00105*(1+diff*.6)+seed)+.12*Math.sin(t*.0026*(1+diff)+seed*2),.14,.86);
+  MG.press=k=>{if(k==='hold'||k===' '){hold=true;HP.classList.add('hit')}};MG.release=()=>{hold=false;HP.classList.remove('hit')};MG.keys={' ':' '};setScore('0%');
+  const loop=now=>{if(!on())return;const dt=Math.min(50,now-last);last=now;const t=now-t0;
+    const tv=hold?-.00085:.00075;v+=(tv-v)*Math.min(1,dt/110);y+=v*dt;if(y<.05){y=.05;v=0}if(y>.95){y=.95;v=0}
+    const c=target(Math.max(0,t));Bd.style.top=((c-band/2)*100)+'%';Bd.style.height=(band*100)+'%';D.style.top=(y*100)+'%';
+    if(t>0){tot+=dt;const ok=Math.abs(y-c)<=band/2;if(ok)inT+=dt;D.classList.toggle('ok',ok);const pc=inT/tot*100;M.style.width=pc+'%';MB.textContent=Math.round(pc)+'%';setScore(Math.round(pc)+'%');
+      const wi=Math.floor(t/len*W.length);W.forEach((w,i)=>w.classList.toggle('sung',i<=wi))}
+    if(t>=len){MG.release&&MG.release();const pc=tot?inT/tot*100:0;done(clamp(pc*1.08,0,100),`${Math.round(pc)}% of the line on pitch`);return}
+    requestAnimationFrame(loop)};
+  requestAnimationFrame(loop);
+}
+
+/* --- Rhyme Flow (rap) --- */
+const BARS=[
+  ['We started in a basement, practicing all night','Now the whole world is watching, we are standing in the','light',['rain','dark']],
+  ['They said we would never make it, said we wouldn\'t last','Now we\'re breaking every record, moving way too','fast',['slow','far']],
+  ['Microphone in my hand and my heart on my sleeve','Every single word I spit is something I','believe',['forgot','wrote']],
+  ['From the trainee floor to the top of the chart','Every beat I ever made came straight from the','heart',['head','soul']],
+  ['Sweat on the mirror, blisters on my feet','Never missed a single step, never missed a','beat',['day','note']],
+  ['Cameras flashing, everybody screaming my name','Since the day that we debuted, nothing\'s been the','same',['way','end']],
+  ['Rivals in the hallway, whispers in the dark','We just keep on working till we leave our','mark',['name','dream']],
+  ['Seven years together and we\'re stronger than before','Every time we hit the stage they\'re screaming out for','more',['us','less']],
+  ['Ramen at midnight, practice room glow','Thirty takes of one verse, now we\'re ready to','go',['stop','sleep']],
+  ['Freeze on the ending fairy, now you\'re watching the show','Sixteen counts of choreo and every move is on the','flow',['beat','floor']],
+  ['They can copy our outfits, they can copy the beat','But they\'ll never copy how we land on our','feet',['knees','hands']],
+  ['Number one on the chart and I can\'t believe my eyes','Every single win we got came as a big','surprise',['mistake','reward']],
+  ['Lights go down and the whole arena\'s loud','Look at all the lightsticks shining in the','crowd',['room','sky']],
+  ['I wrote this verse on the back of a receipt','Now the whole stadium is jumping to the','beat',['song','bass']]
+];
+function subRhyme(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||6;const limit=clamp(4400-diff*1100+stat*10,2700,5400);const beat=limit/4;
+  host.innerHTML=`<div class="rhymestage"><div class="beatdots">${'<i></i>'.repeat(4)}</div><div class="rhymebar"><p class="l1"></p><p class="l2"></p></div><div class="posemsg"></div></div><div class="rhymeopts"></div>`;
+  const L1=host.querySelector('.l1'),L2=host.querySelector('.l2'),O=host.querySelector('.rhymeopts'),MM=host.querySelector('.posemsg'),DOTS=host.querySelectorAll('.beatdots i');
+  const bars=shuffle(BARS).slice(0,N);let i=0,pts=0,hits=0,phase='wait',t0=0,ans=0,lb=-1;MG.keys=KIND_KEYS.pick3;setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${hits} of ${N} bars landed`);return}
+    const b=bars[i];const opts=shuffle([b[2],...b[3]]);ans=opts.indexOf(b[2]);MG.answer=ans;
+    L1.textContent=b[0];L2.innerHTML=`${esc(b[1])} <span class="blank">&nbsp;?&nbsp;</span>`;MM.textContent='';
+    O.innerHTML=opts.map((w,j)=>`<button class="pad rhymeopt" data-pad="${j}">${esc(w)}</button>`).join('');phase='pick';t0=performance.now();lb=-1;tick()};
+  const tick=()=>{if(!on()||phase!=='pick')return;const el=performance.now()-t0;const b=Math.floor(el/beat);if(b!==lb){lb=b;DOTS.forEach((d,k)=>d.classList.toggle('on',k<=b));beep(b===3?330:200,.07,.05,'square')}if(el>=limit){resolve(-1);return}requestAnimationFrame(tick)};
+  const resolve=j=>{phase='wait';const ok=j===ans;const bs=O.querySelectorAll('.rhymeopt');const b=bars[i];
+    L2.innerHTML=`${esc(b[1])} <span class="blank ${ok?'ok':'no'}">${esc(b[2])}</span>`;
+    if(ok){const sp=clamp(1-(performance.now()-t0)/limit,0,1);pts+=.7+.3*sp;hits++;bs[j].classList.add('right');MM.textContent=sp>.5?'Fire bar 🔥':'Clean!';beep(760,.12,.07)}
+    else{if(j>=0)bs[j].classList.add('wrong');bs[ans].classList.add('right');MM.textContent=j<0?'Missed the beat!':'Off the rhyme.';beep(160,.15,.05,'square')}
+    setScore(`${hits}/${N}`);i++;setTimeout(next,ok?650:1000)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j>=0&&j<3)resolve(j)};
+  setTimeout(next,600);
+}
+
+/* --- Camera Catch (visual) --- */
+function subCamera(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||8;const win=clamp(1500-diff*500+stat*6,900,2200);
+  host.innerHTML=`<div class="camstage"><div class="camlabel">${esc(o.cue||'Find the live camera!')}</div><div class="camgrid">${[0,1,2,3,4,5].map(i=>`<button class="pad cam" data-pad="${i}"><span class="tally"></span>🎥<small>CAM ${i+1}</small></button>`).join('')}</div><div class="posemsg"></div></div>`;
+  const cams=host.querySelectorAll('.cam'),MM=host.querySelector('.posemsg');
+  let i=0,pts=0,hits=0,phase='wait',t0=0,live=-1;MG.keys=KIND_KEYS.camera;setScore(`0/${N}`);
+  const clear=()=>cams.forEach(c=>c.classList.remove('live','standby','right','wrong'));
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${hits} of ${N} cameras caught`);return}
+    clear();phase='wait';setTimeout(()=>{if(!on())return;live=ri(0,5);MG.answer=live;cams[live].classList.add('live');
+      const fakes=shuffle([0,1,2,3,4,5].filter(k=>k!==live)).slice(0,diff>.5?2:1);fakes.forEach(k=>cams[k].classList.add('standby'));
+      beep(880,.05,.04);phase='pick';t0=performance.now();tick()},ri(350,900))};
+  const tick=()=>{if(!on()||phase!=='pick')return;if(performance.now()-t0>=win){resolve(-1);return}requestAnimationFrame(tick)};
+  const resolve=j=>{phase='done';const ok=j===live;
+    if(ok){const sp=clamp(1-(performance.now()-t0)/win,0,1);pts+=.6+.4*sp;hits++;cams[j].classList.add('right');MM.textContent=sp>.55?'Killing look! 😎':'Caught it!';beep(980,.1,.07)}
+    else{if(j>=0)cams[j].classList.add('wrong');MM.textContent=j<0?'The camera moved on…':'Wrong camera!';beep(160,.15,.05,'square')}
+    setScore(`${hits}/${N}`);i++;setTimeout(next,ok?420:700)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j>=0&&j<6)resolve(j)};
+  setTimeout(next,500);
+}
+
+/* --- Press Q&A / concert ment (variety) --- */
+const QA={press:[
+  ['How does it feel to finally be here?',[['Like a dream. We\'ll repay every fan with our stages.',1],['Honestly? Exhausting.',.2],['We always knew we would make it.',.4]]],
+  ['Which member is the funniest?',[['*points at the maknae* They never stop!',1],['Me, obviously.',.5],['We\'re all pretty serious.',.2]]],
+  ['This concept is bold. Any worries?',[['We practiced until it felt like us.',1],['The company picked it.',.2],['No comment.',0]]],
+  ['Who do you want to thank?',[['Our fans, our families and the trainers who stayed late.',1],['Just my mom.',.5],['I\'ll say it when we win.',.3]]],
+  ['What is your goal this year?',[['A first win, and meeting fans all over the world.',1],['Beat every other group.',.4],['Sleep, mostly.',.3]]],
+  ['Show us your charm for the cameras!',[['*finger heart and a wink*',1],['*awkward bow*',.4],['Maybe later…',0]]],
+  ['Rumor says you two don\'t get along?',[['*hugs the member* We\'re family!',1],['That\'s private.',.3],['Ask them.',0]]],
+  ['Describe the new song in three words.',[['Bright, bold, unforgettable.',1],['Song, dance, stuff.',.2],['You\'ll hear it.',.5]]],
+  ['What did you give up as a trainee?',[['Sleep and snacks, but it was worth it.',1],['Everything. It was awful.',.2],['I don\'t remember.',.3]]]],
+ ment:[
+  ['The crowd is chanting your name. What do you say?',[['"I can\'t hear you! One more time!"',1],['"Thank you… sorry, I\'m nervous."',.6],['*just waves*',.3]]],
+  ['A fan holds up a sign: "Marry me!"',[['"Let\'s start with dinner! Kidding!" *heart*',1],['"Uh… thank you?"',.4],['*pretends not to see it*',.2]]],
+  ['It\'s a member\'s birthday on tour.',[['Lead the whole arena in a birthday song',1],['Give them a quick hug',.6],['Forget and move on',0]]],
+  ['Your in-ear is off. Time to talk to the crowd.',[['"This city is the loudest of the tour!"',1],['"Are you having fun?"',.6],['"…So, next song?"',.2]]],
+  ['A fan up front is crying.',[['Kneel down and blow them a heart',1],['Smile and point at them',.6],['Keep going, you\'re on a schedule',.2]]]]};
+function subQA(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||4;const limit=clamp(6200-diff*1500+stat*15,4200,7800);
+  host.innerHTML=`<div class="qastage"><div class="qamic">🎙️</div><div class="qabubble"></div><div class="bar tbar"><i style="width:100%"></i></div><div class="posemsg"></div></div><div class="qaopts"></div>`;
+  const Q=host.querySelector('.qabubble'),O=host.querySelector('.qaopts'),T=host.querySelector('.tbar i'),MM=host.querySelector('.posemsg');
+  const qs=shuffle(QA[o.set||'press']).slice(0,N);let i=0,pts=0,good=0,phase='wait',t0=0,cur=null;MG.keys=KIND_KEYS.pick3;setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${good} of ${N} answers landed`);return}
+    const q=qs[i];cur=shuffle(q[1]);MG.answer=cur.findIndex(a=>a[1]===1);Q.textContent=q[0];MM.textContent='';
+    O.innerHTML=cur.map((a,j)=>`<button class="pad qaopt" data-pad="${j}">${esc(a[0])}</button>`).join('');phase='pick';t0=performance.now();tick()};
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){resolve(-1);return}requestAnimationFrame(tick)};
+  const resolve=j=>{phase='wait';const bs=O.querySelectorAll('.qaopt');const v=j>=0?cur[j][1]:0;const sp=clamp(1-(performance.now()-t0)/limit,0,1);
+    pts+=v*(.8+.2*sp);if(v>=1)good++;if(j>=0)bs[j].classList.add(v>=1?'right':v>=.5?'meh':'wrong');
+    MM.textContent=j<0?'Dead air…':v>=1?'The room loves it 💖':v>=.5?'Polite laughter.':'Awkward silence…';beep(v>=1?760:v>=.5?520:160,.12,.06,v>=.5?'triangle':'square');
+    setScore(`${good}/${N}`);i++;setTimeout(next,1000)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j>=0&&j<3)resolve(j)};
+  setTimeout(next,500);
+}
+
+/* --- live mishap: a split-second decision --- */
+const MISHAP_ACT={vocal:['Keep singing by feel','Point to your ear for the engineer'],variety:['Grab a member\'s mic and keep going','Mouth the words and smile'],dance:['Turn it into a freestyle move','Get up and rejoin the formation'],visual:['Flip your hair and own it','Stay in character, ignore it']};
+function subMishap(host,o,on,done){
+  const m=o.m;const acts=MISHAP_ACT[m.k]||MISHAP_ACT.vocal;const limit=3600;
+  host.innerHTML=`<div class="mishap"><div class="big">⚠️</div><b>${esc(m.n)}!</b><small>Decide fast. The whole country is watching.</small><div class="bar tbar"><i style="width:100%"></i></div><div class="mopts">${acts.map((a,j)=>`<button class="pad mbtn" data-pad="${j}">${j?'🛟':'🔥'} ${esc(a)}</button>`).join('')}</div><div class="posemsg"></div></div>`;
+  const T=host.querySelector('.tbar i'),MM=host.querySelector('.posemsg');let phase='pick';const t0=performance.now();MG.keys=KIND_KEYS.mishap;beep(220,.3,.08,'sawtooth');
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){resolve(-1);return}requestAnimationFrame(tick)};
+  const resolve=j=>{phase='done';let s,saved=false,txt;
+    if(j===0){saved=S.st[m.k]+rnd(-15,15)>=55;s=saved?100:25;txt=saved?'You turn it into a moment. Chat explodes!':'It doesn\'t quite work. Ouch.'}
+    else if(j===1){s=60;txt='Handled quietly. Most viewers didn\'t notice.'}else{s=10;txt='You freeze for a second…'}
+    MG.mishapRes={n:m.n,saved,safe:j===1};MM.textContent=txt;beep(s>=60?700:160,.15,.06);setTimeout(()=>done(s,txt),1100)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j===0||j===1)resolve(j)};
+  tick();
+}
+
+/* --- Live Stage: the actual performance --- */
+const SEG_STAT={rhythm:'dance',poses:'dance',pitch:'vocal',rhyme:'rap',camera:'visual',qa:'variety'};
+function livePlan(type,t){
+  const R=REHEARSALS.find(x=>x.id===t.reh)||REHEARSALS[0];const comfort=S.costume?S.costume.comfort:60;const rapper=myPos().includes('Main Rapper');
+  const seg=(id,kind,e,label,o)=>({id,kind,e,label,o:o||{}});let segs;
+  if(type==='showcase')segs=[seg('photo','camera','📸','Photo wall: find the flashing camera',{n:4,cue:'Reporters are shooting. Find the live camera!'}),seg('intro','poses','🎬','Showcase stage: opening poses',{n:3}),seg(rapper?'rap':'verse',rapper?'rhyme':'pitch',rapper?'🎧':'🎤',rapper?'Your rap verse':'Your solo line',rapper?{n:2}:{len:7000}),seg('dance','rhythm','💃','Dance break',{len:6500}),seg('press','qa','🎙️','Press Q&A',{n:2,set:'press'})];
+  else if(type==='concert')segs=[seg('opener','rhythm','🎆','Opening number',{len:7500}),seg('ballad','pitch','🎤','Ballad: hold the high note',{len:7000}),seg('ment','qa','🗣️','Ment: talk to the crowd',{n:2,set:'ment'}),seg('dance','poses','💃','Dance medley',{n:3}),seg('encore','camera','🎥','Encore: play to every camera',{n:3,cue:'Encore! Wave to the live camera!'})];
+  else if(type==='finale')segs=[seg('verse','pitch','🎤','Your verse',{len:7000}),seg('dance','poses','💃','Choreography',{n:3}),seg('rap','rhyme','🎧','Rap bridge',{n:2}),seg('killing','camera','📸','Killing part',{n:2})];
+  else segs=[seg('intro','poses','🎬','Opening pose',{n:2}),seg(rapper?'rap':'verse',rapper?'rhyme':'pitch',rapper?'🎧':'🎤',rapper?'Your rap verse':'Your line',rapper?{n:2}:{len:7000}),seg('killing','camera','📸','Killing part: find the camera',{n:3,cue:'Your killing part! Find the live camera!'}),seg('dance','rhythm','💃','Dance break',{len:6500}),seg('fairy','camera','😉','Ending fairy: hold the close-up',{n:1,cue:'Ending fairy! Which camera has your close-up?'})];
+  segs.forEach(s=>{s.o.stat=S.st[SEG_STAT[s.kind]]});
+  const pm=clamp(.22+(S.stamina<30?.1:0)-(R.mis||0)-(comfort-60)/300,.03,.45);
+  if(!S.hiatus&&Math.random()<pm){const m=pick(MISHAPS.filter(x=>!x.w||!R.dress));segs.splice(2,0,seg('mishap','mishap','⚠️','Live mishap!',{m}))}
+  return {type,segs};
+}
+function autoRes(plan,game){
+  const segs=plan.segs.map(s=>{if(s.kind==='mishap')return null;return {id:s.id,e:s.e,label:s.label,s:clamp(Math.round(game+rnd(-12,12)),0,100)}}).filter(Boolean);
+  const ms=plan.segs.find(s=>s.kind==='mishap');let mishap=null;if(ms){const saved=S.st[ms.o.m.k]+rnd(-15,15)>=55;mishap={n:ms.o.m.n,saved,safe:false}}
+  return {segs,mishap,mg:false};
+}
+function runLive(o){
+  const plan=o.plan;const solo=o.solo||!S.group;
+  mgShell(`${mgTop(o,1)}<div class="mglive">${v3d(solo?'live':'group',150)}<div class="ticker"><span class="pill red">● LIVE</span><span class="vw">👀 0</span><span class="tk">The broadcast is starting…</span></div></div><div class="seghead"><span class="se"></span><b class="sl"></b><small class="sp"></small></div><div class="mghost compact" id="mgh0"></div>`);
+  mount3D();
+  const H=$('#mgh0'),SE=$('.seghead .se'),SL=$('.seghead .sl'),SP=$('.seghead .sp'),VW=$('.ticker .vw'),TK=$('.ticker .tk');
+  let viewers=Math.round(o.viewers||5000),run=60;const res=[];let i=0;
+  MG.iv.push(setInterval(()=>{viewers=Math.round(viewers*rnd(1.01,1.05)+rnd(20,200));VW.textContent='👀 '+fmt(viewers);const tier=run>=72?'hi':run>=48?'mid':'lo';TK.textContent=pick(LIVECHAT[tier]);TK.classList.remove('pop');void TK.offsetWidth;TK.classList.add('pop')},1700));
+  const next=()=>{if(!MG||!MG.alive)return;
+    if(i>=plan.segs.length){const w=res.map(r=>r.id==='mishap'?.5:1);const sc=sum(res.map((r,k)=>r.s*w[k]))/sum(w);
+      finishMG(sc,{segs:res.filter(r=>r.id!=='mishap'),mishap:MG.mishapRes||null,mg:true,viewers});return}
+    const sg=plan.segs[i];SE.textContent=sg.e;SL.textContent=sg.label;SP.textContent=`${i+1}/${plan.segs.length}`;
+    H.innerHTML=`<div class="segcard"><div class="big">${sg.e}</div><b>${esc(sg.label)}</b><small>${sg.kind==='mishap'?'Something went wrong!':GAMES[sg.kind].n}</small></div>`;
+    setTimeout(()=>{if(!MG||!MG.alive)return;runGame(sg.kind,H,Object.assign({diff:o.diff},sg.o),(s,d)=>{s=Math.round(clamp(s,0,100));res.push({id:sg.id,e:sg.e,label:sg.label,s});run=avg(res.map(r=>r.s));
+      H.innerHTML=`<div class="segcard"><div class="big">${s>=75?'🌟':s>=50?'✨':'😬'}</div><b>${esc(sg.label)}: ${s}</b><small>${esc(d||'')}</small></div>`;i++;setTimeout(next,900)})},sg.kind==='mishap'?400:1100)};
+  next();
+}
+
+document.addEventListener('pointerdown',e=>{const p=e.target.closest&&e.target.closest('[data-pad]');if(!p||!MG||!MG.press)return;e.preventDefault();MG.press(p.dataset.pad)});
+['pointerup','pointercancel'].forEach(k=>document.addEventListener(k,()=>{if(MG&&MG.release)MG.release()}));
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-mga]');if(!b||!MG)return;const a=b.dataset.mga;
   if(a==='quit'){closeMG();return}
-  if(a==='go'){audio();MG.phase='play';if(MG.kind==='rhythm')mgRhythm();else mgChoreo();return}
-  if(a==='auto'){MG.detail='Simulated from your skills.';finishMG(autoScore(MG.o.stat||40));return}
-  if(a==='ok'){const cb=MG.cb,s=MG.score;closeMG();cb(s)}});
-document.addEventListener('keydown',e=>{if(!MG||!MG.press)return;const m=MG.kind==='rhythm'?{d:0,f:1,j:2,k:3,ArrowLeft:0,ArrowDown:1,ArrowUp:2,ArrowRight:3}:{'1':'0','2':'1','3':'2',ArrowLeft:'0',ArrowDown:'1',ArrowRight:'2'};if(e.key in m){e.preventDefault();MG.press(m[e.key])}});
+  if(a==='go'){playMG();return}
+  if(a==='auto'){const s=autoScore(MG.o.stat||40);MG.detail='Simulated from your skills.';finishMG(s,MG.kind==='live'?autoRes(MG.o.plan,s):null);return}
+  if(a==='ok'){const cb=MG.cb,s=MG.score,x=MG.extra;closeMG();cb(s,x)}});
+document.addEventListener('keydown',e=>{if(!MG||!MG.press||!MG.keys||e.repeat)return;if(e.key in MG.keys){e.preventDefault();MG.press(MG.keys[e.key])}});
+document.addEventListener('keyup',e=>{if(e.key===' '&&MG&&MG.release)MG.release()});
 
 /* ============ actions ============ */
 const evalDiff=()=>clamp(.3+S.months*.025,.3,.8);
 function mgFor(kind,title,stat,diff,cb,sub){startMG(kind,{title,stat,diff,sub},cb)}
+function goLive(type,title,solo,cb){const t=curTask();const plan=livePlan(type,t);const g=S.group;
+  startMG('live',{title,plan,solo,diff:.55,stat:avg([S.st.vocal,S.st.dance,S.st.visual]),viewers:Math.max(g?g.fans:0,AG(S.agency).fame*.6)*.4+2000,sub:`${plan.segs.length} sections · rehearsal: ${(REHEARSALS.find(r=>r.id===t.reh)||REHEARSALS[0]).n}`},cb)}
 function auditionResult(id,game){
   const a=AG(id);const sc=auditionScore(game,UI.piece||'vocal');
   if(sc>=a.diff||a.id==='comet'){joinAgency(id);UI.tab='week'}
   else{S.tried.push(id);UI.modal={kick:'Audition result',title:'Not this time',html:`<p>${esc(a.short)} thanks you for coming. Your score: <b>${Math.round(sc)}</b> (they wanted ${a.diff}+).</p><p class="muted">Try another agency. Smaller labels are easier to get into.</p>`,btns:[B('OK','closeModal',null,'block')]}}
   save();render();
 }
-function concertDone(g){const t=curTask();const city=S.tour.cities[0];const live=liveStage(g,t,'group',`${S.tour.n} · opening night in ${city}`,S.group.concept);S.tour.perf=live.sc;S.tasks.shift();
+function concertDone(g,res){const t=curTask();const city=S.tour.cities[0];const live=liveStage(g,t,'group',`${S.tour.n} · opening night in ${city}`,S.group.concept,res);S.tour.perf=live.sc;S.tasks.shift();
   info('Opening night',live.sc>=60?'The crowd roars':'A shaky start',`${liveHTML(live,true)}<p class="muted">The tour runs for ${S.tour.weeks} weeks.</p>`)}
 function renewGroup(){
   const g=S.group;S.flags.renewed=true;let left=[];
@@ -1580,7 +1853,7 @@ const ACT={
   cancelTask:()=>{S.tasks.shift();UI.form={}},
   al:v=>{const [k,d]=v.split('|');const A=S.alloc;const tot=sum(Object.values(A));if(+d>0&&tot>=BLOCKS)return;A[k]=clamp((A[k]||0)+(+d),0,BLOCKS);UI.keepScroll=true;save()},
   bondSet:v=>{S.bond=v;save();toast(`Bond time goes to ${npcById(v)?.name}.`)},
-  mgEval:()=>{const t=curTask();const E=EVALK[t.kind];mgFor(E.mg,`${E.n} evaluation`,evalStat(S.st,t.kind),evalDiff(),finishEval)},
+  mgEval:()=>{const t=curTask();const E=EVALK[t.kind];const k=t.mg||E.mg;mgFor(k,`${E.n} evaluation`,k==='rhyme'?S.st.rap:evalStat(S.st,t.kind),evalDiff(),finishEval)},
   autoEval:()=>finishEval(autoScore(evalStat(S.st,curTask().kind))),
   afterEval:()=>afterEval(),
   cutAudition:()=>{S.tasks.shift();S.tried=[S.agency];S.agency=null;S.act='audition';S.trainees=[];S.surv=null;log('Back to auditions.')},
@@ -1590,16 +1863,18 @@ const ACT={
   survNo:()=>{S.tasks.shift();S.agRel+=2},
   mgLineup:()=>mgFor('rhythm','Debut evaluation',(myOverall()+S.st.vocal)/2,.55,computeLineup,'The directors decide the lineup today.'),
   autoLineup:()=>computeLineup(autoScore((myOverall()+S.st.vocal)/2)),
-  survGo:v=>{const ep=S.surv.ep;const k=SKL[v]?v:ep===2?'dance':'vocal';mgFor(k==='dance'?'choreo':'rhythm',`${SURV}: ${SURVEP[ep].n}`,S.st[k],.4+ep*.08,g=>survPerform(g,v))},
+  survGo:v=>{const ep=S.surv.ep;const k=SKL[v]?v:ep===2?'dance':'vocal';
+    if(ep>=4){const plan=livePlan('finale',curTask());startMG('live',{title:`${SURV}: live finale`,plan,solo:true,diff:.5,stat:avg([S.st.vocal,S.st.dance]),viewers:250000,sub:'Live broadcast. Votes are open.'},g=>survPerform(g,v));return}
+    mgFor(k==='dance'?'poses':k==='rap'?'rhyme':'pitch',`${SURV}: ${SURVEP[ep].n}`,S.st[k],.4+ep*.08,g=>survPerform(g,v))},
   survAuto:v=>{const ep=S.surv.ep;const k=SKL[v]?v:ep===2?'dance':'vocal';survPerform(autoScore(S.st[k]),v)},
   afterSurv:()=>afterSurv(),
   toSetup:()=>{S.tasks.shift();UI.form={};pushTask({type:'setup'},true)},
   formSet:v=>{const i=v.indexOf('|');UI.form[v.slice(0,i)]=v.slice(i+1);UI.keepScroll=true},
   setupGo:()=>{const f=UI.form;const n=(f.name||'').trim(),t=(f.title||'').trim();if(!n||!t){toast('Give the group and the song a name.');return}S.tasks.shift();finishSetup(n,f.concept,t);UI.form={};info('Debut prep','Three weeks to debut',`<p>Jacket shoots, choreo drills, teaser films. Train hard: vocal, dance and rap blocks during prep make the song better.</p>`)},
-  mgRelease:()=>{const s=songById(curTask().song);mgFor('rhythm',`"${s.title}" showcase`,avg([S.st.vocal,S.st.dance]),.5,doRelease)},
-  autoRelease:()=>doRelease(autoScore(avg([S.st.vocal,S.st.dance]))),
-  mgShow:()=>{const t=curTask();mgFor(Math.random()<.5?'rhythm':'choreo',`${t.show} live`,avg([S.st.vocal,S.st.dance,S.st.visual]),.55,g=>doShow(g,false))},
-  autoShow:()=>doShow(S.hiatus?45:autoScore(avg([S.st.vocal,S.st.dance,S.st.visual])),true),
+  mgRelease:()=>{const t=curTask();const s=songById(t.song);goLive('showcase',`"${s.title}" showcase`,s.kind==='solo',(g,x)=>doRelease(g,x))},
+  autoRelease:()=>{const g=autoScore(avg([S.st.vocal,S.st.dance]));doRelease(g,autoRes(livePlan('showcase',curTask()),g))},
+  mgShow:()=>{const t=curTask();const s=songById(t.song);goLive('show',`${t.show} · "${s.title}"`,s.kind==='solo',(g,x)=>doShow(g,false,x))},
+  autoShow:()=>{const g=S.hiatus?45:autoScore(avg([S.st.vocal,S.st.dance,S.st.visual]));doShow(g,true,autoRes(livePlan('show',curTask()),g))},
   afterShow:()=>afterShow(),
   toCareer:()=>{S.tasks.shift();S.act='career';S.alloc=defAlloc('career');log('Act III begins: life as an idol.');fandomChecks()},
   fandomGo:()=>{const f=UI.form;const n=(f.fname||'').trim();if(!n){toast('Pick a name for your fans.');return}S.tasks.shift();S.fandom={name:n,color:f.fcol||FANDOM_COLORS[0]};fansPct(.03);log(`Fans are officially called ${n}!`);UI.form={};fandomChecks()},
@@ -1609,8 +1884,8 @@ const ACT={
   planGo:()=>{const f=UI.form;const t=(f.title||'').trim();if(!t){toast('Name the title track.');return}S.tasks.shift();startPrep({kind:'group',type:f.type,concept:f.concept,producer:f.producer,title:t});UI.form={};toast(`Prep started: ${S.prep.left} weeks.`)},
   tour:()=>{UI.form={};pushTask({type:'tourPick'},true)},
   tourGo:()=>{if(!UI.form.tour)return;S.tasks.shift();startTour(UI.form.tour);UI.form={}},
-  mgConcert:()=>mgFor('choreo',`${S.tour.n}: opening night`,avg([S.st.dance,S.st.vocal]),.55,g=>{concertDone(g);save();render()}),
-  autoConcert:()=>concertDone(autoScore(avg([S.st.dance,S.st.vocal]))),
+  mgConcert:()=>goLive('concert',`${S.tour.n}: opening night in ${S.tour.cities[0]}`,false,(g,x)=>{concertDone(g,x);save();render()}),
+  autoConcert:()=>{const g=autoScore(avg([S.st.dance,S.st.vocal]));concertDone(g,autoRes(livePlan('concert',curTask()),g))},
   tset:v=>{const t=curTask();if(!t)return;const i=v.indexOf('|');t[v.slice(0,i)]=v.slice(i+1);UI.keepScroll=true;save()},
   fitGo:()=>{const c=formCostume();const cid=fitConcept();S.costume=Object.assign(c,{concept:cid,w:S.week});S.tasks.shift();UI.form={};addCard(`👗 ${c.n}`,`${conceptName(cid,S.idol.gender)} · ${dateStr()}`,c.wow>=85?'rare':'common',c.col);fanSay('costume');log(`Fitting day: the group will wear ${c.n}.`);toast(`Look locked: ${c.n}`)},
   replay:()=>{const L=S.lastLive;if(L)UI.modal={kick:'Replay',title:'📺 Last live stage',html:liveHTML(L,true),btns:[B('Close','closeModal',null,'block')]}},
@@ -1642,7 +1917,7 @@ const ACT={
   drand:()=>{UI.draft.look=lookFor(ri(1,99999),UI.draft.gender)},
   create:()=>{const d=UI.draft;if(!(d.stage||'').trim()&&!(d.name||'').trim()){toast('Give your idol a name first.');return}newGame(d,UI.slot||1);UI.scr='game';UI.tab='week';UI.form={};window.scrollTo(0,0)},
   piece:v=>{UI.piece=v;UI.keepScroll=true},
-  aud:v=>{const p=UI.piece||'vocal';mgFor(p==='dance'?'choreo':'rhythm',`${AG(v).short} audition`,S.st[p],.3,g=>auditionResult(v,g),`Your piece: ${p==='vocal'?'a song':p==='dance'?'a dance':'a rap'}. The panel wants ${AG(v).diff}+ overall.`)}
+  aud:v=>{const p=UI.piece||'vocal';mgFor(p==='dance'?'poses':p==='rap'?'rhyme':'pitch',`${AG(v).short} audition`,S.st[p],.3,g=>auditionResult(v,g),`Your piece: ${p==='vocal'?'a song':p==='dance'?'a dance':'a rap'}. The panel wants ${AG(v).diff}+ overall.`)}
 };
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-a]');if(!b||b.disabled)return;const f=ACT[b.dataset.a];if(!f)return;e.preventDefault();audio();f(b.dataset.v);if(S)clampAll();if(S&&UI.scr!=='title')save();render()});
 document.addEventListener('input',e=>{const t=e.target;if(t.dataset.d&&UI.draft){UI.draft[t.dataset.d]=t.value;if(t.dataset.d==='stage'){const h=$('main .card.holo h2');if(h)h.textContent=t.value||'Your stage name'}}if(t.dataset.f){UI.form[t.dataset.f]=t.value}});
