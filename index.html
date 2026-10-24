@@ -1506,7 +1506,8 @@ const A={
   write:()=>{if(!spend(12))return;const s=writeSong();toast(`Wrote "${s.title}" (${grade(s.q)} demo).`);log(`Wrote a new song: "${s.title}".`)},
   retreat:()=>{if(S.energy<30){toast('You need at least 30 energy to go on a writing retreat.');return}if(!spend(0,250))return;S.energy=0;const a=writeSong(5),b=writeSong(5);b.title===a.title&&(b.title=songTitle());S.skills.songwriting=Math.min(100,S.skills.songwriting+1.5);log(`Songwriting retreat: wrote "${a.title}" and "${b.title}".`,'good');nextWeek(true);openModal('Back from the retreat',`<p>A week in a cabin with no wifi. You came back with two new songs:</p><div class="list">${[a,b].map(s=>`<div class="between"><b>${esc(s.title)}</b><span class="pill">${grade(s.q)} · Q${s.q}</span></div>`).join('')}</div><p class="muted">A week has passed. Your weekly income was paid out as usual.</p><button class="btn" data-a="closeModal">Into the studio</button>`)},
   record:d=>{const s=S.songs.find(x=>x.id==d.id);const st=STUDIOS.find(x=>x.id===UI.studio);if(S.level<LVL_STUDIO[st.id]){toast(lockTxt(LVL_STUDIO[st.id]));return}if(!spend(15,st.cost))return;const old=s.q;recordSong(s,st);toast(`Recorded "${s.title}" at the ${st.name.toLowerCase()}: Q${old} → Q${s.q}.`)},
-  scrap:d=>{S.songs=S.songs.filter(x=>x.id!=d.id)},
+  scrap:d=>{const s=S.songs.find(x=>x.id==d.id);S.songs=S.songs.filter(x=>x.id!=d.id);UI.albumSel=(UI.albumSel||[]).filter(i=>i!=d.id);S.setlist=(S.setlist||[]).filter(i=>i!=d.id);if(S.dsp&&S.dsp.pitch==d.id)S.dsp.pitch=null;UI.modal=UI.queue.shift()||null;if(s)toast(`Scrapped "${s.title}".`)},
+  scrapAsk:d=>{const s=S.songs.find(x=>x.id==d.id);if(!s)return;openModal('Scrap this song?',`<p>"<b>${esc(s.title)}</b>" (Q${s.q}) is recorded but not released. Scrapping deletes it for good, and the recording money is not refunded.</p><div class="row"><button class="btn delgo" data-a="scrap" data-id="${s.id}">Scrap it</button><button class="btn ghost" data-a="closeModal">Keep it</button></div>`)},
   release:d=>{const s=S.songs.find(x=>x.id==d.id);if(!spend(10))return;sfx('release');const rc=releaseSingle(s);toast(`"${s.title}" is out: ${RECV[rc.k].l} (${rc.g>=0?'+':''}${fmt(rc.g)} fans).`)},
   mv:d=>{const s=S.songs.find(x=>x.id==d.id);const m=MVS.find(x=>x.id===UI.mv);if(!spend(25,m.cost+mvLocCost()))return;s.mv=clamp(Math.round(m.base+S.skills.performance/8+S.skills.charisma/8+(isK()?S.skills.dance/8:0)+mvExtra()+rnd(-5,8)),5,100);s.mvConcept=(UI.mvConcept||'Performance')+' · '+(UI.mvLoc||'Studio');s.mvAt=S.t;s.mvViews=0;S.hype=clamp(S.hype+8,0,100);addFans((S.fans*.03+40*(1+S.level))*s.mv/100);S.social.tube.posts.unshift({id:S.nextId++,type:'mv',label:'Official music video',cap:`${S.stage} - ${s.title} (Official Music Video)`,likes:0,views:0,comments:[],t:S.t,mvSong:s.id});log(`Shot a ${m.name.toLowerCase()} music video for "${s.title}".`,'good');toast(`Music video for "${s.title}" premieres on MeTube.`)},
   collab:()=>{if(S.level<3){toast(lockTxt(3));return}const n=S.npcs.find(x=>x.name===UI.collab);if(!n){toast('Pick an artist to pitch.');return}const fee=collabFee(n);if(!spend(25,fee))return;
@@ -1771,7 +1772,7 @@ function studioView(){
 function songRow(s){
   let acts='';
   if(s.status==='demo')acts=`<button class="btn sm" data-a="record" data-id="${s.id}">Record</button><button class="btn sm ghost" data-a="scrap" data-id="${s.id}">Scrap</button>`;
-  if(s.status==='recorded')acts=`<button class="btn sm" data-a="release" data-id="${s.id}">Release single</button>`;
+  if(s.status==='recorded')acts=`<button class="btn sm" data-a="release" data-id="${s.id}">Release single</button><button class="btn sm ghost" data-a="scrapAsk" data-id="${s.id}">Scrap</button>`;
   if(s.status==='released'&&!s.mv)acts=`<button class="btn sm pink" data-a="mv" data-id="${s.id}">Shoot video</button>`;
   if(s.status==='released'&&!s.remixed)acts+=`<button class="btn sm ghost" data-a="remix" data-id="${s.id}">Remix</button>`;
   acts+=`<button class="btn sm ghost" data-a="preview" data-id="${s.id}" aria-label="Play a preview of ${esc(s.title)}">▶</button>`;
@@ -3893,7 +3894,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610240237';
+const APP_VER='202610240252';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
