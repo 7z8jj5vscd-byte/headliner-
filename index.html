@@ -19,7 +19,7 @@ img{max-width:100%}
 </style>
 <title>Headliner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;700;800&family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;700;800&family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Grand+Hotel&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
 :root{
   /* Layout: backstage console. A sticky HUD and tab rail sit over a responsive grid of cards, like a mixing desk under stage lights */
@@ -653,6 +653,97 @@ input[type=text]:focus,select:focus,textarea:focus{border-color:rgba(139,92,246,
 .achv,.lv,.req .tick{border-radius:10px}
 .tbar{border-radius:999px}
 ::selection{background:rgba(139,92,246,.4)}
+/* realistic phone */
+.pscreen{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif}
+.svgi{display:block;flex:none}
+.psb2{display:flex;align-items:center;justify-content:space-between;padding:12px 26px 6px;font-size:15px;font-weight:600;color:#fff;position:relative;z-index:5}
+.psb2.dk{background:#000}.app-streamify .psb2.dk{background:#121212}.app-tunes .psb2.dk{background:#1c1c1e}.app-tube .psb2.dk{background:#0f0f0f}
+.psb2 .isl{width:96px;height:28px;border-radius:16px;background:#000;position:absolute;left:50%;top:8px;transform:translateX(-50%)}
+.sbi{display:flex;gap:6px;align-items:center}
+.batt{width:25px;height:12px;border:1.5px solid rgba(255,255,255,.55);border-radius:4px;padding:1px;position:relative}.batt::after{content:"";position:absolute;right:-4px;top:3px;width:2px;height:4px;background:rgba(255,255,255,.55);border-radius:0 2px 2px 0}.batt i{display:block;height:100%;background:#fff;border-radius:2px}
+.hs{height:100%;display:flex;flex-direction:column;background:radial-gradient(120% 70% at 20% 0%,#7c3aed 0%,transparent 55%),radial-gradient(100% 60% at 100% 100%,#0e7490 0%,transparent 60%),linear-gradient(180deg,#1e1b4b,#0b0a1a)}
+.wdg{margin:14px 18px 6px;display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+.wdg>div{background:rgba(255,255,255,.14);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:22px;padding:12px 14px;display:flex;flex-direction:column;color:#fff;min-height:120px}
+.wdg-l span{font-size:11px;font-weight:700;color:#ff6b6b}.wdg-l b{font-size:42px;font-weight:300;line-height:1}.wdg-l small{opacity:.8}
+.wdg-s{display:flex;gap:6px;align-items:center;font-size:12px;font-weight:600}.wdg-s svg{width:20px;height:20px}.wdg-r b{font-size:26px;font-weight:700;margin-top:6px}.wdg-r small{font-size:11px;opacity:.75}.wdg-r .up{color:#86efac;opacity:1;margin-top:auto}
+.apps2{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 6px;padding:14px 16px}
+.appic2{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;color:#fff;cursor:pointer;position:relative;padding:0;font-family:inherit}
+.appic2 i{width:60px;height:60px;border-radius:14px;display:grid;place-items:center;font-style:normal;box-shadow:0 2px 8px rgba(0,0,0,.35);overflow:hidden}
+.appic2 span{font-size:11px;font-weight:500;letter-spacing:-.01em;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.appic2 .bdg{position:absolute;top:-6px;right:calc(50% - 38px);background:#ff3b30;color:#fff;border-radius:11px;font-size:12px;font-style:normal;font-weight:600;padding:1px 6px;min-width:20px;text-align:center}
+.appic2:active i{transform:scale(.92)}
+.pdots{display:flex;gap:7px;justify-content:center;margin-top:auto;padding:8px}.pdots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35)}.pdots i.on{background:#fff}
+.dock2{margin:0 10px 12px;padding:14px 12px;border-radius:30px;background:rgba(255,255,255,.2);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);display:grid;grid-template-columns:repeat(4,1fr)}.dock2 span{display:none}
+.abar2{display:flex;align-items:center;gap:8px;padding:2px 10px 8px;background:inherit}.abar2 b{flex:1;font-size:17px;font-weight:600;text-align:center}.abar2.thin{padding:0 8px;height:0;position:relative;z-index:6}.abar2.thin .back2{position:absolute;left:4px;top:4px}
+.back2{background:none;border:0;color:#0a84ff;cursor:pointer;padding:4px}
+.abar2.thin .back2{background:rgba(0,0,0,.35);border-radius:50%;color:#fff;width:30px;height:30px;display:grid;place-items:center;padding:0;opacity:.85}
+.anav2{display:flex;justify-content:space-around;align-items:center;border-top:.5px solid rgba(255,255,255,.12);padding:8px 2px 16px;background:#000}
+.anav2 button{background:none;border:0;color:#fff;opacity:.55;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:inherit;padding:2px 6px}
+.anav2 button small{font-size:10px;font-weight:500}.anav2 button.on{opacity:1}
+.app-streamify .anav2{background:linear-gradient(transparent,#000 40%)}.app-streamify .anav2 button.on{color:#fff}.app-tunes .anav2 button.on{color:#fc3c5f;opacity:1}
+.nav-av .av{border:1.5px solid #fff}
+.mut{color:#a8a8a8}.tiny{font-size:10px;text-transform:uppercase;letter-spacing:.02em}.sp{flex:1}.fg{color:#fff}
+.vchk{color:#1d9bf0;display:inline-flex;vertical-align:-2px;margin-left:3px}
+.abody.ig,.abody.x,.abody.tk,.abody.yt{padding:0;gap:0}
+/* InstaPic */
+.ig-h{display:flex;align-items:center;gap:16px;padding:6px 14px 8px}.ig-h button{background:none;border:0;color:#fff;cursor:pointer;padding:0}
+.ig-logo{font-family:'Grand Hotel','Brush Script MT',cursive;font-size:30px;line-height:1}
+.ig-st{display:flex;gap:12px;overflow-x:auto;padding:4px 12px 12px;border-bottom:.5px solid #262626;scrollbar-width:none}
+.st2{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:#fff;font-size:11px;flex:none;position:relative;cursor:pointer;padding:0;font-family:inherit}
+.rg{padding:2.5px;border-radius:50%;background:conic-gradient(from 200deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}.rg0{padding:2.5px;border-radius:50%}
+.rg>*,.rg0>*{display:block;border:2.5px solid #000;border-radius:50%}
+.st2 em{position:absolute;right:2px;top:44px;width:20px;height:20px;border-radius:50%;background:#0095f6;border:2px solid #000;color:#fff;font-style:normal;font-size:15px;line-height:15px;font-weight:700}
+.ig-p{border-bottom:.5px solid #1a1a1a;padding-bottom:10px}
+.ig-p header{display:flex;align-items:center;gap:10px;padding:8px 12px}.ig-p header>div{flex:1;display:flex;flex-direction:column;font-size:13px}.ig-p header small{font-size:11px;color:#ccc}
+.ig-m{aspect-ratio:4/5;position:relative;overflow:hidden;display:grid;place-items:center;padding:24px;text-align:center}
+.ig-m img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.ig-m span{position:relative;font-size:20px;font-weight:700;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.ig-a{display:flex;gap:14px;padding:10px 12px 6px;align-items:center}.ig-a button{background:none;border:0;color:#fff;padding:0;cursor:pointer}.ig-a .lk,.lk{color:#ff3040}
+.ig-t{padding:0 12px;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.ig-sr{margin:8px 12px;padding:8px 12px;border-radius:10px;background:#262626;display:flex;gap:8px;align-items:center;color:#a8a8a8;font-size:14px}
+.ig-g{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}.ig-gt{aspect-ratio:1;display:flex;align-items:flex-end;padding:6px;font-size:11px;font-weight:600}.ig-gt.tall{grid-row:span 2;aspect-ratio:auto}
+.ig-ph{display:flex;align-items:center;gap:4px;padding:8px 14px;font-size:20px}
+.ig-pr{display:flex;align-items:center;gap:20px;padding:6px 14px}.ig-ps{display:flex;flex:1;justify-content:space-around;text-align:center}.ig-ps b{display:block;font-size:17px}.ig-ps small{font-size:12px}
+.ig-bio{padding:8px 14px;display:flex;flex-direction:column;gap:2px;font-size:13px}
+.ig-btns{display:flex;gap:6px;padding:6px 14px}.ig-btns>*{flex:1;text-align:center;background:#262626;border:0;color:#fff;border-radius:8px;padding:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.ig-bioin{margin:4px 14px;width:calc(100% - 28px)!important;font-size:12px}
+.ig-tabs{display:flex;border-top:.5px solid #262626;margin-top:8px}.ig-tabs span{flex:1;display:grid;place-items:center;padding:10px;opacity:.5}.ig-tabs .on{opacity:1;border-bottom:1px solid #fff}
+.ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}.ig-gi{border:0;padding:0;cursor:pointer;background:none}.ig-gi .ig-m{aspect-ratio:3/4;padding:6px}.ig-gi .ig-m span{font-size:10px}
+.ig-n{background:#000}
+/* Chirp / X */
+.x-h{display:flex;align-items:center;padding:4px 14px 8px;color:#e7e9ea}.x-h svg{width:26px;height:26px}
+.x-tabs{display:flex;border-bottom:.5px solid #2f3336}.x-tabs button{flex:1;background:none;border:0;color:#71767b;font-weight:600;font-size:14px;padding:12px 0;cursor:pointer;position:relative;font-family:inherit}.x-tabs button.on{color:#e7e9ea}.x-tabs button.on::after{content:"";position:absolute;left:35%;right:35%;bottom:0;height:4px;border-radius:2px;background:#1d9bf0}
+.x-p{display:flex;gap:10px;padding:12px 14px;border-bottom:.5px solid #2f3336;cursor:default}.x-p[data-a]{cursor:pointer}
+.x-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:14px;color:#e7e9ea}
+.x-n{display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden}.x-n .mut{color:#71767b;overflow:hidden;text-overflow:ellipsis}
+.x-t{line-height:1.35}.x-img{width:100%;border-radius:16px;border:.5px solid #2f3336;max-height:300px;object-fit:cover;margin-top:4px}
+.x-a{display:flex;justify-content:space-between;color:#71767b;font-size:12px;margin-top:4px}.x-a span{display:flex;gap:4px;align-items:center}
+.x-fab{position:absolute;right:16px;bottom:84px;width:54px;height:54px;border-radius:50%;background:#1d9bf0;border:0;color:#fff;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.5);cursor:pointer}.x-fab .svgi rect{display:none}
+.x-tr>div{display:flex;flex-direction:column;padding:10px 14px;border-bottom:.5px solid #2f3336;gap:2px}
+.x-ban{height:110px}.x-pr{display:flex;align-items:flex-end;justify-content:space-between;padding:0 14px;margin-top:-34px}.x-pr .av{border:3px solid #000}.x-edit{border:1px solid #536471;border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px;color:#fff;cursor:pointer}
+.x-pi{padding:10px 14px;display:flex;flex-direction:column;gap:4px;font-size:14px;border-bottom:.5px solid #2f3336}.x-pi b:first-child{font-size:19px}
+/* TokTune */
+.abody.tk.full{overflow:hidden}
+.tk-top{position:absolute;top:44px;left:0;right:0;z-index:4;display:flex;justify-content:center;gap:16px;align-items:center;padding:6px 14px;font-size:16px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5)}.tk-top .sp{position:absolute}.tk-top .svgi{position:absolute;right:14px}
+.tk-feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}.tk-feed::-webkit-scrollbar{display:none}
+.tk-v{height:100%;min-height:100%;scroll-snap-align:start;position:relative;overflow:hidden;display:grid;place-items:center}
+.tk-v>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.tk-v>img.dim{opacity:.85}
+.tk-q{font-size:22px;font-weight:700;text-align:center;padding:30px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.tk-r{position:absolute;right:8px;bottom:84px;display:flex;flex-direction:column;align-items:center;gap:16px;color:#fff;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}.tk-r>span{display:flex;flex-direction:column;align-items:center;gap:2px}.tk-r b{font-size:12px;font-weight:600}
+.tk-av{position:relative}.tk-av .av{border:1.5px solid #fff}.tk-av em{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;font-style:normal;font-weight:700;display:grid;place-items:center;font-size:15px}
+.tk-disc{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle,#333 30%,#111 31%,#222 60%,#000);display:grid;place-items:center;animation:spin 4s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.tk-c{position:absolute;left:12px;right:80px;bottom:16px;color:#fff;font-size:14px;display:flex;flex-direction:column;gap:4px;text-shadow:0 1px 4px rgba(0,0,0,.6)}.tk-c small{display:flex;gap:6px;align-items:center;overflow:hidden;white-space:nowrap}
+.mq{display:inline-block;animation:mq 8s linear infinite}@keyframes mq{from{transform:translateX(30%)}to{transform:translateX(-100%)}}
+.tk-n{background:#000}.tk-plus{opacity:1!important}.tk-plus span{width:44px;height:30px;border-radius:9px;background:#fff;color:#000;display:grid;place-items:center;box-shadow:-3px 0 0 #25f4ee,3px 0 0 #fe2c55}
+.tk-pr{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 14px}.tk-ps{display:flex;gap:26px;text-align:center}.tk-ps b{display:block;font-size:17px}.tk-ps small{font-size:12px;color:#a8a8a8}
+.tk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px}.tk-gi{aspect-ratio:3/4;border:0;position:relative;overflow:hidden;cursor:pointer;padding:0}.tk-gi img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.tk-gi small{position:absolute;left:4px;bottom:4px;display:flex;gap:3px;align-items:center;color:#fff;font-size:11px;font-weight:600}
+/* MeTube */
+.yt-h{display:flex;align-items:center;gap:16px;padding:6px 12px;color:#fff}.yt-logo{display:flex;align-items:center;gap:3px}.yt-logo b{font-size:18px;letter-spacing:-.04em}
+.yt-chips{display:flex;gap:8px;overflow-x:auto;padding:6px 12px 10px;scrollbar-width:none}.yt-chips span{flex:none;background:#272727;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:500}.yt-chips .on{background:#f1f1f1;color:#0f0f0f}
+.yt-c{display:flex;flex-direction:column;gap:10px;background:none;border:0;color:#f1f1f1;text-align:left;cursor:pointer;padding:0 0 16px;font-family:inherit;width:100%}
+.yt-th{aspect-ratio:16/9;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:12px;width:100%}.yt-th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.yt-th>span{position:relative;font-weight:800;font-size:22px;text-transform:uppercase;text-shadow:0 2px 8px rgba(0,0,0,.5)}.yt-th em{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.8);font-style:normal;font-size:12px;font-weight:600;padding:1px 4px;border-radius:4px}
+.yt-m{display:flex;gap:12px;padding:0 12px;align-items:flex-start}.yt-m>span:not(.av){flex:1;display:flex;flex-direction:column;gap:3px}.yt-m .av{flex:none}.yt-m b{font-size:14px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.yt-m small{font-size:12px;color:#aaa}
+.yt-ban{height:90px;margin:8px 12px;border-radius:12px}.yt-ch{display:flex;gap:14px;align-items:center;padding:8px 14px}.yt-ch>div{display:flex;flex-direction:column;gap:2px}.yt-ch b{font-size:20px}.yt-ch small{color:#aaa;font-size:12px}
+.app-tube .anav2{background:#0f0f0f}
 </style>
 </head>
 <body>
@@ -2734,9 +2825,9 @@ function crowdBuild(g,o){
   const P=[];
   for(let r=0;r<rows;r++){const z=z0+r*dz;for(let x=xMin;x<=xMax;x+=sp){if(Math.random()>fill)continue;const px=x+rnd(-.14,.14);if(gap&&Math.abs(px)<gap)continue;if(G3.skip&&G3.skip(px,z))continue;P.push({x:px,z:z+rnd(-.12,.12),y:y0+r*rise,ph:Math.random()*6.28,sp:rnd(3,5.6),amp:seated?.02:rnd(.04,.16),arm:!seated&&Math.random()<arms,lt:Math.random()<lt,sc:scale*rnd(.88,1.08)})}}
   const n=P.length;if(!n)return;
-  const body=new THREE.InstancedMesh(CY(.17,.21,.8,6),M('#ffffff'),n),head=new THREE.InstancedMesh(SP(.16,6,5),M('#ffffff'),n);
+  const body=new THREE.InstancedMesh(personGeo(),M('#ffffff'),n),head=new THREE.InstancedMesh(SP(.145,12,10),M('#ffffff'),n);
   const na=P.filter(p=>p.arm).length*2,nl=P.filter(p=>p.lt).length;
-  const arm=na?new THREE.InstancedMesh(BX(.07,.42,.07),M('#ffffff'),na):null;
+  const arm=na?new THREE.InstancedMesh(CY(.042,.034,.42,8),M('#ffffff'),na):null;
   const ph=nl?new THREE.InstancedMesh(BX(.06,.1,.02),MB('#fff6c8'),nl):null;
   const c=new THREE.Color();
   P.forEach((p,i)=>{body.setColorAt(i,c.set(pick(cols)));head.setColorAt(i,c.set(pick(heads)))});
@@ -3779,7 +3870,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610240103';
+const APP_VER='202610240122';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
@@ -4495,6 +4586,117 @@ A.carpetPick=d=>{const i=+d.v;if(i>=0&&UI.carpet&&UI.carpet[i])Object.assign(S.l
 {const _sv2=styleView;styleView=function(){return _sv2()+extrasCard()+`<div class="section"><h2>Home decor</h2>${decorCard()}</div>`}}
 ownLabelCard=function(){return ''};
 SUB_ICONS.unshift([/versions/i,'🎚'],[/tour extras/i,'🚌'],[/band room/i,'🥁'],[/inner circle/i,'🫶'],[/publishing/i,'💼'],[/makeup/i,'💄'],[/decor/i,'🛋']);
+
+/* ============ v16: realistic scenes and apps ============ */
+/* ---- scenes: smooth materials, soft shadows, haze, human crowds ---- */
+{const _M=M;M=function(c,o){return _M(c,Object.assign({flatShading:false,roughness:.72},o||{}))}}
+function personGeo(){if(G3._pg)return G3._pg;const g=new THREE.LatheGeometry([[0,-.4],[.14,-.4],[.16,-.22],[.15,-.02],[.18,.2],[.19,.3],[.15,.38],[.07,.42],[0,.43]].map(([r,y])=>new THREE.Vector2(r,y)),12);g.scale(1,1,.68);g.computeVertexNormals();G3._pg=g;return g}
+{const _l=lights;lights=function(g,o){const n=g.children.length;_l(g,o);const d=g.children.slice(n).find(x=>x.isDirectionalLight);if(d){d.castShadow=true;d.shadow.mapSize.set(1024,1024);const c=d.shadow.camera;c.left=-7;c.right=9;c.top=7;c.bottom=-3;c.near=.5;c.far=30;d.shadow.bias=-.0006;d.shadow.radius=4;d.shadow.normalBias=.02}}}
+{const _bw=buildWorld;buildWorld=function(sc){if(G3.ok&&!G3._sh){G3.r.shadowMap.enabled=true;G3.r.shadowMap.type=THREE.PCFSoftShadowMap;G3._sh=1}
+  _bw(sc);try{const chars=new Set();G3.anim.chars.forEach(c=>c.g.traverse(m=>chars.add(m)));
+    G3.world.traverse(m=>{if(!m.isMesh||m.isInstancedMesh)return;if(chars.has(m)){m.castShadow=true;return}if(m.material&&!m.material.isMeshBasicMaterial){m.receiveShadow=true;const p=m.geometry&&m.geometry.parameters;if(p&&p.height>.5&&p.height<4&&(p.width||p.radiusTop||0)<3)m.castShadow=true}});
+    const S3=G3.scene;if(!S3.fog&&S3.background&&S3.background.isColor)S3.fog=new THREE.Fog(S3.background.clone(),18,52)}catch(e){}}}
+document.head.insertAdjacentHTML('beforeend',`<style>.stagebox::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(120% 90% at 40% 45%,transparent 55%,rgba(0,0,0,.42) 100%),linear-gradient(180deg,rgba(0,0,0,.12),transparent 25%,transparent 75%,rgba(0,0,0,.25))}.scene3d canvas{filter:contrast(1.05) saturate(1.06)}.stagebox .emotes,.stagebox .panel,.stagebox .scap,.stagebox .ticker,.stagebox .photobar{z-index:3}</style>`);
+
+/* ---- icon set ---- */
+const IC={home:'<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/>',homeF:'<path fill="currentColor" d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',plus:'<rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/>',heart:'<path d="M12 20.5s-7.6-4.6-9.4-9.3C1.2 7.7 3.4 4.5 6.8 4.5c2 0 3.4 1.1 4.2 2.4.8-1.3 2.2-2.4 4.2-2.4 3.4 0 5.6 3.2 4.2 6.7C17.6 15.9 12 20.5 12 20.5z"/>',heartF:'<path fill="currentColor" d="M12 20.5s-7.6-4.6-9.4-9.3C1.2 7.7 3.4 4.5 6.8 4.5c2 0 3.4 1.1 4.2 2.4.8-1.3 2.2-2.4 4.2-2.4 3.4 0 5.6 3.2 4.2 6.7C17.6 15.9 12 20.5 12 20.5z"/>',comment:'<path d="M20.5 12a8.5 8.5 0 1 1-3.4-6.8A8.5 8.5 0 0 1 20.5 12zM20.5 20.5 18 18"/>',bubble:'<path d="M4 5h16v11H9l-5 4z"/>',send:'<path d="M21.5 3 10 14M21.5 3 15 21l-4-8-8-4z"/>',bookmark:'<path d="M6 3h12v18l-6-4.5L6 21z"/>',more:'<circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/>',repost:'<path d="M7 7h11l-3-3M18 7v4M17 17H6l3 3M6 17v-4"/>',views:'<path d="M5 20v-8M10 20V5M15 20v-10M20 20v-5"/>',share:'<path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"/>',bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>',users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20c.8-3.5 3.6-5.5 7-5.5s6.2 2 7 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.4 2.5 4 5.2"/>',reels:'<rect x="3" y="3" width="18" height="18" rx="5"/><path d="M3 8h18M9 3l3 5M15 3l3 5"/><path d="m10 12 5 3-5 3z" fill="currentColor"/>',grid:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',play:'<path fill="currentColor" d="M7 4v16l13-8z"/>',chart:'<path d="M4 20h16M7 16v-5M12 16V7M17 16v-8"/>',library:'<path d="M5 3v18M10 3v18M15 4l4 16"/>',note:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',back:'<path d="M15 4 7 12l8 8"/>',cast:'<path d="M3 17a4 4 0 0 1 4 4M3 13a8 8 0 0 1 8 8M3 9v-3a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/>',live:'<circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 7.5a6.4 6.4 0 0 1 0 9M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8"/>',shuffle:'<path d="M3 7h3c5 0 7 10 12 10h3M18 14l3 3-3 3M3 17h3c1.8 0 3.2-1.3 4.4-3M14 8.6C15 7.6 16.4 7 18 7h3M18 4l3 3-3 3"/>',check:'<path fill="currentColor" d="M12 2 14.4 4.2 17.6 3.8 18.5 7 21.4 8.6 20.5 11.8 22 14.7 19.4 16.6 19.2 19.9 16 20.3 14.1 23 11.4 21.4 8.6 23 6.7 20.3 3.4 19.9 3.2 16.6.6 14.7 2.1 11.8 1.2 8.6 4.1 7 5 3.8 8.2 4.2z"/><path d="m8 12 3 3 5-6" stroke="#fff" stroke-width="2"/>'};
+const ic=(n,s=24,cls='')=>`<svg class="svgi ${cls}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
+const vb=()=>verified()?`<span class="vchk">${ic('check',14)}</span>`:'';
+const ago=p=>{const w=S.t-p.t;if(w<=0)return `${(p.id%22)+1}h`;if(w<4)return `${w*7-(p.id%5)}d`;return `${w}w`};
+const handleOf=n=>String(n).replace(/\s+/g,'').toLowerCase();
+
+/* ---- home screen ---- */
+const GLYPH={insta:'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1.1" fill="#fff" stroke="none"/></svg>',
+ chirp:'<svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M4 4h4.5l4 5.6L17 4h3l-6.1 7.3L20.5 20H16l-4.3-6-5 6H3.6l6.6-7.8z"/></svg>',
+ tok:'<svg viewBox="0 0 24 24" width="30" height="30"><g fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M10.6 9.6a4.6 4.6 0 1 0 3.6 4.5V3.5c.6 2.5 2.4 4 4.8 4.2" stroke="#25f4ee" transform="translate(-.8 -.6)"/><path d="M10.6 9.6a4.6 4.6 0 1 0 3.6 4.5V3.5c.6 2.5 2.4 4 4.8 4.2" stroke="#fe2c55" transform="translate(.8 .6)"/><path d="M10.6 9.6a4.6 4.6 0 1 0 3.6 4.5V3.5c.6 2.5 2.4 4 4.8 4.2" stroke="#fff"/></g></svg>',
+ tube:'<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="5" width="20" height="14" rx="4.5" fill="#fff"/><path d="m10 9 5 3-5 3z" fill="#ff0033"/></svg>',
+ streamify:'<svg viewBox="0 0 24 24" width="32" height="32"><circle cx="12" cy="12" r="10" fill="#0b0b0b"/><path d="M7 9.2c3.5-1 7.4-.7 10.3 1M7.5 12.4c2.9-.8 6-.5 8.4.9M8 15.4c2.3-.6 4.6-.4 6.5.7" stroke="#1ed760" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>',
+ tunes:'<svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="M9 17.5V6.2l10-2v11"/><circle cx="6.7" cy="17.6" r="2.6"/><circle cx="16.7" cy="15.3" r="2.6"/><path d="M9 6.2v3l10-2v-3z"/></svg>',
+ msgs:'<svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="M12 4C6.9 4 3 7.2 3 11.3c0 2.3 1.2 4.3 3.1 5.6-.2 1.4-.9 2.6-1.9 3.4 2 0 3.7-.8 4.8-1.8.9.2 1.9.3 3 .3 5.1 0 9-3.2 9-7.4S17.1 4 12 4z"/></svg>',
+ buzz:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#1d1405" stroke-width="2"><rect x="3" y="4" width="15" height="16" rx="2"/><path d="M18 8h3v10a2 2 0 0 1-2 2M7 8h7M7 12h7M7 16h4"/></svg>',
+ wallet:'<svg viewBox="0 0 24 24" width="30" height="30"><rect x="3" y="6" width="18" height="13" rx="3" fill="#2c2c2e"/><rect x="3" y="4" width="16" height="5" rx="2" fill="#ff9f0a"/><rect x="3" y="6.5" width="17" height="4" rx="2" fill="#30d158"/><rect x="3" y="9" width="18" height="4" rx="2" fill="#0a84ff"/></svg>',
+ fanclub:'<svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
+ charts:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#06222a" stroke-width="2.4" stroke-linecap="round"><path d="M4 18 9 12l4 3 7-9"/><path d="M15 6h5v5"/></svg>',
+ cam:'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>',
+ soundcrowd:'<svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="M10 9.5v8M12.5 8v9.5M15 7.5c3 0 5.5 2.2 5.5 5s-2.5 5-5.5 5H15zM7.5 11v6.5M5 12.5v5M2.5 14v3"/><path d="M10 9.5v8M12.5 8v9.5M7.5 11v6.5M5 12.5v5M2.5 14v3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>',
+ tidalwave:'<svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="m4 8 4-4 4 4-4 4zM12 8l4-4 4 4-4 4zM8 12l4-4 4 4-4 4zM8 20l4-4 4 4z" opacity=".95"/></svg>',
+ deezr:'<svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><rect x="3" y="15" width="3.5" height="4" rx="1"/><rect x="7.8" y="11" width="3.5" height="8" rx="1"/><rect x="12.6" y="7" width="3.5" height="12" rx="1"/><rect x="17.4" y="4" width="3.5" height="15" rx="1"/></svg>',
+ itones:'<svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17z" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M10 15.3V8.6l5-1v6.4"/><circle cx="8.8" cy="15.5" r="1.6"/><circle cx="13.8" cy="14.2" r="1.6"/></svg>'};
+APPS.forEach(a=>{if(GLYPH[a.id])a.ico=GLYPH[a.id]});
+const DOCK=['msgs','insta','streamify','chirp'];
+const sbar=(tm,dark)=>`<div class="psb2 ${dark?'dk':''}"><span>${tm}</span><span class="isl"></span><span class="sbi"><svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg><svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><path d="M7.5 2.2c2.2 0 4.2.9 5.7 2.3l1.3-1.3A9.8 9.8 0 0 0 7.5.4 9.8 9.8 0 0 0 .5 3.2l1.3 1.3A8 8 0 0 1 7.5 2.2zm0 3.4c1.3 0 2.4.5 3.3 1.3l1.3-1.3a6.5 6.5 0 0 0-9.2 0l1.3 1.3c.9-.8 2-1.3 3.3-1.3zM7.5 9l1.9-1.9a2.7 2.7 0 0 0-3.8 0z"/></svg><span class="batt"><i style="width:${clamp(Math.round(S.energy/maxEnergy()*100),5,100)}%"></i></span></span></div>`;
+phoneView=function(){const a=UI.app;const d=gameDate(),tm=['9:41','12:30','3:15','6:02','8:47','10:20','11:58'][d.getDay()];let inner;
+  const icon=x=>{const b=appBadge(x.id);return `<button class="appic2" data-a="openApp" data-v="${x.id}"><i style="background:${x.bg};color:${x.ink||'#fff'}${x.bd?';box-shadow:inset 0 0 0 1px #3a3a3c':''}">${x.ico}</i><span>${esc(x.n)}</span>${b?`<em class="bdg">${b>99?'99+':b}</em>`:''}</button>`};
+  if(!a||!APP_VIEW[a]){const grid=APPS.filter(x=>!DOCK.includes(x.id)),dock=DOCK.map(id=>APPS.find(x=>x.id===id)).filter(Boolean);
+    inner=`<div class="hs">${sbar(tm)}<div class="wdg"><div class="wdg-l"><span>${d.toLocaleDateString('en-US',{weekday:'long'}).toUpperCase()}</span><b>${d.getDate()}</b><small>${d.toLocaleDateString('en-US',{month:'long'})}</small></div><div class="wdg-r"><div class="wdg-s">${GLYPH.streamify}<span>Streamify</span></div><b>${fmt(monthly('streamify'))}</b><small>monthly listeners</small><small class="up">${cash(S.money)} balance</small></div></div>
+    <div class="apps2">${grid.map(icon).join('')}</div><div class="pdots"><i class="on"></i><i></i></div><div class="dock2">${dock.map(icon).join('')}</div></div>`}
+  else inner=`${sbar(tm,true)}${APP_VIEW[a]()}`;
+  return `<div class="section"><div class="between"><h2>Phone</h2><span class="muted">Tap an app. Everything here runs on your real career.</span></div><div class="phonewrap"><div class="phone"><div class="pscreen ${a?'in-app app-'+a:''}">${inner}</div></div></div></div>`};
+const TABIC={'⌂':'home','＋':'plus','♡':'heart','◉':'user','#':'search','✎':'plus','★':'star','≡':'library','▤':'chart','▶':'play','✉':'mail','♬':'note'};
+appShell=function(title,tabs,body,opt={}){const cur=UI.appTab||(tabs[0]||[])[0];
+  return `<div class="abar2"><button class="back2" data-a="openApp" data-v="">${ic('back',22)}</button><b>${title}</b>${opt.right||'<span style="width:22px"></span>'}</div><div class="abody">${body}</div>${tabs.length>1?`<nav class="anav2">${tabs.map(([id,l,i])=>`<button class="${cur===id?'on':''}" data-a="appTab" data-v="${id}">${TABIC[i]?ic(TABIC[i],24):`<span>${i}</span>`}<small>${l}</small></button>`).join('')}</nav>`:''}`};
+
+/* ---- InstaPic ---- */
+function igMedia(p,mine){const u=mine?postImg(p):null,h=mine?(p.hue||S.hue||300):phash(p.who)%360;
+  return `<div class="ig-m" style="background:linear-gradient(150deg,hsl(${h} 70% 48%),hsl(${h+70} 65% 22%))">${u?`<img src="${u}" alt="">`:mine&&S.avatar&&['selfie','flex'].includes(p.type)?`<img src="${S.avatar}" alt="">`:`<span>${esc(mine?tileTxt(p):p.text)}</span>`}</div>`}
+function igPost(p,mine){const who=mine?S.stage:p.who,likes=p.likes,nc=mine?(p.comments||[]).length*ri(8,40):ri(3,300),liked=mine?true:p.liked;
+  return `<article class="ig-p"><header>${mine?avatar(32,S):npcAv(who,32)}<div><b>${esc(handleOf(who))}</b>${mine?vb():''}${mine&&p.song?`<small>${esc(S.stage)} · ${esc(p.song)}</small>`:''}</div>${ic('more',20)}</header>
+  <div ${mine?`data-a="openPost" data-k="insta" data-id="${p.id}"`:''}>${igMedia(p,mine)}</div>
+  <div class="ig-a">${mine?`<span class="${liked?'lk':''}">${ic(liked?'heartF':'heart')}</span>`:`<button class="${liked?'lk':''}" data-a="like" data-id="${p.id}">${ic(liked?'heartF':'heart')}</button>`}${ic('comment')}${ic('send')}<span class="sp"></span>${ic('bookmark')}</div>
+  <div class="ig-t"><b>${fmt(likes)} likes</b><div><b>${esc(handleOf(who))}</b> ${esc(mine?p.cap:p.text)}</div>${nc?`<small class="mut">View all ${fmt(nc)} comments</small>`:''}${mine&&(p.comments||[]).length?`<div><b>${esc(p.comments[0].u.replace('@',''))}</b> ${esc(p.comments[0].x)}</div>`:''}<small class="mut tiny">${ago(p).replace(/h$/,' hours ago').replace(/d$/,' days ago').replace(/w$/,' weeks ago')}</small></div></article>`}
+APP_VIEW.insta=function(){UI.social='insta';const t=curTab('home'),acc=S.social.insta;let b;
+  const hdr=`<div class="ig-h"><span class="ig-logo">InstaPic</span><span class="sp"></span><button data-a="appTab" data-v="act">${ic('heart',25)}</button><button data-a="openApp" data-v="msgs">${ic('send',24)}</button></div>`;
+  if(t==='home')b=hdr+`<div class="ig-st"><button class="st2" data-a="story"><span class="${S.dsp.story&&S.dsp.story.t===S.t?'rg':'rg0'}">${avatar(58,S)}</span>${S.dsp.story&&S.dsp.story.t===S.t?'':'<em>+</em>'}<small>Your story</small></button>${S.npcs.slice(0,9).map(n=>`<span class="st2"><span class="rg">${npcAv(n.name,58)}</span><small>${esc(handleOf(n.name)).slice(0,10)}</small></span>`).join('')}</div>`+(mixedFeed('insta').slice(0,20).map(x=>igPost(x.p,x.mine)).join('')||'<div class="empty">Your feed fills up as the weeks go by.</div>');
+  else if(t==='explore')b=`<div class="ig-sr">${ic('search',18)}<span>Search</span></div><div class="ig-g">${[...S.feed.filter(p=>p.plat==='insta'),...S.feed].slice(0,18).map((p,i)=>`<div class="ig-gt ${i%7===2?'tall':''}" style="background:linear-gradient(150deg,hsl(${phash(p.who+i)%360} 65% 45%),hsl(${phash(p.who)%360+60} 60% 20%))"><span>${esc(p.who)}</span></div>`).join('')}</div>`;
+  else if(t==='me'){const n=acc.posts.length;b=`<div class="ig-ph"><b>${esc(handleOf(S.stage))}</b>${vb()}<span class="sp"></span>${ic('plus',24)}</div>
+    <div class="ig-pr">${storyRing(avatar(84,S))}<div class="ig-ps"><div><b>${n}</b><small>posts</small></div><div><b>${fmt(acc.f)}</b><small>followers</small></div><div><b>${(phash(S.stage)%300)+120}</b><small>following</small></div></div></div>
+    <div class="ig-bio"><b>${esc(S.stage)}</b><small class="mut">Musician/band</small><div>${esc(S.bio||S.genre+' · '+S.fandom)}</div></div>
+    <div class="ig-btns"><span class="filebtn">Edit profile<input type="file" accept="image/*" data-upload="game"></span><button data-a="appTab" data-v="new">Share post</button></div>
+    <input type="text" data-s="bio" value="${esc(S.bio)}" placeholder="Edit your bio" maxlength="80" class="ig-bioin">
+    <div class="ig-tabs"><span class="on">${ic('grid',22)}</span><span>${ic('reels',22)}</span><span>${ic('user',22)}</span></div>
+    <div class="ig-grid">${acc.posts.map(p=>`<button class="ig-gi" data-a="openPost" data-k="insta" data-id="${p.id}">${igMedia(p,true)}</button>`).join('')}</div>${n?'':'<div class="empty">Share your first post.</div>'}`}
+  else if(t==='new')b=composeHTML('insta');
+  else b=`<div class="ig-ph"><b>Notifications</b></div>`+activity('insta');
+  const nav=[['home','homeF'],['explore','search'],['new','plus'],['act','heart'],['me','user']];
+  return `<div class="abar2 thin"><button class="back2" data-a="openApp" data-v="">${ic('back',22)}</button></div><div class="abody ig">${b}</div><nav class="anav2 ig-n">${nav.map(([id,i])=>`<button class="${t===id?'on':''}" data-a="appTab" data-v="${id}">${id==='me'?`<span class="nav-av">${avatar(26,S)}</span>`:ic(t===id&&i==='homeF'?'homeF':i==='homeF'?'home':i,26)}</button>`).join('')}</nav>`};
+
+/* ---- Chirp (X-style) ---- */
+function xPost(p,mine){const who=mine?S.stage:p.who,txt=mine?p.cap:p.text,u=mine?postImg(p):null;const rp=mine?p.shares:Math.round(p.likes*.12),rc=mine?(p.comments||[]).length*ri(3,12):Math.round(p.likes*.04),vw=mine?p.views:p.likes*ri(14,40);
+  return `<article class="x-p" ${mine?`data-a="openPost" data-k="chirp" data-id="${p.id}"`:''}>${mine?avatar(40,S):npcAv(who,40)}<div class="x-b"><div class="x-n"><b>${esc(who)}</b>${mine?vb():''}<span class="mut">@${esc(handleOf(who))} · ${ago(p)}</span><span class="sp"></span><span class="mut">${ic('more',18)}</span></div><div class="x-t">${esc(txt)}</div>${u?`<img class="x-img" src="${u}" alt="">`:''}
+  <div class="x-a"><span>${ic('comment',18)}${rc?fmt(rc):''}</span><span>${ic('repost',18)}${rp?fmt(rp):''}</span><span class="${!mine&&p.liked?'lk':''}">${ic(!mine&&p.liked?'heartF':'heart',18)}${fmt(p.likes)}</span><span>${ic('views',18)}${fmt(vw)}</span><span>${ic('share',18)}</span></div></div></article>`}
+APP_VIEW.chirp=function(){UI.social='chirp';const t=curTab('home');let b;
+  if(t==='home'){const sub=UI.xFeed||'for';b=`<div class="x-h">${avatar(30,S)}<span class="sp"></span>${GLYPH.chirp.replace('#fff','currentColor')}<span class="sp"></span><span style="width:30px"></span></div><div class="x-tabs"><button class="${sub==='for'?'on':''}" data-a="xFeed" data-v="for">For you</button><button class="${sub==='fol'?'on':''}" data-a="xFeed" data-v="fol">Following</button></div>`+((sub==='for'?mixedFeed('chirp'):S.social.chirp.posts.map(p=>({p,mine:1}))).slice(0,30).map(x=>xPost(x.p,x.mine)).join('')||'<div class="empty">Nothing here yet.</div>')+`<button class="x-fab" data-a="appTab" data-v="new">${ic('plus',26)}</button>`}
+  else if(t==='trend')b=`<div class="ig-sr">${ic('search',18)}<span>Search</span></div><div class="x-tr">${trends().map((x,i)=>`<div><small class="mut">${i+1} · Music · Trending</small><b>${esc(x.t)}</b><small class="mut">${fmt(x.n)} posts</small></div>`).join('')}</div>`;
+  else if(t==='stan')b=stanView();
+  else if(t==='new')b=composeHTML('chirp');
+  else b=`<div class="x-ban" style="background:linear-gradient(120deg,hsl(${S.hue||270} 60% 35%),#111)"></div><div class="x-pr">${avatar(72,S)}<span class="filebtn x-edit">Edit profile<input type="file" accept="image/*" data-upload="game"></span></div><div class="x-pi"><b>${esc(S.stage)}</b>${vb()}<div class="mut">@${esc(handleOf(S.stage))}</div><div>${esc(S.bio||S.genre)}</div><div class="mut"><b class="fg">${(phash(S.stage)%400)+80}</b> Following · <b class="fg">${fmt(S.social.chirp.f)}</b> Followers</div></div>`+(S.social.chirp.posts.map(p=>xPost(p,true)).join('')||'<div class="empty">No posts yet.</div>');
+  const nav=[['home','home'],['trend','search'],['stan','users'],['new','bell'],['me','user']];
+  return `<div class="abar2 thin"><button class="back2" data-a="openApp" data-v="">${ic('back',22)}</button></div><div class="abody x">${b}</div><nav class="anav2">${nav.map(([id,i])=>`<button class="${t===id?'on':''}" data-a="appTab" data-v="${id}">${ic(t===id&&i==='home'?'homeF':i,26)}</button>`).join('')}</nav>`};
+A.xFeed=d=>{UI.xFeed=d.v};
+
+/* ---- TokTune ---- */
+APP_VIEW.tok=function(){UI.social='tok';const t=curTab('fyp'),acc=S.social.tok;let b;
+  if(t==='fyp'){const L=mixedFeed('tok').slice(0,20);
+    b=`<div class="tk-top"><span class="mut">Following</span><b>For You</b><span class="sp"></span>${ic('search',22)}</div><div class="tk-feed">${L.length?L.map(x=>{const p=x.p,who=x.mine?S.stage:p.who,u=x.mine?postImg(p):null,h=x.mine?(p.hue||S.hue||300):phash(p.who)%360;
+      return `<section class="tk-v" style="background:linear-gradient(170deg,hsl(${h} 60% 30%),#050505 85%)">${u?`<img src="${u}" alt="">`:x.mine&&S.avatar?`<img class="dim" src="${S.avatar}" alt="">`:`<p class="tk-q">${esc(x.mine?tileTxt(p):p.text)}</p>`}
+      <div class="tk-r"><span class="tk-av">${x.mine?avatar(44,S):npcAv(who,44)}<em>+</em></span><span>${ic('heartF',32)}<b>${fmt(p.likes)}</b></span><span>${ic('comment',30)}<b>${fmt(x.mine?(p.comments||[]).length*ri(20,90):ri(30,900))}</b></span><span>${ic('bookmark',28)}<b>${fmt(Math.round(p.likes*.08))}</b></span><span>${ic('share',28)}<b>${fmt(x.mine?p.shares:Math.round(p.likes*.05))}</b></span><span class="tk-disc">${x.mine?avatar(30,S):npcAv(who,30)}</span></div>
+      <div class="tk-c"><b>@${esc(handleOf(who))}</b>${x.mine?vb():''}<div>${esc(x.mine?p.cap:p.text)}</div><small>${ic('note',13)} <span class="mq">${esc(x.mine&&p.song?p.song+' - '+S.stage:'original sound - '+who)}</span></small></div></section>`}).join(''):'<div class="empty">Post your first video.</div>'}</div>`}
+  else if(t==='me')b=`<div class="tk-pr">${avatar(90,S)}<b>@${esc(handleOf(S.stage))}${vb()}</b><div class="tk-ps"><div><b>${(phash(S.stage)%200)+40}</b><small>Following</small></div><div><b>${fmt(acc.f)}</b><small>Followers</small></div><div><b>${fmt(sum(acc.posts,p=>p.likes))}</b><small>Likes</small></div></div><div class="ig-btns"><span class="filebtn">Edit profile<input type="file" accept="image/*" data-upload="game"></span><button data-a="appTab" data-v="new">Create</button></div><small class="mut">${esc(S.bio||'')}</small></div><div class="tk-grid">${acc.posts.map(p=>`<button class="tk-gi" data-a="openPost" data-k="tok" data-id="${p.id}" style="${tileBg(p)}">${postImg(p)?`<img src="${postImg(p)}" alt="">`:''}<small>${ic('play',12)} ${fmt(p.views)}</small></button>`).join('')}</div>`;
+  else if(t==='new')b=composeHTML('tok')+`<div class="pcard"><h3>Go LIVE</h3><small class="muted">15 energy. Fans tip you and loyalty goes up.</small><div class="row"><button class="btn" data-a="golive">${ic('live',18)} Start livestream</button><button class="btn ghost" data-a="liveQA">Fan Q&amp;A · 10E</button></div></div>`;
+  else b=activity('tok');
+  const nav=[['fyp','homeF','Home'],['act','users','Friends'],['new','plus',''],['act2','mail','Inbox'],['me','user','Profile']];
+  return `<div class="abar2 thin tk-b"><button class="back2" data-a="openApp" data-v="">${ic('back',22)}</button></div><div class="abody tk ${t==='fyp'?'full':''}">${b}</div><nav class="anav2 tk-n">${nav.map(([id,i,l])=>id==='new'?`<button class="tk-plus" data-a="appTab" data-v="new"><span>${ic('plus',18).replace('<rect x="3" y="3" width="18" height="18" rx="5"/>','')}</span></button>`:`<button class="${t===id||(id==='act2'&&t==='act')?'on':''}" data-a="appTab" data-v="${id==='act2'?'act':id}">${ic(i,24)}<small>${l}</small></button>`).join('')}</nav>`};
+
+/* ---- MeTube ---- */
+APP_VIEW.tube=function(){UI.social='tube';const t=curTab('home'),acc=S.social.tube;const vids=acc.posts.map(p=>{const s=p.mvSong?S.songs.find(x=>x.id===p.mvSong):null;return {p,views:s?s.mvViews:p.views}});let b;
+  const hdr=`<div class="yt-h"><span class="yt-logo"><svg viewBox="0 0 24 24" width="30" height="30"><rect x="2" y="5" width="20" height="14" rx="4.5" fill="#ff0033"/><path d="m10 9 5 3-5 3z" fill="#fff"/></svg><b>MeTube</b></span><span class="sp"></span>${ic('cast',22)}${ic('bell',22)}${ic('search',22)}</div>`;
+  const card=v=>`<button class="yt-c" data-a="openPost" data-k="tube" data-id="${v.p.id}"><span class="yt-th" style="${tileBg(v.p)}">${postImg(v.p)?`<img src="${postImg(v.p)}" alt="">`:`<span>${esc(tileTxt(v.p))}</span>`}<em>${(v.p.id%4)+2}:${String((v.p.id*7)%60).padStart(2,'0')}</em></span><span class="yt-m">${avatar(36,S)}<span><b>${esc(v.p.cap)}</b><small>${esc(S.stage)} · ${fmt(v.views)} views · ${ago(v.p).replace('h',' hours ago').replace('d',' days ago').replace('w',' weeks ago')}</small></span>${ic('more',18)}</span></button>`;
+  if(t==='home')b=hdr+`<div class="yt-chips">${['All','Music','Live','Mixes','New to you'].map((c,i)=>`<span class="${i===0?'on':''}">${c}</span>`).join('')}</div>`+(vids.length?vids.map(card).join(''):'<div class="empty">Upload your first video.</div>');
+  else if(t==='new')b=composeHTML('tube');
+  else if(t==='studio'){const tv=sum(vids,v=>v.views),r=S.report||{};b=hdr+`<div class="pcard"><h3>Channel analytics</h3><div class="kv"><div><span class="label">Subscribers</span><b>${fmt(acc.f)}</b></div><div><span class="label">Total views</span><b>${fmt(tv)}</b></div><div><span class="label">Views last week</span><b>${fmt(r.views||0)}</b></div><div><span class="label">Revenue last week</span><b>${cash((r.inc||{})['MeTube ad revenue']||0)}</b></div></div></div>`}
+  else b=`<div class="yt-ban" style="background:linear-gradient(120deg,hsl(${S.hue||270} 60% 35%),#0f0f0f)"></div><div class="yt-ch">${avatar(72,S)}<div><b>${esc(S.stage)}</b>${vb()}<small>@${esc(handleOf(S.stage))} · ${fmt(acc.f)} subscribers · ${vids.length} videos</small></div></div><div class="ig-btns"><span class="filebtn">Customize channel<input type="file" accept="image/*" data-upload="game"></span><button data-a="appTab" data-v="studio">Manage videos</button></div>`+vids.map(card).join('');
+  const nav=[['home','homeF','Home'],['studio','chart','Studio'],['new','plus',''],['me','user','You']];
+  return `<div class="abar2 thin"><button class="back2" data-a="openApp" data-v="">${ic('back',22)}</button></div><div class="abody yt">${b}</div><nav class="anav2">${nav.map(([id,i,l])=>`<button class="${t===id?'on':''}" data-a="appTab" data-v="${id}">${ic(id==='new'?'plus':(t===id&&i==='homeF'?'homeF':i==='homeF'?'home':i),id==='new'?34:24)}${l?`<small>${l}</small>`:''}</button>`).join('')}</nav>`};
 
 function render(){
   const app=$('#app');
