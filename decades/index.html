@@ -1394,7 +1394,7 @@ const TOUR=[
   {sel:'.tab[data-v=history]',t:'History: your timeline and the documentary.'},
   {sel:'[data-a=guide]',t:'Lost? The ? button lists every feature and takes you straight to it.'}];
 function renderCoach(){let el=$('#coach');document.querySelectorAll('.coach-hl').forEach(x=>x.classList.remove('coach-hl'));
-  if(UI.coach==null||!S||S.over||UI.doc||UI.report){if(el)el.remove();return}
+  if(UI.coach==null||!S||S.over||UI.doc||UI.report||UI.sheet){if(el)el.remove();return}
   const st=TOUR[UI.coach];if(!st){UI.coach=null;try{localStorage.setItem('decades_tour','1')}catch(e){}if(el)el.remove();return}
   const tg=document.querySelector(st.sel);if(tg){tg.classList.add('coach-hl');if(!tg.closest('.tabs,.hud'))tg.scrollIntoView({block:'center'})}
   if(!el){el=document.createElement('div');el.id='coach';document.body.appendChild(el)}
