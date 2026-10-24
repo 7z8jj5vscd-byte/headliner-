@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="en" data-theme="modern">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Decades">
+<meta name="theme-color" content="#2b0b3f">
+<meta name="description" content="Start a band in 1965 and survive sixty years of a changing music industry.">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>Decades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Quicksand:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Audiowide&family=Exo+2:ital,wght@0,400;0,600;0,800;1,800&family=Special+Elite&family=Inter:wght@400;600;800&display=swap">
+<style>
+/* Each decade re-skins the whole app through these tokens */
+html[data-theme=sixties]{
+  --bg:#2b0b3f;--hud:#3a0f55;--ink:#fff4e0;--muted:#e3c1ff;--card:rgba(58,14,84,.9);--chip:rgba(255,255,255,.07);--line:#ff8a2a;
+  --accent:#ffcc00;--accent-ink:#3a0a4a;--accent2:#ff2e93;--good:#b6ff3b;--bad:#ff6b6b;
+  --head:'Shrikhand','Georgia',serif;--body:'Quicksand',system-ui,sans-serif;--r:22px;--rb:999px;
+  --bgimg:radial-gradient(circle at 15% 8%,rgba(255,122,24,.55) 0 7%,transparent 26%),radial-gradient(circle at 88% 26%,rgba(255,46,147,.5) 0 6%,transparent 24%),radial-gradient(circle at 25% 78%,rgba(182,255,59,.32) 0 5%,transparent 22%),repeating-radial-gradient(circle at 50% 115%,#3d1060 0 22px,#2b0b3f 22px 44px);
+}
+html[data-theme=seventies]{
+  --bg:#efdcb6;--hud:#5a3418;--ink:#3b2412;--muted:#7a5636;--card:#fbefd6;--chip:#f3e2bf;--line:#c99e62;
+  --accent:#d9631e;--accent-ink:#fff7e6;--accent2:#e0a526;--good:#5f7a1e;--bad:#b3261e;
+  --head:'Fraunces','Georgia',serif;--body:'Fraunces','Georgia',serif;--r:16px;--rb:12px;
+  --bgimg:linear-gradient(180deg,rgba(217,99,30,.10),transparent 40%);
+}
+html[data-theme=eighties]{
+  --bg:#0a0616;--hud:#120a26;--ink:#f6eaff;--muted:#b59ad8;--card:rgba(18,8,38,.92);--chip:rgba(39,232,255,.06);--line:#ff2fd0;
+  --accent:#27e8ff;--accent-ink:#0a0616;--accent2:#ff2fd0;--good:#4dffb0;--bad:#ff4d6d;
+  --head:'Audiowide','Arial Black',sans-serif;--body:'Exo 2',system-ui,sans-serif;--r:4px;--rb:3px;
+  --bgimg:linear-gradient(rgba(255,47,208,.16) 1px,transparent 1px) 0 0/100% 34px,linear-gradient(90deg,rgba(39,232,255,.12) 1px,transparent 1px) 0 0/34px 100%,radial-gradient(ellipse at 50% 0%,rgba(255,47,208,.35),transparent 60%);
+}
+html[data-theme=nineties]{
+  --bg:#211f1a;--hud:#2a2721;--ink:#ebe5d3;--muted:#a59e88;--card:#2e2b24;--chip:#36332a;--line:#5d584a;
+  --accent:#c9a227;--accent-ink:#1a1812;--accent2:#b5322b;--good:#8fb35a;--bad:#d9534a;
+  --head:'Special Elite','Courier New',monospace;--body:'Inter',system-ui,sans-serif;--r:2px;--rb:2px;
+  --bgimg:repeating-linear-gradient(45deg,rgba(255,255,255,.018) 0 2px,transparent 2px 5px),repeating-linear-gradient(-30deg,rgba(0,0,0,.25) 0 1px,transparent 1px 7px),linear-gradient(90deg,rgba(181,50,43,.10) 0 18%,transparent 18% 36%,rgba(181,50,43,.08) 36% 54%,transparent 54%);
+}
+html[data-theme=noughties]{
+  --bg:#d9e6f4;--hud:#f4f9ff;--ink:#12304d;--muted:#56708c;--card:linear-gradient(#ffffff,#e9f1fb);--chip:linear-gradient(#ffffff,#e2ecf8);--line:#a7c1de;
+  --accent:#1ba1e2;--accent-ink:#ffffff;--accent2:#7cbf2f;--good:#3d9a12;--bad:#d42c2c;
+  --head:'Exo 2',system-ui,sans-serif;--body:'Exo 2',system-ui,sans-serif;--r:16px;--rb:999px;
+  --bgimg:radial-gradient(ellipse at 50% -10%,#ffffff,transparent 60%),linear-gradient(180deg,#eef5fd,#c9dbef);
+}
+html[data-theme=modern]{
+  --bg:#f5f5f2;--hud:#f5f5f2;--ink:#111111;--muted:#6b6b6b;--card:#ffffff;--chip:#ffffff;--line:#e2e2dd;
+  --accent:#111111;--accent-ink:#ffffff;--accent2:#ff4d2e;--good:#11804a;--bad:#d1302b;
+  --head:'Inter',system-ui,sans-serif;--body:'Inter',system-ui,sans-serif;--r:12px;--rb:10px;
+  --bgimg:none;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+body{font-family:var(--body);font-size:15px;line-height:1.45;min-height:100vh;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--bgimg);pointer-events:none}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--head);margin:0;line-height:1.1;font-weight:400;text-wrap:balance}
+h2{font-size:21px}h3{font-size:17px}
+p{margin:0}
+html[data-theme=seventies] h1,html[data-theme=seventies] h2,html[data-theme=seventies] h3{font-weight:900;font-style:italic;letter-spacing:-.01em}
+html[data-theme=noughties] h1,html[data-theme=noughties] h2,html[data-theme=noughties] h3{font-weight:800;font-style:italic}
+html[data-theme=modern] h1,html[data-theme=modern] h2,html[data-theme=modern] h3{font-weight:800;letter-spacing:-.02em}
+html[data-theme=sixties] h1,html[data-theme=sixties] h2{color:var(--accent);text-shadow:2px 2px 0 var(--accent2)}
+html[data-theme=eighties] h1,html[data-theme=eighties] h2{color:var(--accent);text-shadow:0 0 10px rgba(39,232,255,.6);text-transform:uppercase;letter-spacing:.04em}
+html[data-theme=nineties] h1,html[data-theme=nineties] h2{text-transform:lowercase}
+
+.app{max-width:640px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(92px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.app.notabs{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.good{color:var(--good)}.bad{color:var(--bad)}
+.num{font-variant-numeric:tabular-nums}
+.label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.view{display:flex;flex-direction:column;gap:14px;padding-top:14px}
+
+/* HUD */
+.hud{position:sticky;top:0;z-index:20;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:calc(env(safe-area-inset-top,0px) + 8px) max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));background:var(--hud);border-bottom:1px solid var(--line)}
+html[data-theme=seventies] .hud{color:#fbefd6;border-bottom:0}
+html[data-theme=seventies] .hud::after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;background:linear-gradient(#d9631e 0 33%,#e0a526 33% 66%,#8a4f22 66%)}
+html[data-theme=seventies] .hud .muted{color:#e8cfa4}
+html[data-theme=noughties] .hud{box-shadow:0 2px 10px rgba(18,48,77,.12)}
+.hud-top{display:flex;align-items:center;gap:10px}
+.iconbtn{background:transparent;border:1px solid var(--line);border-radius:var(--rb);width:40px;height:40px;display:grid;place-items:center;font-size:18px;flex:none}
+html[data-theme=seventies] .hud .iconbtn{border-color:#c99e62;color:#fbefd6}
+.bandname{font-family:var(--head);font-size:18px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.year{font-family:var(--head);font-size:30px;line-height:1;color:var(--accent)}
+html[data-theme=seventies] .hud .year{color:#e0a526}
+.hud-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.hud-stats div{text-align:center;min-width:0}
+.hud-stats b{display:block;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hud-stats i{font-style:normal;font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
+.timebar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:8px;position:relative;background:rgba(127,127,127,.25)}
+.timebar span{height:100%}
+.timebar em{position:absolute;top:-3px;width:3px;height:12px;background:var(--ink);border-radius:2px}
+
+/* tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--hud);border-top:1px solid var(--line);padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tab{background:none;border:0;padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;letter-spacing:.04em;opacity:.62;min-height:56px}
+.tab .ic{font-size:19px;line-height:1}
+.tab.on{opacity:1;color:var(--accent)}
+html[data-theme=seventies] .tab{color:#fbefd6}
+html[data-theme=seventies] .tab.on{color:#e0a526}
+.tab .dot{display:inline-block;min-width:16px;height:16px;border-radius:8px;background:var(--accent2);color:#fff;font-size:10px;line-height:16px;padding:0 4px;margin-left:2px}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+html[data-theme=sixties] .card{border-width:2px}
+html[data-theme=eighties] .card{box-shadow:0 0 0 1px rgba(255,47,208,.25),0 0 18px rgba(255,47,208,.15)}
+html[data-theme=nineties] .card{border-style:dashed;transform:rotate(-.25deg)}
+html[data-theme=nineties] .card:nth-child(even){transform:rotate(.3deg)}
+html[data-theme=noughties] .card{box-shadow:0 1px 0 #fff inset,0 6px 16px rgba(18,48,77,.12)}
+html[data-theme=modern] .card{border-color:transparent;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.card.hl{border-color:var(--accent2);border-width:2px}
+.pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.acc{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pill.acc2{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.pill.good{border-color:var(--good);color:var(--good)}
+.pill.bad{border-color:var(--bad);color:var(--bad)}
+
+/* buttons */
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:var(--rb);padding:12px 18px;font-weight:800;min-height:46px;font-size:15px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{min-height:36px;padding:7px 12px;font-size:13px}
+.btn.wide{width:100%}
+.btn.big{min-height:58px;font-size:18px;font-family:var(--head)}
+.btn.danger{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+html[data-theme=eighties] .btn:not(.ghost):not(.danger){box-shadow:0 0 14px rgba(39,232,255,.55);text-transform:uppercase;letter-spacing:.06em}
+html[data-theme=noughties] .btn:not(.ghost):not(.danger){background:linear-gradient(#6fd0f7,#1ba1e2 50%,#0b86c4 51%,#2fb0ea);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 2px 6px rgba(11,134,196,.4);text-shadow:0 -1px 0 rgba(0,0,0,.2)}
+html[data-theme=sixties] .btn:not(.ghost):not(.danger){box-shadow:3px 3px 0 var(--accent2)}
+html[data-theme=nineties] .btn{text-transform:lowercase;font-family:'Special Elite',monospace;font-weight:400}
+
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chips.three{grid-template-columns:1fr 1fr 1fr}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:var(--rb);padding:10px 12px;text-align:left;min-height:48px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+html[data-theme=sixties] .chip,html[data-theme=noughties] .chip{border-radius:16px}
+.chip b{font-size:14px;line-height:1.2}
+.chip small{font-size:12px;color:var(--muted);line-height:1.25}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.on small{color:inherit;opacity:.85}
+.chip:disabled{opacity:.38;cursor:not-allowed}
+.choice{background:var(--chip);border:1px solid var(--line);border-radius:var(--rb);padding:11px 13px;text-align:left;display:flex;flex-direction:column;gap:2px;width:100%;min-height:48px}
+html[data-theme=sixties] .choice{border-radius:18px}
+.choice small{color:var(--muted);font-size:12.5px}
+.choice:disabled{opacity:.4;cursor:not-allowed}
+.choice:active,.chip:active,.btn:active{transform:translateY(1px)}
+.ev{border-left-width:5px;border-left-color:var(--accent2)}
+.ev .kick{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2)}
+
+.meter{height:6px;background:rgba(127,127,127,.22);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.meter.a2 i{background:var(--accent2)}
+.meter.good i{background:var(--good)}.meter.bad i{background:var(--bad)}
+.mstats{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.mstats div{font-size:12px}
+.mstats .between{font-size:12px}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kv div{min-width:0}
+.kv b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+.kv span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.list{display:flex;flex-direction:column}
+.list>*{padding:9px 0;border-top:1px solid var(--line)}
+.list>*:first-child{border-top:0}
+.genre-row{display:grid;grid-template-columns:1fr 90px 46px;gap:10px;align-items:center;font-size:14px}
+.genre-row.me b{color:var(--accent2)}
+.trend{font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+details summary{cursor:pointer;font-weight:700;list-style:none;padding:4px 0}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:" ▾";color:var(--muted)}
+details[open] summary::after{content:" ▴"}
+input[type=text]{width:100%;background:var(--chip);border:1px solid var(--line);border-radius:var(--rb);padding:12px 14px;min-height:46px;font-size:16px}
+
+/* era banner */
+.era{position:relative;overflow:hidden}
+.era .yr{font-family:var(--head);font-size:52px;line-height:.9;color:var(--accent2)}
+.era-rules{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px}
+.dots{letter-spacing:2px;color:var(--accent)}
+
+/* sheet */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);color:var(--ink);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+.sheet::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:var(--line);margin:-6px auto 4px}
+.rline{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.rline .i{flex:none;width:22px;text-align:center}
+.delta{font-size:12px;font-weight:700}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-direction:column;gap:6px;width:min(560px,calc(100vw - 32px));pointer-events:none}
+.toast{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:12px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.3);animation:tin .2s ease-out}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+
+/* title */
+.title-hero{padding:calc(env(safe-area-inset-top,0px) + 36px) 0 8px;text-align:center}
+.title-hero h1{font-size:58px;letter-spacing:.02em}
+.stripes{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:14px auto 10px;max-width:320px}
+.stripes span{flex:1}
+.card.slot{flex-direction:row;justify-content:space-between;gap:10px;align-items:center}
+
+/* stage, faces, covers, documentary */
+.stage{position:relative;height:230px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--hud);touch-action:pan-y}
+.stage canvas{display:block;width:100%!important;height:100%!important}
+.stage-fb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:12px}
+.stage canvas+.stage-fb{display:none}
+.stage-cap{position:absolute;left:10px;bottom:10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none}
+.portrait{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none;background:var(--chip);border:2px solid var(--line);display:block}
+.portrait.lg{width:96px;height:96px}.portrait.sm{width:42px;height:42px}.portrait.xs{width:30px;height:30px;border-width:1px}
+.pbtn{background:none;border:0;padding:0;border-radius:50%;flex:none}
+.memhead{display:flex;gap:12px;align-items:center;min-width:0}
+.faces{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.choice.withimg{flex-direction:row;align-items:center;gap:12px}
+.stack0{display:flex;flex-direction:column;gap:2px;min-width:0}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:36px;height:36px;border-radius:50%;border:2px solid var(--line);padding:0}
+.sw.on{outline:3px solid var(--accent);outline-offset:2px}
+.cover{width:64px;height:64px;border-radius:4px;flex:none;display:block;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.cover.sm{width:56px;height:56px}.cover.lg{width:120px;height:120px}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.wall .cover{width:100%;height:auto;aspect-ratio:1}
+#doc{position:fixed;inset:0;z-index:80;background:var(--bg)}
+#doc::before{content:"";position:absolute;inset:0;background:var(--bgimg);pointer-events:none}
+.doc{position:relative;height:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 14px) max(16px,env(safe-area-inset-left,0px))}
+.doc-stage{height:min(46vh,380px);flex:none}
+.doc-year{font-family:var(--head);font-size:56px;line-height:1;color:var(--accent2)}
+.doc-cap{flex:1;overflow:auto;min-height:0}
+.doc-cap p{margin:6px 0;font-size:15px}
+.doc-ctl{display:flex;gap:8px;justify-content:center}
+.doc-bar{height:4px;background:rgba(127,127,127,.25);border-radius:2px;overflow:hidden}
+.doc-bar i{display:block;height:100%;background:var(--accent)}
+/* timeline */
+.tl{position:relative;padding-left:22px}
+.tl::before{content:"";position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--line)}
+.tl-dec{font-family:var(--head);font-size:22px;margin:14px 0 6px -22px;color:var(--accent2)}
+.tl-item{position:relative;padding:5px 0;font-size:14px}
+.tl-item::before{content:"";position:absolute;left:-19px;top:11px;width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.tl-item.k-album::before{background:var(--accent)}
+.tl-item.k-hit::before{background:var(--accent2)}
+.tl-item.k-join::before,.tl-item.k-leave::before,.tl-item.k-lead::before{background:var(--good)}
+.tl-item.k-leave::before{background:var(--bad)}
+.tl-item.k-split::before,.tl-item.k-reunion::before{width:14px;height:14px;left:-21px;top:9px;background:var(--ink)}
+.tl-item .y{font-weight:800;font-variant-numeric:tabular-nums;margin-right:6px}
+.tl-item.peak{font-weight:700}
+.spark{width:100%;height:auto;display:block}
+.hof{text-align:center;padding:22px 16px}
+.hof .medal{font-size:56px;line-height:1}
+.track{font-size:13px;display:flex;justify-content:space-between;gap:8px;padding:3px 0}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toasts" id="toasts"></div>
+<div id="sheet"></div>
+<script>
+'use strict';
+const START=1965, END=2026, HOF_NEED=160;
+const $=(s,r=document)=>r.querySelector(s);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+const sum=a=>a.reduce((s,x)=>s+x,0);
+const chance=p=>Math.random()<p;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const infl=y=>Math.pow(1.045,y-START);
+const cost=(base,y=S.year)=>Math.round(base*infl(y)/50)*50;
+function fmtN(n){n=Math.round(n);const a=Math.abs(n);if(a>=1e9)return (n/1e9).toFixed(1)+'B';if(a>=1e6)return (n/1e6).toFixed(a>=1e8?0:1)+'M';if(a>=1e4)return Math.round(n/1e3)+'K';if(a>=1e3)return (n/1e3).toFixed(1)+'K';return String(n)}
+const fmt$=n=>(n<0?'−$':'$')+fmtN(Math.abs(n));
+const sgn=n=>(n>=0?'+':'−')+fmtN(Math.abs(n));
+const ord=n=>'#'+n;
+
+/* ---------------- world data ---------------- */
+const GENRES={
+  folk:{n:'Folk Rock',from:1965,xy:[0,0],base:.08,b:[[1966,4,.85],[2011,4,.3]],c:'#c9a46b'},
+  psych:{n:'Psychedelia',from:1966,xy:[2,1.5],base:.04,b:[[1968,2.5,.95],[2014,4,.22]],c:'#b44cff'},
+  rock:{n:'Rock',from:1965,xy:[3,0],base:.3,b:[[1972,6,.75],[2003,4,.25]],c:'#d9631e'},
+  soul:{n:'Soul & Funk',from:1965,xy:[1,3.5],base:.14,b:[[1970,5,.8],[1997,4,.3]],c:'#e0a526'},
+  pop:{n:'Pop',from:1965,xy:[2,3],base:.42,b:[[1985,8,.18],[2012,6,.22]],c:'#ff7eb6'},
+  disco:{n:'Disco',from:1974,xy:[2,5.5],base:.02,b:[[1978,1.6,1.05],[2020,2.5,.35]],c:'#ffd23f'},
+  punk:{n:'Punk',from:1975,xy:[4.5,1],base:.04,b:[[1977.5,1.8,.8],[2001,3,.5]],c:'#e5383b'},
+  newwave:{n:'New Wave & Synth',from:1978,xy:[3,4.5],base:.05,b:[[1983,3,.95],[2008,3,.35]],c:'#27e8ff'},
+  metal:{n:'Hair Metal',from:1980,xy:[5.5,.5],base:.03,b:[[1987,2.6,1],[2019,3,.12]],c:'#ff2fd0'},
+  grunge:{n:'Grunge',from:1988,xy:[4.5,-.5],base:.04,b:[[1993,2.2,1],[2023,3,.18]],c:'#8a8f5a'},
+  indie:{n:'Indie & Alt',from:1984,xy:[3,1.5],base:.08,b:[[1996,3.5,.55],[2008,4,.7]],c:'#7cbf2f'},
+  hiphop:{n:'Hip-Hop',from:1979,xy:[.5,6],base:.03,b:[[1990,4,.5],[2002,5,.8],[2019,7,1]],c:'#9b5de5'},
+  edm:{n:'EDM',from:1988,xy:[3.5,7],base:.02,b:[[1998,3,.3],[2013,3,1]],c:'#00f5d4'},
+};
+const GK=Object.keys(GENRES);
+function gpop(g,y){const G=GENRES[g];if(!G||y<G.from)return 0;let v=G.base;for(const[p,w,a] of G.b)v+=a*Math.exp(-(((y-p)/w)**2));if(S&&S.noise&&y===S.year)v+=S.noise[g]||0;return clamp(v,.03,1)}
+function gdist(a,b){const A=GENRES[a].xy,B=GENRES[b].xy;return clamp(Math.hypot(A[0]-B[0],A[1]-B[1])/7,0,1)}
+const avail=y=>GK.filter(g=>GENRES[g].from<=y);
+
+const ERAS=[
+  {k:'vinyl',from:1965,to:1974,n:'The Vinyl Age',fmt:'Vinyl LPs & 45s',units:1,roy:1,tour:1.2,merch:0,cat:.5,promo:'radio',d:'Radio and 45s make stars. Records are king; tours mostly sell the records.'},
+  {k:'cassette',from:1975,to:1981,n:'The Cassette Era',fmt:'Vinyl & cassette',units:1.15,roy:1,tour:1.4,merch:.3,cat:.6,promo:'radio',d:'Arena rock and home taping. Tapes put music in every car and pocket.'},
+  {k:'video',from:1982,to:1990,n:'The Video Age',fmt:'Cassettes, vinyl & videos',units:1.3,roy:1,tour:1.6,merch:.6,cat:.7,promo:'video',d:'VidStar TV plays videos around the clock. Looks matter now, and a great video can make a hit.'},
+  {k:'cd',from:1991,to:1999,n:'The CD Boom',fmt:'Compact disc',units:1.8,roy:1.3,tour:1.8,merch:.8,cat:1.6,promo:'video',d:'Everyone is rebuying their record collection on CD. Old hits pay like never before.'},
+  {k:'piracy',from:2000,to:2007,n:'The Swapster Years',fmt:'CDs, burned CDs & MP3s',units:.6,roy:.9,tour:2.6,merch:1.2,cat:.5,promo:'web',d:'File-sharing guts record sales. Touring and merch pay the bills now.'},
+  {k:'stream',from:2008,to:2015,n:'The Streaming Shift',fmt:'Downloads & streams',units:.35,roy:.5,tour:3.2,merch:1.4,cat:1,promo:'playlist',d:'Fractions of a cent per play. Playlists pick the hits; the road pays the rent.'},
+  {k:'viral',from:2016,to:2099,n:'The Loopr Era',fmt:'Streams & short videos',units:.35,roy:.5,tour:3.8,merch:1.6,cat:1.2,promo:'viral',d:'Fifteen seconds on Loopr can turn any song, of any age, into a smash.'},
+];
+const eraOf=y=>ERAS.find(e=>y>=e.from&&y<=e.to);
+const PROMO={
+  radio:{n:'Radio plugging',d:'Get DJs spinning the single',cost:1500,chart:6,hype:8},
+  video:{n:'Shoot a music video',d:'VidStar TV airplay. Charisma counts',cost:20000,chart:9,hype:12},
+  web:{n:'Band website & forums',d:'Build a fan community online',cost:8000,chart:3,hype:6,fans:.06},
+  playlist:{n:'Pitch to playlists',d:'Land on the big curated playlists',cost:12000,chart:8,hype:8},
+  viral:{n:'Post on Loopr',d:'Gamble on a clip going viral',cost:4000,chart:3,hype:5,viral:.22},
+};
+const SCALES={
+  clubs:{n:'Clubs & bars',cap:25000,cost:3000,walk:8000,need:0,tired:4},
+  theaters:{n:'Theaters',cap:200000,cost:45000,walk:15000,need:15000,tired:7},
+  arenas:{n:'Arenas',cap:1200000,cost:450000,walk:30000,need:150000,tired:10},
+  stadiums:{n:'Stadiums',cap:4000000,cost:3000000,walk:60000,need:800000,tired:13},
+};
+const SCK=Object.keys(SCALES);
+const SETLISTS={new:{n:'New material',d:'Band & critics happier, smaller crowds',fans:1.25,rep:2},mix:{n:'Balanced',d:'A bit of everything',fans:1,rep:0},hits:{n:'Greatest hits',d:'Packed rooms, bored band',fans:.75,rep:-1}};
+const setlistMult=k=>k==='new'?.9:k==='hits'?1.05+Math.min(.3,.04*classics()+.015*S.songs.filter(s=>s.peak&&s.peak<=10).length):1;
+const BUDGETS=[{n:'Shoestring',cost:0,b:0},{n:'Proper studio',cost:4000,b:6},{n:'Star producer',cost:20000,b:12}];
+const FOCUS={
+  write:{n:'Write & rehearse',d:'Stockpile songs, get tighter'},
+  album:{n:'Record an album',d:'Make and release a record'},
+  albumtour:{n:'Album + tour',d:'Release it, then hit the road'},
+  tour:{n:'Tour',d:'Play the hits. Hard on the band'},
+  rest:{n:'Take a year off',d:'Recharge. Hype fades'},
+  split:{n:'Split up',d:'Call it a day. Reunite later?'},
+};
+const SPLITFOCUS={
+  apart:{n:'Stay apart',d:'Let time heal. Nostalgia grows'},
+  reunite:{n:'Attempt a reunion',d:'Call everyone. Big tour if it works'},
+  retire:{n:'End the story',d:'Close the book on the band'},
+};
+const TRAITS={Hothead:'Volatile, clashes easily',Perfectionist:'Better records, hates rushing',Peacemaker:'Keeps the peace',
+  'Party Animal':'Loves the road, burns out',Visionary:'Always wants to change',Loner:'Drawn to solo work',Showboat:'Wants the spotlight',Steady:'Rarely rattled, loyal'};
+const ROLES4=['Vocals','Guitar','Bass','Drums'];
+const F40=['Ray','Terry','Dennis','Clive','Neil','Gordon','Alan','Barry','Colin','Eddie','Frankie','Gil','Howie','Ivan','Jasper','Ken','Lenny','Marty','Nate','Ollie','Percy','Rudy','Stan','Vic','Wes','Linda','Carol','Joan','Maggie','Rosie','Sandra','Dot','Gloria','Judy','Peggy','Suzie','Vera','Wanda','Della','Fay'];
+const F60=['Kevin','Scott','Darren','Lisa','Tina','Kim','Troy','Shane','Dana','Jodi','Rick','Stacey','Mark','Wendy','Brett','Tony','Dawn','Gary','Lori','Duane','Carla','Mitch','Robin','Nikki'];
+const F80=['Jason','Nicole','Chad','Amber','Ryan','Heather','Justin','Kelly','Travis','Jenna','Derek','Misty','Corey','Tara','Josh','Brandy','Kyle','Erin','Marcus','Jade'];
+const F00=['Tyler','Madison','Kai','Zoe','Jalen','Ava','Liam','Nova','Mason','Harper','Ezra','Luna','Theo','Riley','Milo','Isla','Jaden','Sky','Rowan','Mila'];
+const LAST=['Pike','Dunmore','Hollis','Varga','Quill','Ashby','Brannigan','Cole','Delgado','Esterly','Fenn','Garrow','Hatch','Kowal','Lark','Mercer','Novak','Orr','Pruitt','Rourke','Sable','Tully','Vance','Whitlow','Yarrow','Zell','Okafor','Moreau','Lindqvist','Castellano','Bright','Crane','Doyle','Finch','Gale','Harlow','Ives','Keene','Lowell','Marsh','North','Price','Reyes','Stroud','Thorne','Underhill','Vale','Wilder','Szabo','Achebe','Navarro','Petrakis'];
+const INDIES=['Paisley Records','Tin Shed Records','Bluebird Sound','Static Age','Corner Store Records','Lowlight Recordings'];
+const MIDS=['Velvet Torch','Harbor Light Music','Sundial Records','Red Kite Records'];
+const MAJORS=['Monolith Music Group','Crown & Anchor Records','Goldline Records','Northstar Entertainment','Imperial Wax'];
+const W_ADJ=['Electric','Velvet','Silver','Hollow','Golden','Midnight','Paper','Neon','Crimson','Broken','Wild','Quiet','Burning','Distant','Static','Sugar','Lonesome','Restless','Faded','Plastic','Cosmic','Northern','Concrete','Gentle','Strange','Sweet','Endless','Lucky'];
+const W_NOUN=['Heart','Highway','River','Summer','Radio','Mirror','Garden','Engine','Weather','Lantern','Satellite','Harbor','Kingdom','Echo','Daydream','Window','Thunder','Diamond','Ocean','Ghost','Paradise','Signal','Fever','Motel','Carousel','Avenue','Horizon','Machine','Telephone','Lighthouse','Comet','Wildfire'];
+const W_VERB=['Hold','Chase','Light','Leave','Dance','Burn','Call','Wake','Shake','Follow','Hide','Save','Run','Take','Turn','Catch','Kiss','Find'];
+const songTitle=()=>pick([
+  ()=>`${pick(W_ADJ)} ${pick(W_NOUN)}`,()=>`${pick(W_VERB)} Me ${pick(['Home','Tonight','Slowly','Under','Again','Down','Gently'])}`,
+  ()=>`${pick(W_NOUN)} of ${pick(W_NOUN)}s`,()=>`Don't ${pick(W_VERB).toLowerCase()} the ${pick(W_NOUN)}`,
+  ()=>`${pick(W_NOUN)} ${pick(['Song','Blues','Girl','Boy','Baby','Lights','Nights','Talk','Love','Child'])}`,
+  ()=>`${pick(W_ADJ)} ${pick(['Nights','Days','Hearts','Lies','Wheels','Dreams','Years','Feelings'])}`,()=>`Last ${pick(W_NOUN)}`,
+  ()=>`${pick(W_VERB)} the ${pick(W_NOUN)}`,()=>`${pick(W_NOUN)} (${pick(W_VERB)} It ${pick(['Up','Out','Back','Over'])})`])();
+const albumTitle=()=>pick([()=>`${pick(W_ADJ)} ${pick(W_NOUN)}`,()=>`${pick(W_NOUN)}s`,()=>`${pick(W_ADJ)} ${pick(W_NOUN)}s`,()=>`The ${pick(W_NOUN)} Sessions`,
+  ()=>`${pick(W_NOUN)} & ${pick(W_NOUN)}`,()=>`Songs from the ${pick(W_NOUN)}`,()=>`${pick(W_ADJ)}`,()=>`Year of the ${pick(W_NOUN)}`])();
+const BADJ=['Velvet','Crimson','Paper','Copper','Lonesome','Painted','Hollow','Satin','Wandering','Electric','Midnight','Northern','Glass','Amber','Quiet','Gilded','Tangerine'];
+const BNOUN=['Harbors','Lanterns','Sparrows','Engines','Mirrors','Comets','Foxes','Saints','Valleys','Tides','Ravens','Kites','Signals','Orchards','Pilots','Arrows','Weathervanes'];
+const bandName=()=>chance(.7)?`The ${pick(BADJ)} ${pick(BNOUN)}`:`${pick(W_NOUN)} ${pick(['Parade','Society','Union','Assembly','Club','Express','Theory','Circus'])}`;
+const DEC_COLORS=['#b44cff','#d9631e','#ff2fd0','#8a8f5a','#1ba1e2','#111111'];
+const decTheme=y=>y<1970?'sixties':y<1980?'seventies':y<1990?'eighties':y<2000?'nineties':y<2010?'noughties':'modern';
+
+/* ---------------- state helpers ---------------- */
+let S=null;
+let UI={tab:'year',sheet:null,report:null,setup:null};
+const active=()=>S.members.filter(m=>m.status==='active');
+const M=id=>S.members.find(m=>m.id===id);
+const mn=id=>{const m=M(id);return m?esc(m.name):'Someone'};
+const age=m=>S.year-m.born;
+const first=m=>esc(m.name.split(' ')[0]);
+const classics=()=>S.songs.filter(s=>s.classic).length;
+const oldFansTotal=()=>sum(Object.values(S.oldFans||{}));
+function tl(kind,text,y=S.year){S.timeline.push({y,kind,text})}
+function cohesion(){const a=active();if(!a.length)return 0;let c=avg(a.map(m=>m.mood));if(a.some(m=>m.trait==='Peacemaker'))c+=6;
+  c-=S.feuds.filter(f=>M(f[0])?.status==='active'&&M(f[1])?.status==='active').length*8;return clamp(Math.round(c),0,100)}
+const feuding=(a,b)=>S.feuds.some(f=>(f[0]===a&&f[1]===b)||(f[0]===b&&f[1]===a));
+function addFeud(a,b){if(!feuding(a,b))S.feuds.push([a,b])}
+function pickTaste(y){const gs=avail(y+3);const w=gs.map(g=>gpop(g,y+3)+.12);let r=Math.random()*sum(w);for(let i=0;i<gs.length;i++){r-=w[i];if(r<=0)return gs[i]}return gs[0]}
+function genMember(...args){const m=genMember0(...args);m.look=genLook(m.id);return m}
+function genMember0(role,born,joined,taken=[]){
+  const pool=born<1955?F40:born<1970?F60:born<1985?F80:F00;let name;
+  do{name=pick(pool)+' '+pick(LAST)}while(taken.includes(name));
+  const trait=pick(Object.keys(TRAITS));
+  return {id:'m'+Math.random().toString(36).slice(2,9),name,role,born,writing:ri(20,85),chops:ri(30,88),charisma:ri(25,88),
+    ego:ri(10,90),loyalty:clamp(ri(35,88)+(trait==='Steady'?12:0),0,100),mood:ri(62,82),trait,taste:pickTaste(joined),
+    status:'active',joined,left:null,writer:false,soloY:0,soloHit:0,fame:0,stay:0,promised:null}
+}
+function genLineup(size){const roles=ROLES4.slice();if(size===5)roles.push(pick(['Keys','Guitar']));const out=[];
+  for(const r of roles){out.push(genMember(r,ri(1942,1947),START,out.map(m=>m.name)))}
+  out.forEach(m=>m.founder=true);
+  const lead=out.slice().sort((a,b)=>b.charisma-a.charisma)[0];
+  const ws=out.slice().sort((a,b)=>b.writing-a.writing);ws[0].writer=true;if(ws[1].writing>55)ws[1].writer=true;
+  return {members:out,leader:lead.id}}
+function ensureLeader(){const a=active();if(!a.length)return;
+  if(!a.some(m=>m.id===S.leader)){const n=a.slice().sort((x,y)=>y.charisma-x.charisma)[0];if(S.leader)tl('lead',`${n.name} steps up to front the band`);S.leader=n.id}
+  if(!a.some(m=>m.writer)){a.slice().sort((x,y)=>y.writing-x.writing)[0].writer=true}}
+function writers(){const a=active();const w=a.filter(m=>m.writer);return w.length?w:a.filter(m=>m.id===S.leader)}
+function leave(m,status,why){
+  m.status=status;m.left=S.year;m.writer=false;
+  const verb={left:'quit the band',fired:'was fired',retired:'retired from music',solo:'left to go solo'}[status]||'left';
+  tl('leave',`${m.name} (${m.role.toLowerCase()}) ${verb}${why?': '+why:''}`);
+  S.feuds=S.feuds.filter(f=>!(f.includes(m.id)&&status==='retired'));
+  if(m.id===S.leader){S.leader=null}
+  ensureLeader();
+  if(!S.split){const ev={t:'recruit',d:{role:m.role,cands:recruitCands(m.role)}};(S._yearEnd?S.carry:S.pending).push(ev)}
+}
+function recruitCands(role){const y=S.year;const out=[];for(let i=0;i<3;i++){const c=genMember(role,y-ri(19,31),y,S.members.map(m=>m.name).concat(out.map(o=>o.name)));if(i===0)c.chops=clamp(c.chops+12,0,95);if(i===1)c.writing=clamp(c.writing+12,0,95);out.push(c)}return out}
+function hire(c){c.status='active';c.joined=S.year;c.mood=70;S.members.push(c);tl('join',`${c.name} joins on ${c.role.toLowerCase()}`)}
+
+/* ---------------- labels ---------------- */
+function labelOffers(){const y=S.year,f=S.fans,inf=infl(y),big=f>300000;const pickNot=(a,used)=>pick(a.filter(x=>!used.includes(x)&&x!==S.label?.name))||pick(a);
+  const o=[{name:pickNot(INDIES,[]),type:'indie',roy:1.35,clout:0,adv:0,yrs:4},
+    {name:pickNot(MIDS,[]),type:'mid',roy:1.05,clout:3,adv:Math.round(Math.max(1200*inf,f*.25)/100)*100,yrs:5},
+    {name:pickNot(MAJORS,[]),type:'major',roy:.8,clout:big?9:6,adv:Math.round(Math.max(3000*inf,f*(big?1.1:.6))/100)*100,yrs:6}];
+  if(y>=2005)o.push({name:'Self-release',type:'self',roy:2.6,clout:-4,adv:0,yrs:60});
+  if(S.label&&S.label.type!=='self'&&chance(.7))o.push({...S.label,adv:Math.round(Math.max(1000*inf,f*.3)/100)*100,renew:true,name:S.label.name});
+  return o}
+const labelHint=o=>`${o.type==='self'?'Your own label':o.type==='major'?'Major label':o.type==='mid'?'Mid-size label':'Indie label'} · ${o.adv?fmt$(o.adv)+' advance · ':''}royalties ×${o.roy} · chart push ${o.clout>=0?'+':''}${o.clout}${o.yrs<50?' · '+o.yrs+' yrs':''}`;
+
+/* ---------------- events ---------------- */
+const EV={
+  label:{kick:'Business',title:d=>d.renew?'Your contract is up':'Record labels are calling',
+    text:d=>d.renew?`The deal with ${esc(S.label.name)} has run its course. Re-sign, or take your songs elsewhere.`:`You've been packing out a few local rooms and people are noticing. Pick a home for your records.`,
+    choices:d=>d.offers.map((o,i)=>({k:i,label:o.renew?`Re-sign with ${esc(o.name)}`:o.type==='self'?'Go independent':`Sign with ${esc(o.name)}`,hint:labelHint(o)})),
+    res(d,k){const o=d.offers[k];S.label={name:o.name,type:o.type,roy:o.roy,clout:o.clout,until:S.year+o.yrs};S.money+=o.adv;
+      tl('label',o.type==='self'?'Went independent, releasing records themselves':`Signed to ${o.name}`);return o.type==='self'?'You own your masters now.':`Signed with ${esc(o.name)}${o.adv?' for a '+fmt$(o.adv)+' advance':''}.`}},
+  festival:{kick:'Scene',title:()=>'The Meadowlark Festival',text:()=>'Half a million people in a muddy field upstate. The promoters want you on the bill at dawn on Sunday. No pay, no showers, total chaos.',
+    choices:()=>[{k:'go',label:'Play the dawn slot',hint:'Hype, fans and cred. Costs travel'},{k:'no',label:'Pass',hint:'Stay home and dry'}],
+    res(d,k){if(k==='go'){S.hype+=22;S.fans=Math.round(S.fans*1.3+15000);S.rep+=6;active().forEach(m=>m.mood+=6);S.money-=cost(800);tl('milestone','Played the Meadowlark Festival at dawn');return 'A legendary set as the sun came up.'}return 'You stayed home. Everyone else is talking about it.'}},
+  vidstar:{kick:'Industry',title:()=>'VidStar TV goes on the air',text:()=>'A new cable channel will play music videos all day, every day. Most bands think it\'s a fad.',
+    choices:()=>{const c=cost(9000);return [{k:'go',label:`Shoot a video now (${fmt$(c)})`,hint:'Get in early. Lasting edge through the 80s',dis:S.money<c},{k:'no',label:'It\'s a fad',hint:'Keep your money'}]},
+    res(d,k){if(k==='go'){S.money-=cost(9000);S.flags.mtvEarly=true;S.hype+=15;tl('milestone','One of the first bands on VidStar TV');return 'Your clip is in heavy rotation. Teenagers know your faces now.'}return 'You sit it out. VidStar is not a fad.'}},
+  charity:{kick:'Scene',title:()=>'Global Jam',text:()=>'Two stadiums, two continents, one broadcast for famine relief. A billion people watching. They want you for 18 minutes.',
+    choices:()=>[{k:'go',label:'Play Global Jam',hint:'Cred and huge exposure, no pay'},{k:'no',label:'Decline',hint:'The press will notice'}],
+    res(d,k){if(k==='go'){S.rep+=10;S.fans=Math.round(S.fans*1.15+20000);S.hype+=15;active().forEach(m=>m.mood+=5);tl('milestone','Played Global Jam to a billion viewers');return 'Eighteen minutes that everyone will remember.'}S.rep-=4;return 'Critics call it a snub.'}},
+  stripped:{kick:'Industry',title:()=>'Stripped Sessions',text:()=>'VidStar wants you for an acoustic special. No amps, no hiding. Bands either shine or get exposed.',
+    choices:()=>[{k:'go',label:'Do the special',hint:'Live album, cred if you can really play'},{k:'no',label:'Decline',hint:'Not your thing'}],
+    res(d,k){S.flags.stripped=true;if(k==='go'){const ch=avg(active().map(m=>m.chops));const good=ch+rnd(-20,20)>55;const inc=Math.round(S.fans*.12*perUnit());S.money+=inc;S.hype+=good?15:4;S.rep+=good?9:-3;
+      tl('milestone',good?'A celebrated Stripped Sessions acoustic special':'An awkward Stripped Sessions special');return good?`Stunning. The live album earned ${fmt$(inc)}.`:`Shaky, but the live album still earned ${fmt$(inc)}.`}return 'Maybe next time.'}},
+  swapster:{kick:'Industry',title:()=>'Swapster',text:()=>'A file-sharing app lets anyone download your records for free. Your label wants to sue fans. Other bands are posting songs online themselves.',
+    choices:()=>[{k:'sue',label:'Sue the downloaders',hint:'Protect sales a little. Fans will hate it'},{k:'hug',label:'Embrace it',hint:'More fans, fewer sales'},{k:'no',label:'Say nothing',hint:'Wait and see'}],
+    res(d,k){if(k==='sue'){S.flags.sued=true;S.rep-=10;S.fans=Math.round(S.fans*.9);tl('milestone','Sued their own fans over file-sharing');return 'The lawsuits make headlines. Not good ones.'}
+      if(k==='hug'){S.flags.embraced=true;S.fans=Math.round(S.fans*1.12);S.rep+=4;tl('milestone','Gave their music away online');return 'You post your back catalog for free. Kids everywhere discover you.'}return 'You keep your head down.'}},
+  wavely:{kick:'Industry',title:()=>'Wavely wants your catalog',text:()=>'A streaming service wants to license every song you\'ve ever made. Cash up front, then fractions of a cent per play, forever.',
+    choices:()=>{const a=cost(4000)+Math.round(S.songs.filter(s=>s.peak).length*cost(1500));return [{k:'yes',label:`License it (${fmt$(a)} advance)`,hint:'Catalog earns from streams'},{k:'no',label:'Hold out',hint:'Your old songs vanish from the new world'}]},
+    res(d,k){if(k==='yes'){const a=cost(4000)+Math.round(S.songs.filter(s=>s.peak).length*cost(1500));S.money+=a;S.licensed=true;tl('milestone','Put their catalog on streaming');return 'Your whole catalog is a tap away for anyone.'}S.licensed=false;return 'You hold out. Fewer people hear your old songs.'}},
+  loopr:{kick:'Viral',title:d=>`"${esc(d.t)}" is blowing up`,text:d=>`A clip of your ${d.y} song is everywhere on Loopr. Kids who weren't born when you cut it are doing a dance to it.`,
+    choices:()=>[{k:'lean',label:'Lean in',hint:'Play it everywhere, join the trend'},{k:'ad',label:'License it to a phone ad',hint:'Big cheque, some eye-rolls'},{k:'ride',label:'Let it ride',hint:'Enjoy it quietly'}],
+    res(d,k){let s=S.songs.find(x=>x.t===d.t&&x.y===d.y);if(!s){s={t:d.t,y:d.y,peak:null,single:false,classic:false};S.songs.push(s)}s.viral=S.year;
+      if(k==='lean'){const pk=ri(2,30);s.repeak=pk;if(!s.peak||pk<s.peak)s.peak=pk;S.hype+=30;S.fans+=Math.round(Math.max(60000,S.fans*.4));S.flags.viralBoost=8;if(S.year-s.y>=15)s.classic=true;tl('hit',`"${s.t}" (${s.y}) went viral on Loopr and re-charted at #${pk}`);return `"${esc(s.t)}" is back in the charts at #${pk}.`}
+      if(k==='ad'){const c=cost(60000)*(s.classic?2:1);S.money+=c;S.rep-=4;S.fans+=Math.round(S.fans*.12);S.flags.viralBoost=3;tl('hit',`"${s.t}" went viral and soundtracked a phone ad`);return `The ad pays ${fmt$(c)}.`}
+      S.fans+=Math.round(S.fans*.18);S.flags.viralBoost=4;tl('hit',`"${s.t}" (${s.y}) went viral on Loopr`);return 'A new generation finds your music.'}},
+  labelpush:{kick:'Label',title:d=>`${esc(S.label.name)} wants ${GENRES[d.g].n}`,text:d=>`"Nobody's buying ${GENRES[S.genre].n} anymore. Everyone wants ${GENRES[d.g].n}. Give us that or we'll drop you."`,
+    choices:d=>[{k:'yes',label:`Go ${GENRES[d.g].n}`,hint:'Reinvent this year. Cred takes a hit'},{k:'no',label:'Tell them where to go',hint:'They may not renew'}],
+    res(d,k){if(k==='yes'){S.plan.genre=d.g;S.rep-=5;active().filter(m=>m.taste!==d.g).forEach(m=>m.mood-=5);return `Fine. ${GENRES[d.g].n} it is.`}S.label.until=Math.min(S.label.until,S.year+1);S.label.clout-=2;active().forEach(m=>m.mood+=3);return 'The band loves it. The label does not.'}},
+  debt:{kick:'Money',title:()=>'The account is empty',text:()=>`You're ${fmt$(-S.money)} in the hole. The van is on bricks and the members want paying.`,
+    choices:()=>{const need=-S.money+cost(3000);const o=[];if(!S.pubSold&&S.songs.some(s=>s.peak))o.push({k:'pub',label:`Sell your publishing (${fmt$(need*1.5)})`,hint:'Your old hits pay much less forever'});
+      if(S.label&&S.label.type!=='self')o.push({k:'loan',label:`Take a label loan (${fmt$(need)})`,hint:'Your royalty rate drops'});
+      o.push({k:'gigs',label:'Play weddings & bar mitzvahs',hint:'Clear some debt. The band hates it'});o.push({k:'split',label:'Break up the band',hint:'Walk away from it all'});return o},
+    res(d,k){const need=-S.money+cost(3000);if(k==='pub'){S.money+=need*1.5;S.pubSold=true;tl('milestone','Sold their song publishing to pay debts');return 'The debts are gone. So is a big piece of your future.'}
+      if(k==='loan'){S.money+=need;S.label.roy=+(S.label.roy*.85).toFixed(2);return 'The label bails you out, on their terms.'}
+      if(k==='gigs'){S.money+=Math.round(need*.7);active().forEach(m=>m.mood-=8);S.rep-=2;return 'Nobody talks about the wedding circuit years.'}
+      doSplit('the money ran out');return 'The band is over, for now.'}},
+  breaking:{kick:'Crisis',title:()=>'The band is coming apart',text:()=>'Nobody\'s speaking. Rehearsals end in shouting. The press smells blood.',
+    choices:()=>{const c=cost(4000);const low=active().slice().sort((a,b)=>a.mood-b.mood)[0];return [{k:'summit',label:`Crisis summit at a retreat (${fmt$(c)})`,hint:'Might save it',dis:S.money<c},{k:'fire',label:`Fire ${first(low)}`,hint:'Cut out the unhappiest member'},{k:'split',label:'Break up',hint:'End it on your terms'}]},
+    res(d,k){if(k==='summit'){S.money-=cost(4000);if(chance(.6)){active().forEach(m=>m.mood+=18);S.feuds=S.feuds.slice(1);return 'Three days, a lot of tears, and you walk out a band again.'}const low=active().slice().sort((a,b)=>a.mood-b.mood)[0];leave(low,'left','walked out of the crisis summit');active().forEach(m=>m.mood+=6);return `${first(low)} walked out halfway through.`}
+      if(k==='fire'){const low=active().slice().sort((a,b)=>a.mood-b.mood)[0];leave(low,'fired');active().forEach(m=>m.mood+=8);return `${first(low)} is out. The air is lighter.`}
+      doSplit('creative differences');return 'It\'s over. For now.'}},
+  direction:{kick:'Band',title:d=>`${mn(d.m)} wants to go ${GENRES[M(d.m).taste].n}`,text:d=>{const m=M(d.m);return `${first(m)} has been playing ${GENRES[m.taste].n} records on the bus for months. "We sound like yesterday. That's where it's going."`},
+    choices:d=>{const m=M(d.m);const risk=Math.round((0.08+.45*gdist(S.genre,m.taste))*100);return [{k:'go',label:`Go ${GENRES[m.taste].n}`,hint:`Reinvent this year. Could lose ~${risk}% of fans`},{k:'stay',label:'Stay the course',hint:`${first(m)} won't like it`},{k:'one',label:'Let them try one song',hint:'A small compromise'}]},
+    res(d,k){const m=M(d.m);if(k==='go'){S.plan.genre=m.taste;m.mood+=18;m.promised=m.taste;active().filter(x=>x!==m&&x.taste===S.genre).forEach(x=>x.mood-=6);return `${first(m)} is thrilled. Not everyone is.`}
+      if(k==='stay'){m.mood-=15;m.loyalty-=5;return `${first(m)} sulks.`}m.mood-=3;S.material+=4;return 'One odd track for the next record.'}},
+  solo:{kick:'Band',title:d=>`${mn(d.m)} wants to make a solo record`,text:d=>`"It's just some songs that don't fit the band." ${first(M(d.m))} will be distracted this year either way.`,
+    choices:d=>[{k:'yes',label:'Give your blessing',hint:'Happier member. Fewer songs for the band'},{k:'no',label:'Forbid it',hint:'The band comes first'}],
+    res(d,k){const m=M(d.m);if(k==='yes'){m.soloY=S.year;m.mood+=15;S.material=Math.max(0,S.material-8);return `${first(m)} books studio time.`}m.mood-=18;m.loyalty-=6;return `${first(m)} goes quiet. Too quiet.`}},
+  clash:{kick:'Band',title:d=>`${mn(d.a)} and ${mn(d.b)} are at war`,text:d=>`It started over a guitar part. Now it's about everything. Someone has to back down.`,
+    choices:d=>{const c=cost(2500);return [{k:'a',label:`Side with ${mn(d.a).split(' ')[0]}`,hint:`${mn(d.b).split(' ')[0]} will resent it`},{k:'b',label:`Side with ${mn(d.b).split(' ')[0]}`,hint:`${mn(d.a).split(' ')[0]} will resent it`},{k:'t',label:`Band therapist (${fmt$(c)})`,hint:'Might actually work',dis:S.money<c}]},
+    res(d,k){const a=M(d.a),b=M(d.b);if(k==='t'){S.money-=cost(2500);if(chance(.6)){a.mood+=10;b.mood+=10;return 'Hugs. Actual hugs.'}a.mood-=5;b.mood-=5;addFeud(a.id,b.id);return 'The therapist quits after two sessions.'}
+      const w=k==='a'?a:b,l=k==='a'?b:a;w.mood+=10;l.mood-=22;l.loyalty-=8;addFeud(a.id,b.id);tl('feud',`${a.name} and ${b.name} fell out`);return `${first(l)} won't forget this.`}},
+  credits:{kick:'Band',title:d=>`${mn(d.m)} wants songwriting credit`,text:d=>`${first(M(d.m))} has a notebook full of songs and is tired of playing everyone else's.`,
+    choices:()=>[{k:'yes',label:'Make them a writer',hint:'Can change the band\'s sound'},{k:'no',label:'Not now',hint:'Keep the writing tight'}],
+    res(d,k){const m=M(d.m);if(k==='yes'){m.writer=true;m.mood+=15;active().filter(x=>x.writer&&x!==m&&x.ego>65).forEach(x=>x.mood-=5);return `${first(m)} joins the writing team.`}m.mood-=15;m.loyalty-=5;return `${first(m)} takes the notebook home.`}},
+  lead:{kick:'Band',title:d=>`${mn(d.m)} wants to front the band`,text:d=>`"I'm the one they come to see." ${first(M(d.m))} wants to be the face on the posters.`,
+    choices:()=>[{k:'yes',label:'Hand over the spotlight',hint:'The current leader will be hurt'},{k:'no',label:'No',hint:'They will stew on it'}],
+    res(d,k){const m=M(d.m);if(k==='yes'){const old=M(S.leader);if(old){old.mood-=8+old.ego/8}S.leader=m.id;m.mood+=20;tl('lead',`${m.name} becomes the face of the band`);return `${first(m)} is front and center now.`}m.mood-=15;return `${first(m)} stews.`}},
+  burnout:{kick:'Band',title:d=>`${mn(d.m)} is burning out`,text:d=>`Too many nights, too little sleep. ${first(M(d.m))} collapsed backstage last month.`,
+    choices:()=>{const c=cost(2000);return [{k:'rest',label:`Send them to rest (${fmt$(c)})`,hint:'Recovers, feels cared for',dis:S.money<c},{k:'push',label:'Push on',hint:'The show must go on'}]},
+    res(d,k){const m=M(d.m);if(k==='rest'){S.money-=cost(2000);m.mood+=20;m.loyalty+=6;return `${first(m)} comes back healthier.`}m.mood-=14;if(chance(.3)){S.hype-=5;S.rep-=3;return `${first(m)} passes out on stage. It's all over the papers.`}return 'You get through it. Barely.'}},
+  offer:{kick:'Offer',title:d=>({ad:'A soda company wants your hit',film:'A film wants your music',tv:'Late-night TV is calling'})[d.kind],
+    text:d=>({ad:'They want your best-known song for a national ad. Real money. The critics will sneer.',film:'A director wants an original song for a coming-of-age movie.',tv:'The biggest late-night show wants you as musical guest next month.'})[d.kind],
+    choices:d=>d.kind==='ad'?[{k:'yes',label:`Take the money (${fmt$(adMoney())})`,hint:'Cred drops'},{k:'no',label:'Not for sale',hint:'Cred rises'}]:d.kind==='film'?[{k:'yes',label:'Write the song',hint:'Hype and cred, uses material'},{k:'no',label:'Pass',hint:''}]:[{k:'yes',label:'Play the show',hint:'Hype and fans'},{k:'no',label:'Pass',hint:''}],
+    res(d,k){if(k==='no'){if(d.kind==='ad')S.rep+=3;return 'You pass.'}
+      if(d.kind==='ad'){S.money+=adMoney();S.rep-=8;active().filter(m=>m.ego>60).forEach(m=>m.mood-=4);return 'Your song sells soda now.'}
+      if(d.kind==='film'){S.hype+=12;S.rep+=4;S.material=Math.max(0,S.material-6);S.money+=cost(3000);tl('milestone','Wrote a song for a hit movie soundtrack');return 'The film does well and your song is all over it.'}
+      S.hype+=15;S.fans=Math.round(S.fans*1.06);const h=active().find(m=>m.trait==='Hothead');if(h&&chance(.35)){S.rep-=4;S.hype+=8;return `${first(h)} swore on live TV. Everyone is talking.`}return 'Tight performance. The phones light up.'}},
+  quit:{kick:'Crisis',title:d=>`${mn(d.m)} is threatening to quit`,text:d=>`"I'm done. Unless something changes." ${first(M(d.m))} means it.`,
+    choices:d=>{const m=M(d.m);const c=cost(5000);const o=[];if(S.leader!==m.id)o.push({k:'lead',label:'Make them the leader',hint:'A big gesture'});if(!m.writer)o.push({k:'write',label:'Give writing credits',hint:'Their songs on the record'});
+      o.push({k:'pay',label:`Pay a bonus (${fmt$(c)})`,hint:'Money talks',dis:S.money<c});o.push({k:'go',label:'Let them go',hint:'Find a replacement'});return o},
+    res(d,k){const m=M(d.m);if(k==='lead'){const old=M(S.leader);if(old)old.mood-=10;S.leader=m.id;m.mood+=28;tl('lead',`${m.name} takes over as frontperson`);return `${first(m)} stays, front and center.`}
+      if(k==='write'){m.writer=true;m.mood+=22;return `${first(m)} stays, and starts writing.`}if(k==='pay'){S.money-=cost(5000);m.mood+=24;return `${first(m)} cashes the check and stays. For now.`}
+      leave(m,'left');return `${first(m)} is gone.`}},
+  retire:{kick:'Band',title:d=>`${mn(d.m)} is ready to hang it up`,text:d=>`At ${age(M(d.m))}, ${first(M(d.m))} wants to spend time with the grandkids and stop sleeping on buses.`,
+    choices:()=>[{k:'ok',label:'Give them a proper send-off',hint:'They retire'},{k:'one',label:'Ask for one more year',hint:'They stay, grudgingly'}],
+    res(d,k){const m=M(d.m);if(k==='ok'){leave(m,'retired');return `A standing ovation for ${first(m)}.`}m.mood-=10;m.stay=S.year+1;return `${first(m)} agrees to one more year.`}},
+  solohit:{kick:'Band',title:d=>`${mn(d.m)}'s solo record is a hit`,text:d=>`${first(M(d.m))}'s solo album is outselling your last one. The press keeps asking if the band is finished.`,
+    choices:()=>[{k:'home',label:'Celebrate it with the band',hint:'Their fame helps you. Ego grows'},{k:'go',label:'Let them go solo full-time',hint:'Lose them, keep the peace'}],
+    res(d,k){const m=M(d.m);if(k==='home'){m.ego+=10;m.mood+=8;S.hype+=10;active().filter(x=>x!==m&&x.ego>55).forEach(x=>x.mood-=6);return 'The spotlight spills onto the band.'}leave(m,'solo');active().forEach(x=>x.mood+=4);return `${first(m)} goes solo with your blessing.`}},
+  recruit:{kick:'Lineup',title:d=>`You need a new ${d.role.toLowerCase()} player`,text:()=>'Word goes out. Three people turn up to audition.',
+    ok:()=>!S.split,
+    choices:d=>{const o=d.cands.map((c,i)=>({k:i,img:pimg(c,'sm'),label:`Hire ${esc(c.name)} (${S.year-c.born})`,hint:`${c.trait} · writing ${c.writing} · chops ${c.chops} · charisma ${c.charisma} · into ${GENRES[c.taste].n}`}));if(active().length>=3)o.push({k:'none',label:`Carry on as a ${active().length}-piece`,hint:'Thinner sound'});return o},
+    res(d,k){if(k==='none'){return 'You carry on without.'}const c=d.cands[k];hire(c);return `${esc(c.name)} is in.`}},
+  poach:{kick:'Rivals',title:d=>`${esc(S.rival.name)} want ${mn(d.m)}`,text:d=>`Your rivals have offered ${first(M(d.m))} a spot, more money and a bigger stage.`,
+    ok:()=>!!S.rival&&!S.rival.split,
+    choices:d=>{const c=cost(6000);return [{k:'pay',label:`Match the offer (${fmt$(c)})`,hint:'Keeps them, for a price',dis:S.money<c},{k:'plead',label:'Remind them where they came from',hint:'Works if they are loyal'},{k:'go',label:'Let them go',hint:'Find a replacement'}]},
+    res(d,k){const m=M(d.m),r=S.rival;if(k==='pay'){S.money-=cost(6000);m.mood+=12;m.loyalty+=10;return `${first(m)} stays, a little richer.`}
+      if(k==='plead'&&chance(m.loyalty/100+.2)){m.loyalty+=6;m.mood+=4;return `${first(m)} tells ${esc(r.name)} where to go.`}
+      leave(m,'left','poached by '+r.name);r.fans=Math.round(r.fans*1.05);return `${first(m)} has joined ${esc(r.name)}.`}},
+  reunionoffer:{kick:'Offer',title:()=>'A promoter wants a reunion',text:d=>`"The fans never stopped asking." A promoter will guarantee ${fmt$(d.amt)} if the old lineup gets back together.`,
+    ok:()=>!!S.split,
+    choices:()=>[{k:'yes',label:'Start making calls',hint:'Attempt a reunion this year. The money helps convince people'},{k:'no',label:'Not yet',hint:'Let it simmer'}],
+    res(d,k){if(k==='yes'){S.plan.focus='reunite';S.flags.offer=d.amt;return 'You pick up the phone.'}return 'Maybe someday.'}},
+};
+const adMoney=()=>Math.round(cost(15000)*clamp(Math.sqrt(S.fans/100000),.3,6)/100)*100;
+function evValid(e){const E=EV[e.t];if(!E)return false;if(E.ok&&!E.ok(e.d))return false;if(S.split&&e.t!=='reunionoffer')return false;
+  for(const key of ['m','a','b'])if(e.d&&e.d[key]&&M(e.d[key])?.status!=='active')return false;return true}
+
+/* ---------------- year start ---------------- */
+function startYear(){
+  const y=S.year,era=eraOf(y);S.news=[];S.yearLog=[];S.flags.viralBoost=0;
+  for(const g of GK){S.noise[g]=clamp((S.noise[g]||0)*.7+rnd(-.05,.05),-.12,.12)}
+  if(y===START)S.news.push(`You've got a van, a few amps and a name. It's ${y} and records are king.`);
+  else if(y===era.from)S.news.push(`<b>${era.n} begins.</b> ${era.d}`);
+  for(const g of GK){const p=gpop(g,y),p0=gpop(g,y-1);const n=GENRES[g].n;
+    if(y===GENRES[g].from&&y>START)S.news.push(`A new sound is coming out of the underground: <b>${n}</b>.`);
+    else if(p>=.6&&p0<.6)S.news.push(`<b>${n}</b> is exploding. Everyone wants it.`);
+    else if(p<.4&&p0>=.55)S.news.push(`The <b>${n}</b> bubble has burst.`);}
+  S.rumor=GK.filter(g=>GENRES[g].from<=y+2&&gpop(g,y+2)-gpop(g,y)>.25).sort((a,b)=>(gpop(b,y+2)-gpop(b,y))-(gpop(a,y+2)-gpop(a,y)))[0]||null;
+  if(S.rival&&!S.rival.split&&y>START+2&&chance(.12))S.news.push(`${esc(S.rival.name)} called your last record "${pick(['dad rock','beige','a cry for help','background music','very brave'])}" in an interview.`);
+  const P=[];
+  if(S.split){S.plan={focus:'apart'};const ya=y-S.split.y;
+    if(ya>=4&&!S.flags.offerY&&chance(.3)||(ya>=4&&S.flags.offerY&&y-S.flags.offerY>=5&&chance(.3))){S.flags.offerY=y;P.push({t:'reunionoffer',d:{amt:Math.round(cost(30000)+S.fans*.8*(1+classics()*.2))}})}
+    S.pending=P;S.carry=[];return}
+  ensureLeader();
+  const pl=S.plan||{};const fo=['split','apart','reunite','retire'].includes(pl.focus)||!pl.focus?'write':pl.focus;
+  S.plan={focus:fo,genre:S.genre,setlist:pl.setlist||'mix',budget:pl.budget||0,promo:false,scale:SCK.includes(pl.scale)&&S.fans>=SCALES[pl.scale].need?pl.scale:'clubs'};
+  P.push(...(S.carry||[]));S.carry=[];
+  if(!S.label||y>=S.label.until)P.push({t:'label',d:{offers:labelOffers(),renew:!!S.label}});
+  if(y===1969)P.push({t:'festival',d:{}});
+  if(y===1981)P.push({t:'vidstar',d:{}});
+  if(y===1985&&S.fans>25000)P.push({t:'charity',d:{}});
+  if(y>=1993&&y<=1998&&!S.flags.stripped&&S.fans>60000&&chance(.35))P.push({t:'stripped',d:{}});
+  if(y===2000)P.push({t:'swapster',d:{}});
+  if(y===2008||(S.licensed===false&&(y===2012||y===2017||y===2022)))P.push({t:'wavely',d:{}});
+  if(y>=2016&&chance(.2)){const cands=[];S.albums.forEach(a=>a.tracks.forEach(t=>{if(y-a.y>=8)cands.push({t,y:a.y})}));if(cands.length){const old=cands.filter(c=>y-c.y>=20);const c=pick(old.length&&chance(.7)?old:cands);P.push({t:'loopr',d:c})}}
+  if(S.money<0)P.push({t:'debt',d:{}});
+  const a=active();const used=new Set();
+  if(a.length>=2&&cohesion()<22)P.push({t:'breaking',d:{}});
+  for(const m of a){if(age(m)>=64&&m.stay<y&&chance(.1+(age(m)-64)*.035)){P.push({t:'retire',d:{m:m.id}});used.add(m.id)}}
+  for(const m of a){if(used.has(m.id))continue;if(m.mood<28&&chance(.45+(60-m.loyalty)/120)){P.push({t:'quit',d:{m:m.id}});used.add(m.id)}}
+  for(const m of a){if(used.has(m.id))continue;if(m.soloHit===y-1&&chance(.65)){P.push({t:'solohit',d:{m:m.id}});used.add(m.id)}}
+  if(S.label&&S.label.type==='major'&&y<S.label.until){const hot=avail(y).sort((p,q)=>gpop(q,y)-gpop(p,y))[0];if(hot!==S.genre&&gpop(S.genre,y)<.32&&gpop(hot,y)>.7&&chance(.4))P.push({t:'labelpush',d:{g:hot}})}
+  const egoAvg=avg(a.map(m=>m.ego));let n=(chance(.8)?1:0)+(chance(.25+egoAvg/250)?1:0);
+  const free=()=>a.filter(m=>!used.has(m.id));
+  const DR=[
+    ['direction',3,()=>{const c=free().filter(m=>m.taste!==S.genre&&GENRES[m.taste].from<=y&&(m.ego>30||m.trait==='Visionary'));return c.length&&{m:pick(c).id}}],
+    ['solo',2,()=>{const c=free().filter(m=>(!m.soloY||y-m.soloY>4)&&(m.ego>55||m.trait==='Loner')&&S.fans>5000);return c.length&&{m:pick(c).id}}],
+    ['clash',3,()=>{const c=free().filter(m=>m.ego>50||m.trait==='Hothead');if(c.length<2)return null;const x=pick(c);const ys=c.filter(q=>q!==x&&!feuding(q.id,x.id));return ys.length&&{a:x.id,b:pick(ys).id}}],
+    ['credits',2,()=>{const c=free().filter(m=>!m.writer&&m.writing>=56&&m.ego>=40);return c.length&&{m:pick(c).id}}],
+    ['lead',2,()=>{const c=free().filter(m=>m.id!==S.leader&&(m.trait==='Showboat'||m.ego>74)&&m.charisma>45);return c.length&&{m:pick(c).id}}],
+    ['burnout',2,()=>{if(!['tour','albumtour'].includes(S.lastFocus))return null;const c=free().filter(m=>m.trait==='Party Animal'||age(m)>50||m.mood<50);return c.length&&{m:pick(c).id}}],
+    ['poach',1.5,()=>{if(!S.rival||S.rival.split||S.fans<8000)return null;const c=free().filter(m=>m.id!==S.leader&&m.loyalty<72);return c.length&&{m:pick(c).id}}],
+    ['offer',2,()=>S.fans>20000&&{kind:pick(S.songs.some(s=>s.peak&&s.peak<=20)?['ad','film','tv']:['film','tv'])}],
+  ];
+  const usedT=new Set();
+  for(let i=0;i<n&&P.length<4;i++){const opts=DR.filter(r=>!usedT.has(r[0])).map(r=>[r,r[2]()]).filter(x=>x[1]);if(!opts.length)break;
+    const tw=sum(opts.map(o=>o[0][1]));let r=Math.random()*tw,ch=opts[0];for(const o of opts){r-=o[0][1];if(r<=0){ch=o;break}}
+    usedT.add(ch[0][0]);const d=ch[1];['m','a','b'].forEach(k=>d[k]&&used.add(d[k]));P.push({t:ch[0][0],d})}
+  if(a.length<2&&!P.some(e=>e.t==='recruit'))P.push({t:'recruit',d:{role:a.some(m=>m.role==='Vocals')?'Guitar':'Vocals',cands:recruitCands(a.some(m=>m.role==='Vocals')?'Guitar':'Vocals')}});
+  S.pending=P;
+}
+function doSplit(why){
+  for(const m of active()){m.status='split'}
+  S.split={y:S.year,why};S.splits++;S.pending=[];S.carry=[];S.plan={focus:'apart'};
+  tl('split',`${S.name} broke up${why?' ('+why+')':''}`);
+}
+
+/* ---------------- economics ---------------- */
+function perUnit(y=S.year){const e=eraOf(y);return .35*infl(y)*e.roy*(S.label?S.label.roy:1)}
+function chartPeak(score){const p=Math.round(Math.pow(10,(100-score)/20));return p<=100?Math.max(1,p):null}
+function tourDemand(scale,nost=1,setlist=(S.plan&&S.plan.setlist)||'mix'){const sc=SCALES[scale];const a=active();
+  return ((S.fans*.35+oldFansTotal()*.03)*(.5+clamp(S.hype,0,100)/100)*(1+.06*classics())*nost+sc.walk*(.6+avg(a.map(m=>m.chops))/100))*setlistMult(setlist)}
+function promoKey(){return eraOf(S.year).promo}
+function promoCost(){return cost(PROMO[promoKey()].cost)}
+function planSpend(){const p=S.plan;let c=0;if(['album','albumtour'].includes(p.focus))c+=cost(BUDGETS[p.budget].cost);if(p.promo&&['album','albumtour','tour'].includes(p.focus))c+=promoCost();return c}
+function livingCost(){return active().length*cost(1500)}
+
+/* ---------------- playing a year ---------------- */
+function playYear(){
+  const y=S.year;const R={y,pre:S.yearLog.slice(),lines:[],album:null,tour:null,money0:S.money,fans0:S.fans,hype0:S.hype,chem0:cohesion(),focus:S.plan.focus,reinvent:null,events:[]};
+  S.yearRes=R;
+  if(S.split)playSplitYear(R);else playBandYear(R);
+  if(S.over)return;
+  rivalYear(R);
+  endOfYear(R);
+}
+function catalogIncome(R){const e=eraOf(S.year);let c=0;const lic=(e.k==='stream'||e.k==='viral')?(S.licensed===false?.25:1):1;
+  for(const s of S.songs){if(!s.peak||s.peak>40)continue;let v=(41-s.peak)*90*infl(S.year)*e.cat*lic;if(s.classic)v*=3;if(s.viral===S.year)v*=6;c+=v}
+  for(const a of S.albums){c+=a.units*.012*perUnit()*e.cat*lic*(S.year-a.y<3?0:1)}
+  if(S.pubSold)c*=.45;c=Math.round(c);if(c>0){S.money+=c;R.lines.push({i:'💿',t:`Back catalog earned ${fmt$(c)}${e.k==='cd'?' (CD reissues!)':''}.`})}R.catalog=c;return c}
+function reinvent(g,R){
+  const from=S.genre,d=gdist(from,g);const keep=clamp(classics()*.02,0,.15);const lost=Math.round(S.fans*(0.08+.45*d)*(1-keep));
+  S.fans-=lost;S.oldFans[from]=(S.oldFans[from]||0)+lost;const back=Math.round((S.oldFans[g]||0)*.5);S.fans+=back;S.oldFans[g]=(S.oldFans[g]||0)-back;
+  S.genre=g;S.genreSince=S.year;S.reinvents++;if(!S.fam[g])S.fam[g]=15;
+  const hot=gpop(g,S.year);S.rep+=hot>.65?-3:4;
+  R.reinvent={from,to:g,lost,back};
+  R.lines.push({i:'🔀',t:`Reinvented from ${GENRES[from].n} to ${GENRES[g].n}. Lost ${fmtN(lost)} old fans${back>0?`, won back ${fmtN(back)} who loved your old ${GENRES[g].n} days`:''}.`});
+  tl('genre',`Reinvented their sound: ${GENRES[from].n} → ${GENRES[g].n}`);
+  for(const m of active()){if(m.trait==='Visionary')m.mood+=8;if(m.taste===from&&m.taste!==g)m.mood-=8;if(m.taste===g)m.mood+=6}
+}
+function playBandYear(R){
+  const P=S.plan,y=S.year,era=eraOf(y),a=active();
+  const spend=planSpend();S.money-=spend;
+  const live=livingCost();S.money-=live;R.lines.push({i:'🏠',t:`Wages and upkeep for ${a.length} members: ${fmt$(live)}.`});
+  S.fans=Math.round(S.fans*(P.focus==='rest'?.9:.93));S.hype*=.55;
+  for(const g in S.oldFans)S.oldFans[g]=Math.round(S.oldFans[g]*.96);
+  if(P.focus==='split'){
+    const fin=Math.round(Math.min(25000,tourDemand('clubs'))*2.5*infl(y)*era.tour*.3);S.money+=fin;R.lines.push({i:'👋',t:`A farewell show brought in ${fmt$(fin)}.`});
+    catalogIncome(R);doSplit('they called it a day');R.lines.push({i:'💔',t:`${esc(S.name)} have split up.`});return}
+  if(P.genre&&P.genre!==S.genre&&P.focus!=='rest')reinvent(P.genre,R);
+  for(const m of a){if(m.promised&&m.promised!==S.genre){m.mood-=12;R.lines.push({i:'😤',t:`${first(m)} feels betrayed: you promised ${GENRES[m.promised].n}.`})}m.promised=null}
+  if(P.focus==='write'){const w=writers();const gain=Math.round(16+avg(w.map(m=>m.writing))/4+(a.some(m=>m.trait==='Perfectionist')?4:0));S.material=Math.min(60,S.material+gain);
+    a.forEach(m=>{m.chops=clamp(m.chops+1.5,0,99)});S.fam[S.genre]=(S.fam[S.genre]||15)+4;
+    const gig=Math.round(cost(1200)+S.fans*.02*infl(y));S.money+=gig;S.fans+=Math.round(400+S.fans*.02);
+    R.lines.push({i:'✍️',t:`Wrote and rehearsed all year. ${gain} songs' worth of new material (${Math.round(S.material)} banked). Weekend gigs paid ${fmt$(gig)}.`})}
+  if(P.focus==='rest'){a.forEach(m=>m.mood+=age(m)>55?18:13);R.lines.push({i:'🌴',t:'A year off. Everyone comes back rested.'})}
+  if(P.focus==='album'||P.focus==='albumtour')releaseAlbum(R);
+  else if(P.promo&&P.focus==='tour'){const pr=PROMO[promoKey()];S.hype+=pr.hype;R.lines.push({i:'📣',t:`${pr.n} kept the buzz going.`})}
+  if(P.focus==='tour'||P.focus==='albumtour')runTour(P.scale,R,1,P.setlist||'mix');
+  catalogIncome(R);
+  S.lastFocus=P.focus;
+}
+function releaseAlbum(R){
+  const P=S.plan,y=S.year,era=eraOf(y),a=active(),w=writers();
+  let wq=avg(w.map(m=>m.writing))+(w.length>3?-6:0)+(w.length===2?3:0)+(w.some(m=>m.trait==='Perfectionist')?4:0);
+  for(const m of w)if(m.soloY===y)wq-=4;
+  const chops=avg(a.map(m=>m.chops)),coh=cohesion(),mat=S.material;
+  const matB=mat<10?-10:Math.min(mat,40)*.3;const fam=Math.min(S.fam[S.genre]||15,80);
+  let q=wq*.42+chops*.18+coh*.15+matB+BUDGETS[P.budget].b+fam/10+(a.length<4?-4:0)+rnd(-10,10);
+  if(a.length<3)q-=6;q=Math.round(clamp(q,5,99));
+  S.material=Math.max(0,mat-30);S.fam[S.genre]=(S.fam[S.genre]||15)+8;
+  const trend=gpop(S.genre,y);const pr=PROMO[promoKey()];
+  let promoB=0,hypeB=0,viral=false;
+  if(P.promo){promoB=pr.chart;hypeB=pr.hype;
+    if(pr.n==='Shoot a music video'){const lead=M(S.leader);const ch=lead?lead.charisma:50;promoB+=era.k==='video'?(ch-50)/8+4:0;hypeB+=ch/10;if(S.flags.mtvEarly&&era.k==='video')promoB+=3}
+    if(pr.viral&&chance(pr.viral+(a.some(m=>m.charisma>75)?.08:0))){viral=true;promoB+=18;hypeB+=30}
+    if(pr.fans)S.fans=Math.round(S.fans*(1+pr.fans))}
+  if(!P.promo&&era.k==='video')promoB-=4;
+  const clout=S.label?S.label.clout:-2;
+  const heritage=Math.max(0,y-(S.albums.length?S.albums[0].y:y)-18)*.45;
+  const base=10+trend*22+clamp(S.hype,0,100)*.12+Math.max(0,Math.log10(S.fans+1)-3)*3+clout+promoB+S.rep*.03-heritage;
+  const score=q*.45+base+rnd(-8,8);
+  const peak=chartPeak(score);
+  const chartUnits=peak?2.5e6/Math.pow(peak,1.1):0;
+  const baseUnits=S.fans*(.08+q/400)*(.5+trend);
+  let salesM=era.units;if(era.k==='piracy'){if(S.flags.embraced)salesM*=.85;if(S.flags.sued)salesM*=1.1}
+  const units=Math.round((chartUnits+baseUnits)*salesM);
+  const revenue=Math.round(units*perUnit());
+  let newFans=Math.round(chartUnits*.25+baseUnits*.05+(viral?Math.max(50000,S.fans*.3):0));if(era.k==='piracy'&&S.flags.embraced)newFans=Math.round(newFans*1.3);
+  if(q<35)newFans=Math.round(newFans*.5);
+  S.fans+=newFans;S.money+=revenue;S.totals.units+=units;
+  S.hype+=(peak?(101-peak)*.35:3)+hypeB;S.rep=Math.round(S.rep*.75+q*.25+(peak&&peak<=10&&q>70?2:0));
+  const selfTitled=!S.albums.length&&chance(.4);const title=selfTitled?S.name:albumTitle();
+  const tracks=[];while(tracks.length<10){const t=songTitle();if(!tracks.includes(t))tracks.push(t)}
+  const al={t:title,y,g:S.genre,q,peak,units,fmt:era.fmt,tracks,writers:w.map(m=>m.name),lineup:a.map(m=>m.name)};
+  S.albums.push(al);R.album=al;
+  const nS=peak&&peak<=40?3:2;const singles=[];
+  for(let i=0;i<nS;i++){const sq=clamp(q+rnd(-12,12)+(i===0?5:0),5,99);
+    const ss=sq*.45+base+rnd(-9,9)-i*3;
+    const sp=chartPeak(ss);const song={t:tracks[i],y,peak:sp,single:true,classic:false,album:title,q:Math.round(sq)};S.songs.push(song);singles.push(song);
+    if(sp)S.totals.units+=0;
+    if(sp&&sp<=10)tl('hit',`"${song.t}" hit ${ord(sp)}`);}
+  al.singles=singles.map(s=>({t:s.t,peak:s.peak}));
+  tl('album',`Released ${selfTitled?'their debut, the self-titled':''} "${title}" (${GENRES[S.genre].n}) · ${peak?'peaked at '+ord(peak):'missed the charts'}`);
+  R.lines.push({i:'💿',t:`Released "${esc(title)}". Quality ${q}/100. ${peak?'Peaked at <b>'+ord(peak)+'</b>':'Missed the charts'}. ${fmtN(units)} sold, earning ${fmt$(revenue)}.`});
+  if(viral)R.lines.push({i:'🔥',t:'A Loopr clip of the lead single went viral!'});
+  for(const s of singles)R.lines.push({i:'🎵',t:`Single "${esc(s.t)}": ${s.peak?ord(s.peak):'did not chart'}`});
+  if(q<40)R.lines.push({i:'📉',t:'Critics were brutal. Rushed or tired, it shows.'});
+  if(trend<.25)R.lines.push({i:'🧊',t:`${GENRES[S.genre].n} is out of fashion right now.`});
+  R.peak=peak;
+}
+function runTour(scale,R,nost,setlist='mix'){
+  const sc=SCALES[scale],y=S.year,era=eraOf(y),SL=SETLISTS[setlist]||SETLISTS.mix;
+  const demand=tourDemand(scale,nost,setlist);const att=Math.round(Math.min(sc.cap,demand));const fill=att/sc.cap;
+  const ticket=2.5*infl(y)*era.tour;const gross=att*ticket;const merch=att*era.merch*infl(y);
+  const tcost=sc.cost*infl(y);const net=Math.round(gross*.3+merch-tcost);
+  S.money+=net;S.totals.gross+=gross;const nf=Math.round(att*.25*(fill>.8?1.2:1)*(nost>1?.6:1)*SL.fans);S.rep+=SL.rep;S.fans+=nf;S.hype+=fill*12+(scale==='stadiums'?8:scale==='arenas'?4:0);
+  if(fill<.4){S.hype-=8;S.rep-=2}
+  R.tour={scale,att,fill,net,gross,setlist};
+  R.lines.push({i:'🚐',t:`${nost>1?'Reunion tour':'Toured'} ${sc.n.toLowerCase()}: ${fmtN(att)} tickets (${Math.round(fill*100)}% full). ${net>=0?'Profit':'Loss'}: <b class="${net>=0?'good':'bad'}">${fmt$(net)}</b>.${setlist!=='mix'&&S.songs.some(s=>s.peak)?' Setlist: '+SL.n.toLowerCase()+'.':''}`});
+  if(fill<.4)R.lines.push({i:'🪑',t:'Half-empty rooms. The press noticed.'});
+  if(fill>.95&&scale!=='stadiums')R.lines.push({i:'🎟️',t:'Sold out everywhere. You could go bigger.'});
+  if(fill>.9)tl('tour',`Sold-out ${nost>1?'reunion ':''}${sc.n.toLowerCase()} tour`);
+}
+function reunionChance(m){if(m.status==='retired'||age(m)>82)return 0;const ya=S.year-(S.split?S.split.y:S.year);let p=.18+Math.min(ya,20)*.045+m.loyalty/260+m.mood/320-m.ego/420+(m.status==='split'?.1:-.15)+(S.flags.offer?.15:0);
+  return clamp(p,0,.95)}
+function reunionPool(){return S.members.filter(m=>['split','left','solo','fired'].includes(m.status)&&m.status!=='retired'&&age(m)<=82&&(m.status==='split'||m.founder||(S.split&&m.left>=S.split.y-12)))}
+function playSplitYear(R){
+  const y=S.year,ya=y-S.split.y;S.hype*=.4;S.fans=Math.round(S.fans*.95);
+  for(const g in S.oldFans)S.oldFans[g]=Math.round(S.oldFans[g]*.97);
+  for(const m of S.members.filter(m=>m.status==='split')){m.mood=clamp(m.mood+8,0,100)}
+  if(S.feuds.length&&chance(.15))S.feuds.shift();
+  const ex=S.members.filter(m=>m.status==='split');
+  if(ex.length){const m=pick(ex);R.lines.push({i:'📰',t:`${esc(m.name)} ${pick(['put out a solo album nobody heard','opened a bar','now produces other bands','is teaching guitar to teenagers','did a stint in a musical','says the band is "dead and buried"','says "never say never" about a reunion','released a well-reviewed solo record','moved to the countryside'])}.`})}
+  catalogIncome(R);
+  if(S.plan.focus==='retire'){finish('retired');return}
+  if(S.plan.focus==='reunite'){
+    const pool=reunionPool();const yes=[],no=[];
+    for(const m of pool){let p=reunionChance(m);if(yes.some(o=>feuding(o.id,m.id)))p-=.3;(chance(p)?yes:no).push(m)}
+    if(yes.length>=2){for(const m of yes){m.status='active';m.mood=clamp(m.mood+15,0,100)}
+      for(const m of no)if(m.status==='split'){m.status='left';m.left=S.year}
+      S.reunions++;const yrs=ya;tl('reunion',`Reunited after ${yrs} year${yrs===1?'':'s'} apart with ${yes.map(m=>m.name.split(' ')[0]).join(', ')}`);
+      R.lines.push({i:'🤝',t:`<b>The reunion is on!</b> ${yes.map(first).join(', ')} are back.${no.length?' '+no.map(first).join(', ')+' said no.':''}`});
+      if(S.flags.offer){S.money+=S.flags.offer;R.lines.push({i:'💰',t:`The promoter's guarantee: ${fmt$(S.flags.offer)}.`})}
+      S.flags.offer=0;S.split=null;ensureLeader();
+      const nost=1+Math.min(yrs,25)*.07+classics()*.08;S.hype+=25;
+      let best='clubs';for(const k of SCK){if(tourDemand(k,nost,'hits')/SCALES[k].cap>=.6)best=k}
+      runTour(best,R,nost,'hits');S.lastFocus='tour';S.reunionYear=S.year;
+      for(const m of no){if(m.status==='left'){}}
+      if(active().length<4){const roles=active().map(m=>m.role);const miss=ROLES4.find(r=>!roles.includes(r));if(miss)S.carry.push({t:'recruit',d:{role:miss,cands:recruitCands(miss)}})}
+    }else{S.flags.offer=0;R.lines.push({i:'📵',t:`The reunion fell through. ${yes.length?first(yes[0])+' was in, but n':'N'}ot enough of the old gang said yes.`})}
+  }
+}
+
+/* ---------------- year end ---------------- */
+function endOfYear(R){
+  const y=S.year;S._yearEnd=true;S.carry=S.carry||[];
+  const a=active();const pk=R.peak;const lineupNow=a.map(m=>m.id),leaderNow=S.leader;
+  for(const m of a){
+    let d=0;const f=R.focus;
+    if(f==='rest')d+=0;else if(f==='write')d+=6;else if(f==='album')d+=3;
+    if(f==='tour'||f==='albumtour'){const t=SCALES[S.plan.scale||'clubs'].tired+(f==='albumtour'?4:0);d+=m.trait==='Party Animal'?4:-t;if(age(m)>55)d-=4}
+    if(R.album&&pk&&pk<=10)m.ego=clamp(m.ego+2,0,100);
+    if(R.album){if(pk&&pk<=10)d+=10;else if(pk&&pk<=40)d+=4;else if(!pk)d-=m.ego>60?12:8}
+    if(R.tour&&R.tour.fill>.9)d+=4;
+    if(R.tour&&R.tour.setlist==='hits')d-=(m.ego>60||m.trait==='Visionary')?6:2;else if(R.tour&&R.tour.setlist==='new')d+=3;
+    if(m.writer)d+=3;else if(m.writing>=60)d-=4+m.ego/25;
+    if(m.id===S.leader)d+=3;else if(m.ego>70||m.trait==='Showboat')d-=4;
+    if(m.taste===S.genre)d+=4;else d-=2;
+    if(m.trait==='Visionary'&&y-S.genreSince>=8)d-=5;
+    if(S.money<0)d-=6;
+    d-=S.feuds.filter(x=>x.includes(m.id)).length*4;
+    d+=rnd(-5,5)*(m.trait==='Hothead'?2:1);
+    if(m.trait==='Steady')d*=.5;
+    m.mood=clamp(Math.round(m.mood+d),0,100);
+    m.loyalty=clamp(m.loyalty+1,0,100);
+    if(m.writer&&age(m)<45)m.writing=clamp(m.writing+.5,0,92);if(age(m)>=50&&chance(.5))m.writing=clamp(m.writing-1,15,99);
+    if(age(m)>60)m.chops=clamp(m.chops-1,10,99);
+    if(m.soloY===y){const sc=(m.writing+m.charisma)/2+rnd(-25,25)+Math.log10(S.fans+1)*2;if(sc>78){const p=ri(3,30);m.soloHit=y;m.fame+=20;m.ego=clamp(m.ego+8,0,100);tl('solo',`${m.name}'s solo album reached #${p}`);R.lines.push({i:'🌟',t:`${first(m)}'s solo album reached #${p}.`})}else R.lines.push({i:'🫥',t:`${first(m)}'s solo album sank without a trace.`})}
+  }
+  for(const m of active()){
+    if(m.mood<=8&&!S.split){leave(m,'left','walked out');R.lines.push({i:'🚪',t:`<b>${esc(m.name)} walked out.</b>`})}
+    else if(age(m)>=80&&m.stay<y&&!S.split){leave(m,'retired');R.lines.push({i:'🎩',t:`${esc(m.name)} retired at ${age(m)}.`})}}
+  if(!S.split&&active().length===0){if(S.members.some(m=>m.status==='retired'&&m.left===y)&&!S.members.some(m=>m.status==='split')){S._aged=true}doSplit('everyone was gone');R.lines.push({i:'💔',t:'There is no one left in the band.'})}
+  S.hype=clamp(S.hype,0,100);S.rep=clamp(S.rep,0,100);S.fans=Math.max(0,Math.round(S.fans));
+  for(const s of S.songs){if(!s.classic&&((s.peak&&s.peak<=10&&y-s.y>=15)||(s.viral&&y-s.y>=15&&s.repeak))){s.classic=true;R.lines.push({i:'⭐',t:`"${esc(s.t)}" (${s.y}) is now a classic.`});tl('classic',`"${s.t}" (${s.y}) became a classic`)}}
+  S.peakFans=Math.max(S.peakFans,S.fans);
+  const hits=S.songs.filter(s=>s.y===y&&s.peak&&s.peak<=40);
+  const sc=(R.album&&R.album.peak?101-R.album.peak:0)+sum(hits.map(s=>41-s.peak))+(R.tour?R.tour.fill*30*(SCK.indexOf(R.tour.scale)+1):0);
+  S.hist.push({y,fans:S.fans,money:S.money,hype:Math.round(S.hype),chem:cohesion(),split:!!S.split,score:Math.round(sc),album:R.album?R.album.peak:undefined,lineup:lineupNow,leader:leaderNow});
+  R.money1=S.money;R.fans1=S.fans;R.hype1=S.hype;R.chem1=cohesion();
+  S._yearEnd=false;
+  UI.report=R;
+  S.year++;
+  if(S.year>END){finish('present');return}
+  if(S.split&&!reunionPool().length&&!S.members.some(m=>m.status==='active')){R.lines.push({i:'🕯️',t:'Nobody is left to reunite.'});finish(S._aged?'aged':'nobody');return}
+  startYear();save();
+}
+
+/* ---------------- legacy & ending ---------------- */
+function legacy(){const sg=S.songs.filter(s=>s.peak);const n1=sg.filter(s=>s.peak===1).length,t10=sg.filter(s=>s.peak<=10).length,cl=classics();
+  const a10=S.albums.filter(a=>a.peak&&a.peak<=10).length,a1=S.albums.filter(a=>a.peak===1).length;const q=avg(S.albums.map(a=>a.q));
+  const yrs=S.hist.filter(h=>!h.split).length;
+  const score=Math.round(cl*8+n1*5+t10*2.5+a10*3+a1*4+Math.log10(S.totals.units+1)*4+q*.25+yrs*.4+S.reunions*6+S.rep*.15);
+  const debut=S.albums.length?S.albums[0].y:null;const eligible=debut&&(Math.min(S.year,END)-debut>=25);
+  return {score,n1,t10,cl,a10,a1,q:Math.round(q),yrs,eligible,inducted:eligible&&score>=HOF_NEED,debut}}
+function finish(why){S.over=true;S.endWhy=why;S.endYear=Math.min(S.year,END);S.final=legacy();
+  try{const H=JSON.parse(localStorage.getItem('decades_hof')||'[]');H.unshift({name:S.name,from:START,to:S.endYear,score:S.final.score,inducted:S.final.inducted,classics:S.final.cl,id:S.id});
+    localStorage.setItem('decades_hof',JSON.stringify(H.filter((h,i)=>H.findIndex(x=>x.id===h.id)===i).slice(0,20)))}catch(e){}
+  save();UI.tab='year';}
+
+/* ---------------- saving ---------------- */
+const slotKey=n=>'decades_slot_'+n;
+function save(){if(!S)return;try{localStorage.setItem(slotKey(S.slot),JSON.stringify(S));localStorage.setItem('decades_last',String(S.slot))}catch(e){toast('Could not save on this device.')}}
+function readSlot(n){try{const r=localStorage.getItem(slotKey(n));return r?JSON.parse(r):null}catch(e){return null}}
+function delSlot(n){try{localStorage.removeItem(slotKey(n))}catch(e){}}
+
+function migrate(s){for(const m of s.members)if(!m.look)m.look=genLook(m.id);
+  if(!s.rival){s.rival=genRival(s);s.rival.fans=s.rival.peakFans=Math.round(Math.max(2500,s.fans*rnd(.6,1.4)))}
+  s.rivalW=s.rivalW||0;s.rivalL=s.rivalL||0;if(s.plan&&!s.plan.setlist)s.plan.setlist='mix';return s}
+/* ---------------- new game ---------------- */
+function newSetup(slot){UI.setup={slot,name:bandName(),genre:'rock',size:4,...genLineup(4)}}
+function startGame(){const u=UI.setup;const nm=($('#bandname')?.value||u.name).trim().slice(0,40)||u.name;
+  S={v:1,id:Math.random().toString(36).slice(2),slot:u.slot,name:nm,year:START,money:1500,fans:2000,hype:5,rep:50,genre:u.genre,genreSince:START,fam:{[u.genre]:25},
+    oldFans:{},material:15,members:u.members,leader:u.leader,feuds:[],label:null,albums:[],songs:[],timeline:[],hist:[],pending:[],carry:[],news:[],yearLog:[],
+    split:null,splits:0,reunions:0,reinvents:0,noise:{},licensed:null,pubSold:false,over:false,lastFocus:null,plan:{focus:'write',genre:u.genre,budget:0,promo:false,scale:'clubs'},
+    totals:{units:0,gross:0},peakFans:2000,flags:{}};
+  S.rival=genRival(S);S.rivalW=0;S.rivalL=0;
+  tl('formed',`${nm} formed: ${S.members.map(m=>m.name+' ('+m.role.toLowerCase()+')').join(', ')}`);
+  UI.setup=null;UI.tab='year';startYear();save();render();window.scrollTo(0,0)}
+
+/* ---------------- rendering ---------------- */
+function setTheme(t){document.documentElement.dataset.theme=t;const c=getComputedStyle(document.documentElement).getPropertyValue('--hud').trim();$('meta[name=theme-color]').setAttribute('content',c||'#111')}
+function meter(v,cls=''){return `<div class="meter ${cls}"><i style="width:${clamp(v,0,100)}%"></i></div>`}
+function dots(v,max=5){const n=clamp(Math.round(v),0,max);return '<span class="dots">'+'●'.repeat(n)+'<span class="muted">'+'○'.repeat(max-n)+'</span></span>'}
+function render(){renderView();hydrate()}
+function renderView(){
+  const app=$('#app');
+  if(!S){setTheme(UI.setup?'sixties':'modern');app.className='app notabs';app.innerHTML=UI.setup?vSetup():vTitle();renderSheet();return}
+  setTheme(decTheme(Math.min(S.year,END)));
+  if(S.over){app.className='app notabs';app.innerHTML=vEnding();renderSheet();return}
+  app.className='app';
+  const v={year:vYear,band:vBand,music:vMusic,scene:vScene,history:vHistory}[UI.tab]||vYear;
+  app.innerHTML=hud()+`<div class="view">${v()}</div>`+tabs();
+  renderSheet();
+}
+function hud(){const coh=S.split?'—':cohesion();
+  const segs=[[1965,1970],[1970,1980],[1980,1990],[1990,2000],[2000,2010],[2010,END+1]].map((s,i)=>`<span style="width:${(s[1]-s[0])/(END+1-START)*100}%;background:${DEC_COLORS[i]}"></span>`).join('');
+  return `<header class="hud"><div class="hud-top"><button class="iconbtn" data-a="menu" aria-label="Menu">☰</button><div class="bandname">${esc(S.name)}</div><div class="year">${S.year}</div></div>
+  <div class="hud-stats"><div><b>${fmt$(S.money)}</b><i>bank</i></div><div><b>${fmtN(S.fans)}</b><i>fans</i></div><div><b>${Math.round(S.hype)}</b><i>hype</i></div><div><b>${coh}</b><i>chemistry</i></div></div>
+  <div class="timebar">${segs}<em style="left:calc(${(S.year-START)/(END-START)*100}% - 1px)"></em></div></header>`}
+function tabs(){const pend=S.pending.filter(evValid).length;const T=[['year','📅','Year'],['band','🎸','Band'],['music','💿','Music'],['scene','📻','Scene'],['history','📜','History']];
+  return `<nav class="tabs"><div class="in">${T.map(t=>`<button class="tab ${UI.tab===t[0]?'on':''}" data-a="tab" data-v="${t[0]}"><span class="ic">${t[1]}</span><span>${t[2]}${t[0]==='year'&&pend?`<span class="dot">${pend}</span>`:''}</span></button>`).join('')}</div></nav>`}
+function eraCard(){const e=eraOf(S.year);const rec=e.units*e.roy;
+  return `<div class="card era"><div class="between"><div><div class="label">${e.fmt}</div><h2>${e.n}</h2></div><div class="yr">${String(S.year).slice(2)}'</div></div>
+  <p class="small">${e.d}</p>
+  <div class="era-rules"><div><div class="label">Records</div>${dots(rec*2.2)}</div><div><div class="label">Touring</div>${dots(e.tour*1.3)}</div><div><div class="label">Promo</div><span class="small">${PROMO[e.promo].n.replace('Shoot a ','')}</span></div></div></div>`}
+function evCard(e,i){const E=EV[e.t];const ch=E.choices(e.d);const who=['m','a','b'].map(k=>e.d&&e.d[k]&&M(e.d[k])).filter(Boolean);
+  return `<div class="card ev"><div class="memhead">${who.map(m=>pimg(m,'sm')).join('')}<div><div class="kick">${E.kick}</div><h3>${E.title(e.d)}</h3></div></div><p class="small">${E.text(e.d)}</p>
+  <div class="stack" style="gap:8px">${ch.map(c=>{const inner=`<b>${c.label}</b>${c.hint?`<small>${c.hint}</small>`:''}`;return `<button class="choice ${c.img?'withimg':''}" data-a="choose" data-v="${i}|${c.k}" ${c.dis?'disabled':''}>${c.img?c.img+`<span class="stack0">${inner}</span>`:inner}</button>`}).join('')}</div></div>`}
+function vYear(){
+  S.pending=S.pending.filter(evValid);
+  let h=stageHTML()+eraCard();
+  if(S.news.length)h+=`<div class="card"><div class="label">Headlines</div>${S.news.map(n=>`<p class="small">📰 ${n}</p>`).join('')}</div>`;
+  if(S.yearLog.length)h+=`<div class="card"><div class="label">So far this year</div>${S.yearLog.map(n=>`<p class="small">✔︎ ${n}</p>`).join('')}</div>`;
+  h+=S.pending.map(evCard).join('');
+  h+=S.split?splitPlan():bandPlan();
+  return h}
+function bandPlan(){
+  const p=S.plan,a=active(),e=eraOf(S.year);const pend=S.pending.length;
+  const fChips=Object.entries(FOCUS).map(([k,f])=>{const dis=(k==='album'||k==='albumtour')&&a.length<2;return `<button class="chip ${p.focus===k?'on':''}" data-a="focus" data-v="${k}" ${dis?'disabled':''}><b>${f.n}</b><small>${f.d}</small></button>`}).join('');
+  let h=`<div class="card"><div class="between"><h2>Plan ${S.year}</h2><span class="pill">${Math.round(S.material)} songs banked</span></div><div class="chips">${fChips}</div>`;
+  const rel=p.focus==='album'||p.focus==='albumtour',tour=p.focus==='tour'||p.focus==='albumtour';
+  if(rel){h+=`<div class="label">Production</div><div class="chips three">${BUDGETS.map((b,i)=>{const c=cost(b.cost);return `<button class="chip ${p.budget===i?'on':''}" data-a="budget" data-v="${i}" ${c>Math.max(0,S.money)&&c>0?'disabled':''}><b>${b.n}</b><small>${c?fmt$(c):'Free'}</small></button>`}).join('')}</div>`;
+    if(S.material<10)h+=`<p class="small bad">Only ${Math.round(S.material)} songs banked. A rushed record will suffer. Consider writing first.</p>`}
+  if(tour){h+=`<div class="label">Tour size</div><div class="chips">${SCK.map(k=>{const sc=SCALES[k];const fill=Math.min(1,tourDemand(k)/sc.cap);const lock=S.fans<sc.need;
+    return `<button class="chip ${p.scale===k?'on':''}" data-a="scale" data-v="${k}" ${lock?'disabled':''}><b>${sc.n}</b><small>${lock?'Needs '+fmtN(sc.need)+' fans':'~'+Math.round(fill*100)+'% full · costs '+fmt$(cost(sc.cost))}</small></button>`}).join('')}</div>`;
+    if(S.songs.some(s=>s.peak))h+=`<div class="label">Setlist</div><div class="chips three">${Object.entries(SETLISTS).map(([k,v])=>`<button class="chip ${(p.setlist||'mix')===k?'on':''}" data-a="setlist" data-v="${k}"><b>${v.n}</b><small>${v.d}</small></button>`).join('')}</div>`}
+  if(rel||tour){const pr=PROMO[e.promo];const c=promoCost();h+=`<div class="label">Promotion</div><button class="chip ${p.promo?'on':''}" data-a="promo" ${c>S.money&&!p.promo?'disabled':''}><b>${p.promo?'✓ ':''}${pr.n} · ${fmt$(c)}</b><small>${pr.d}</small></button>`}
+  if(p.focus!=='rest'&&p.focus!=='split'){
+    const cur=S.genre,gp=gpop(cur,S.year);
+    h+=`<div class="label">Your sound</div>`;
+    if(p.genre!==cur){const risk=Math.round((0.08+.45*gdist(cur,p.genre))*100);h+=`<p class="small"><b class="bad">Reinventing:</b> ${GENRES[cur].n} → <b>${GENRES[p.genre].n}</b>. You could lose ~${risk}% of your fans${S.oldFans[p.genre]?' (but win back old ones)':''}.</p>`}
+    else h+=`<p class="small">${GENRES[cur].n} for ${S.year-S.genreSince+1} year${S.year-S.genreSince?'s':''}. Popularity now: <b>${Math.round(gp*100)}%</b>. ${gp<.25?'It\'s out of fashion. Stay the course and hope it comes back, or reinvent.':''}</p>`;
+    h+=`<details ${p.genre!==cur?'open':''}><summary>Change your sound</summary><div class="chips" style="margin-top:8px">${avail(S.year).map(g=>{const v=gpop(g,S.year),t=v-gpop(g,S.year-1);
+      return `<button class="chip ${p.genre===g?'on':''}" data-a="genre" data-v="${g}"><b>${g===cur?'● ':''}${GENRES[g].n}</b><small>${Math.round(v*100)}% ${t>.03?'▲':t<-.03?'▼':'▬'}${g!==cur?' · fan risk ~'+Math.round((0.08+.45*gdist(cur,g))*100)+'%':' · current'}</small></button>`}).join('')}</div></details>`}
+  const spend=planSpend(),live=livingCost();
+  h+=`<p class="small muted">Upfront spend ${fmt$(spend)} · wages ${fmt$(live)}${tour?' · tour costs come out of ticket sales':''}</p>`;
+  const can=!pend&&spend<=Math.max(0,S.money);
+  h+=`<button class="btn big wide" data-a="play" ${can?'':'disabled'}>${p.focus==='split'?'Break up the band':'Play '+S.year+' ▸'}</button>`;
+  if(pend)h+=`<p class="small muted" style="text-align:center">Deal with ${pend} band matter${pend>1?'s':''} above first.</p>`;
+  else if(!can)h+=`<p class="small bad" style="text-align:center">You can't afford this plan.</p>`;
+  return h+'</div>'}
+function splitPlan(){const p=S.plan,ya=S.year-S.split.y;const pool=reunionPool();
+  let h=`<div class="card hl"><div class="label">Broken up since ${S.split.y}</div><h2>${ya} year${ya===1?'':'s'} apart</h2><p class="small">Your old songs keep earning and nostalgia keeps growing. The longer you wait, the bigger a reunion could be, if anyone still wants to do it.</p></div>`;
+  h+=`<div class="card"><h2>Plan ${S.year}</h2><div class="chips">${Object.entries(SPLITFOCUS).map(([k,f])=>`<button class="chip ${p.focus===k?'on':''}" data-a="focus" data-v="${k}" ${k==='reunite'&&pool.length<2?'disabled':''}><b>${f.n}</b><small>${f.d}</small></button>`).join('')}</div>`;
+  if(pool.length)h+=`<div class="label">Who might come back</div><div class="list">${pool.map(m=>{const c=reunionChance(m);return `<div class="between small"><span class="memhead">${pimg(m,'xs')}<span>${esc(m.name)} <span class="muted">· ${m.role} · ${age(m)}</span></span></span><b class="${c>.55?'good':c<.3?'bad':''}">${c>.7?'Keen':c>.5?'Likely':c>.3?'Maybe':'Unlikely'}</b></div>`}).join('')}</div>`;
+  else h+=`<p class="small muted">Nobody from the old lineup can come back.</p>`;
+  const pend=S.pending.length;
+  h+=`<button class="btn big wide" data-a="play" ${pend?'disabled':''}>${p.focus==='retire'?'End the story':'Play '+S.year+' ▸'}</button></div>`;return h}
+function memCard(m){const lead=S.leader===m.id;const feuds=S.feuds.filter(f=>f.includes(m.id)).map(f=>M(f[0]===m.id?f[1]:f[0])).filter(x=>x&&x.status==='active');
+  const st=(n,v,c)=>`<div><div class="between"><span>${n}</span><span class="num">${Math.round(v)}</span></div>${meter(v,c)}</div>`;
+  return `<div class="card ${lead?'hl':''}"><div class="between"><div class="memhead"><button class="pbtn" data-a="style" data-v="${m.id}" aria-label="Change ${esc(m.name)}'s look">${pimg(m)}</button><div><h3>${esc(m.name)}</h3><div class="small muted">${m.role} · ${age(m)} · ${m.trait}</div></div></div><div class="row" style="justify-content:flex-end">${lead?'<span class="pill acc2">Leader</span>':''}${m.writer?'<span class="pill acc">Writer</span>':''}${m.founder?'<span class="pill">Founder</span>':''}</div></div>
+  <div class="mstats">${st('Writing',m.writing)}${st('Chops',m.chops)}${st('Charisma',m.charisma)}${st('Ego',m.ego,'a2')}${st('Loyalty',m.loyalty,'good')}${st('Mood',m.mood,m.mood<30?'bad':m.mood>65?'good':'')}</div>
+  <p class="small muted">${TRAITS[m.trait]}. Into <b>${GENRES[m.taste].n}</b>${m.taste===S.genre?' (happy with the sound)':''}.${feuds.length?` <span class="bad">Feuding with ${feuds.map(first).join(', ')}.</span>`:''}${m.soloY===S.year?' Working on a solo record.':''}</p>
+  <div class="row">${lead?'':`<button class="btn sm ghost" data-a="leader" data-v="${m.id}" ${S.flags.leadY===S.year?'disabled':''}>Make leader</button>`}<button class="btn sm ghost" data-a="style" data-v="${m.id}">Change look</button><button class="btn sm ghost" data-a="writer" data-v="${m.id}">${m.writer?'Remove as writer':'Make a writer'}</button><button class="btn sm danger" data-a="fire" data-v="${m.id}">Fire</button></div></div>`}
+function vBand(){
+  if(S.split){const ex=S.members.filter(m=>m.status==='split');return `<div class="card"><h2>The band is split</h2><p class="small">Since ${S.split.y}. Former members:</p><div class="list">${S.members.filter(m=>m.status!=='active').map(exRow).join('')}</div></div>`}
+  const a=active(),coh=cohesion(),w=writers();
+  let h=`<div class="card"><div class="between"><h2>Chemistry</h2><b class="num" style="font-size:22px">${coh}</b></div>${meter(coh,coh<30?'bad':coh>65?'good':'')}
+  <p class="small muted">${coh<25?'This band is one bad night from splitting.':coh<45?'Tense. Watch the moods.':coh<70?'Working, mostly.':'Tight as a gang.'} Writers: ${w.map(first).join(', ')}${w.length>3?' (too many cooks)':''}. Label: ${S.label?esc(S.label.name)+' until '+S.label.until:'none yet'}.</p></div>`;
+  h+=a.map(memCard).join('');
+  const ex=S.members.filter(m=>m.status!=='active');
+  if(ex.length)h+=`<div class="card"><h3>Former members</h3><div class="list">${ex.map(exRow).join('')}</div></div>`;
+  return h}
+function exRow(m){const st={left:'quit',fired:'fired',retired:'retired',solo:'went solo',split:'split'}[m.status];return `<div class="between small"><span>${esc(m.name)} <span class="muted">· ${m.role} · ${m.joined}–${m.left||S.split?.y||''}</span></span><span class="pill">${st}</span></div>`}
+function vMusic(){
+  if(!S.albums.length)return `<div class="card"><h2>No records yet</h2><p class="small muted">Write some songs, then record an album from the Year tab.</p></div>`;
+  const hits=S.songs.filter(s=>s.peak).sort((a,b)=>a.peak-b.peak);const L=legacy();
+  let h=`<div class="card"><h2>Discography</h2><div class="kv"><div><b>${S.albums.length}</b><span>albums</span></div><div><b>${L.t10}</b><span>top 10 hits</span></div><div><b>${L.cl}</b><span>classics</span></div><div><b>${L.n1}</b><span>#1 singles</span></div><div><b>${fmtN(S.totals.units)}</b><span>records sold</span></div><div><b>${S.rep}</b><span>critics</span></div></div></div>`;
+  if(hits.length)h+=`<div class="card"><h3>Biggest songs</h3><div class="list">${hits.slice(0,12).map(s=>`<div class="between small"><span>${s.classic?'⭐ ':''}"${esc(s.t)}" <span class="muted">${s.y}${s.viral?' · viral '+s.viral:''}</span></span><b>${ord(s.peak)}</b></div>`).join('')}</div></div>`;
+  h+=`<div class="card"><h3>Album wall</h3><div class="wall">${S.albums.map(a=>coverSVG(a)).join('')}</div></div>`;
+  h+=S.albums.slice().reverse().map(a=>`<div class="card"><div class="between"><div class="memhead">${coverSVG(a,'cover sm')}<div><h3>${esc(a.t)}</h3><div class="small muted">${a.y} · ${GENRES[a.g].n} · ${a.fmt}</div></div></div><span class="pill ${a.peak&&a.peak<=10?'acc':''}">${a.peak?ord(a.peak):'—'}</span></div>
+    <div class="small">Quality ${a.q} · ${fmtN(a.units)} sold</div><details><summary class="small">Tracks</summary>${a.tracks.map((t,i)=>{const s=a.singles&&a.singles.find(x=>x.t===t);const so=S.songs.find(x=>x.t===t&&x.y===a.y);return `<div class="track"><span>${i+1}. ${esc(t)}${so&&so.classic?' ⭐':''}</span><span class="muted">${s?(s.peak?'single '+ord(s.peak):'single'):''}</span></div>`}).join('')}<p class="small muted">Written by ${a.writers.map(esc).join(', ')}</p></details></div>`).join('');
+  return h}
+function vScene(){const y=S.year;const e=eraOf(y);
+  let h=eraCard();
+  const gs=avail(y).sort((a,b)=>gpop(b,y)-gpop(a,y));
+  h+=`<div class="card"><h2>What's hot in ${y}</h2><div class="list">${gs.map(g=>{const v=gpop(g,y),t=v-gpop(g,y-1);return `<div class="genre-row ${g===S.genre?'me':''}"><b>${g===S.genre?'● ':''}${GENRES[g].n}</b>${meter(v*100,g===S.genre?'a2':'')}<span class="trend ${t>.03?'good':t<-.03?'bad':'muted'}">${Math.round(v*100)} ${t>.03?'▲':t<-.03?'▼':'▬'}</span></div>`}).join('')}</div>
+  ${S.rumor?`<p class="small">👂 Word in the clubs: <b>${GENRES[S.rumor].n}</b> is about to get big.</p>`:''}</div>`;
+  const old=Object.entries(S.oldFans).filter(x=>x[1]>500);
+  h+=`<div class="card"><h3>Your audience</h3><p class="small">${fmtN(S.fans)} current fans. Critics rate you ${S.rep}/100.</p>${old.length?`<p class="small muted">Fans you left behind: ${old.map(([g,n])=>`${fmtN(n)} ${GENRES[g].n}`).join(', ')}. Some come back for reunions, or if you return to that sound.</p>`:''}
+  <p class="small muted">Label: ${S.label?esc(S.label.name)+' ('+S.label.type+') until '+S.label.until:'none'}.${S.licensed===true?' Catalog on streaming.':S.licensed===false?' Catalog held off streaming.':''}${S.pubSold?' Publishing sold.':''}</p></div>`;
+  h+=rivalCard();
+  return h}
+function spark(){const H=S.hist;if(H.length<2)return '';const W=620,Ht=130,pad=8;const mx=Math.log10(Math.max(...H.map(h=>h.fans),10));const mn=Math.log10(Math.max(100,Math.min(...H.map(h=>h.fans))));
+  const X=y=>pad+(y-START)/(END-START)*(W-2*pad),Y=f=>Ht-14-(Math.log10(Math.max(f,100))-mn)/Math.max(.5,mx-mn)*(Ht-34);
+  let bands='';H.forEach(h=>{if(h.split)bands+=`<rect x="${X(h.y)-5}" y="0" width="${(W-2*pad)/(END-START)+1}" height="${Ht-14}" fill="currentColor" opacity=".08"/>`});
+  const ticks=[1970,1980,1990,2000,2010,2020].map(y=>`<line x1="${X(y)}" x2="${X(y)}" y1="0" y2="${Ht-14}" stroke="currentColor" opacity=".15"/><text x="${X(y)}" y="${Ht-2}" font-size="11" text-anchor="middle" fill="currentColor" opacity=".6">'${String(y).slice(2)}</text>`).join('');
+  const pts=H.map(h=>`${X(h.y).toFixed(1)},${Y(h.fans).toFixed(1)}`).join(' ');
+  const peaks=H.slice().sort((a,b)=>b.score-a.score).slice(0,3).filter(h=>h.score>0).map(h=>`<circle cx="${X(h.y)}" cy="${Y(h.fans)}" r="5" fill="var(--accent2)"/>`).join('');
+  return `<svg class="spark" viewBox="0 0 ${W} ${Ht}" role="img" aria-label="Fans over time">${bands}${ticks}<polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>${peaks}</svg>`}
+function peakYears(){return S.hist.slice().sort((a,b)=>b.score-a.score).slice(0,3).filter(h=>h.score>0).map(h=>h.y).sort()}
+function timelineHTML(){const pk=new Set(peakYears());let h='<div class="tl">',dec=null;
+  for(const t of S.timeline){const d=Math.floor(t.y/10)*10;if(d!==dec){dec=d;h+=`<div class="tl-dec">${d}s</div>`}
+    h+=`<div class="tl-item k-${t.kind} ${pk.has(t.y)&&(t.kind==='album'||t.kind==='hit')?'peak':''}"><span class="y">${t.y}</span>${esc(t.text)}${pk.has(t.y)&&t.kind==='album'?' <span class="pill acc2">peak year</span>':''}</div>`}
+  return h+'</div>'}
+function vHistory(){return `${S.hist.length?`<div class="card"><h3>The documentary</h3><p class="small muted">Watch every year so far replayed on stage, in each decade's style, with the lineup as it was.</p><button class="btn" data-a="doc">▶ Watch the documentary</button></div>`:''}<div class="card"><div class="between"><h2>The story so far</h2><span class="pill">${S.year-START} yrs</span></div>${spark()}<p class="small muted">Fans over time. Dots mark your biggest years; shaded years are when the band was split.</p></div>
+  <div class="card">${timelineHTML()}</div>
+  <div class="card"><h3>Options</h3><div class="row"><button class="btn ghost" data-a="menu">Saves & menu</button><button class="btn danger" data-a="endnow">End the career now</button></div></div>`}
+function vEnding(){const L=S.final||legacy();const hits=S.songs.filter(s=>s.peak&&s.peak<=40).sort((a,b)=>a.peak-b.peak);const pk=peakYears();
+  const lineupChanges=S.timeline.filter(t=>['join','leave','lead','split','reunion'].includes(t.kind));
+  const lead=S.members.filter(m=>S.albums.some(a=>a.lineup.includes(m.name)));
+  const pres=lead.filter(m=>m.status!=='retired'||true);
+  const feudPairs=S.feuds.map(f=>[M(f[0]),M(f[1])]).filter(x=>x[0]&&x[1]);
+  let hof;
+  if(L.inducted){const absent=feudPairs.length?`${esc(feudPairs[0][0].name.split(' ')[0])} and ${esc(feudPairs[0][1].name.split(' ')[0])} were seated at opposite ends of the room.`:'Every living member took the stage together, one more time.';
+    hof=`<div class="card hof hl"><div class="medal">🏛️</div><div class="label">The Hall of Sound · Class of ${S.endYear}</div><h1 style="font-size:30px">${esc(S.name)} are inducted</h1><div class="faces">${pres.map(m=>pimg(m,'sm',S.endYear)).join('')}</div><p class="small">Inductees: ${pres.map(m=>esc(m.name)).join(', ')}.</p><p class="small muted">${absent}</p></div>`}
+  else hof=`<div class="card hof"><div class="medal">🎟️</div><div class="label">The Hall of Sound</div><h2>Not inducted</h2><p class="small muted">${!L.eligible?'Bands become eligible 25 years after their first record.':`Legacy ${L.score} of the ${HOF_NEED} needed. A cult favourite, not a legend.`}</p></div>`;
+  return `<div class="title-hero" style="padding-bottom:0"><div class="label">${START}–${S.endYear}</div><h1 style="font-size:40px">${esc(S.name)}</h1><p class="muted">${S.endWhy==='present'?'Sixty years of music, all the way to the present.':S.endWhy==='retired'?'The band closed the book on its own terms.':S.endWhy==='aged'?'The last members hung up their instruments.':'Nobody was left to get the band back together.'}</p></div>
+  <div class="view">${hof}
+  ${S.hist.length?`<button class="btn big wide" data-a="doc">▶ Watch the documentary</button>`:''}
+  <div class="card"><h2>Legacy ${L.score}</h2><div class="kv"><div><b>${S.albums.length}</b><span>albums</span></div><div><b>${L.t10}</b><span>top 10 hits</span></div><div><b>${L.n1}</b><span>#1 singles</span></div><div><b>${L.cl}</b><span>classics</span></div><div><b>${fmtN(S.totals.units)}</b><span>records</span></div><div><b>${fmtN(S.peakFans)}</b><span>peak fans</span></div><div><b>${S.members.length}</b><span>members ever</span></div><div><b>${S.splits}</b><span>breakups</span></div><div><b>${S.reunions}</b><span>reunions</span></div></div>
+  ${spark()}<p class="small">Peak years: <b>${pk.length?pk.join(', '):'none to speak of'}</b>.</p></div>
+  ${rivalVerdict(L)}
+  ${S.albums.length?`<div class="card"><h3>Album wall</h3><div class="wall">${S.albums.map(a=>coverSVG(a)).join('')}</div></div>`:''}
+  ${hits.length?`<div class="card"><h3>The hits</h3><div class="list">${hits.slice(0,15).map(s=>`<div class="between small"><span>${s.classic?'⭐ ':''}"${esc(s.t)}" <span class="muted">${s.y}</span></span><b>${ord(s.peak)}</b></div>`).join('')}</div></div>`:''}
+  <div class="card"><h3>Lineup changes</h3>${lineupChanges.length?`<div class="list">${lineupChanges.map(t=>`<div class="small"><b>${t.y}</b> ${esc(t.text)}</div>`).join('')}</div>`:'<p class="small muted">The same lineup, start to finish. Rare.</p>'}</div>
+  <div class="card"><h3>Band history</h3>${timelineHTML()}</div>
+  <button class="btn big wide" data-a="totitle">Start a new band</button></div>`}
+function vTitle(){
+  let H=[];try{H=JSON.parse(localStorage.getItem('decades_hof')||'[]')}catch(e){}
+  const slots=[1,2,3].map(n=>{const s=readSlot(n);if(!s)return `<div class="card slot"><div><b>Slot ${n}</b><div class="small muted">Empty</div></div><button class="btn" data-a="new" data-v="${n}">New band</button></div>`;
+    return `<div class="card slot"><div style="min-width:0"><b>${esc(s.name)}</b><div class="small muted">${s.over?'Finished '+START+'–'+s.endYear:s.year+' · '+fmtN(s.fans)+' fans'+(s.split?' · split':'')}</div></div><div class="row" style="flex-wrap:nowrap"><button class="btn" data-a="load" data-v="${n}">${s.over?'View':'Play'}</button><button class="btn ghost sm" data-a="del" data-v="${n}" aria-label="Delete">✕</button></div></div>`}).join('');
+  return `<div class="title-hero"><h1>Decades</h1><div class="stripes">${DEC_COLORS.map(c=>`<span style="background:${c}"></span>`).join('')}</div><p class="muted">One band. 1965 to now. Every format, every fad, every falling-out.</p></div>
+  <div class="view">${slots}
+  <div class="card"><h3>How it works</h3><p class="small">Each turn is a year. Pick what the band does, keep egos in check, chase or ignore the trends, and ride vinyl, tapes, VidStar, CDs, Swapster, streaming and Loopr. Break up, reunite, become a classic. Watch your band's looks change with every decade, fight a rival band for the charts, and replay it all as a documentary.</p></div>
+  ${H.length?`<div class="card"><h3>Hall of Sound</h3><div class="list">${H.map(h=>`<div class="between small"><span>${h.inducted?'🏛️ ':''}${esc(h.name)} <span class="muted">${h.from}–${h.to}</span></span><b>${h.score}</b></div>`).join('')}</div></div>`:''}
+  <p class="small muted" style="text-align:center">All bands, labels and people are fictional. Saves stay on this device.<br><a href="../" style="color:inherit">Also play Headliner</a></p></div>`}
+function vSetup(){const u=UI.setup;const g0=['rock','folk','soul','pop'];
+  return `<div class="title-hero" style="padding-bottom:0"><div class="label">Slot ${u.slot} · ${START}</div><h1 style="font-size:40px">Form a band</h1></div><div class="view">
+  <div class="card"><div class="label">Band name</div><div class="row" style="flex-wrap:nowrap"><input type="text" id="bandname" maxlength="40" value="${esc(u.name)}" autocomplete="off"><button class="btn ghost" data-a="rname" aria-label="Random name">🎲</button></div></div>
+  <div class="card"><div class="label">Starting sound</div><div class="chips">${g0.map(g=>`<button class="chip ${u.genre===g?'on':''}" data-a="sgenre" data-v="${g}"><b>${GENRES[g].n}</b><small>${Math.round(gpop(g,START)*100)}% popular in ${START}</small></button>`).join('')}</div></div>
+  <div class="card"><div class="between"><div class="label">The lineup</div><div class="row"><button class="chip ${u.size===4?'on':''}" data-a="ssize" data-v="4" style="min-height:36px"><b>4-piece</b></button><button class="chip ${u.size===5?'on':''}" data-a="ssize" data-v="5" style="min-height:36px"><b>5-piece</b></button></div></div>
+  <div class="list">${u.members.map(m=>`<div class="memhead"><button class="pbtn" data-a="style" data-v="${m.id}" aria-label="Change look">${pimg(m,'sm',START)}</button><div style="flex:1;min-width:0"><div class="between"><b>${esc(m.name)}</b><span class="small">${m.id===u.leader?'<span class="pill acc2">Leader</span> ':''}${m.writer?'<span class="pill acc">Writer</span>':''}</span></div><div class="small muted">${m.role} · age ${START-m.born} · ${m.trait} · writing ${m.writing} · chops ${m.chops} · ego ${m.ego} · into ${GENRES[m.taste].n}</div></div></div>`).join('')}</div>
+  <p class="small muted">Tap a face to change their look.</p><button class="btn ghost" data-a="reroll">🎲 Different people</button></div>
+  <button class="btn big wide" data-a="start">Start in ${START}</button><button class="btn ghost wide" data-a="totitle">Back</button></div>`}
+function renderSheet(){const el=$('#sheet');
+  if(UI.report&&S){const R=UI.report;const dm=R.money1-R.money0,df=R.fans1-R.fans0;const over=S.over;
+    el.innerHTML=`<div class="scrim"><div class="sheet" role="dialog" aria-label="Year in review"><div class="between"><div><div class="label">Year in review</div><h2>${R.y}</h2></div><span class="pill">${esc(eraOf(R.y).n)}</span></div>
+    <div class="kv"><div><b class="${dm>=0?'good':'bad'}">${dm>=0?'+':'−'}${fmt$(Math.abs(dm)).replace('$','$')}</b><span>money</span></div><div><b class="${df>=0?'good':'bad'}">${sgn(df)}</b><span>fans</span></div><div><b>${Math.round(R.hype1)}</b><span>hype</span></div></div>
+    ${R.pre.length?`<div class="stack" style="gap:6px">${R.pre.map(t=>`<div class="rline"><span class="i">✔︎</span><span>${t}</span></div>`).join('')}</div>`:''}
+    ${R.album?`<div class="memhead">${coverSVG(R.album,'cover lg')}<div><div class="label">New album</div><h3>${esc(R.album.t)}</h3><p class="small muted">${GENRES[R.album.g].n} · ${R.album.peak?'peaked at '+ord(R.album.peak):'missed the charts'}</p></div></div>`:''}
+    <div class="stack" style="gap:8px">${R.lines.map(l=>`<div class="rline"><span class="i">${l.i}</span><span>${l.t}</span></div>`).join('')}</div>
+    <button class="btn big wide" data-a="closereport">${over?'See the legacy':'On to '+(R.y+1)+' ▸'}</button></div></div>`;return}
+  if(UI.sheet){el.innerHTML=`<div class="scrim" data-a="closesheet"><div class="sheet" data-stop="1">${typeof UI.sheet==='function'?UI.sheet():UI.sheet}</div></div>`;return}
+  el.innerHTML=''}
+function toast(t){const box=$('#toasts');box.innerHTML='';const el=document.createElement('div');el.className='toast';el.innerHTML=t;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
+
+/* ---------------- looks & 3D avatars ---------------- */
+const SKINS=['#f6d2b8','#e8b48e','#c98e62','#a8693f','#7a4a2a','#4f2f1c'];
+const HAIRC=['#1c1712','#3b2416','#6b4423','#a5662f','#d9b26a','#b8381e','#ece6d6','#ff5fa2','#3f7bff','#53c26b'];
+const HAIRS=['auto','mop','long','afro','big','messy','spiky','buzz','bun','bald'];
+const HAIRN={auto:'Era style',mop:'Mop top',long:'Long',afro:'Afro',big:'Big 80s',messy:'Messy',spiky:'Spiky',buzz:'Buzz cut',bun:'Bun',bald:'Bald'};
+const OUTFITC=['#c0392b','#e67e22','#f1c40f','#27ae60','#16a085','#2980b9','#8e44ad','#2c3e50','#ecf0f1','#ff2fd0'];
+function hsh(s){let h=2166136261;s=String(s);for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);return h>>>0}
+function srand(seed){let a=seed|0;return()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function genLook(id){const r=srand(hsh(id));return {skin:SKINS[Math.floor(r()*6)],hair:HAIRC[Math.floor(r()*6)],style:'auto',fit:OUTFITC[Math.floor(r()*OUTFITC.length)],glasses:r()<.18,beard:r()<.25,seed:Math.floor(r()*1000)}}
+function mixHex(a,b,t){const p=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)||0);const A=p(a),B=p(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*clamp(t,0,1)).toString(16).padStart(2,'0')).join('')}
+const moodFace=v=>v>=55?'smile':v<30?'frown':'flat';
+const curY=()=>S?Math.min(S.year,END):START;
+// What a member looks like in a given year: hair follows the decade unless styled, greys with age; clothes always follow the decade
+function lookAt(m,y){
+  const L=m.look||(m.look=genLook(m.id));const ag=y-m.born;const k=L.seed%3;const d=decTheme(y);
+  let style=L.style;
+  if(style==='auto'){style={sixties:['mop','mop','long'],seventies:['long','afro','long'],eighties:['big','big','spiky'],nineties:['messy','long','buzz'],noughties:['spiky','messy','buzz'],modern:['buzz','bun','messy']}[d][k];if(ag>62&&L.seed%4===0)style='bald'}
+  let hair=L.hair;if(HAIRC.indexOf(hair)<6&&ag>48)hair=mixHex(hair,'#cfcfcf',(ag-48)/24);
+  const f=L.fit;
+  const O={sixties:{top:'#262a33',pants:'#262a33',tie:f,collar:true},seventies:{top:mixHex(f,'#8a5a2b',.45),pants:'#4a6fa5',flare:true,collar:true},
+    eighties:{top:f,pants:'#141414',pads:true,band:L.seed%3===0},nineties:{top:f,pants:'#3d5a80',plaid:true},noughties:{top:f,pants:'#2b3a55',hood:true},
+    modern:{top:L.seed%2?'#1d1d1d':'#efefef',pants:'#1d1d1d',accent:f}}[d];
+  return {...O,skin:L.skin,hair,style,glasses:L.glasses||(d==='eighties'&&L.seed%5===0),beard:L.beard&&ag>=20,ag,seed:L.seed,fit:f}}
+function svgAvatar(m,y){const A=lookAt(m,y);const face=moodFace(m.mood??60);const bigHair=A.style==='afro'||A.style==='big';
+  const back=bigHair?`<circle cx="32" cy="25" r="19" fill="${A.hair}"/>`:(A.style==='long'?`<rect x="15" y="24" width="34" height="22" rx="7" fill="${A.hair}"/>`:'');
+  const top=A.style==='bald'?`<path d="M18 36 Q17 28 21 25 M46 36 Q47 28 43 25" stroke="${A.hair}" stroke-width="4" fill="none"/>`:bigHair?'':`<path d="M17 30 Q17 15 32 15 Q47 15 47 30 Q41 22 32 22 Q23 22 17 30Z" fill="${A.hair}"/>`;
+  const mouth=face==='smile'?'<path d="M27 39 Q32 44 37 39" stroke="#5a2a1e" stroke-width="2" fill="none"/>':face==='frown'?'<path d="M27 42 Q32 37 37 42" stroke="#5a2a1e" stroke-width="2" fill="none"/>':'<line x1="28" y1="40" x2="36" y2="40" stroke="#5a2a1e" stroke-width="2"/>';
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="${mixHex(A.fit,'#ffffff',.6)}"/>${back}<rect x="13" y="47" width="38" height="20" rx="9" fill="${A.top}"/><circle cx="32" cy="31" r="13" fill="${A.skin}"/>${top}<circle cx="27" cy="30" r="1.7" fill="#111"/><circle cx="37" cy="30" r="1.7" fill="#111"/>${A.glasses?'<rect x="23" y="27.5" width="8" height="5" rx="1.5" fill="#111"/><rect x="33" y="27.5" width="8" height="5" rx="1.5" fill="#111"/>':''}${mouth}</svg>`;
+  return 'data:image/svg+xml,'+encodeURIComponent(svg)}
+function findMember(id){return (S&&S.members.find(m=>m.id===id))||(UI.setup&&UI.setup.members.find(m=>m.id===id))||AV.tmp[id]||null}
+function pimg(m,cls='',y){y=y||curY();AV.tmp[m.id]=m;return `<img class="portrait ${cls}" data-pid="${m.id}" data-y="${y}" src="${svgAvatar(m,y)}" alt="">`}
+
+const THREE_URLS=['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js','https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'];
+const AV={loading:null,failed:false,r:null,pr:null,st:null,key:'',raf:0,cache:new Map(),mats:{},geo:null,grad:null,tmp:{},
+  still:!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)};
+function loadThree(){if(window.THREE)return Promise.resolve(window.THREE);if(AV.failed)return Promise.reject(new Error('3D unavailable'));if(AV.loading)return AV.loading;
+  AV.loading=new Promise((res,rej)=>{let i=0;const next=()=>{if(i>=THREE_URLS.length){AV.failed=true;rej(new Error('3D unavailable'));return}
+    const s=document.createElement('script');s.src=THREE_URLS[i++];s.onload=()=>window.THREE?res(window.THREE):next();s.onerror=()=>{s.remove();next()};document.head.appendChild(s)};next()});
+  return AV.loading}
+function toon(T,c){const k='t'+c;if(AV.mats[k])return AV.mats[k];
+  if(!AV.grad){const g=new T.DataTexture(new Uint8Array([95,95,95,255,180,180,180,255,255,255,255,255]),3,1,T.RGBAFormat);g.minFilter=g.magFilter=T.NearestFilter;g.needsUpdate=true;AV.grad=g}
+  return AV.mats[k]=new T.MeshToonMaterial({color:new T.Color(c),gradientMap:AV.grad})}
+function plaid(T,c){const k='p'+c;if(AV.mats[k])return AV.mats[k];const cv=document.createElement('canvas');cv.width=cv.height=64;const x=cv.getContext('2d');
+  x.fillStyle=c;x.fillRect(0,0,64,64);x.fillStyle='rgba(0,0,0,.35)';for(let i=0;i<64;i+=16){x.fillRect(i,0,6,64);x.fillRect(0,i,64,6)}
+  x.fillStyle='rgba(255,255,255,.2)';for(let i=8;i<64;i+=16){x.fillRect(i,0,2,64);x.fillRect(0,i,64,2)}
+  const t=new T.CanvasTexture(cv);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(2,1);toon(T,'#ffffff');return AV.mats[k]=new T.MeshToonMaterial({map:t,gradientMap:AV.grad})}
+function geos(T){if(AV.geo)return AV.geo;const G={head:new T.SphereGeometry(.42,22,16),eye:new T.SphereGeometry(.045,8,6),hand:new T.SphereGeometry(.1,8,6),shoe:new T.BoxGeometry(.24,.12,.36),
+  arm:new T.CylinderGeometry(.1,.09,.85,8),neck:new T.CylinderGeometry(.12,.13,.2,8),smile:new T.TorusGeometry(.1,.022,6,14,Math.PI),flat:new T.BoxGeometry(.16,.03,.02)};
+  for(const k in G)G[k].userData.shared=true;return AV.geo=G}
+function avatar(T,m,y,o={}){
+  const A=lookAt(m,y),G=geos(T),g=new T.Group(),mt=c=>toon(T,c);
+  const add=(geo,mat,x,yy,z,p=g)=>{const me=new T.Mesh(geo,mat);me.position.set(x,yy,z);p.add(me);return me};
+  for(const s of[-1,1]){add(new T.CylinderGeometry(.15,A.flare?.28:.16,1.15,10),mt(A.pants),.19*s,.62,0);add(G.shoe,mt('#161616'),.19*s,.06,.07)}
+  add(new T.CylinderGeometry(.44,.36,1.05,12),A.plaid?plaid(T,A.top):mt(A.top),0,1.72,0);
+  if(A.collar)for(const s of[-1,1]){const c=add(new T.BoxGeometry(.22,.06,.18),mt(A.tie?'#f4f4f4':A.top),.13*s,2.22,.3);c.rotation.z=.5*s}
+  if(A.tie)add(new T.BoxGeometry(.1,.55,.04),mt(A.tie),0,1.9,.43);
+  if(A.pads)for(const s of[-1,1])add(new T.BoxGeometry(.32,.16,.44),mt(A.top),.42*s,2.2,0);
+  if(A.hood){const h=add(new T.TorusGeometry(.3,.1,8,16),mt(A.top),0,2.2,-.14);h.rotation.x=Math.PI/2.3}
+  if(A.accent)add(new T.BoxGeometry(.5,.08,.02),mt(A.accent),0,1.95,.42);
+  const arms=[];
+  for(const s of[-1,1]){const p=new T.Group();p.position.set(.5*s,2.12,0);add(G.arm,A.plaid?plaid(T,A.top):mt(A.top),0,-.42,0,p);add(G.hand,mt(A.skin),0,-.88,0,p);p.rotation.set(-.35,0,.12*s);g.add(p);arms.push(p)}
+  const head=new T.Group();head.position.y=2.25;g.add(head);
+  add(G.neck,mt(A.skin),0,.08,0,head);add(G.head,mt(A.skin),0,.5,0,head);
+  for(const s of[-1,1])add(G.eye,mt('#111111'),.14*s,.53,.39,head);
+  const face=moodFace(o.mood??m.mood??60);
+  if(face==='flat')add(G.flat,mt('#5a2a1e'),0,.33,.425,head);else{const mo=add(G.smile,mt('#5a2a1e'),0,face==='smile'?.38:.29,.415,head);if(face==='smile')mo.rotation.z=Math.PI}
+  hair3d(T,head,A);
+  if(A.glasses){for(const s of[-1,1])add(new T.BoxGeometry(.2,.11,.04),mt('#0d0d0d'),.14*s,.53,.42,head);add(new T.BoxGeometry(.1,.03,.03),mt('#0d0d0d'),0,.55,.43,head)}
+  if(A.band){const b=add(new T.TorusGeometry(.44,.04,6,24),mt('#ff2fd0'),0,.68,-.02,head);b.rotation.x=Math.PI/2+.35}
+  if(A.beard)add(new T.SphereGeometry(.43,16,10,0,Math.PI*2,Math.PI*.6,Math.PI*.4),mt(A.hair),0,.5,.01,head);
+  g.userData={id:m.id,head,arms,face,role:m.role,ph:(hsh(m.id)%628)/100,baseY:0,armX:[arms[0].rotation.x,arms[1].rotation.x]};
+  if(o.inst!==false)instrument(T,g,m.role,A,arms);
+  return g}
+function hair3d(T,head,A){const mt=toon(T,A.hair),c=.5;
+  const cap=(r,th,tilt)=>{const me=new T.Mesh(new T.SphereGeometry(r,20,12,0,Math.PI*2,0,th),mt);me.position.y=c;me.rotation.x=tilt;head.add(me);return me};
+  const box=(w,h,d,x,y,z)=>{const me=new T.Mesh(new T.BoxGeometry(w,h,d),mt);me.position.set(x,y,z);head.add(me);return me};
+  switch(A.style){
+    case 'mop':cap(.46,Math.PI*.5,-.2);box(.9,.3,.3,0,c-.08,-.26);break;
+    case 'long':cap(.455,Math.PI*.5,-.35);box(.86,.8,.3,0,c-.25,-.24);break;
+    case 'afro':{const me=new T.Mesh(new T.SphereGeometry(.6,16,12),mt);me.position.set(0,c+.2,-.3);head.add(me);break}
+    case 'big':{const me=new T.Mesh(new T.IcosahedronGeometry(.62,1),mt);me.position.set(0,c+.2,-.36);me.scale.set(1.08,1,1);head.add(me);box(.95,.85,.3,0,c-.3,-.3);break}
+    case 'messy':cap(.46,Math.PI*.5,-.3);for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const b=box(.12,.24,.12,Math.cos(a)*.28,c+.33,Math.sin(a)*.22-.06);b.rotation.set(Math.sin(a)*.6,a,Math.cos(a)*.6)}box(.8,.4,.25,0,c-.1,-.27);break;
+    case 'spiky':cap(.45,Math.PI*.45,-.3);for(let i=0;i<7;i++){const a=i/7*Math.PI*2;const sp=new T.Mesh(new T.ConeGeometry(.09,.32,6),mt);sp.position.set(Math.cos(a)*.22,c+.4,Math.sin(a)*.22-.04);sp.rotation.set(Math.sin(a)*.7,0,-Math.cos(a)*.7);head.add(sp)}break;
+    case 'buzz':cap(.432,Math.PI*.47,-.35);break;
+    case 'bun':{cap(.45,Math.PI*.5,-.35);const b=new T.Mesh(new T.SphereGeometry(.17,12,10),mt);b.position.set(0,c+.38,-.28);head.add(b);break}
+    case 'bald':{const me=new T.Mesh(new T.SphereGeometry(.435,18,6,Math.PI*.85,Math.PI*1.3,Math.PI*.42,Math.PI*.17),mt);me.position.y=c;head.add(me);break}
+  }}
+function instrument(T,g,role,A,arms){const mt=c=>toon(T,c);const add=(geo,mat,x,y,z,p)=>{const me=new T.Mesh(geo,mat);me.position.set(x,y,z);p.add(me);return me};
+  if(role==='Guitar'||role==='Bass'){const bass=role==='Bass';const ig=new T.Group();ig.position.set(.05,1.5,.48);ig.rotation.z=-1.05;g.add(ig);
+    const col=['#b3261e','#e0a526','#1d1d1d','#2a6fdb','#f2efe6','#5b3a1e'][A.seed%6];
+    const body=add(new T.CylinderGeometry(bass?.3:.28,bass?.34:.32,.11,18),mt(col),0,-.1,0,ig);body.rotation.x=Math.PI/2;
+    add(new T.BoxGeometry(.075,bass?1.25:.95,.05),mt('#3b2416'),0,bass?.72:.57,.03,ig);
+    add(new T.BoxGeometry(.13,.2,.05),mt('#1d1d1d'),0,bass?1.42:1.12,.03,ig);
+    arms[0].rotation.set(-1,0,.55);arms[1].rotation.set(-1.15,0,.75)}
+  else if(role==='Keys'){const k=new T.Group();k.position.set(0,0,.8);g.add(k);
+    add(new T.BoxGeometry(1.3,.1,.45),mt('#1d1d1d'),0,1.35,0,k);add(new T.BoxGeometry(1.15,.04,.2),mt('#f4f4f4'),0,1.41,.1,k);
+    for(const s of[-1,1]){const l=add(new T.CylinderGeometry(.03,.03,1.3,6),mt('#555555'),.5*s,.67,0,k);l.rotation.z=.25*s}
+    arms[0].rotation.set(-1.05,0,.3);arms[1].rotation.set(-1.05,0,-.3)}
+  else if(role==='Drums'){const k=new T.Group();k.position.set(0,0,.95);g.add(k);const shell=['#b3261e','#1d1d1d','#2a6fdb','#e0a526'][A.seed%4];
+    const bd=add(new T.CylinderGeometry(.42,.42,.36,20),mt(shell),0,.45,0,k);bd.rotation.x=Math.PI/2;
+    add(new T.CircleGeometry(.38,20),mt('#f2efe6'),0,.45,.19,k);
+    add(new T.CylinderGeometry(.2,.2,.14,16),mt('#d9d9d9'),-.5,1.12,-.1,k);
+    const tom=add(new T.CylinderGeometry(.17,.17,.18,16),mt(shell),.3,1.32,-.15,k);tom.rotation.x=.3;
+    const cy=add(new T.CylinderGeometry(.36,.36,.015,20),mt('#d4af37'),.78,1.95,-.1,k);cy.rotation.z=.25;
+    add(new T.CylinderGeometry(.015,.015,1.9,6),mt('#666666'),.78,.95,-.1,k);
+    for(const a of arms){a.rotation.set(-1.15,0,a.position.x<0?.25:-.25);const st=add(new T.CylinderGeometry(.015,.015,.5,6),mt('#e8d7b0'),0,-.95,.2,a);st.rotation.x=Math.PI/2}}
+  else if(role==='Vocals'){const k=new T.Group();g.add(k);
+    add(new T.CylinderGeometry(.02,.02,2.35,6),mt('#2b2b2b'),0,1.17,.66,k);add(new T.CylinderGeometry(.25,.25,.03,16),mt('#2b2b2b'),0,.02,.66,k);add(new T.SphereGeometry(.075,10,8),mt('#3a3a3a'),0,2.42,.6,k);
+    arms[1].rotation.set(-1.25,0,-.45)}
+  g.userData.armX=[arms[0].rotation.x,arms[1].rotation.x]}
+
+/* the stage */
+function derivedLineup(h){return S.members.filter(m=>m.joined<=h.y&&(m.left==null||m.left>h.y)).map(m=>m.id)}
+function stageSpec(kind){
+  if(kind==='doc'&&UI.doc&&S){const h=S.hist[UI.doc.i];if(!h)return null;const ids=h.lineup||derivedLineup(h);const mood=clamp(25+(h.chem??60)*.7,0,100);
+    return {kind,y:h.y,list:h.split?[]:ids.map(findMember).filter(Boolean),coh:h.chem??60,mood,split:!!h.split,leader:h.leader}}
+  if(!S)return null;return {kind:'now',y:curY(),list:S.split?[]:active(),coh:S.split?60:cohesion(),split:!!S.split,leader:S.leader}}
+function specKey(sp){return JSON.stringify([sp.kind,sp.y,sp.coh>>3,sp.split,sp.leader,sp.list.map(m=>[m.id,m.look,moodFace(sp.mood??m.mood)]),S?S.feuds:0,document.documentElement.dataset.theme])}
+function buildStage(T,sp){
+  const sc=new T.Scene(),cs=getComputedStyle(document.documentElement),v=n=>{const x=cs.getPropertyValue(n).trim();return /^#[0-9a-f]{6}$/i.test(x)?x:'#333333'};
+  const bg=v('--hud'),acc=v('--accent'),acc2=v('--accent2'),d=decTheme(sp.y);sc.background=new T.Color(bg);
+  sc.add(new T.HemisphereLight(0xffffff,0x555555,.55));const dl=new T.DirectionalLight(0xffffff,.5);dl.position.set(3,8,7);sc.add(dl);
+  for(const [c,x] of [[acc,-5],[acc2,5]]){const pl=new T.PointLight(new T.Color(c),.45,30);pl.position.set(x,6,4);sc.add(pl)}
+  const floor=new T.Mesh(new T.CylinderGeometry(7,7.4,.4,48),toon(T,mixHex(bg,'#000000',.35)));floor.position.y=-.2;sc.add(floor);
+  const flat=(geo,c,x,y,z,op=1)=>{const me=new T.Mesh(geo,new T.MeshBasicMaterial({color:new T.Color(c),transparent:op<1,opacity:op}));me.position.set(x,y,z);sc.add(me);return me};
+  if(d==='sixties'){for(let i=5;i>0;i--)flat(new T.CircleGeometry(i*.9,40),i%2?acc:acc2,0,3.6,-6.2+i*.01)}
+  else if(d==='seventies'){['#d9631e','#e0a526','#8a4f22'].forEach((c,i)=>flat(new T.PlaneGeometry(16,.7),c,0,4.6-i*.75,-6))}
+  else if(d==='eighties'){flat(new T.CircleGeometry(3.2,48),acc2,0,3.4,-6.2);for(let i=0;i<4;i++)flat(new T.PlaneGeometry(7,.12+i*.07),bg,0,2.9-i*.5,-6.1)}
+  else if(d==='nineties'){flat(new T.PlaneGeometry(14,5),'#000000',0,3,-6.2,.25)}
+  else if(d==='noughties'){flat(new T.CircleGeometry(3.4,48),acc,0,3.5,-6.2,.35);flat(new T.CircleGeometry(1.6,40),'#ffffff',-.9,4.3,-6.1,.4)}
+  else flat(new T.CircleGeometry(1.5,48),acc2,0,3.8,-6.2);
+  const avs=[];const drum=sp.list.find(m=>m.role==='Drums');const front=sp.list.filter(m=>m!==drum);
+  const lead=front.find(m=>m.id===sp.leader)||front[0];const ordered=[];if(lead)ordered.push(lead);front.filter(m=>m!==lead).forEach((m,i)=>i%2?ordered.push(m):ordered.unshift(m));
+  const gap=1.55+(1-sp.coh/100)*1.5,n=ordered.length;
+  ordered.forEach((m,i)=>{const x=(i-(n-1)/2)*gap;const a=avatar(T,m,sp.y,{mood:sp.mood});a.position.set(x,0,-Math.abs(x)*.12+(m===lead?.3:0));a.rotation.y=-x*.05;sc.add(a);avs.push(a)});
+  if(drum){const riser=new T.Mesh(new T.BoxGeometry(2.6,.45,2),toon(T,'#2b2b2b'));riser.position.set(0,.22,-2.1);sc.add(riser);const a=avatar(T,drum,sp.y,{mood:sp.mood});const dx=n%2?gap*.5:0;riser.position.x=dx;a.position.set(dx,.45,-2.4);a.userData.baseY=.45;sc.add(a);avs.push(a)}
+  if(S&&sp.kind==='now')for(const [p,q] of S.feuds){const A=avs.find(a=>a.userData.id===p),B=avs.find(a=>a.userData.id===q);if(!A||!B)continue;const s=A.position.x<=B.position.x?1:-1;A.rotation.y-=.5*s;B.rotation.y+=.5*s}
+  if(!sp.list.length){const k=new T.Group();sc.add(k);const st=new T.Mesh(new T.CylinderGeometry(.02,.02,2.35,6),toon(T,'#2b2b2b'));st.position.set(0,1.17,.4);k.add(st);const mic=new T.Mesh(new T.SphereGeometry(.075,10,8),toon(T,'#3a3a3a'));mic.position.set(0,2.42,.34);k.add(mic)}
+  return {scene:sc,cam:new T.PerspectiveCamera(32,1,.1,100),avs,span:Math.max(n-1,0)*gap,kind:sp.kind,dist:11}}
+function fitCamera(st,aspect){st.cam.aspect=aspect;const hw=st.span/2+1.3,vf=32*Math.PI/180,hf=2*Math.atan(Math.tan(vf/2)*aspect);st.dist=Math.max(9.5,hw/Math.tan(hf/2)+1);st.cam.updateProjectionMatrix()}
+function animateStage(st,t){
+  st.cam.position.set(Math.sin(t*.25)*.9,3.1,st.dist);st.cam.lookAt(0,1.75,0);
+  for(const a of st.avs){const u=a.userData,e=u.face==='frown'?.35:u.face==='smile'?1:.65,p=t*(1.6+e)+u.ph;
+    a.position.y=u.baseY+Math.abs(Math.sin(p*1.6))*.05*e;u.head.rotation.x=(u.face==='frown'?.3:0)+Math.sin(p)*.05*e;u.head.rotation.z=Math.sin(p*.7)*.06;
+    if(u.role==='Drums'){u.arms[0].rotation.x=u.armX[0]+Math.sin(p*4)*.25*e;u.arms[1].rotation.x=u.armX[1]-Math.sin(p*4)*.25*e}
+    else if(u.role==='Guitar'||u.role==='Bass')u.arms[0].rotation.x=u.armX[0]+Math.sin(p*5)*.18*e;
+    else if(u.role==='Keys'){u.arms[0].rotation.x=u.armX[0]+Math.sin(p*3)*.08*e;u.arms[1].rotation.x=u.armX[1]+Math.cos(p*3)*.08*e}}}
+function stageRenderer(T){if(AV.r)return AV.r;
+  try{const r=new T.WebGLRenderer({antialias:true});r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));AV.r=r;let down=null;
+    r.domElement.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY]});
+    r.domElement.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>8||!AV.st||AV.st.kind!=='now')return;
+      const rc=r.domElement.getBoundingClientRect();const ray=new T.Raycaster();ray.setFromCamera(new T.Vector2((e.clientX-rc.left)/rc.width*2-1,-(e.clientY-rc.top)/rc.height*2+1),AV.st.cam);
+      const hit=ray.intersectObjects(AV.st.avs,true)[0];let o=hit&&hit.object;while(o&&!o.userData.id)o=o.parent;if(o)ACT.style(o.userData.id)});
+    return r}catch(e){AV.failed=true;return null}}
+function disposeStage(){if(!AV.st)return;AV.st.scene.traverse(o=>{if(o.geometry&&!o.geometry.userData.shared)o.geometry.dispose()});AV.st=null;AV.key=''}
+function fallbackStage(el,sp){const fb=el.querySelector('.stage-fb');if(fb&&sp)fb.innerHTML=sp.list.map(m=>`<img class="portrait" src="${svgAvatar(m,sp.y)}" alt="">`).join('')}
+function sizeStage(el){const r=AV.r,st=AV.st;if(!r||!st)return;const w=el.clientWidth||320,h=el.clientHeight||230;r.setSize(w,h,false);fitCamera(st,w/h);if(AV.still){animateStage(st,0);r.render(st.scene,st.cam)}}
+function mountStage(el){const sp=stageSpec(el.dataset.stage);if(!sp)return;
+  loadThree().then(T=>{if(!el.isConnected)return;const r=stageRenderer(T);if(!r){fallbackStage(el,sp);return}
+    const key=specKey(sp);if(key!==AV.key){disposeStage();AV.st=buildStage(T,sp);AV.key=key}
+    if(r.domElement.parentNode!==el)el.insertBefore(r.domElement,el.firstChild);sizeStage(el);startLoop()}).catch(()=>fallbackStage(el,sp))}
+function loop(){AV.raf=0;const st=AV.st,r=AV.r;if(!st||!r||!r.domElement.isConnected||document.hidden)return;animateStage(st,AV.still?0:performance.now()/1000);r.render(st.scene,st.cam);if(!AV.still)AV.raf=requestAnimationFrame(loop)}
+function startLoop(){if(!AV.raf)AV.raf=requestAnimationFrame(loop)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)startLoop()});
+window.addEventListener('resize',()=>{const el=AV.r&&AV.r.domElement.parentNode;if(el)sizeStage(el)});
+function portraitURL(T,m,y){const face=moodFace(m.mood??60);const key=[m.id,JSON.stringify(m.look||''),decTheme(y),Math.floor((y-m.born)/6),face].join('|');if(AV.cache.has(key))return AV.cache.get(key);
+  if(!AV.pr){try{AV.pr=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});AV.pr.setPixelRatio(1);AV.pr.setSize(192,192,false)}catch(e){AV.failed=true;return null}}
+  const sc=new T.Scene();sc.background=new T.Color(mixHex((m.look||genLook(m.id)).fit,'#ffffff',.6));sc.add(new T.HemisphereLight(0xffffff,0x666666,.7));const dl=new T.DirectionalLight(0xffffff,.45);dl.position.set(2,4,5);sc.add(dl);
+  sc.add(avatar(T,m,y,{inst:false}));const cam=new T.PerspectiveCamera(30,1,.1,50);cam.position.set(.35,2.85,3.4);cam.lookAt(0,2.62,0);AV.pr.render(sc,cam);
+  const url=AV.pr.domElement.toDataURL('image/png');sc.traverse(o=>{if(o.geometry&&!o.geometry.userData.shared)o.geometry.dispose()});
+  if(AV.cache.size>240)AV.cache.clear();AV.cache.set(key,url);return url}
+function hydrate(root=document){const imgs=[...root.querySelectorAll('img[data-pid]')];const st=root.querySelector('[data-stage]');if(!imgs.length&&!st)return;
+  loadThree().then(T=>{for(const im of imgs){if(!im.isConnected)continue;const m=findMember(im.dataset.pid);if(!m)continue;const u=portraitURL(T,m,+im.dataset.y||curY());if(u)im.src=u}if(st&&st.isConnected)mountStage(st)})
+    .catch(()=>{if(st)fallbackStage(st,stageSpec(st.dataset.stage))})}
+function stageHTML(){return `<div class="stage" data-stage="now"><div class="stage-fb"></div><div class="stage-cap">${S.split?`On hiatus since ${S.split.y}`:`${esc(GENRES[S.genre].n)} · tap someone to restyle`}</div></div>`}
+function styleSheet(){const m=findMember(UI.styleId);if(!m)return '<p>Nobody to style.</p>';const L=m.look||(m.look=genLook(m.id));const y=curY();
+  const sw=(f,arr)=>`<div class="swatches">${arr.map(c=>`<button class="sw ${L[f]===c?'on':''}" style="background:${c}" data-a="look" data-v="${f}|${c}" aria-label="${f} ${c}"></button>`).join('')}</div>`;
+  return `<div class="memhead">${pimg(m,'lg',y)}<div><h2>${esc(m.name)}</h2><p class="small muted">${m.role} · ${y-m.born} · dressed for the ${decTheme(y)==='noughties'?'2000s':decTheme(y)==='modern'?'present':decTheme(y)}</p></div></div>
+  <div class="label">Skin</div>${sw('skin',SKINS)}<div class="label">Hair colour</div>${sw('hair',HAIRC)}
+  <div class="label">Hair</div><div class="chips three">${HAIRS.map(h=>`<button class="chip ${L.style===h?'on':''}" data-a="look" data-v="style|${h}"><b>${HAIRN[h]}</b></button>`).join('')}</div>
+  <div class="label">Outfit colour</div>${sw('fit',OUTFITC)}
+  <div class="chips"><button class="chip ${L.glasses?'on':''}" data-a="look" data-v="glasses|!"><b>Shades</b></button><button class="chip ${L.beard?'on':''}" data-a="look" data-v="beard|!"><b>Beard</b></button></div>
+  <p class="small muted">Clothes follow each decade's fashion. "Era style" hair changes with the times, and everyone greys eventually.</p><button class="btn wide" data-a="closesheet">Done</button>`}
+
+/* ---------------- album covers ---------------- */
+function coverSVG(a,cls='cover'){const r=srand(hsh(a.t+'|'+a.y));const d=decTheme(a.y);const c1=(GENRES[a.g]||{}).c||'#888888';
+  const P=['#ff7a18','#ff2e93','#ffcc00','#b6ff3b','#27e8ff','#b44cff','#e0a526','#d9631e','#1ba1e2'];const c2=P[Math.floor(r()*P.length)];const id='cv'+hsh(a.t+a.y+cls+Math.random());
+  const T=esc(a.t),fs=Math.max(6,Math.min(12,130/Math.max(6,a.t.length)).toFixed(1));let s='',tt='';
+  if(d==='sixties'){s=`<rect width="100" height="100" fill="${c1}"/>`;const cx=30+r()*40,cy=30+r()*40;for(let i=9;i>0;i--)s+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${i*9}" fill="${i%2?c2:c1}"/>`;
+    tt=`<text x="50" y="88" text-anchor="middle" font-family="Shrikhand,serif" font-size="${fs}" fill="#fff" stroke="#3a0a4a" stroke-width=".6">${T}</text>`}
+  else if(d==='seventies'){s=`<rect width="100" height="100" fill="#f3e3c3"/><circle cx="50" cy="62" r="24" fill="${c2}"/>`+['#d9631e','#e0a526','#8a4f22','#6b7a2a'].map((c,i)=>`<rect y="${62+i*9.5}" width="100" height="9.5" fill="${c}"/>`).join('');
+    tt=`<text x="50" y="22" text-anchor="middle" font-family="Fraunces,serif" font-style="italic" font-weight="900" font-size="${fs}" fill="#3b2412">${T}</text>`}
+  else if(d==='eighties'){s=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcc00"/><stop offset="1" stop-color="#ff2fd0"/></linearGradient></defs><rect width="100" height="100" fill="#0a0616"/><circle cx="50" cy="56" r="26" fill="url(#${id})"/>`
+    +[50,56,61].map((y,i)=>`<rect y="${y}" width="100" height="${1.5+i}" fill="#0a0616"/>`).join('')+`<rect y="66" width="100" height="34" fill="#0a0616"/>`
+    +[70,75,82,92].map(y=>`<line x1="0" x2="100" y1="${y}" y2="${y}" stroke="#ff2fd0" stroke-width=".7"/>`).join('')+[-60,-30,0,30,60].map(x=>`<line x1="50" y1="66" x2="${50+x*2}" y2="100" stroke="#ff2fd0" stroke-width=".7"/>`).join('');
+    tt=`<text x="50" y="18" text-anchor="middle" font-family="Audiowide,sans-serif" font-size="${fs}" fill="#27e8ff">${T}</text>`}
+  else if(d==='nineties'){s=`<rect width="100" height="100" fill="#2a2721"/><rect x="${(12+r()*16).toFixed(1)}" y="${(10+r()*14).toFixed(1)}" width="60" height="55" fill="${c1}" opacity=".55" transform="rotate(${(r()*10-5).toFixed(1)} 50 50)"/>`;
+    for(let i=0;i<60;i++)s+=`<rect x="${(r()*100).toFixed(1)}" y="${(r()*100).toFixed(1)}" width="1" height="1" fill="#fff" opacity="${(r()*.4).toFixed(2)}"/>`;
+    tt=`<text x="8" y="88" font-family="'Special Elite',monospace" font-size="${fs}" fill="#ebe5d3">${esc(a.t.toLowerCase())}</text>`}
+  else if(d==='noughties'){s=`<defs><radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".25" stop-color="${c1}"/><stop offset="1" stop-color="#12304d"/></radialGradient><linearGradient id="${id}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef6ff"/><stop offset="1" stop-color="#9cc9f0"/></linearGradient></defs>`
+    +`<rect width="100" height="100" fill="url(#${id}b)"/><circle cx="50" cy="44" r="27" fill="url(#${id})"/><ellipse cx="44" cy="30" rx="14" ry="7" fill="#fff" opacity=".55"/>`;
+    tt=`<text x="50" y="88" text-anchor="middle" font-family="'Exo 2',sans-serif" font-style="italic" font-weight="800" font-size="${fs}" fill="#12304d">${T}</text>`}
+  else{const k=Math.floor(r()*3);s=`<rect width="100" height="100" fill="#f2f1ec"/>`+(k===0?`<circle cx="50" cy="54" r="20" fill="${c2}"/>`:k===1?`<polygon points="50,30 74,72 26,72" fill="${c2}"/>`:`<rect x="34" y="38" width="32" height="32" fill="${c2}"/>`);
+    tt=`<text x="8" y="14" font-family="Inter,sans-serif" font-weight="800" font-size="${Math.min(fs,8)}" fill="#111">${T}</text>`}
+  return `<svg class="${cls}" viewBox="0 0 100 100" role="img" aria-label="Album cover: ${T}">${s}${tt}</svg>`}
+
+/* ---------------- the rival band ---------------- */
+function genRival(st){let name;const w=x=>x.split(' ').filter(t=>t!=='The');do{name=bandName()}while(w(name).some(t=>w(st.name).includes(t)));
+  return {name,genre:pick(['rock','pop','soul','folk'].filter(g=>g!==st.genre)),fans:2500,peakFans:2500,albums:[],hits:0,n1:0,split:null,reunions:0}}
+function rivalYear(R){const r=S.rival;if(!r)return;const y=S.year;
+  if(r.split){r.fans=Math.round(r.fans*.95);if(y-r.split>=5&&chance(.18)){r.split=null;r.reunions++;r.fans=Math.round(r.fans*1.3);R.lines.push({i:'🥊',t:`Your old rivals ${esc(r.name)} have reunited.`});tl('rival',`Rivals ${r.name} reunited`)}return}
+  r.fans=Math.round(r.fans*.93)+Math.round(1500+r.fans*.04);
+  const hot=avail(y).sort((a,b)=>gpop(b,y)-gpop(a,y))[0];
+  if(hot!==r.genre&&gpop(r.genre,y)<.4&&chance(.45)){r.genre=hot;R.lines.push({i:'🥊',t:`Rivals ${esc(r.name)} jumped on the ${GENRES[hot].n} bandwagon.`})}
+  if(chance(.55)){const deb=r.albums.length?r.albums[0].y:y;const q=ri(40,86);
+    const sc=q*.45+10+gpop(r.genre,y)*22+rnd(0,10)+Math.max(0,Math.log10(r.fans+1)-3)*3+5-Math.max(0,y-deb-18)*.45+rnd(-8,8);
+    const pk=chartPeak(sc);let t;do{t=albumTitle()}while(S.albums.some(a=>a.t===t));const al={y,t,peak:pk,g:r.genre};r.albums.push(al);
+    if(pk)r.fans+=Math.round(2.5e6/Math.pow(pk,1.1)*.25);if(pk&&pk<=10)r.hits++;if(pk===1)r.n1++;
+    if(R.album){const a=R.album.peak||999,b=pk||999;
+      if(a<b){S.rivalW=(S.rivalW||0)+1;S.hype+=6;active().forEach(m=>m.mood+=3);R.lines.push({i:'🥊',t:`<b>Chart battle won.</b> "${esc(R.album.t)}" (${ord(a)}) beat ${esc(r.name)}'s "${esc(t)}" (${pk?ord(pk):'no chart'}).`});tl('rival',`Won a chart battle against ${r.name}`)}
+      else if(b<a){S.rivalL=(S.rivalL||0)+1;S.hype-=3;active().forEach(m=>m.mood-=m.ego>60?7:3);R.lines.push({i:'🥊',t:`<b>Chart battle lost.</b> ${esc(r.name)}'s "${esc(t)}" (${ord(b)}) beat "${esc(R.album.t)}" (${a<999?ord(a):'no chart'}).`});tl('rival',`Lost a chart battle to ${r.name}`)}}
+    else if(pk&&pk<=10)R.lines.push({i:'🥊',t:`Rivals ${esc(r.name)} hit ${ord(pk)} with "${esc(t)}".`})}
+  if(y-START>8&&chance(.025)){r.split=y;R.lines.push({i:'🥊',t:`Your rivals ${esc(r.name)} have split up.`});tl('rival',`Rivals ${r.name} split up`)}
+  r.peakFans=Math.max(r.peakFans||0,r.fans)}
+function rivalCard(){const r=S.rival;if(!r)return '';const last=r.albums[r.albums.length-1];
+  return `<div class="card"><div class="between"><div><div class="label">Your rivals</div><h3>${esc(r.name)}</h3></div><span class="pill ${r.split?'':'acc2'}">${r.split?'split since '+r.split:GENRES[r.genre].n}</span></div>
+  <div class="kv"><div><b>${fmtN(r.fans)}</b><span>fans</span></div><div><b>${r.hits}</b><span>top 10s</span></div><div><b>${S.rivalW||0}–${S.rivalL||0}</b><span>chart battles</span></div></div>
+  <p class="small muted">${last?`Latest: "${esc(last.t)}" (${last.y}), ${last.peak?'peaked at '+ord(last.peak):'missed the charts'}. `:''}They chase whatever is hot. Release a record the same year they do and it's a chart battle.</p></div>`}
+function rivalVerdict(L){const r=S.rival;if(!r)return '';const you=L.t10*2+L.n1*4+L.cl*3+Math.log10(S.peakFans+1)*5,them=r.hits*2+r.n1*4+Math.log10((r.peakFans||r.fans)+1)*5;
+  return `<div class="card"><div class="label">Head to head</div><h3>${esc(S.name)} vs ${esc(r.name)}</h3>
+  <div class="list"><div class="between small"><span>Peak fans</span><b>${fmtN(S.peakFans)} · ${fmtN(r.peakFans||r.fans)}</b></div><div class="between small"><span>Top 10 hits</span><b>${L.t10} · ${r.hits}</b></div><div class="between small"><span>#1 singles</span><b>${L.n1} · ${r.n1}</b></div><div class="between small"><span>Albums</span><b>${S.albums.length} · ${r.albums.length}</b></div><div class="between small"><span>Chart battles</span><b>${S.rivalW||0} · ${S.rivalL||0}</b></div></div>
+  <p class="small">${you>=them?`History remembers ${esc(S.name)}. ${esc(r.name)} chased every trend and ended up a pub-quiz answer.`:`${esc(r.name)} won the decades. Every trend they chased paid off, and you'll never hear the end of it.`}</p></div>`}
+
+/* ---------------- the documentary ---------------- */
+function renderDoc(){let el=$('#doc');
+  if(!UI.doc){if(el)el.remove();clearTimeout(AV.docT);render();return}
+  if(!el){el=document.createElement('div');el.id='doc';document.body.appendChild(el)}
+  const D=UI.doc,h=S.hist[D.i];const y=h.y;setTheme(decTheme(y));const era=eraOf(y);
+  const order=['split','reunion','album','hit','join','leave','lead','classic','rival','genre','milestone','formed','solo','tour'];
+  const items=S.timeline.filter(t=>t.y===y&&order.includes(t.kind)).sort((a,b)=>order.indexOf(a.kind)-order.indexOf(b.kind)).slice(0,3);
+  const al=S.albums.find(a=>a.y===y);const filler=h.split?['Apart. The phones stay quiet.','Solo records and side projects.','Nobody is saying the word "reunion".'][y%3]:['On the road again.','Another year in the van.','Writing, rehearsing, arguing.','Business as usual.'][y%4];
+  el.innerHTML=`<div class="doc" role="dialog" aria-label="Band documentary"><div class="between"><div class="label">${esc(S.name)} · the documentary</div><button class="iconbtn" data-a="docclose" aria-label="Close">✕</button></div>
+  <div class="stage doc-stage" data-stage="doc"><div class="stage-fb"></div><div class="stage-cap">${h.split?'The band is split':`${fmtN(h.fans)} fans`}</div></div>
+  <div class="doc-cap"><div class="between"><div><div class="doc-year">${y}</div><div class="label">${era.n}</div></div>${al?coverSVG(al,'cover'):''}</div>
+  ${items.length?items.map(t=>`<p>${esc(t.text)}</p>`).join(''):`<p class="muted">${filler}</p>`}</div>
+  <div class="doc-bar"><i style="width:${(D.i+1)/S.hist.length*100}%"></i></div>
+  <div class="doc-ctl"><button class="btn ghost sm" data-a="docprev" aria-label="Previous year">◀</button><button class="btn sm" data-a="docplay">${D.play?'Pause':D.i>=S.hist.length-1?'Replay':'Play'}</button><button class="btn ghost sm" data-a="docnext" aria-label="Next year">▶</button><button class="btn ghost sm" data-a="docspeed">${D.speed}×</button></div></div>`;
+  hydrate(el);clearTimeout(AV.docT);
+  if(D.play)AV.docT=setTimeout(()=>{if(!UI.doc)return;if(UI.doc.i<S.hist.length-1)UI.doc.i++;else UI.doc.play=false;renderDoc()},(items.length?1900:900)/D.speed)}
+
+/* ---------------- actions ---------------- */
+const ACT={
+  tab(v){UI.tab=v;render();window.scrollTo(0,0)},
+  focus(v){S.plan.focus=v;if(v==='rest'||v==='split')S.plan.genre=S.genre;if(v!=='album'&&v!=='albumtour'&&v!=='tour')S.plan.promo=false;render()},
+  genre(v){S.plan.genre=v;render()},
+  budget(v){S.plan.budget=+v;render()},
+  scale(v){S.plan.scale=v;render()},
+  promo(){S.plan.promo=!S.plan.promo;render()},
+  choose(v){const [i,k]=v.split('|');const e=S.pending[+i];if(!e)return;const E=EV[e.t];const key=isNaN(+k)?k:+k;
+    S.pending.splice(+i,1);const msg=E.res(e.d,key);if(msg)S.yearLog.push(msg);save();render()},
+  play(){if(S.pending.filter(evValid).length)return;playYear();render()},
+  closereport(){UI.report=null;render();window.scrollTo(0,0)},
+  leader(id){const m=M(id),old=M(S.leader);if(old&&old.ego>50)old.mood-=10;m.mood+=8;S.leader=id;S.flags.leadY=S.year;tl('lead',`${m.name} becomes the face of the band`);toast(`${first(m)} now leads the band.`);save();render()},
+  writer(id){const m=M(id);if(m.writer&&active().filter(x=>x.writer).length<=1){toast('Someone has to write the songs.');return}m.writer=!m.writer;save();render()},
+  fire(id){const m=M(id);UI.sheet=`<h2>Fire ${esc(m.name)}?</h2><p class="small">They'll be gone for good (unless a reunion brings them back). Loyal members won't like it.</p><div class="row"><button class="btn danger" data-a="firey" data-v="${id}">Fire them</button><button class="btn ghost" data-a="closesheet">Cancel</button></div>`;render()},
+  firey(id){const m=M(id);UI.sheet=null;active().filter(x=>x!==m).forEach(x=>{if(feuding(x.id,m.id))x.mood+=8;else if(x.trait==='Peacemaker'||x.loyalty>70)x.mood-=5});leave(m,'fired');toast(`${first(m)} is out.`);save();render()},
+  closesheet(){UI.sheet=null;render()},
+  menu(){UI.sheet=`<h2>${esc(S.name)}</h2><p class="small muted">Slot ${S.slot} · saved automatically every year.</p><button class="btn wide" data-a="totitle">Save & exit to title</button><button class="btn ghost wide" data-a="closesheet">Back to ${S.year}</button>`;render()},
+  endnow(){UI.sheet=`<h2>End the career now?</h2><p class="small">The band's story ends in ${S.year} and you'll see the full history and whether you make the Hall of Sound.</p><div class="row"><button class="btn danger" data-a="endy">End it</button><button class="btn ghost" data-a="closesheet">Keep playing</button></div>`;render()},
+  endy(){UI.sheet=null;finish('retired');render();window.scrollTo(0,0)},
+  totitle(){save();S=null;UI.sheet=null;UI.report=null;UI.setup=null;render();window.scrollTo(0,0)},
+  new(v){newSetup(+v);render();window.scrollTo(0,0)},
+  load(v){const s=readSlot(+v);if(!s){toast('That save could not be read.');return}S=migrate(s);S.slot=+v;UI.tab='year';UI.report=null;render();window.scrollTo(0,0)},
+  del(v){const s=readSlot(+v);UI.sheet=`<h2>Delete ${esc(s?s.name:'this save')}?</h2><p class="small">This can't be undone.</p><div class="row"><button class="btn danger" data-a="dely" data-v="${v}">Delete</button><button class="btn ghost" data-a="closesheet">Cancel</button></div>`;render()},
+  dely(v){delSlot(+v);UI.sheet=null;render()},
+  rname(){UI.setup.name=bandName();render()},
+  sgenre(v){UI.setup.name=$('#bandname')?.value||UI.setup.name;UI.setup.genre=v;render()},
+  ssize(v){UI.setup.name=$('#bandname')?.value||UI.setup.name;UI.setup.size=+v;Object.assign(UI.setup,genLineup(+v));render()},
+  reroll(){UI.setup.name=$('#bandname')?.value||UI.setup.name;Object.assign(UI.setup,genLineup(UI.setup.size));render()},
+  start(){startGame()},
+  setlist(v){S.plan.setlist=v;render()},
+  style(id){if(!findMember(id))return;UI.styleId=id;UI.sheet=styleSheet;render()},
+  look(v){const m=findMember(UI.styleId);if(!m)return;const [f,val]=v.split('|');m.look=m.look||genLook(m.id);m.look[f]=val==='!'?!m.look[f]:val;if(S)save();render()},
+  doc(){if(!S||!S.hist.length)return;UI.sheet=null;UI.doc={i:0,play:true,speed:1};renderSheet();renderDoc()},
+  docclose(){UI.doc=null;renderDoc()},
+  docplay(){const D=UI.doc;if(!D.play&&D.i>=S.hist.length-1)D.i=0;D.play=!D.play;renderDoc()},
+  docprev(){UI.doc.play=false;UI.doc.i=Math.max(0,UI.doc.i-1);renderDoc()},
+  docnext(){UI.doc.play=false;UI.doc.i=Math.min(S.hist.length-1,UI.doc.i+1);renderDoc()},
+  docspeed(){UI.doc.speed=UI.doc.speed===1?2:UI.doc.speed===2?4:1;renderDoc()},
+};
+document.addEventListener('click',e=>{if(e.target.closest('[data-stop]')&&!e.target.closest('[data-a]'))return;const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+  if(b.classList.contains('scrim')&&e.target!==b)return;const f=ACT[b.dataset.a];if(f)f(b.dataset.v,b)});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(UI.doc){UI.doc=null;renderDoc()}else if(UI.sheet){UI.sheet=null;render()}});
+window.DECADES={get S(){return S},set S(v){S=v},playYear,startYear,render,UI,EV,legacy,gpop,AV};
+(function boot(){render()})();
+</script>
+</body>
+</html>
