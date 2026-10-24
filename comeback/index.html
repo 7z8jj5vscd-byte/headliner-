@@ -1341,7 +1341,7 @@ function renderSheet(){const el=$('#sheet');if(!UI.sheet){el.hidden=true;el.inne
   if(el.hidden)lastFocus=document.activeElement;
   const k=UI.sheet.k;const html={event:evSheet,member:memberSheet,pickmeet:pickMeetSheet,picksit:pickSitSheet,sit:sitSheet,legal:legalSheet,replace:replaceSheet,pickcare:pickCareSheet,friend:friendSheet,show:showSheet,menu:menuSheet,help:helpSheet,confirm:confirmSheet}[k]();
   el.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(UI.sheet.label||'Details')}"><div class="grip"></div>${html}</div>`;el.hidden=false;document.body.style.overflow='hidden';
-  const sh=el.querySelector('.sheet');sh.scrollTop=0;typeset(el);hydrate(el);const f=sh.querySelector('button:not([disabled])');if(f&&k!=='show')f.focus({preventScroll:true});
+  const sh=el.querySelector('.sheet');sh.scrollTop=0;typeset(el);hydrate(el);const f=sh.querySelector('button:not([disabled])');if(f&&k!=='show'&&matchMedia('(pointer:fine)').matches)f.focus({preventScroll:true});
   if(k==='show')runShow()}
 function sheetHead(t,sub){return `<div class="between"><div style="min-width:0"><h2 style="font-size:18px">${esc(t)}</h2>${sub?`<p class="small faint" style="margin-top:2px">${sub}</p>`:''}</div><button class="iconbtn" data-a="closesheet" aria-label="Close">${IC.x}</button></div>`}
 function evSheet(){const id=UI.sheet.id,e=EV[id];UI.sheet.label=e.title;
@@ -1353,7 +1353,7 @@ function memberSheet(){const m=M(UI.sheet.id);UI.sheet.label=m.name;const reunio
   const others=S.m.filter(x=>x!==m&&x.status!=='no'&&!x.gone).map(x=>[x,G(m.id,x.id)]).sort((a,b)=>b[1]-a[1]);
   const talking=reunion&&['out','talking'].includes(m.status)&&!m.repl;
   const friends=lineup().filter(x=>x!==m);
-  let h=`${sheetHead('','')}<div class="person" style="margin-top:-36px">${face(m,'lg')}<div class="who"><b style="font-size:18px">${esc(m.name)}</b><span>${esc(m.role)} · ${m.age} · ${ARC[m.arc]}</span><span class="pill ${st[1]}" style="margin-top:6px;display:inline-flex">${st[0]}</span></div></div>
+  let h=`<div class="between" style="align-items:flex-start"><div class="person">${face(m,'lg')}<div class="who"><h2 style="font-size:18px">${esc(m.name)}</h2><span>${esc(m.role)} · ${m.age} · ${ARC[m.arc]}</span><span class="pill ${st[1]}" style="margin-top:6px;display:inline-flex">${st[0]}</span></div></div><button class="iconbtn" data-a="closesheet" aria-label="Close">${IC.x}</button></div>
    <p class="muted">${esc(m.repl?`${REPL[m.repl].d}. Replacing ${M(m.replaces).name}. Fan acceptance ${Math.round(m.accept)} / 100.`:m.now)}</p>`;
   if(msg)h+=`<div class="well"><p class="quote">${esc(msg.txt)}</p>${msg.will!=null?`<p class="small faint" style="margin-top:8px">Willingness ${sgn(msg.will)}</p>`:msg.mood!=null?`<p class="small faint" style="margin-top:8px">Mood ${sgn(msg.mood)}</p>`:''}</div>`;
   if(msg&&msg.sign)h+=`<div class="well"><b>${esc(msg.sign)}</b></div>`;
@@ -1634,7 +1634,7 @@ function hydrate(root=document){const imgs=[...root.querySelectorAll('img[data-p
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')e.target.blur()});
 // Live updates (same approach as Headliner and Debut Dream): when the app opens or comes back to the foreground,
 // fetch the latest page and reload into it if its version is newer. Never interrupts an open sheet.
-const APP_VER='202610250300';
+const APP_VER='202610242205';
 function checkUpdate(){if(!/^https?:/.test(location.protocol)||UI.sheet)return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER&&!UI.sheet){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 function boot(){UI.demo=genBand();UI.demo.members.forEach(m=>m.status='signed');

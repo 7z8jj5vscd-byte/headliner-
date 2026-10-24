@@ -26,6 +26,12 @@ Start a band in 1965 and play one year per turn all the way to the present. Mana
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/decades/
 
+## Comeback Tour
+
+A band that was huge twenty-odd years ago split in a blaze of lawsuits and broken mirrors. Now a promoter wants them back, and you, their old manager, have eight weeks to make it happen. Every run generates a new fictional band with a back catalog of hits, a breakup story and five members whose lives went very different ways: one is broke, one is sober, one still hates the others, one has a solo career and one has health problems. Win them back one conversation at a time, settle old grudges, fight over the band name and the publishing split, and hire a replacement the fans may never accept. Then choose a flat guarantee or a versus deal, set ticket prices (dynamic pricing pays and enrages), decide on VIP meet and greets, festival slots, a catalog sale, a biopic and a documentary. Rehearse, lower the keys or don't, decide whether backing tracks go in the system, build the setlist, and take it on the road: every night wears down voices and bodies, plays out song by song and lands with reviews, fan posts and Loopr clips. Feuds can blow up mid-tour, a viral clip can bring in a new generation, and a new album can be a triumph or a shrug. There are six endings: a triumphant legacy, a farewell, a second act, a payday, an implosion and the reunion that never was. The band appears on a 3D stage (drag to spin), ghostly until each member signs.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/comeback/
+
 The other games install on iPhone the same way: open the link in Safari, tap Share, then Add to Home Screen.
 
 ## Updates go live automatically
