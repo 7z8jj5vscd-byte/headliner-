@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Debut Dream">
+<meta name="theme-color" content="#ffd9ee">
+<meta name="description" content="Debut Dream: a K-pop idol career simulator. Train, debut, chase the first win and become a legend.">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>Debut Dream</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800;900&display=swap">
+<style>
+:root{
+  /* Glossy idol-pop look: pastel candy gradient, frosted glass cards, holo accents */
+  --ink:#2a1846; --ink2:#5b4a7a; --dim:#8f80ab;
+  --pink:#ff4fa3; --violet:#9b5cff; --sky:#3fb6ff; --mint:#22c9a6; --lemon:#ffcf3f; --coral:#ff6b6b;
+  --glass:rgba(255,255,255,.72); --glass2:rgba(255,255,255,.88); --edge:rgba(255,255,255,.95);
+  --line:rgba(122,84,190,.16);
+  --holo:linear-gradient(120deg,#ff7ac6,#b98bff 30%,#7fd4ff 55%,#8ff5d2 75%,#ffe27a);
+  --candy:linear-gradient(135deg,#ff5fae,#a45cff);
+  --display:'Fredoka','Nunito',system-ui,-apple-system,sans-serif;
+  --body:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --tabh:64px;
+  color-scheme:light;
+  -webkit-text-size-adjust:100%;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:#ffe6f4}
+body{margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.4;
+  background:radial-gradient(120% 60% at 0% 0%,#ffd1ea 0%,transparent 60%),radial-gradient(90% 60% at 100% 20%,#d9d0ff 0%,transparent 60%),radial-gradient(100% 70% at 50% 100%,#c9efff 0%,transparent 65%),#fdeefa;
+  background-attachment:fixed}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.55;
+  background-image:radial-gradient(circle at 12% 18%,#fff 0 1.5px,transparent 2px),radial-gradient(circle at 78% 9%,#fff 0 1.2px,transparent 2px),radial-gradient(circle at 63% 41%,#fff 0 1.5px,transparent 2px),radial-gradient(circle at 25% 72%,#fff 0 1.2px,transparent 2px),radial-gradient(circle at 88% 80%,#fff 0 1.6px,transparent 2px)}
+#app{position:relative;z-index:1}
+button,input,select{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;font-weight:700}
+h2{font-size:21px}
+h3{font-size:17px}
+p{margin:0}
+small{font-size:12.5px}
+[hidden]{display:none!important}
+.muted{color:var(--ink2)} .dim{color:var(--dim)}
+.good{color:#0f9e7f} .bad{color:#e0365b}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+.center{text-align:center}
+
+.card{position:relative;background:var(--glass);border:1.5px solid var(--edge);border-radius:22px;padding:16px;
+  box-shadow:0 10px 30px rgba(155,92,255,.13),inset 0 1px 0 #fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.holo::before{content:"";position:absolute;inset:-1.5px;border-radius:23px;padding:2px;background:var(--holo);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.label{font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--violet)}
+
+.btn{position:relative;overflow:hidden;border:0;border-radius:999px;padding:12px 18px;font-weight:900;font-size:15px;cursor:pointer;
+  background:var(--candy);color:#fff;box-shadow:0 6px 16px rgba(255,79,163,.35),inset 0 -3px 0 rgba(0,0,0,.12);transition:transform .08s,filter .15s;touch-action:manipulation;min-height:44px}
+.btn::after{content:"";position:absolute;left:8%;right:8%;top:3px;height:42%;border-radius:999px;background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,0));pointer-events:none}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.4)}
+.btn.ghost{background:var(--glass2);color:var(--ink);box-shadow:0 3px 10px rgba(155,92,255,.15),inset 0 0 0 1.5px var(--line)}
+.btn.ghost::after{display:none}
+.btn.mint{background:linear-gradient(135deg,#2fe0b8,#1fb4d8);box-shadow:0 6px 16px rgba(34,201,166,.35),inset 0 -3px 0 rgba(0,0,0,.12)}
+.btn.sky{background:linear-gradient(135deg,#55c8ff,#6d7bff);box-shadow:0 6px 16px rgba(63,182,255,.35),inset 0 -3px 0 rgba(0,0,0,.12)}
+.btn.warn{background:linear-gradient(135deg,#ff8a7a,#ff4f7b)}
+.btn.sm{padding:7px 12px;font-size:13px;min-height:34px}
+.btn.big{padding:15px 22px;font-size:17px;width:100%}
+.btn.block{width:100%}
+.btn:focus-visible,input:focus-visible,select:focus-visible,.opt:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+input[type=text],select{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:11px 12px;font-size:16px;min-height:44px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field > span{font-size:12px;font-weight:900;color:var(--ink2);letter-spacing:.04em}
+
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:900;padding:3px 9px;border-radius:999px;background:#fff;border:1.5px solid var(--line);color:var(--ink2);white-space:nowrap}
+.pill.hot{background:var(--candy);color:#fff;border-color:transparent}
+.pill.mint{background:#d6fff4;color:#0d7e66;border-color:#a8f0dc}
+.pill.sky{background:#def2ff;color:#1569a8;border-color:#b5e0ff}
+.pill.lemon{background:#fff5cc;color:#8a6400;border-color:#ffe48a}
+.pill.red{background:#ffe1e6;color:#c2224a;border-color:#ffc0cc}
+
+/* option chips / cards */
+.opts{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(min(140px,100%),1fr))}
+.opt{text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-height:44px;touch-action:manipulation}
+.opt b{font-family:var(--display);font-weight:600;font-size:15px}
+.opt small{color:var(--ink2)}
+.opt.on{border-color:transparent;background:linear-gradient(#fff,#fff) padding-box,var(--holo) border-box;border:2.5px solid transparent;box-shadow:0 6px 18px rgba(155,92,255,.22)}
+.opt:disabled{opacity:.45;cursor:not-allowed}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:36px;height:36px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line);cursor:pointer;padding:0}
+.sw.on{box-shadow:0 0 0 3px var(--pink)}
+
+/* bars */
+.bar{height:10px;border-radius:999px;background:rgba(122,84,190,.12);overflow:hidden}
+.bar > i{display:block;height:100%;border-radius:999px;background:var(--candy)}
+.bar.mint > i{background:linear-gradient(90deg,#2fe0b8,#1fb4d8)}
+.bar.red > i{background:linear-gradient(90deg,#ffb36b,#ff4f7b)}
+.bar.sky > i{background:linear-gradient(90deg,#7fd4ff,#6d7bff)}
+.stat{display:grid;grid-template-columns:26px 1fr 34px;gap:8px;align-items:center}
+.stat b{font-size:13px}
+.stat .v{font-weight:900;text-align:right;font-variant-numeric:tabular-nums}
+
+/* header */
+.hud{position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top,0px);background:rgba(255,240,250,.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1.5px solid rgba(255,255,255,.9)}
+.hud .wrap{display:flex;flex-direction:column;gap:7px;padding-top:8px;padding-bottom:9px}
+.hud .who{display:flex;align-items:center;gap:10px}
+.hud .who .av{width:42px;height:42px;flex:none}
+.hud .name{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud .sub{font-size:12px;color:var(--ink2);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.meter{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;font-size:11.5px;font-weight:900;color:var(--ink2)}
+.meter .bar{height:8px}
+.av{border-radius:50%;overflow:hidden;background:#fff;box-shadow:0 0 0 2px #fff,0 3px 10px rgba(155,92,255,.25)}
+.av svg{display:block;width:100%;height:100%}
+
+main.wrap{padding-top:14px;padding-bottom:calc(var(--tabh) + 92px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.title-main{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))!important}
+
+/* tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(255,245,252,.86);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:1.5px solid #fff;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -6px 20px rgba(155,92,255,.1)}
+.tabs .wrap{display:grid;grid-template-columns:repeat(5,1fr);height:var(--tabh)}
+.tab{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:900;color:var(--dim);cursor:pointer;touch-action:manipulation}
+.tab i{font-style:normal;font-size:21px;line-height:1;filter:grayscale(.7);opacity:.75}
+.tab.on{color:var(--pink)}
+.tab.on i{filter:none;opacity:1;transform:translateY(-1px)}
+.go{position:fixed;left:0;right:0;bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px));z-index:24;padding:10px 0 10px;pointer-events:none}
+.go .wrap{pointer-events:auto}
+
+/* allocation */
+.alloc{display:flex;flex-direction:column;gap:6px}
+.arow{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:14px;background:rgba(255,255,255,.65)}
+.arow .ic{font-size:20px;text-align:center}
+.arow b{font-size:14px;display:block}
+.arow small{color:var(--ink2);display:block;line-height:1.2}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:36px;height:36px;border-radius:50%;border:0;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);font-size:19px;font-weight:900;cursor:pointer;color:var(--violet);touch-action:manipulation}
+.step button:disabled{opacity:.35}
+.step .n{width:22px;text-align:center;font-weight:900;font-size:16px}
+.dots{display:flex;gap:4px}
+.dots i{width:12px;height:12px;border-radius:50%;background:rgba(122,84,190,.15)}
+.dots i.on{background:var(--candy)}
+
+/* lists */
+.list{display:flex;flex-direction:column;gap:8px}
+.li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:16px;background:rgba(255,255,255,.7)}
+.li .av{width:40px;height:40px;flex:none}
+.li.me{background:linear-gradient(#fff,#fff) padding-box,var(--holo) border-box;border:2px solid transparent}
+.rk{width:28px;font-family:var(--display);font-weight:700;font-size:17px;text-align:center;color:var(--violet);flex:none}
+.news{display:flex;flex-direction:column;gap:6px}
+.news div{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.65);font-size:13.5px}
+.news small{display:block;color:var(--dim);font-weight:800;font-size:11px}
+
+/* sheet (tasks & modals) */
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(60,30,90,.38);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px));overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  background:linear-gradient(180deg,#fff 0%,#fff6fc 100%);border-radius:28px 28px 0 0;padding:20px max(18px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));
+  box-shadow:0 -10px 40px rgba(60,30,90,.25);display:flex;flex-direction:column;gap:12px;animation:up .28s cubic-bezier(.2,.9,.3,1.2)}
+.sheet h2{font-size:23px}
+.sheet .kick{font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;background:var(--holo);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sheet .choices{display:flex;flex-direction:column;gap:8px}
+@media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:28px}}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+
+.toasts{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:90;display:flex;flex-direction:column;gap:6px;width:min(440px,calc(100vw - 32px));pointer-events:none}
+.toast{background:rgba(42,24,70,.92);color:#fff;padding:10px 14px;border-radius:16px;font-weight:800;font-size:13.5px;box-shadow:0 8px 24px rgba(42,24,70,.3);animation:up .25s}
+
+/* title */
+.logo{font-family:var(--display);font-weight:700;font-size:clamp(44px,13vw,72px);line-height:.95;text-align:center;letter-spacing:-.01em;
+  background:linear-gradient(120deg,#ff3f9e,#a95cff 45%,#3fb6ff 80%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #fff) drop-shadow(0 10px 22px rgba(255,79,163,.35))}
+.tag{text-align:center;font-weight:900;color:var(--ink2)}
+.hero{display:flex;justify-content:center;gap:-10px;margin:6px 0}
+.hero .av{width:86px;height:86px;margin:0 -8px;border:3px solid #fff}
+.sparkle{display:inline-block;animation:tw 1.6s ease-in-out infinite}
+@keyframes tw{50%{transform:scale(1.25) rotate(20deg);opacity:.7}}
+
+/* big portrait */
+.portrait{display:flex;gap:14px;align-items:center}
+.portrait .av{width:96px;height:96px;flex:none}
+.bigav{width:min(200px,55vw);height:min(200px,55vw);margin:0 auto}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:rgba(255,255,255,.75);border-radius:16px;padding:9px 8px;text-align:center}
+.kpi b{display:block;font-family:var(--display);font-size:19px;font-weight:700;line-height:1.1}
+.kpi small{color:var(--ink2);font-weight:800;font-size:11px}
+.stick{display:flex;justify-content:center}
+.stick svg{width:110px;height:170px}
+
+/* mini-games */
+.mg{position:fixed;inset:0;z-index:80;background:linear-gradient(180deg,#2a1450 0%,#47207a 55%,#8a2d8f 100%);color:#fff;display:flex;flex-direction:column;
+  padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));user-select:none;-webkit-user-select:none;touch-action:none}
+.mg .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mg .top b{font-family:var(--display);font-size:18px}
+.mg .score{font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums}
+.mg .x{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:999px;padding:6px 12px;font-weight:900;cursor:pointer}
+.field-mg{position:relative;flex:1;margin:10px 0;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.1));display:grid;grid-template-columns:repeat(4,1fr)}
+.lane{position:relative;border-right:1px solid rgba(255,255,255,.08)}
+.lane:last-child{border-right:0}
+.hitline{position:absolute;left:0;right:0;height:4px;background:linear-gradient(90deg,#ff7ac6,#7fd4ff);box-shadow:0 0 14px #ff7ac6;border-radius:4px}
+.note{position:absolute;left:12%;width:76%;height:22px;margin-top:-11px;border-radius:12px;top:0;will-change:transform;box-shadow:0 0 12px currentColor,inset 0 2px 0 rgba(255,255,255,.6)}
+.judge{position:absolute;left:0;right:0;text-align:center;font-family:var(--display);font-size:26px;font-weight:700;pointer-events:none;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.pads{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;height:92px}
+.pad{border:0;border-radius:20px;font-size:26px;color:#fff;cursor:pointer;touch-action:none;box-shadow:inset 0 -5px 0 rgba(0,0,0,.2),inset 0 3px 0 rgba(255,255,255,.35);transition:transform .05s,filter .05s}
+.pad.hit{transform:scale(.94);filter:brightness(1.35)}
+.cue{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.cue .big{font-size:96px;line-height:1;height:110px;font-family:var(--display);transition:transform .12s}
+.cue .seq{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:34px;font-size:24px}
+.cpads{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cpads .pad{height:72px}
+.mgintro{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;text-align:center}
+.mgintro h2{font-size:28px}
+.mgintro p{color:#f2e6ff}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toasts" id="toasts"></div>
+<script>
+'use strict';
+/* ============ helpers ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const fmt=n=>{n=Math.round(n);const a=Math.abs(n);if(a>=1e9)return (n/1e9).toFixed(a>=1e10?0:1)+'B';if(a>=1e6)return (n/1e6).toFixed(a>=1e7?0:1)+'M';if(a>=1e4)return Math.round(n/1e3)+'K';if(a>=1e3)return (n/1e3).toFixed(1)+'K';return String(n)};
+const won=n=>'₩'+fmt(n);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const avg=a=>a.length?sum(a)/a.length:0;
+const sign=n=>(n>=0?'+':'')+Math.round(n);
+let _id=1;const uid=()=>'n'+Date.now().toString(36)+(_id++);
+
+/* ============ data ============ */
+const SK=['vocal','dance','rap','visual','variety','lang'];
+const SKL={vocal:'Vocal',dance:'Dance',rap:'Rap',visual:'Visual',variety:'Variety',lang:'Languages'};
+const SKI={vocal:'🎤',dance:'💃',rap:'🎧',visual:'✨',variety:'🎭',lang:'🌏'};
+const SKH={vocal:'Breath, pitch, high notes',dance:'Choreo, stamina, sharpness',rap:'Flow, writing, tone',visual:'Skincare, styling, camera',variety:'Talk, wit, reactions',lang:'Japanese, English, Mandarin'};
+const BLOCKS=8;
+const AGENCIES=[
+  {id:'stellar',name:'Stellar Nine Entertainment',short:'Stellar Nine',tier:'Big 3',diff:78,support:1.35,minMonths:14,size:5,cut:.75,fame:40000,mult:1.35,col:'#ff4fa3',desc:'Industry giant. World-class trainers, glossy debuts, brutal monthly cuts.'},
+  {id:'aurora',name:'Aurora Pop Co.',short:'Aurora Pop',tier:'Big 3',diff:70,support:1.28,minMonths:12,size:6,cut:.65,fame:32000,mult:1.25,col:'#9b5cff',desc:'Known for synchronized choreography and huge overseas fandoms.'},
+  {id:'moonbeam',name:'Moonbeam Music',short:'Moonbeam',tier:'Mid-size',diff:54,support:1.12,minMonths:9,size:5,cut:.5,fame:14000,mult:1.1,col:'#3fb6ff',desc:'Vocal powerhouse label. Smaller budget, tighter team.'},
+  {id:'cosmo',name:'Cosmo Pixel Ent.',short:'Cosmo Pixel',tier:'Mid-size',diff:44,support:1.02,minMonths:8,size:4,cut:.45,fame:9000,mult:1,col:'#22c9a6',desc:'Trendy, experimental concepts. Debuts fast, takes risks.'},
+  {id:'comet',name:'Little Comet Records',short:'Little Comet',tier:'Small',diff:18,support:.88,minMonths:6,size:5,cut:.3,fame:2500,mult:.85,col:'#ffb020',desc:'A tiny label in a basement studio. Everyone gets a chance.'}
+];
+const AG=id=>AGENCIES.find(a=>a.id===id)||AGENCIES[4];
+const CONCEPTS=[
+  {id:'crush',n:{girl:'Girl Crush',boy:'Bad Boy'},w:{dance:1,rap:1,visual:.5},col:'#ff3b6b',e:'🔥',d:'Fierce, loud, unapologetic.'},
+  {id:'cute',n:{girl:'Cute & Fresh',boy:'Boyfriend Fresh'},w:{visual:1,variety:1,vocal:.5},col:'#ff8ad1',e:'🍓',d:'Bright colors, sing-along hooks.'},
+  {id:'dark',n:{girl:'Dark Fantasy',boy:'Dark Fantasy'},w:{dance:1.2,visual:.8},col:'#5b3bbf',e:'🦇',d:'Lore, capes, gothic drama.'},
+  {id:'retro',n:{girl:'Retro City Pop',boy:'Retro Funk'},w:{vocal:1.2,variety:.5},col:'#ff9f43',e:'📼',d:'Neon, synths and nostalgia.'},
+  {id:'dreamy',n:{girl:'Dreamy Fairytale',boy:'Dreamy Youth'},w:{vocal:1,visual:1},col:'#7fb5ff',e:'🌙',d:'Soft focus, sparkle, longing.'},
+  {id:'hiphop',n:{girl:'Hip-Hop Swag',boy:'Hip-Hop Swag'},w:{rap:1.3,dance:.7},col:'#1fb4a8',e:'🧢',d:'Heavy beats and bars.'},
+  {id:'elegant',n:{girl:'Elegant Chic',boy:'Classy Gentleman'},w:{visual:1.2,vocal:.8},col:'#c9a227',e:'🥂',d:'Tailored, mature, effortless.'}
+];
+const CN=id=>CONCEPTS.find(c=>c.id===id)||CONCEPTS[0];
+const conceptName=(id,g)=>CN(id).n[g||'girl'];
+const NAMES={girl:['Haeun','Seori','Dabin','Narae','Somin','Yeonu','Gaon','Ari','Mia','Rina','Ivy','Nene','Hayul','Yebin','Dain','Seol','Jia','Mirae','Hanbyul','Rumi','Chaeun','Lia','Yuki','Bora','Sian','Eunbi','Hyerin','Nayun','Kiki','Moa'],
+  boy:['Hajun','Siwoo','Doyun','Ian','Riku','Yul','Taeo','Haneul','Eunho','Raon','Theo','Noa','Gyeol','Ryo','Daon','Jiho','Seonu','Kian','Mason','Yuto','Hyunbin','Woojin','Junseo','Arin','Sol','Ezra','Dohyun','Leon','Haram','Kenta']};
+const TRAITS={kind:'Kind',competitive:'Competitive',shy:'Shy',cheerful:'Cheerful',cold:'Cold'};
+const RIVALS=['LUMIQ','VEXA','Peach Parade','Neon Arcade','Orbit Kids','Glasshouse','Mintwave','Crowned Hearts','7Lights','Sugar Rebels','ZENIQ','Paper Planets'];
+const SHOWS=['Music Pulse','Show! Starlight','Idol Countdown','Pop Tower Live'];
+const SURV='Star Seed 99';
+const CITIES={asia:['Seoul','Tokyo','Osaka','Bangkok','Manila','Jakarta','Taipei','Singapore'],world:['Seoul','Tokyo','Los Angeles','New York','Mexico City','London','Paris','Berlin','Sydney','São Paulo','Toronto','Jakarta'],stadium:['Seoul','Tokyo Dome','Los Angeles','Chicago','London','Paris','Sydney','Bangkok','Manila','São Paulo','New York','Seoul (encore)']};
+const TOURS=[
+  {id:'asia',n:'Asia Arena Tour',fans:300000,weeks:6,rate:9,e:'🎌'},
+  {id:'world',n:'World Tour',fans:1500000,weeks:10,rate:12,e:'🌍'},
+  {id:'stadium',n:'Stadium World Tour',fans:5000000,weeks:12,rate:16,e:'🏟️'}
+];
+const RELEASES=[
+  {id:'single',n:'Digital single',weeks:3,q:0,cost:1},
+  {id:'mini',n:'Mini album',weeks:6,q:5,cost:1.6},
+  {id:'full',n:'Full album',weeks:10,q:10,cost:2.4}
+];
+const PRODUCERS=[
+  {id:'inhouse',n:'In-house team',q:0,d:'Safe, familiar sound.'},
+  {id:'hitmaker',n:'Hit-maker duo',q:8,d:'Expensive, catchy. Agency must approve.',agRel:55},
+  {id:'self',n:'Self-produced (you)',q:-4,d:'Uses your rap and vocal skill. Big fame swing.',self:1}
+];
+const STICK_SHAPES={heart:'Heart',star:'Star',orb:'Orb',crown:'Crown',moon:'Moon'};
+const FANDOM_COLORS=['#ff4fa3','#9b5cff','#3fb6ff','#22c9a6','#ffcf3f','#ff7b3f','#ff5f6d','#c7a6ff'];
+const SUGGEST={group:['STARGLOW','LUVIN','Hi-Fi Club','NEONA','PRISM8','Velvet Bloom','DAZE','Kaleido','ORBITAL','LUNARIS','B!TE','Sugarcode','ECHOS','Mirage'],
+  song:['Heartbeat Remix','Sugar Rush','Starlight Diary','Moonwalker','Bubble Pop Love','Run This Town','Cherry Bomb Kiss','Daydream Drive','Electric Petal','Phantom','Lemonade Sky','Highlight','Gravity','Firework Heart','Ribbon','Wildflower','Midnight Arcade','Crystal Clear','No Brakes','Summer Static'],
+  fandom:['Stardust','Lumies','Glowies','Honeys','Orbiters','Petals','Sparklings','Nebulas','Moonies','Dreamers']};
+
+/* ============ look / avatar ============ */
+const SKINS=['#ffe3d3','#f8d2b8','#efc09c','#d9a07a','#b97c55','#8d5a3b'];
+const HAIRC=['#1d1726','#4a2f27','#8b5a2b','#e8c26a','#f4f0f6','#ff8cc6','#9b7bff','#5fc3ff','#ff5a5a','#2fd1a8'];
+const EYEC=['#3b2416','#6b4a2a','#2c6fb3','#3a9d6b','#8a4bd6','#c23a5c'];
+const OUTFITC=['#ff4fa3','#9b5cff','#3fb6ff','#22c9a6','#ffcf3f','#ffffff','#1f1a2e','#ff7b3f'];
+const HAIRS=['Long','Bob','Short','Ponytail','Twin buns','Curly','Side part','Wolf cut'];
+const ACCS=['None','Earrings','Ribbon','Beanie','Glasses','Star clip','Headphones','Choker'];
+const defaultLook=g=>({skin:1,hair:g==='boy'?2:0,hairC:0,eye:0,outfit:0,acc:0});
+const lookFor=(seed,g)=>{const r=n=>{seed=(seed*9301+49297)%233280;return Math.floor(seed/233280*n)};return {skin:r(SKINS.length),hair:g==='boy'?[2,5,6,7,1][r(5)]:[0,1,3,4,5,6,7][r(7)],hairC:r(HAIRC.length),eye:r(EYEC.length),outfit:r(OUTFITC.length),acc:r(ACCS.length)}};
+function avatarSVG(L,bg){
+  L=L||defaultLook();const sk=SKINS[L.skin]||SKINS[1],hc=HAIRC[L.hairC]||HAIRC[0],ec=EYEC[L.eye]||EYEC[0],oc=OUTFITC[L.outfit]||OUTFITC[0];
+  const hs=L.hair|0,a=L.acc|0,id='g'+Math.random().toString(36).slice(2,8);
+  const bgc=bg||'#ffe1f2';
+  let back='',front='';
+  // back hair
+  if(hs===0)back=`<path d="M22 46 Q22 14 50 14 Q78 14 78 46 L82 96 L18 96 Z" fill="${hc}"/>`;
+  else if(hs===1)back=`<path d="M22 46 Q22 14 50 14 Q78 14 78 46 L78 74 Q64 78 50 76 Q36 78 22 74 Z" fill="${hc}"/>`;
+  else if(hs===3)back=`<path d="M24 46 Q24 15 50 15 Q76 15 76 46 L76 56 L24 56 Z" fill="${hc}"/><path d="M70 22 Q92 30 86 66 Q82 80 74 84 Q80 60 70 40 Z" fill="${hc}"/>`;
+  else if(hs===4)back=`<circle cx="27" cy="20" r="11" fill="${hc}"/><circle cx="73" cy="20" r="11" fill="${hc}"/><path d="M24 46 Q24 15 50 15 Q76 15 76 46 L77 66 L23 66 Z" fill="${hc}"/>`;
+  else if(hs===5)back=`<g fill="${hc}"><circle cx="26" cy="34" r="12"/><circle cx="74" cy="34" r="12"/><circle cx="38" cy="18" r="12"/><circle cx="62" cy="18" r="12"/><circle cx="50" cy="15" r="11"/><circle cx="22" cy="52" r="10"/><circle cx="78" cy="52" r="10"/><circle cx="24" cy="66" r="8"/><circle cx="76" cy="66" r="8"/></g>`;
+  else if(hs===7)back=`<path d="M23 46 Q23 14 50 14 Q77 14 77 46 L80 70 L72 64 L74 78 L64 68 L36 68 L26 78 L28 64 L20 70 Z" fill="${hc}"/>`;
+  else back=`<path d="M25 46 Q25 16 50 16 Q75 16 75 46 L75 52 L25 52 Z" fill="${hc}"/>`;
+  // bangs
+  if(hs===2)front=`<path d="M26 44 Q26 18 50 18 Q74 18 74 44 Q70 32 60 30 Q56 36 48 33 Q40 36 34 32 Q28 36 26 44 Z" fill="${hc}"/>`;
+  else if(hs===6)front=`<path d="M26 46 Q24 18 50 17 Q76 18 75 44 Q66 26 46 30 Q34 33 26 46 Z" fill="${hc}"/>`;
+  else if(hs===7)front=`<path d="M26 46 Q26 17 50 17 Q74 17 74 46 L68 36 L64 42 L58 33 L52 41 L46 33 L40 42 L35 34 L30 44 Z" fill="${hc}"/>`;
+  else if(hs===5)front=`<path d="M28 42 Q30 22 50 21 Q70 22 72 42 Q64 30 56 33 Q50 28 44 33 Q36 30 28 42 Z" fill="${hc}"/>`;
+  else front=`<path d="M26 46 Q26 17 50 17 Q74 17 74 46 Q72 36 66 31 Q62 38 55 36 Q50 30 45 36 Q38 38 34 31 Q28 36 26 46 Z" fill="${hc}"/>`;
+  const outfit=`<path d="M14 100 Q16 78 36 74 L50 80 L64 74 Q84 78 86 100 Z" fill="${oc}"/><path d="M40 75 L50 86 L60 75" fill="none" stroke="${oc==='#ffffff'?'#e6dcf5':'rgba(255,255,255,.55)'}" stroke-width="2.5"/>`;
+  const neck=`<rect x="43" y="62" width="14" height="16" rx="6" fill="${sk}"/>`;
+  const face=`<ellipse cx="50" cy="46" rx="22" ry="24" fill="${sk}"/><ellipse cx="28.5" cy="49" rx="3.5" ry="5" fill="${sk}"/><ellipse cx="71.5" cy="49" rx="3.5" ry="5" fill="${sk}"/>`;
+  const eyes=`<g><ellipse cx="41" cy="50" rx="4.3" ry="5.4" fill="${ec}"/><ellipse cx="59" cy="50" rx="4.3" ry="5.4" fill="${ec}"/><circle cx="42.4" cy="48" r="1.7" fill="#fff"/><circle cx="60.4" cy="48" r="1.7" fill="#fff"/><circle cx="39.8" cy="52.3" r=".8" fill="#fff"/><circle cx="57.8" cy="52.3" r=".8" fill="#fff"/><path d="M36 44.5 Q41 42 46 44.5 M54 44.5 Q59 42 64 44.5" stroke="#2a1846" stroke-width="1.4" fill="none" stroke-linecap="round"/></g>`;
+  const blush=`<ellipse cx="35" cy="57" rx="4" ry="2.2" fill="#ff8fb8" opacity=".55"/><ellipse cx="65" cy="57" rx="4" ry="2.2" fill="#ff8fb8" opacity=".55"/>`;
+  const mouth=`<path d="M45.5 60 Q50 64 54.5 60" stroke="#c2456e" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  let acc='';
+  if(a===1)acc=`<circle cx="28.5" cy="56" r="2.2" fill="#ffcf3f"/><circle cx="71.5" cy="56" r="2.2" fill="#ffcf3f"/>`;
+  else if(a===2)acc=`<g fill="#ff4f8b"><path d="M64 20 L76 14 L74 26 Z"/><path d="M64 20 L54 12 L56 25 Z"/><circle cx="64" cy="20" r="3"/></g>`;
+  else if(a===3)acc=`<path d="M24 34 Q26 8 50 8 Q74 8 76 34 Z" fill="#ff7ac6"/><rect x="22" y="30" width="56" height="7" rx="3.5" fill="#ffe1f2"/><circle cx="50" cy="7" r="4" fill="#fff"/>`;
+  else if(a===4)acc=`<g fill="none" stroke="#2a1846" stroke-width="1.8"><circle cx="41" cy="50" r="7"/><circle cx="59" cy="50" r="7"/><path d="M48 50 H52"/></g>`;
+  else if(a===5)acc=`<path d="M34 24 l2.2 4.6 5 .6 -3.7 3.4 1 5 -4.5 -2.5 -4.5 2.5 1 -5 -3.7 -3.4 5 -.6z" fill="#ffd84d" stroke="#fff" stroke-width=".8"/>`;
+  else if(a===6)acc=`<path d="M25 46 Q25 14 50 14 Q75 14 75 46" stroke="#2a1846" stroke-width="3.5" fill="none"/><rect x="20" y="40" width="9" height="15" rx="4" fill="#9b5cff"/><rect x="71" y="40" width="9" height="15" rx="4" fill="#9b5cff"/>`;
+  else if(a===7)acc=`<rect x="42" y="68" width="16" height="4" rx="2" fill="#2a1846"/><circle cx="50" cy="73" r="2" fill="#ffcf3f"/>`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="${id}" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="${bgc}"/></radialGradient></defs><rect width="100" height="100" fill="url(#${id})"/>${back}${outfit}${neck}${face}${eyes}${blush}${mouth}${front}${acc}</svg>`;
+}
+const av=(L,cls='',bg)=>`<div class="av ${cls}">${avatarSVG(L,bg)}</div>`;
+function stickSVG(shape,col){
+  col=col||'#ff4fa3';const id='s'+Math.random().toString(36).slice(2,8);
+  let head;
+  if(shape==='heart')head=`<path d="M50 76 C20 56 18 34 34 28 C43 25 49 31 50 36 C51 31 57 25 66 28 C82 34 80 56 50 76 Z"/>`;
+  else if(shape==='star')head=`<path d="M50 14 L59 40 L86 40 L64 56 L72 82 L50 66 L28 82 L36 56 L14 40 L41 40 Z"/>`;
+  else if(shape==='crown')head=`<path d="M20 70 L16 30 L34 46 L50 20 L66 46 L84 30 L80 70 Z"/>`;
+  else if(shape==='moon')head=`<path d="M62 16 A32 32 0 1 0 80 70 A26 26 0 1 1 62 16 Z"/>`;
+  else head=`<circle cx="50" cy="48" r="30"/>`;
+  return `<svg viewBox="0 0 100 160" aria-hidden="true"><defs><radialGradient id="${id}" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="${col}" stop-opacity=".9"/><stop offset="1" stop-color="${col}"/></radialGradient><filter id="${id}f" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter></defs>
+  <g fill="${col}" opacity=".55" filter="url(#${id}f)">${head}</g><g fill="url(#${id})" stroke="#fff" stroke-width="2.5">${head}</g>
+  <rect x="42" y="84" width="16" height="64" rx="8" fill="#fff" stroke="#e7dcf7" stroke-width="2"/><rect x="45" y="96" width="10" height="5" rx="2.5" fill="${col}"/><rect x="44" y="140" width="12" height="6" rx="3" fill="#e7dcf7"/></svg>`;
+}
+
+/* ============ state ============ */
+const KEY='debutdream_slot_',LAST='debutdream_last',HOF='debutdream_hof',SLOTS=3;
+let S=null;
+let UI={scr:'title',tab:'week',draft:null,modal:null,mq:[],slot:1,audAg:null};
+function freshDraft(){return {name:'',stage:'',gender:'girl',age:15,strength:'vocal',look:defaultLook('girl')}}
+const W=()=>S.week;
+const yr=w=>Math.floor((w??S.week)/48)+1;
+const mon=w=>Math.floor(((w??S.week)%48)/4)+1;
+const wk=w=>((w??S.week)%4)+1;
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dateStr=w=>`Year ${yr(w)} · ${MONTHS[mon(w)-1]} wk ${wk(w)}`;
+const age=()=>S.age0+Math.floor(S.week/48);
+const me=()=>S.idol.stage||S.idol.name;
+const gname=()=>S.group?S.group.name:'';
+function log(t){S.log.unshift({w:S.week,t});S.log=S.log.slice(0,120)}
+function toast(t){const el=document.createElement('div');el.className='toast';el.textContent=t;const b=$('#toasts');b.appendChild(el);while(b.children.length>3)b.firstChild.remove();setTimeout(()=>el.remove(),3400)}
+function slotKey(n){return KEY+n}
+function readSlot(n){try{const r=localStorage.getItem(slotKey(n));return r?JSON.parse(r):null}catch(e){return null}}
+function save(){if(!S||!S.slot)return;try{localStorage.setItem(slotKey(S.slot),JSON.stringify(S));localStorage.setItem(LAST,String(S.slot))}catch(e){}}
+function lastSlot(){try{return +localStorage.getItem(LAST)||0}catch(e){return 0}}
+function migrate(s){s.tasks??=[];s.log??=[];s.flags??={};s.alloc??=defAlloc('trainee');s.songs??=[];s.awards??=[];s.sound??=true;s.year??={};s.evals??=[];return s}
+function defAlloc(act){return act==='trainee'?{vocal:2,dance:2,rap:0,visual:1,variety:0,lang:0,rest:2,bond:1}:{vocal:1,dance:2,rap:0,visual:0,variety:0,lang:0,rest:2,bond:1,content:1,fanevent:1}}
+
+/* ============ npcs ============ */
+function mkNPC(g,base,usedNames){
+  const pool=NAMES[g].filter(n=>!usedNames.has(n));const name=pick(pool.length?pool:NAMES[g]);usedNames.add(name);
+  const st={};SK.forEach(k=>st[k]=clamp(Math.round(base+rnd(-14,14)),5,92));
+  const spec=pick(['vocal','dance','rap','visual','variety']);st[spec]=clamp(st[spec]+ri(8,18),5,95);
+  return {id:uid(),name,age:ri(14,20),st,gr:rnd(.25,.75),rel:ri(-5,15),trait:pick(Object.keys(TRAITS)),look:lookFor(ri(1,99999),g),pop:ri(10,40),stress:ri(5,25),last:0,hist:[]};
+}
+function usedNames(){const u=new Set([S.idol.stage,S.idol.name]);(S.trainees||[]).forEach(n=>u.add(n.name));(S.group?.members||[]).forEach(n=>u.add(n.name));return u}
+function overall(st){return st.vocal*.24+st.dance*.24+st.rap*.14+st.visual*.2+st.variety*.1+st.lang*.08}
+const myOverall=()=>overall(S.st);
+function relWord(r){return r>=60?'Best friend':r>=30?'Friend':r>=10?'Friendly':r>-10?'Neutral':r>-35?'Tense':'Rival'}
+function relPill(r){const c=r>=30?'mint':r>-10?'sky':r>-35?'lemon':'red';return `<span class="pill ${c}">${relWord(r)} ${r>0?'+':''}${Math.round(r)}</span>`}
+
+/* ============ setup ============ */
+function newGame(d,slot){
+  const stage=(d.stage||'').trim()||(d.name||'').trim()||'Star';
+  S=migrate({ver:1,slot,created:Date.now(),idol:{name:(d.name||'').trim()||stage,stage,gender:d.gender,look:Object.assign({},d.look),strength:d.strength},
+    age0:+d.age||15,week:0,act:'audition',st:{},stamina:100,stress:10,money:0,debt:0,agency:null,agRel:50,tried:[],alloc:defAlloc('trainee'),bond:null,
+    trainees:[],rank:0,lowStreak:0,months:0,buzz:0,fame:0,group:null,promo:null,prep:null,tour:null,cooldown:0,fandom:null,wins:0,hiatus:0,stressHigh:0,
+    surv:null,rivals:RIVALS.map(n=>({n,p:ri(38,80)})),tasks:[],log:[],flags:{tours:0,missed:0},ending:null,sound:true,year:{wins:0,sales:0}});
+  SK.forEach(k=>S.st[k]=ri(8,20));S.st[d.strength]=clamp(S.st[d.strength]+16,0,100);
+  log(`${stage} packs a bag and heads to Seoul with one dream: debut.`);
+  save();
+}
+function npcAge0(){return ri(14,20)-Math.floor(S.week/48)}
+const npcAge=n=>n.age0+Math.floor(S.week/48);
+function joinAgency(id,transfer){
+  const a=AG(id);S.agency=id;S.act='trainee';S.months=0;S.lowStreak=0;S.agRel=transfer?45:50;S.rank=0;S.evals=[];S.flags.debutPlanned=false;S.flags.longterm=false;
+  const u=usedNames();S.trainees=[];
+  for(let i=0;i<11;i++){const n=mkNPC(S.idol.gender,24+a.diff*.3,u);n.age0=npcAge0();S.trainees.push(n)}
+  const sh=shuffle(S.trainees);sh[0].rel=28;sh[0].trait='kind';sh[1].rel=18;sh[1].trait='cheerful';sh[2].rel=-28;sh[2].trait='competitive';
+  S.bond=sh[0].id;S.alloc=defAlloc('trainee');
+  log(transfer?`Transferred to ${a.name}. A fresh start.`:`Passed the audition at ${a.name}! Trainee life begins.`);
+  pushTask({type:'info',kick:'Welcome, trainee',title:a.name,html:`<p>${esc(a.desc)}</p><p class="muted">You share a dorm with 11 other trainees. <b>${esc(sh[0].name)}</b> already feels like a friend, and <b>${esc(sh[2].name)}</b> keeps glaring at you.</p><p class="muted">Each week, split your 8 time blocks between lessons, rest and bonding. Every 4 weeks comes a <b>monthly evaluation</b> that sets your rank. Stay out of the bottom two.</p>`});
+}
+function auditionScore(game,piece){const st=S.st[piece]*1.3+S.st.visual*.3;return clamp(.6*game+.4*clamp(st,0,100)+rnd(-6,6),0,100)}
+
+/* ============ tasks ============ */
+function pushTask(t,front){if(front)S.tasks.unshift(t);else S.tasks.push(t)}
+function doneTask(){S.tasks.shift();save();render()}
+const curTask=()=>S&&S.tasks[0];
+function info(kick,title,html){pushTask({type:'info',kick,title,html})}
+
+/* ============ weekly ============ */
+function trainGain(k){const a=AG(S.agency);let e=1.5*(a?a.support:1);if(S.stamina<25)e*=.5;if(S.stress>70)e*=.65;if(S.act==='career')e*=.75;return e*(1-S.st[k]/125)*rnd(.8,1.2)}
+function npcById(id){return (S.trainees||[]).find(n=>n.id===id)||(S.group?.members||[]).find(n=>n.id===id)||(S.surv?.cast||[]).find(n=>n.id===id)}
+function applyWeek(){
+  const A=S.alloc;const notes=[];
+  if(S.hiatus>0){S.hiatus--;S.stamina+=20;S.stress-=15;if(S.group)S.group.pop-=2;if(!S.hiatus)log('Back from your break, rested and ready.');return}
+  const start=Object.assign({},S.st);
+  SK.forEach(k=>{for(let i=0;i<(A[k]||0);i++){S.st[k]=Math.min(100,S.st[k]+trainGain(k));S.stamina-=8;S.stress+=2.5}});
+  for(let i=0;i<(A.rest||0);i++){S.stamina+=16;S.stress-=7}
+  if(A.bond){const n=npcById(S.bond);if(n){const m=n.trait==='cold'?.5:n.trait==='shy'?.75:1;n.rel=clamp(n.rel+6.5*A.bond*m,-100,100);if(S.group)S.group.harmony+=1.2*A.bond}S.stress-=3*A.bond;S.stamina-=3*A.bond}
+  if(S.group){const g=S.group;
+    if(A.content){const v=.5+S.st.variety/100;g.pop+=1.1*A.content*v;S.fame+=.7*A.content*(v+S.st.visual/200);addFans(g.fans*.002*A.content+150*A.content);S.stamina-=9*A.content;S.stress+=3*A.content}
+    if(A.fanevent){addFans(g.fans*.0015*A.fanevent+250*A.fanevent);g.rep+=.4*A.fanevent;S.fame+=.3*A.fanevent;S.stamina-=7*A.fanevent;S.stress+=1*A.fanevent;pay(g.fans*3*A.fanevent/g.size)}
+  }
+  S.stamina+=12;
+  const gained=SK.filter(k=>S.st[k]-start[k]>=.5).map(k=>`${SKL[k]} +${(S.st[k]-start[k]).toFixed(1)}`);
+  if(gained.length)UI.lastGain=gained.join(' · ');else UI.lastGain='';
+}
+function clampAll(){
+  S.stamina=clamp(S.stamina,-10,100);S.stress=clamp(S.stress,0,100);S.agRel=clamp(S.agRel,0,100);S.buzz=clamp(S.buzz,0,100);S.fame=clamp(S.fame,0,100);
+  SK.forEach(k=>S.st[k]=clamp(S.st[k],0,100));
+  if(S.group){const g=S.group;g.pop=clamp(g.pop,2,100);g.rep=clamp(g.rep,0,100);g.harmony=clamp(g.harmony,0,100);g.fans=Math.max(0,Math.round(g.fans))}
+}
+function nextWeek(){
+  if(!S||S.tasks.length||S.ending)return;
+  if(S.act==='trainee'||S.act==='debut'||S.act==='career'){}else return;
+  applyWeek();S.week++;
+  if(S.act==='trainee')traineeWeek();else if(S.act==='debut')debutWeek();else careerWeek();
+  wellness();clampAll();save();render();
+  const m=$('main');if(m)window.scrollTo({top:0,behavior:'smooth'});
+}
+function wellness(){
+  if(S.ending)return;
+  if(S.stamina<=0&&!S.hiatus){S.hiatus=2;S.stamina=20;info('Injury','You pushed too hard',`<p>Running on empty, you twist your knee in practice. Doctor's orders: <b>2 weeks of rest</b>.</p>`);log('Injured from overwork. Two weeks of rest.');if(S.act==='trainee')S.agRel-=3}
+  if(S.stress>=90)S.stressHigh++;else S.stressHigh=Math.max(0,S.stressHigh-1);
+  if(S.stressHigh>=3&&!S.tasks.some(t=>t.type==='burnout')&&!S.hiatus){S.stressHigh=0;pushTask({type:'burnout'},true)}
+}
+function growNPCs(list,mult){list.forEach(n=>{SK.forEach(k=>{n.st[k]=clamp(n.st[k]+n.gr*rnd(.2,1.1)*(1-n.st[k]/115)*mult,0,98)})})}
+function traineeWeek(){
+  const a=AG(S.agency);S.debt+=420000;
+  growNPCs(S.trainees,a.support);
+  if(S.surv){pushTask({type:'survEp'});return}
+  if(S.week%4===0){S.months++;pushTask({type:'eval',kind:S.months%2?'vocal':'dance'});return}
+  if(Math.random()<.42)randomEvent('trainee');
+}
+
+/* ============ evaluations ============ */
+const EVALK={vocal:{n:'Vocal & Rap',k:['vocal','rap'],mg:'rhythm'},dance:{n:'Dance & Performance',k:['dance','visual'],mg:'choreo'}};
+function evalStat(st,kind){const k=EVALK[kind].k;return st[k[0]]*.65+st[k[1]]*.35}
+function finishEval(game){
+  const t=curTask();const kind=t.kind;
+  const my=clamp(.5*game+.5*evalStat(S.st,kind)+S.buzz*.04+(S.agRel-50)*.05,0,100);
+  S.trainees.forEach(n=>{n.last=clamp(evalStat(n.st,kind)+rnd(-6,8),0,100);n.hist.push(n.last);n.hist=n.hist.slice(-4)});
+  const all=[...S.trainees.map(n=>({id:n.id,s:n.last})),{id:'me',s:my}].sort((x,y)=>y.s-x.s);
+  const rank=all.findIndex(x=>x.id==='me')+1;const prev=S.rank;S.rank=rank;
+  S.evals.push({w:S.week,s:my,rank,kind});S.evals=S.evals.slice(-12);
+  const N=all.length;let fx='';
+  if(rank<=3){S.agRel+=4;S.buzz+=3;S.lowStreak=0;fx='The directors are whispering your name. Agency favor +4.'}
+  else if(rank>N-2){S.lowStreak++;S.stress+=8;fx=S.lowStreak>=2?'Bottom two again. You could be cut.':'Bottom two. One more and you could be cut.'}
+  else{S.lowStreak=0;S.agRel+=1}
+  S.trainees.forEach(n=>{if(n.rel<-20&&n.last<my)n.rel-=3;});
+  log(`Monthly ${EVALK[kind].n} evaluation: ranked #${rank} of ${N}.`);
+  S.tasks[0]={type:'evalRes',kind,rank,prev,my:Math.round(my),game:Math.round(game),rows:all.map(x=>({id:x.id,s:Math.round(x.s)})),fx};
+  save();render();
+}
+function afterEval(){
+  S.tasks.shift();const a=AG(S.agency);const N=S.trainees.length+1;
+  if(S.lowStreak>=2){if(Math.random()<a.cut){pushTask({type:'cut'});save();render();return}S.lowStreak=1;info('Final warning','Saved by a thread',`<p>The CEO decides to give you one more month. Don't waste it.</p>`);S.agRel-=5}
+  if(!S.flags.debutPlanned&&S.months>=a.minMonths&&Math.random()<.32+(S.months-a.minMonths)*.07){S.flags.debutPlanned=true;pushTask({type:'debutPlan',via:(!S.flags.survDone&&Math.random()<.35)?'survival':'lineup'})}
+  else if(S.months>=36&&!S.flags.longterm){S.flags.longterm=true;pushTask({type:'longterm'})}
+  else if(S.months>=5&&!S.flags.survDone&&!S.flags.survInvite&&S.rank<=Math.ceil(N/2)&&Math.random()<.15){S.flags.survInvite=true;pushTask({type:'survInvite'})}
+  if(Math.random()<.3){const low=S.trainees.slice().sort((x,y)=>(avg(x.hist)-avg(y.hist)))[0];if(low&&low.id!==S.bond){S.trainees=S.trainees.filter(n=>n!==low);const nn=mkNPC(S.idol.gender,24+a.diff*.3,usedNames());nn.age0=npcAge0();S.trainees.push(nn);log(`${low.name} left the agency. A new trainee, ${nn.name}, moved in.`)}}
+  save();render();
+}
+
+/* ============ debut selection ============ */
+function lineupScore(n){return avg(n.hist.length?n.hist:[evalStat(n.st,'vocal')])*.6+overall(n.st)*.4+rnd(-4,4)}
+function computeLineup(game){
+  const a=AG(S.agency);const size=a.size;
+  S.trainees.forEach(n=>n.ls=lineupScore(n)+n.rel*.06);
+  const ranked=S.trainees.slice().sort((x,y)=>y.ls-x.ls);
+  const topN=ranked.slice(0,size-1);
+  let myScore=avg(S.evals.slice(-3).map(e=>e.s))*.45+(.5*game+.5*myOverall())*.25+myOverall()*.3+(S.agRel-50)*.15+S.buzz*.08;
+  const friends=topN.filter(n=>n.rel>=30),rivals=topN.filter(n=>n.rel<=-35);
+  myScore+=friends.length*2.5-rivals.length*3;
+  const cut=ranked[size-1]?ranked[size-1].ls:0;
+  const inGroup=myScore>=cut-2;
+  const notes=[];if(friends.length)notes.push(`${friends.map(n=>n.name).join(', ')} vouched for you.`);if(rivals.length)notes.push(`${rivals.map(n=>n.name).join(', ')} badmouthed you to the directors.`);
+  if(inGroup){S.tasks.shift();startDebut(topN,'agency',notes);}
+  else{
+    S.tasks[0]={type:'lineupFail',names:ranked.slice(0,size).map(n=>n.name),notes};
+    S.trainees=S.trainees.filter(n=>!ranked.slice(0,size).includes(n));const u=usedNames();while(S.trainees.length<11){const nn=mkNPC(S.idol.gender,24+a.diff*.3,u);nn.age0=npcAge0();S.trainees.push(nn)}
+    if(!S.trainees.find(n=>n.id===S.bond))S.bond=S.trainees[0].id;
+    S.flags.debutPlanned=false;S.flags.missed++;S.stress+=15;S.months=Math.max(S.months,a.minMonths-4);log('Left out of the debut lineup.');
+  }
+  save();render();
+}
+function startDebut(npcs,via,notes){
+  S.act='debut';
+  const members=npcs.map(n=>({id:n.id,name:n.name,age0:n.age0,st:Object.assign({},n.st),gr:n.gr*.6,rel:n.rel,trait:n.trait,look:n.look,pop:ri(20,45),stress:15,agency:n.agency}));
+  S.group={name:'',concept:null,members,size:members.length+1,via,debutW:null,fans:0,pop:10,rep:60,harmony:clamp(50+avg(members.map(m=>m.rel))*.4,20,90),pos:{},lastConcept:null};
+  assignPositions();S.trainees=[];S.surv=null;S.bond=members.slice().sort((x,y)=>y.rel-x.rel)[0].id;
+  S.alloc={vocal:2,dance:2,rap:0,visual:1,variety:0,lang:0,rest:2,bond:1,content:0,fanevent:0};
+  log(`Selected for the debut lineup with ${members.map(m=>m.name).join(', ')}!`);
+  pushTask({type:'lineup',notes:notes||[]},true);
+}
+function assignPositions(){
+  const g=S.group;const all=[{id:'me',st:S.st,age:age(),pop:S.fame+30,rel:avg(g.members.map(m=>m.rel))},...g.members.map(m=>({id:m.id,st:m.st,age:npcAge(m),pop:m.pop,rel:m.rel*.5}))];
+  const P={};all.forEach(x=>P[x.id]=[]);
+  const top=f=>all.slice().sort((a,b)=>f(b)-f(a));
+  P[top(x=>x.st.variety*.4+x.age*3+x.rel*.3+x.st.lang*.1)[0].id].push('Leader');
+  const v=top(x=>x.st.vocal);P[v[0].id].push('Main Vocal');if(v[1])P[v[1].id].push('Lead Vocal');
+  P[top(x=>x.st.dance)[0].id].push('Main Dancer');
+  if(all.length>=4)P[top(x=>x.st.rap)[0].id].push('Main Rapper');
+  P[top(x=>x.st.visual)[0].id].push('Visual');
+  P[top(x=>x.st.visual*.45+x.st.dance*.3+x.pop*.25)[0].id].push('Center');
+  P[all.slice().sort((a,b)=>a.age-b.age||(a.id==='me'?-1:1))[0].id].push('Maknae');
+  all.forEach(x=>{if(!P[x.id].length)P[x.id].push(x.st.dance>x.st.vocal?'Lead Dancer':'Sub Vocal')});
+  g.pos=P;
+}
+const myPos=()=>S.group?.pos?.me||[];
+
+/* ============ survival show ============ */
+function startSurvival(){
+  const a=AG(S.agency);const u=usedNames();
+  const mine=S.trainees.slice().sort((x,y)=>lineupScore(y)-lineupScore(x)).slice(0,4).map(n=>Object.assign(n,{agency:a.short}));
+  const others=[];const ags=AGENCIES.filter(x=>x.id!==a.id);
+  for(let i=0;i<15;i++){const ag=ags[i%ags.length];const n=mkNPC(S.idol.gender,26+ag.diff*.28,u);n.age0=npcAge0();n.agency=ag.short;others.push(n)}
+  S.surv={ep:1,cast:[...mine,...others].map(n=>Object.assign(n,{votes:0,out:false})),myVotes:0,out:false,hist:[]};
+  log(`Joined the survival show ${SURV}.`);
+}
+const SURVEP={1:{n:'Level Test',mg:'rhythm',d:'Sing 16 bars in front of the judges. They grade you A to F.',k:'vocal',keep:20},
+  2:{n:'Group Battle',mg:'choreo',d:'Teams of five battle with the same song. The crowd votes.',k:'dance',keep:14},
+  3:{n:'Position Battle',mg:'rhythm',d:'Pick your best position and prove it.',k:'pos',keep:10},
+  4:{n:'Debut Finale',mg:'rhythm',d:'Live broadcast. Only the top 7 debut.',k:'vocal',keep:7}};
+function survPerform(game,opt){
+  const s=S.surv,ep=SURVEP[s.ep];const k=opt&&SKL[opt]?opt:ep.k==='pos'?'vocal':ep.k;
+  const w=[1,1.2,1.5,2.2][s.ep-1];
+  let mine=.5*game+.5*S.st[k];let screen=0;
+  if(opt==='center'){screen=Math.random()<.65?14:-10}else if(opt==='support'){screen=4;const fr=s.cast.filter(n=>!n.out&&n.rel>0);fr.forEach(n=>n.rel+=5)}
+  const vote=x=>Math.max(0,(x.perf*1+x.st.visual*.35+x.st.variety*.25+x.bonus+rnd(0,14))*1000*w);
+  s.myVotes+=vote({perf:mine,st:S.st,bonus:S.buzz*.25+screen});
+  s.cast.filter(n=>!n.out).forEach(n=>{const kk=ep.k==='pos'?pick(['vocal','dance','rap']):k;n.votes+=vote({perf:n.st[kk]+rnd(-8,8),st:n.st,bonus:n.rel<-30?-4:0})});
+  const alive=[...s.cast.filter(n=>!n.out).map(n=>({id:n.id,v:n.votes})),{id:'me',v:s.myVotes}].sort((a,b)=>b.v-a.v);
+  const rank=alive.findIndex(x=>x.id==='me')+1;
+  const survivors=new Set(alive.slice(0,ep.keep).map(x=>x.id));
+  const elim=s.cast.filter(n=>!n.out&&!survivors.has(n.id));elim.forEach(n=>n.out=true);
+  s.hist.push(rank);S.buzz+=Math.max(2,12-rank*.5);
+  const grade=s.ep===1?(mine>=75?'A':mine>=62?'B':mine>=50?'C':mine>=38?'D':'F'):'';
+  const res={type:'survRes',ep:s.ep,rank,total:alive.length,grade,elim:elim.map(n=>n.name),top:alive.slice(0,7).map(x=>x.id==='me'?me():npcById(x.id).name),cut:!survivors.has('me'),screen};
+  log(`${SURV} ep.${s.ep} (${ep.n}): ranked #${rank}.`);
+  S.tasks[0]=res;save();render();
+}
+function afterSurv(){
+  const t=curTask();const s=S.surv;S.tasks.shift();
+  if(t.cut){S.flags.survDone=true;S.buzz=clamp(S.buzz+15,0,100);S.trainees=S.trainees.filter(n=>!n.out);const u=usedNames();const a=AG(S.agency);
+    S.surv=null;S.trainees.forEach(n=>{delete n.votes;delete n.out});while(S.trainees.length<11){const nn=mkNPC(S.idol.gender,24+a.diff*.3,u);nn.age0=npcAge0();S.trainees.push(nn)}
+    if(!S.trainees.find(n=>n.id===S.bond))S.bond=S.trainees[0].id;S.flags.debutPlanned=false;
+    info('Back to the practice room','Eliminated, but not forgotten',`<p>You didn't make the final cut, but viewers loved you. You return to ${esc(AG(S.agency).short)} with a fanbase of your own. Buzz +15.</p>`);
+  }else if(s.ep>=4){
+    const top=s.cast.filter(n=>!n.out).sort((a,b)=>b.votes-a.votes).slice(0,6);S.flags.survDone=true;
+    startDebut(top,'survival',[`You finished #${t.rank} on ${SURV}.`]);
+  }else s.ep++;
+  save();render();
+}
+
+/* ============ songs & promo ============ */
+function conceptFit(cid,stList){const w=CN(cid).w;const ws=sum(Object.values(w));return avg(stList.map(st=>sum(Object.keys(w).map(k=>st[k]*w[k]))/ws))}
+function teamStats(kind,partner){if(kind==='solo')return [S.st];if(kind==='unit'){const p=npcById(partner);return p?[S.st,p.st]:[S.st]}return [S.st,...S.group.members.map(m=>m.st)]}
+function songQuality(p){
+  const a=AG(S.agency);const list=teamStats(p.kind,p.partner);
+  const skill=avg(list.map(st=>st.vocal*.3+st.dance*.3+st.rap*.15+st.visual*.25));
+  const fit=conceptFit(p.concept,list);const R=RELEASES.find(r=>r.id===p.type)||RELEASES[0];const P=PRODUCERS.find(r=>r.id===p.producer)||PRODUCERS[0];
+  let q=skill*.48+fit*.25+R.q+P.q+(p.prepQ||0)+a.support*8-4+rnd(-6,6);
+  if(P.self)q+=(S.st.rap+S.st.vocal)/2*.15;
+  if(S.group&&p.kind==='group'&&S.group.lastConcept===p.concept)q-=6;
+  return clamp(Math.round(q),15,99);
+}
+const FANCAP=25e6;
+function fanCap(){const g=S.group;const L=S.songs.filter(x=>x.kind==='group').slice(-3);const q=L.length?avg(L.map(x=>x.q)):55;const aw=S.awards.length;return clamp(3e5*Math.exp((q-50)/13)*AG(S.agency).mult*(1+aw*.03+(S.flags.tours||0)*.05),2e5,FANCAP)}
+function addFans(d){const g=S.group;if(!g)return 0;if(d>0)d*=Math.max(0,1-g.fans/fanCap());g.fans=Math.max(0,g.fans+d);return Math.round(d)}
+const fanScore=f=>clamp((Math.log10(Math.max(f,1000))-3)*25,0,100);
+function startPrep(p){S.prep=Object.assign({left:(RELEASES.find(r=>r.id===p.type)||RELEASES[0]).weeks,prepQ:0},p);log(`Started preparing ${p.kind==='solo'?'your solo debut':p.kind==='unit'?'a sub-unit release':'a comeback'}: "${p.title}".`)}
+function prepWeek(){const p=S.prep;p.left--;p.prepQ=Math.min(12,p.prepQ+((S.alloc.vocal||0)+(S.alloc.dance||0)+(S.alloc.rap||0))*.8);if(p.left<=0){const song=makeSong(p);S.prep=null;pushTask({type:'release',song:song.id})}}
+function makeSong(p){const s={id:uid(),title:p.title,concept:p.concept,type:p.type,kind:p.kind,producer:p.producer,partner:p.partner||null,q:songQuality(p),w:S.week,peak:101,sales:0,wins:0,shows:0};S.songs.push(s);return s}
+const songById=id=>S.songs.find(s=>s.id===id);
+function pay(amount){amount=Math.max(0,amount);if(S.debt>0){const d=Math.min(S.debt,amount);S.debt-=d;amount-=d;if(S.debt<=0&&!S.flags.settled){S.flags.settled=true;S.debt=0;pushTask({type:'info',kick:'Payday',title:'Your first settlement!',html:`<p>Trainee debt fully repaid. For the first time, money from your work lands in your own account. You buy your parents dinner.</p>`});log('First settlement! Trainee debt paid off.')}}S.money+=amount;S.flags.earned=(S.flags.earned||0)+amount}
+function doRelease(game){
+  const t=curTask();const s=songById(t.song);const g=S.group;const a=AG(S.agency);
+  s.q=clamp(Math.round(s.q+(game-55)*.08),15,99);
+  const first=s.kind==='group'&&!g.debutW;
+  const before=g.fans;
+  if(first){g.debutW=S.week;const P=myPos();S.fame+=8+(P.includes('Center')?10:0)+(P.includes('Visual')?6:0)+(P.includes('Main Vocal')||P.includes('Main Dancer')?4:0)+(P.includes('Maknae')?3:0);g.fans=Math.round(a.fame*(.6+game/100*.6)*(g.via==='survival'?3:1)+S.buzz*400);g.pop=clamp(25+s.q*.45+(game-50)*.2,10,90)}
+  else{g.pop=clamp(g.pop*.4+s.q*.55+(game-50)*.15+12,5,100);addFans(g.fans*rnd(.03,.07)*(s.q/60)+3000*a.mult*(s.q/60))}
+  if(s.kind==='solo'){S.fame+=8+s.q/10;g.harmony-=g.harmony<50?8:3}
+  if(s.kind==='unit'){S.fame+=4+s.q/20;const p=npcById(s.partner);if(p)p.rel+=12;g.harmony-=2}
+  if(s.kind==='group')g.lastConcept=s.concept;
+  const tm={single:.4,mini:1,full:1.3}[s.type]||1;
+  s.sales=Math.round(g.fans*rnd(.25,.45)*(s.q/65)*tm*(s.kind==='group'?1:.5));S.year.sales=(S.year.sales||0)+s.sales;
+  pay(s.sales*13000*.22/(s.kind==='group'?g.size:s.kind==='unit'?2:1));
+  const P=PRODUCERS.find(r=>r.id===s.producer);if(P&&P.self){S.fame+=s.q>=70?8:-2}
+  S.promo={song:s.id,wk:0,len:s.kind==='group'?4:2};
+  const fit=Math.round(conceptFit(s.concept,teamStats(s.kind,s.partner)));
+  log(`${first?'DEBUT! ':''}"${s.title}" released. Quality ${s.q}, ${fmt(s.sales)} copies.`);
+  S.tasks[0]={type:'releaseRes',song:s.id,first,game:Math.round(game),gain:g.fans-before,fit};
+  save();render();
+}
+function pickRivals(n){return shuffle(S.rivals).slice(0,n).map(r=>({n:r.n,p:r.p+rnd(-8,8)}))}
+function doShow(game,auto){
+  const t=curTask();const s=songById(t.song);const g=S.group;
+  const power=s.q*.4+g.pop*.3+fanScore(g.fans)*.3+(game-50)*.2-(S.hiatus?8:0);
+  const rv=pickRivals(2);const rows=[{n:s.kind==='solo'?me():s.kind==='unit'?`${me()} × ${npcById(s.partner)?.name||'unit'}`:g.name,p:power,us:1},...rv].sort((a,b)=>b.p-a.p);
+  const win=rows[0].us===1;s.shows++;
+  const peak=clamp(Math.round(102-power*1.05+rnd(-4,4)),1,100);s.peak=Math.min(s.peak,peak);
+  addFans(g.fans*rnd(.008,.02)+500);
+  if(win){S.wins++;s.wins++;S.year.wins=(S.year.wins||0)+1;g.pop+=5;addFans(g.fans*.03+2000);S.fame+=s.kind==='group'?1.5:4;
+    if(!S.flags.firstWin){S.flags.firstWin=S.week;log(`FIRST WIN on ${t.show} with "${s.title}"! Everyone cried during the encore.`)}else log(`Won ${t.show} with "${s.title}".`)}
+  else{g.pop-=2;log(`${t.show}: ${rows[0].n} took the trophy.`)}
+  S.stamina-=6;S.promo.wk++;
+  S.tasks[0]={type:'showRes',song:s.id,show:t.show,rows:rows.map(r=>({n:r.n,p:Math.round(r.p*100+rnd(0,99)),us:!!r.us})),win,first:win&&S.flags.firstWin===S.week,game:Math.round(game),auto:!!auto,peak};
+  save();render();
+}
+function afterShow(){
+  S.tasks.shift();
+  if(S.promo&&S.promo.wk>=S.promo.len){const s=songById(S.promo.song);S.promo=null;S.cooldown=10;
+    if(S.act==='debut'){pushTask({type:'debutWrap'})}
+    else info('Promotions wrapped',`"${s.title}" era complete`,`<p>Peak <b>#${s.peak}</b> on the Melody100 · <b>${s.wins}</b> music show win${s.wins===1?'':'s'} · <b>${fmt(s.sales)}</b> copies sold.</p>`)}
+  fandomChecks();save();render();
+}
+function fandomChecks(){const g=S.group;if(!g||!g.debutW)return;
+  if(!S.fandom&&(g.fans>=50000||S.flags.firstWin)&&!S.tasks.some(t=>t.type==='fandom'))pushTask({type:'fandom'});
+  if(S.fandom&&!S.fandom.stick&&g.fans>=250000&&!S.tasks.some(t=>t.type==='stick'))pushTask({type:'stick'});
+}
+
+/* ============ debut act ============ */
+function debutWeek(){
+  const g=S.group;growNPCs(g.members,.5);S.debt+=300000;
+  if(S.prep){prepWeek();return}
+  if(S.promo){pushTask({type:'show',song:S.promo.song,show:SHOWS[S.promo.wk%SHOWS.length]});return}
+}
+function finishSetup(name,concept,title){
+  const g=S.group;g.name=name;g.concept=concept;S.debt+=Math.round(900000000/g.size);
+  startPrep({kind:'group',type:'mini',concept,producer:'inhouse',title});S.prep.left=3;
+  log(`The group will debut as ${name} with "${title}" (${conceptName(concept,S.idol.gender)}).`);
+}
+
+/* ============ career ============ */
+const yearsIn=()=>S.group&&S.group.debutW!=null?(S.week-S.group.debutW)/48:0;
+function careerWeek(){
+  const g=S.group;growNPCs(g.members,.35);
+  g.members.forEach(m=>{m.pop=clamp(m.pop+rnd(-1,1.2)+(m.st.visual-60)*.01,0,100)});
+  if(!S.promo&&!S.tour)g.pop-=.8+g.pop*.035;
+  addFans(g.fans*((g.pop-40)*.0002-(g.rep<30?.005:0)));
+  pay(g.fans*40*.25/g.size*(S.flags.betterShare?1.3:1));
+  S.stress-=2;if(S.cooldown>0)S.cooldown--;
+  if(g.rep<60)g.rep+=.3;
+  if(S.prep)prepWeek();
+  else if(S.promo)pushTask({type:'show',song:S.promo.song,show:SHOWS[S.promo.wk%SHOWS.length]});
+  if(S.tour)tourWeek();
+  const since=S.week-g.debutW;
+  if(S.week%48===47)pushTask({type:'awards'});
+  if(since===3*48&&g.fans<30000)pushTask({type:'agencyDisband'});
+  if(since===7*48)pushTask({type:'renewal'});
+  if(S.flags.renewed&&since>=10*48&&!S.tasks.some(t=>t.type==='finale'))pushTask({type:'finale'});
+  if(S.idol.gender==='boy'&&age()>=28&&!S.flags.enlistDue){S.flags.enlistDue=true;pushTask({type:'enlistDue'})}
+  fandomChecks();
+  const free=!S.prep&&!S.promo&&!S.tour&&!S.hiatus;
+  if(free&&!S.flags.unit&&since>=48&&g.pop>=30&&g.members.length&&Math.random()<.07){S.flags.unit=true;pushTask({type:'unitOffer'})}
+  else if(free&&!S.flags.solo&&since>=96&&S.fame>=40&&Math.random()<.06){S.flags.solo=true;pushTask({type:'soloOffer'})}
+  if(g.harmony<20&&g.members.length>2&&Math.random()<.05){const m=g.members.slice().sort((a,b)=>a.rel-b.rel)[0];g.members=g.members.filter(x=>x!==m);g.size--;g.pop-=8;g.fans*=.9;assignPositions();if(S.bond===m.id)S.bond=g.members[0].id;
+    info('Breaking news',`${m.name} leaves ${g.name}`,`<p>After months of tension, ${esc(m.name)} announces their departure. ${esc(g.name)} continues as ${g.size}.</p>`);log(`${m.name} left the group.`)}
+  if(!S.tasks.length&&Math.random()<.32)randomEvent('career');
+}
+function tourWeek(){
+  const T=S.tour,g=S.group;const city=T.cities[T.i%T.cities.length];
+  const gross=g.fans*T.rate*rnd(.8,1.1)*(.6+(T.perf||60)/150)*1000/100;
+  T.gross+=gross;pay(gross*.12/g.size);addFans(g.fans*(.008+S.st.lang/6000)+800);S.stamina-=10;S.stress+=3;g.pop+=.8;
+  log(`${T.n}: sold-out night in ${city}.`);T.i++;
+  if(T.i>=T.weeks){S.flags.tours=(S.flags.tours||0)+1;(S.flags.tourList||=[]).push(T.n);S.cooldown=3;
+    info('Tour complete',`${T.n} wrapped!`,`<p>${T.weeks} cities, ${won(T.gross)} gross. You cried at the last show in ${esc(city)}.</p>`);S.tour=null}
+}
+function startTour(id){const t=TOURS.find(x=>x.id===id);S.tour={id,n:t.n,weeks:t.weeks,rate:t.rate,cities:CITIES[id].slice(0,t.weeks),i:0,gross:0,perf:60};pushTask({type:'concert'});log(`Announced the ${t.n}!`)}
+
+/* ============ awards & endings ============ */
+function yearScore(){const g=S.group;return Math.min(S.year.wins||0,12)*3+Math.min((S.year.sales||0)/50000,25)+fanScore(g.fans)*.35+g.pop*.15+g.rep*.05}
+function runAwards(){
+  const g=S.group;const ys=yearScore();const res=[];const y=yr();
+  const rookie=g.debutW!=null&&yr(g.debutW)===y;
+  if(rookie)res.push({n:'Rookie of the Year',win:ys+rnd(0,12)>=30});
+  res.push({n:'Bonsang (Main Prize)',win:ys>=58||(ys>=44&&Math.random()<.4)});
+  if(ys>=60)res.push({n:'Best Performance',win:Math.random()<.6});
+  if(ys>=85)res.push({n:'Daesang: Artist of the Year',win:ys+rnd(0,15)>=112&&g.fans>=3e6});
+  if(ys>=85)res.push({n:'Daesang: Song of the Year',win:ys+rnd(0,15)>=108});
+  res.forEach(r=>{if(r.win){S.awards.push({y,n:r.n});log(`Prism Music Awards: won ${r.n}!`);g.pop+=3;S.stress-=5}});
+  if(!res.some(r=>r.win))log('Prism Music Awards: went home empty-handed this year.');
+  S.year={wins:0,sales:0};S.rivals.forEach(r=>r.p=clamp(r.p+rnd(-2,4),35,92));
+  return res;
+}
+function legacy(){const g=S.group;if(!g)return 0;const aw=S.awards,c=p=>aw.filter(a=>a.n.startsWith(p)).length;return Math.round(Math.min(S.wins,100)*.3+c('Bonsang')*3+c('Daesang')*7+c('Rookie')*3+c('Best')*2+fanScore(g.fans)*.25+Math.min(S.flags.tours||0,6)*3+Math.min(S.songs.length,20)*.5)}
+const LEGEND=100;
+const ENDINGS={
+  cut:{t:'Cut from the agency',e:'🎒',d:'The dream ended before debut. But the friendships, the discipline and the songs stay with you.'},
+  quit:{t:'Back to everyday life',e:'🌤️',d:'You chose your own path away from the practice room. Sometimes that takes the most courage.'},
+  retire:{t:'Early retirement',e:'🕊️',d:'You stepped away to protect yourself. Fans still write to you every year on your birthday.'},
+  disband:{t:'Disbandment',e:'🥀',d:'The group said goodbye with one last fan meeting. The songs live on in every playlist.'},
+  solo:{t:'Solo star',e:'🌟',d:'You left the group to stand alone in the spotlight, carrying everything the group taught you.'},
+  enlist:{t:'Enlistment',e:'🎖️',d:'You shaved your head, waved at the cameras and enlisted. The members promised to wait. "See you in 18 months."'},
+  legend:{t:'Legendary group',e:'👑',d:'Ten years, sold-out stadiums and a shelf of trophies. Your group is a chapter in K-pop history.'}
+};
+function endGame(id,note){
+  S.ending={id,w:S.week,note:note||'',legacy:legacy()};S.act='ended';S.tasks=[];
+  log(`Ending: ${ENDINGS[id].t}.`);
+  try{const H=JSON.parse(localStorage.getItem(HOF)||'[]');H.unshift({stage:me(),group:gname(),end:id,wins:S.wins,fans:S.group?S.group.fans:0,legacy:S.ending.legacy,y:yr(),t:Date.now()});localStorage.setItem(HOF,JSON.stringify(H.slice(0,20)))}catch(e){}
+  save();UI.tab='week';render();
+}
+
+/* ============ events ============ */
+function chk(k,t){return S.st[k]+rnd(-12,12)>=t}
+const fansPct=p=>{const g=S.group;return addFans(g.fans*p)};
+const EVENTS=[
+  {id:'diet',act:'trainee',text:()=>`Before the next evaluation, a trainer hands you a strict diet plan "for the camera".`,ch:[
+    {t:'Follow it strictly',f:()=>{S.st.visual+=3;S.stamina-=15;S.stress+=10;return 'Visual +3, but you feel dizzy at practice. Stamina −15, stress +10.'}},
+    {t:'Eat balanced, train harder',f:()=>{S.st.visual+=1;S.st.dance+=1;S.stress+=3;return 'Visual +1, dance +1, stress +3.'}},
+    {t:'Push back politely',f:()=>{S.agRel-=5;S.stress-=6;return 'The trainer frowns. Agency favor −5, stress −6.'}}]},
+  {id:'friendHelp',act:'trainee',need:'friend',text:n=>`${n.name} is struggling with the new choreo and asks you to stay late and help.`,ch:[
+    {t:'Help until 2 a.m.',f:n=>{n.rel+=14;S.stamina-=14;S.st.dance+=1;return `${n.name} hugs you. Bond +14, dance +1, stamina −14.`}},
+    {t:'"Sorry, I need sleep"',f:n=>{n.rel-=8;S.stamina+=5;return `${n.name} says it's fine. It isn't. Bond −8.`}}]},
+  {id:'sabotage',act:'trainee',need:'rival',text:n=>`Your practice shoes vanish an hour before evaluation. Whispers point at ${n.name}.`,ch:[
+    {t:'Confront them',f:n=>{n.rel-=n.trait==='cold'?25:15;S.stress-=4;return `A shouting match in the hallway. Bond with ${n.name} drops.`}},
+    {t:'Report it to staff',f:n=>{S.agRel+=3;n.rel-=20;return 'Staff take note. Agency favor +3, but the dorm is frosty.'}},
+    {t:'Let it go, borrow shoes',f:n=>{S.stress+=6;n.rel+=6;return `You stay classy. ${n.name} looks almost guilty. Stress +6.`}}]},
+  {id:'phone',act:'trainee',need:'any',text:n=>`Phones are banned. ${n.name} begs you to hide theirs during a room check.`,ch:[
+    {t:'Hide it',f:n=>{n.rel+=12;if(Math.random()<.35){S.agRel-=10;S.stress+=6;return 'Caught! Both of you get a lecture. Agency favor −10.'}return `It works. ${n.name} owes you one. Bond +12.`}},
+    {t:'Refuse',f:n=>{n.rel-=10;return `${n.name} gets caught anyway and blames you. Bond −10.`}}]},
+  {id:'family',act:'trainee',text:()=>`Your mom calls. She misses you and worries you're not eating.`,ch:[
+    {t:'Go home for the weekend',f:()=>{S.stress-=18;S.stamina+=15;const k=pick(SK);S.st[k]-=1;return `Home cooking heals everything. Stress −18, ${SKL[k]} −1.`}},
+    {t:'Promise to call more',f:()=>{S.stress-=4;return 'You talk for an hour. Stress −4.'}}]},
+  {id:'ceo',act:'trainee',text:()=>`The CEO walks into the practice room unannounced and points at you. "Show me something."`,ch:[
+    {t:'Sing a ballad',f:()=>chk('vocal',45)?(S.agRel+=10,S.buzz+=6,'The CEO nods slowly. Agency favor +10.'):(S.agRel-=4,S.stress+=5,'Your voice cracks. Agency favor −4.')},
+    {t:'Freestyle dance',f:()=>chk('dance',45)?(S.agRel+=10,S.buzz+=6,'Trainers start clapping. Agency favor +10.'):(S.agRel-=4,S.stress+=5,'You slip on the mirror-polished floor. Agency favor −4.')},
+    {t:'Make them laugh',f:()=>chk('variety',40)?(S.agRel+=8,S.buzz+=4,'The CEO laughs out loud. Agency favor +8.'):(S.agRel-=3,'Silence. Agency favor −3.')}]},
+  {id:'leak',act:'trainee',text:()=>`A fan photo of you outside the building goes viral: "Who is this trainee?!"`,ch:[
+    {t:'Post a cryptic emoji',f:()=>{S.buzz+=10;S.agRel-=6;return 'Fans go wild. The agency does not. Buzz +10, favor −6.'}},
+    {t:'Lay low',f:()=>{S.buzz+=5;return 'Mystery suits you. Buzz +5.'}}]},
+  {id:'ankle',act:'trainee',cond:()=>S.stamina<40,text:()=>`Your ankle twinges during a jump.`,ch:[
+    {t:'Take it easy this week',f:()=>{S.stamina+=30;S.st.dance-=1;return 'Ice, rest, patience. Stamina +30.'}},
+    {t:'Tape it and keep going',f:()=>Math.random()<.45?(S.st.dance-=4,S.stress+=10,'It gets worse. Dance −4, stress +10.'):(S.st.dance+=1,'You tough it out. Dance +1.')}]},
+  {id:'pair',act:'trainee',need:'rival',text:n=>`This month's mission pairs you with ${n.name}.`,ch:[
+    {t:'Make peace over tteokbokki',f:n=>{n.rel+=n.trait==='cold'?8:18;return `Turns out ${n.name} is homesick too. Bond up.`}},
+    {t:'Out-practice them',f:n=>{S.st.dance+=2;S.st.vocal+=1;n.rel-=6;S.stress+=5;return 'Dance +2, vocal +1. The rivalry heats up.'}}]},
+  {id:'cover',act:'trainee',text:()=>`The agency films trainee cover videos for its channel. What do you pick?`,ch:[
+    {t:'🎤 Ballad cover',f:()=>{const b=Math.round(S.st.vocal/8);S.buzz+=b;S.st.vocal+=1;return `Buzz +${b}. Comments: "that high note!!"`}},
+    {t:'💃 Dance cover',f:()=>{const b=Math.round(S.st.dance/8);S.buzz+=b;S.st.dance+=1;return `Buzz +${b}. The fancam gets reposted everywhere.`}},
+    {t:'🎧 Rap cypher',f:()=>{const b=Math.round(S.st.rap/8);S.buzz+=b;S.st.rap+=1;return `Buzz +${b}. Your verse becomes a meme, the good kind.`}}]},
+  {id:'langclass',act:'trainee',text:()=>`A language teacher offers free extra lessons at 7 a.m.`,ch:[
+    {t:'Sign up',f:()=>{S.st.lang+=4;S.stamina-=10;return 'Languages +4, stamina −10.'}},
+    {t:'Sleep in',f:()=>{S.stamina+=8;return 'Stamina +8.'}}]},
+  {id:'scout',act:'trainee',cond:()=>S.months>=4&&AGENCIES.findIndex(a=>a.id===S.agency)>0&&!S.surv,text:()=>{const b=AGENCIES[AGENCIES.findIndex(a=>a.id===S.agency)-1];return `A scout from ${b.name} slips you a card: "We'd love to have you."`},ch:[
+    {t:'Transfer',f:()=>{const b=AGENCIES[AGENCIES.findIndex(a=>a.id===S.agency)-1];joinAgency(b.id,true);return `You move to ${b.short}. New dorm, new rivals.`}},
+    {t:'Stay loyal',f:()=>{S.agRel+=8;return 'Word gets back to your CEO. Agency favor +8.'}}]},
+  {id:'bday',act:'trainee',need:'friend',text:n=>`It's ${n.name}'s birthday and they think everyone forgot.`,ch:[
+    {t:'Organise a surprise',f:n=>{n.rel+=12;S.stress-=4;return `Cake, candles, happy tears. Bond +12.`}},
+    {t:'Write a card',f:n=>{n.rel+=5;return 'Bond +5.'}}]},
+  {id:'rumor',act:'trainee',text:()=>`Dorm rumor: the agency is planning a new group this year.`,ch:[
+    {t:'Practice like crazy',f:()=>{SK.forEach(k=>S.st[k]+=1);S.stress+=8;S.stamina-=10;return 'All skills +1, stress +8.'}},
+    {t:'Stay calm',f:()=>{S.stress-=5;return 'Stress −5.'}}]},
+  {id:'exam',act:'trainee',cond:()=>age()<19,text:()=>`School exams are next week.`,ch:[
+    {t:'Study hard',f:()=>{S.st.lang+=2;S.stamina-=8;S.stress+=4;return 'Languages +2. You pass!'}},
+    {t:'Practice instead',f:()=>{S.agRel+=2;S.stress+=6;S.st.dance+=1;return 'Your teacher is not impressed. Dance +1.'}}]},
+  // career
+  {id:'dating',act:'career',text:()=>`Tabloid "Flash News" publishes blurry photos of you on a late-night date.`,ch:[
+    {t:'Deny it: "just a friend"',f:()=>Math.random()<.7?(S.group.rep-=2,fansPct(-.01),'It blows over. Rep −2.'):(S.group.rep-=12,fansPct(-.05),'A second photo drops. Rep −12, fans −5%.')},
+    {t:'Confirm the relationship',f:()=>{fansPct(-.06);S.group.rep+=4;S.stress+=8;return 'Some fans leave, others respect your honesty. Fans −6%, rep +4.'}},
+    {t:'Stay silent',f:()=>{fansPct(-.03);S.group.pop-=4;return 'The silence is deafening. Fans −3%, buzz −4.'}}]},
+  {id:'bully',act:'career',text:()=>`An anonymous post claims you were a school bully. It isn't true, but it's trending.`,ch:[
+    {t:'Take legal action',f:()=>{S.group.rep+=6;S.stress+=6;S.money=Math.max(0,S.money-5e6);return 'Classmates come forward to defend you. Cleared! Rep +6.'}},
+    {t:'Post a heartfelt denial',f:()=>Math.random()<.6?(S.group.rep+=2,'Fans rally behind you. Rep +2.'):(S.group.rep-=6,'Netizens call it a PR move. Rep −6.')},
+    {t:'Stay silent',f:()=>{S.group.rep-=10;fansPct(-.02);return 'Silence reads as guilt. Rep −10.'}}]},
+  {id:'attitude',act:'career',text:()=>`A 6-second clip of you yawning at a fansign goes viral as "attitude problem".`,ch:[
+    {t:'Apologize on a livestream',f:()=>{S.group.rep+=3;S.stress+=5;return 'Rep +3, stress +5.'}},
+    {t:'Explain you had a fever',f:()=>Math.random()<.5?(S.group.rep+=5,'Fans post your hospital receipt. Rep +5.'):(S.group.rep-=4,'"Excuses." Rep −4.')},
+    {t:'Ignore it',f:()=>{S.group.pop-=4;S.group.rep-=3;return 'Buzz −4, rep −3.'}}]},
+  {id:'sasaeng',act:'career',text:()=>`A sasaeng fan has been waiting outside the dorm every night.`,ch:[
+    {t:'Report it with the agency',f:()=>{S.stress-=4;S.agRel+=3;return 'Security steps up. You sleep a little better.'}},
+    {t:'Move dorms',f:()=>{S.stress-=10;S.money=Math.max(0,S.money-2e6);return 'New address, new peace. Stress −10.'}},
+    {t:'Ignore it',f:()=>{S.stress+=14;return 'You flinch at every footstep. Stress +14.'}}]},
+  {id:'hate',act:'career',text:()=>`Malicious comments flood your posts after a shaky live stage.`,ch:[
+    {t:'Read every one',f:()=>{S.stress+=15;S.st.vocal+=1;return 'It hurts. You practice twice as hard. Stress +15, vocal +1.'}},
+    {t:'Log off for a while',f:()=>{S.stress-=6;S.group.pop-=1;return 'Stress −6.'}},
+    {t:'File lawsuits',f:()=>{S.group.rep+=3;S.stress+=3;return 'The agency announces zero tolerance. Rep +3.'}}]},
+  {id:'fight',act:'career',need:'memberLow',text:n=>`${n.name} and you clash over line distribution for the next song.`,ch:[
+    {t:'Talk it out over dinner',f:n=>{n.rel+=12;S.group.harmony+=6;return 'You both cry a little. Harmony +6.'}},
+    {t:'Let the manager decide',f:n=>{S.group.harmony+=2;return 'A fair split, nobody thrilled. Harmony +2.'}},
+    {t:'Keep your lines',f:n=>{n.rel-=14;S.group.harmony-=8;S.fame+=2;return `More lines for you, a cold shoulder from ${n.name}. Harmony −8.`}}]},
+  {id:'variety',act:'career',text:()=>`Hit variety show "Running Idols" invites you as a guest.`,ch:[
+    {t:'Go full chaos',f:()=>chk('variety',50)?(S.group.pop+=10,S.fame+=8,'You steal the episode. Buzz +10, fame +8.'):(S.group.pop-=3,S.group.rep-=2,'The joke doesn\'t land. Buzz −3.')},
+    {t:'Play it safe',f:()=>{S.group.pop+=3;S.fame+=2;return 'Buzz +3, fame +2.'}}]},
+  {id:'cf',act:'career',cond:()=>S.fame>=30,text:()=>`A cosmetics brand wants you as a solo model.`,ch:[
+    {t:'Accept',f:()=>{pay(4e7);S.fame+=6;S.group.harmony-=5;return 'Your face is on every subway ad. ₩40M, fame +6, harmony −5.'}},
+    {t:'Ask them to sign the whole group',f:()=>{pay(1e7);S.group.harmony+=8;S.group.pop+=3;return 'The members are touched. Harmony +8, ₩10M.'}}]},
+  {id:'drama',act:'career',cond:()=>S.fame>=25,text:()=>`A web drama offers you a supporting role.`,ch:[
+    {t:'Accept the role',f:()=>{S.fame+=10;S.stamina-=25;S.stress+=8;S.st.variety+=2;return 'Fame +10, variety +2, stamina −25.'}},
+    {t:'Decline to focus on the group',f:()=>{S.group.harmony+=4;return 'Harmony +4.'}}]},
+  {id:'plag',act:'career',cond:()=>S.songs.length>0,text:()=>`Netizens claim your latest title track copies an old song.`,ch:[
+    {t:'Release a composer statement',f:()=>Math.random()<.65?(S.group.rep+=3,'Musicologists side with you. Rep +3.'):(S.group.rep-=8,'Nobody is convinced. Rep −8.')},
+    {t:'Pull the song',f:()=>{S.group.pop-=10;S.group.rep+=4;if(S.promo){S.promo=null;S.cooldown=4}return 'Promotions end early. Buzz −10, rep +4.'}}]},
+  {id:'viral',act:'career',text:()=>`An old dance practice video suddenly goes viral overseas!`,ch:[
+    {t:'Film a thank-you challenge',f:()=>{const d=fansPct(.12);S.group.pop+=10;S.stamina-=8;return `+${fmt(d)} fans, buzz +10.`}},
+    {t:'Just enjoy it',f:()=>{const d=fansPct(.08);S.group.pop+=6;return `+${fmt(d)} fans, buzz +6.`}}]},
+  {id:'contract',act:'career',cond:()=>!S.flags.betterShare&&yearsIn()>=1,text:()=>`The members discover your settlement terms are worse than other groups'.`,ch:[
+    {t:'Negotiate as a group',f:()=>{S.agRel-=10;S.group.harmony+=6;S.flags.betterShare=true;return 'Better terms (+30% income). Agency favor −10, harmony +6.'}},
+    {t:'Let it go',f:()=>{S.agRel+=3;S.group.harmony-=4;return 'Harmony −4.'}}]},
+  {id:'sick',act:'career',need:'member',text:n=>`${n.name} collapses from exhaustion backstage.`,ch:[
+    {t:'Push for a team break',f:n=>{S.group.harmony+=8;S.group.pop-=4;S.stress-=10;n.rel+=6;return 'Everyone rests. Harmony +8, stress −10.'}},
+    {t:`Keep going without them`,f:n=>{S.group.harmony-=6;S.stress+=6;S.group.pop-=1;return 'The schedule goes on. Harmony −6.'}}]},
+  {id:'japan',act:'career',cond:()=>S.group.fans>=80000&&!S.flags.japan,text:()=>`A Japanese label offers a Japan debut single.`,ch:[
+    {t:'Accept',f:()=>{S.flags.japan=true;const d=fansPct(chk('lang',40)?.1:.05);pay(S.group.fans*40/S.group.size);return `Your Japanese MCs ${S.st.lang>40?'charm everyone':'are adorable'}. +${fmt(d)} fans.`}},
+    {t:'Not yet',f:()=>'Maybe next year.'}]},
+  {id:'reality',act:'career',text:()=>`A streaming platform wants to film a group reality show.`,ch:[
+    {t:'Film it',f:()=>{S.group.harmony+=8;const d=fansPct(.05);S.stamina-=15;return `Harmony +8, +${fmt(d)} fans.`}},
+    {t:'Decline',f:()=>{S.stamina+=5;return 'Stamina +5.'}}]},
+  {id:'letter',act:'career',text:()=>`A fan letter says your song got them through their hardest year.`,ch:[
+    {t:'Reply on the fan app',f:()=>{S.stress-=12;fansPct(.01);return 'Stress −12.'}},
+    {t:'Keep it in your wallet',f:()=>{S.stress-=15;return 'Stress −15.'}}]},
+  {id:'leaksong',act:'career',cond:()=>!!S.prep,text:()=>`A snippet of your unreleased song leaks online.`,ch:[
+    {t:'Drop a teaser early',f:()=>{S.group.pop+=6;return 'Hype hijacked! Buzz +6.'}},
+    {t:'Rework the song',f:()=>{S.prep.left+=1;S.prep.prepQ+=3;return 'One more week of prep, better song.'}}]}
+];
+function evNPC(need){
+  const L=S.act==='trainee'?S.trainees:(S.group?.members||[]);if(!L.length)return null;
+  if(need==='friend')return L.slice().sort((a,b)=>b.rel-a.rel)[0];
+  if(need==='rival'||need==='memberLow')return L.slice().sort((a,b)=>a.rel-b.rel)[0];
+  return pick(L);
+}
+function randomEvent(act){
+  const L=EVENTS.filter(e=>e.act===act&&(!e.cond||e.cond())&&e.id!==S.flags.lastEv);if(!L.length)return;
+  const e=pick(L);const n=e.need?evNPC(e.need):null;if(e.need&&!n)return;
+  S.flags.lastEv=e.id;pushTask({type:'event',id:e.id,n:n?n.id:null});
+}
+function chooseEvent(i){
+  const t=curTask();const e=EVENTS.find(x=>x.id===t.id);const n=t.n?npcById(t.n):null;const c=e.ch[i];
+  const r=c.f(n);S.tasks=S.tasks.filter(x=>x!==t);
+  clampAll();if(n)n.rel=clamp(n.rel,-100,100);
+  if(S.act!=='ended'){pushTask({type:'info',kick:'Result',title:c.t,html:`<p>${esc(r)}</p>`},true)}
+  log(r);save();render();
+}
+
+/* ============ ui helpers ============ */
+const B=(l,a,v,cls,dis)=>`<button class="btn ${cls||''}" data-a="${a}"${v!=null?` data-v="${esc(v)}"`:''}${dis?' disabled':''}>${l}</button>`;
+const bar=(v,cls)=>`<div class="bar ${cls||''}"><i style="width:${clamp(v,0,100)}%"></i></div>`;
+const stars=v=>'★★★★★'.slice(0,clamp(Math.round(v/20),1,5)).padEnd(5,'☆');
+function statRows(st){return SK.map(k=>`<div class="stat"><span title="${SKL[k]}">${SKI[k]}</span><div><b>${SKL[k]}</b>${bar(st[k])}</div><span class="v">${Math.round(st[k])}</span></div>`).join('')}
+function memberName(id){return id==='me'?me():(npcById(id)?.name||'?')}
+function rankRows(rows,limit){return `<div class="list">${rows.slice(0,limit||rows.length).map((r,i)=>{const n=r.id==='me'?null:npcById(r.id);return `<div class="li ${r.id==='me'?'me':''}"><span class="rk">${i+1}</span>${av(r.id==='me'?S.idol.look:n?.look)}<div class="grow"><b>${esc(r.id==='me'?me()+' (you)':n?.name||r.name||'?')}</b>${n&&n.rel!=null?'<br>'+relPill(n.rel):''}</div><b>${r.s??''}</b></div>`}).join('')}</div>`}
+function memberCards(){const g=S.group;const all=[{id:'me',name:me()+' (you)',look:S.idol.look,st:S.st,pop:S.fame+30},...g.members];
+  return `<div class="list">${all.map(m=>`<div class="li ${m.id==='me'?'me':''}">${av(m.look)}<div class="grow"><b>${esc(m.name)}</b> <small class="muted">${m.id==='me'?age():npcAge(m)} y/o</small><div class="row" style="gap:4px;margin-top:3px">${(g.pos[m.id]||[]).map(p=>`<span class="pill ${p==='Center'||p==='Leader'?'hot':p==='Maknae'?'lemon':'sky'}">${p}</span>`).join('')}</div></div>${m.id!=='me'?relPill(m.rel):''}</div>`).join('')}</div>`}
+function bestConcept(list){return CONCEPTS.slice().sort((a,b)=>conceptFit(b.id,list)-conceptFit(a.id,list))[0].id}
+
+/* ============ task sheets ============ */
+const TR={
+  info:t=>({kick:t.kick,title:t.title,html:t.html,btns:[B('OK','done',null,'block')]}),
+  eval:t=>{const E=EVALK[t.kind];return {kick:`Monthly evaluation · Month ${S.months}`,title:E.n,html:`<p>The directors line up behind a long table. Cameras roll. ${t.kind==='vocal'?'Hit every note in time.':'Watch the choreo, then repeat it exactly.'}</p><div class="stack">${E.k.map(k=>`<div class="stat"><span>${SKI[k]}</span><div><b>${SKL[k]}</b>${bar(S.st[k])}</div><span class="v">${Math.round(S.st[k])}</span></div>`).join('')}</div><p class="muted"><small>Your score = 50% stage + 50% skill. Bottom two twice in a row risks getting cut.</small></p>`,
+    btns:[B('🎬 Perform','mgEval',null,'block'),B('Quick sim','autoEval',null,'ghost block')]}},
+  evalRes:t=>{const d=t.prev?t.prev-t.rank:0;return {kick:'Evaluation results',title:`Rank #${t.rank} of ${t.rows.length}`,html:`<div class="kpis"><div class="kpi"><b>${t.game}</b><small>Stage</small></div><div class="kpi"><b>${t.my}</b><small>Final score</small></div><div class="kpi"><b class="${d>0?'good':d<0?'bad':''}">${t.prev?(d>0?'▲'+d:d<0?'▼'+(-d):'–'):'new'}</b><small>Change</small></div></div>${t.fx?`<p><b>${esc(t.fx)}</b></p>`:''}${rankRows(t.rows)}`,btns:[B('Continue','afterEval',null,'block')]}},
+  cut:t=>({kick:'Bad news',title:'You have been cut',html:`<p>After two months in the bottom two, ${esc(AG(S.agency).short)} ends your trainee contract. You pack your things in silence.</p><p class="muted">Your skills come with you. Another agency might see what they missed.</p>`,btns:[B('Audition somewhere else','cutAudition',null,'block'),B('Give up the dream','end','cut','ghost block')]}),
+  longterm:t=>({kick:'Three years in',title:'Long-term trainee',html:`<p>You've been training for three years. New trainees call you <i>sunbae</i>. Your friends from school are graduating college.</p>`,btns:[B('Keep going','longKeep',null,'block'),!S.flags.survDone?B(`Try out for ${SURV}`,'survYes',null,'sky block'):'',B('Transfer agencies','cutAudition',null,'ghost block'),B('Quit and go home','end','quit','ghost block')]}),
+  survInvite:t=>({kick:'Invitation',title:`${SURV}`,html:`<p>A network survival show wants trainees from every agency. Twenty contestants, four episodes, live public votes. <b>The top 7 debut.</b></p><p class="muted">Get eliminated and you return to your agency, with a bigger fanbase.</p>`,btns:[B('Join the show','survYes',null,'block'),B('Not yet','survNo',null,'ghost block')]}),
+  debutPlan:t=>t.via==='survival'?{kick:'Big announcement',title:'Debut via survival show',html:`<p>${esc(AG(S.agency).short)} is sending its top trainees to <b>${SURV}</b>. The final lineup will be decided by public vote.</p>`,btns:[B('Enter the show','survYes',null,'block')]}
+    :{kick:'Big announcement',title:'A new group is coming',html:`<p>${esc(AG(S.agency).short)} is debuting a ${AG(S.agency).size}-member group. One last evaluation decides the lineup. Directors also weigh skill, favor and team chemistry.</p><p class="muted"><small>Friends in the running will vouch for you. Rivals will badmouth you.</small></p>`,btns:[B('🎬 Debut evaluation','mgLineup',null,'block'),B('Quick sim','autoLineup',null,'ghost block')]},
+  lineupFail:t=>({kick:'Lineup announced',title:'Not this time',html:`<p>Your name isn't called. The new group: <b>${t.names.map(esc).join(', ')}</b>.</p>${t.notes.map(n=>`<p class="muted">${esc(n)}</p>`).join('')}<p>You watch them leave the dorm with their suitcases. There'll be another chance.</p>`,btns:[B('Back to practice','done',null,'block')]}),
+  survEp:t=>{const s=S.surv,ep=SURVEP[s.ep];const r=s.hist.length?`<p class="muted">Current rank: <b>#${s.hist[s.hist.length-1]}</b></p>`:'';
+    let btns;if(s.ep===2)btns=[B('🔥 Fight for center, then perform','survGo','center','block'),B('🤝 Support the team, then perform','survGo','support','sky block'),B('Quick sim','survAuto','support','ghost block')];
+    else if(s.ep===3)btns=[B('🎤 Vocal position','survGo','vocal','block'),B('💃 Dance position','survGo','dance','sky block'),B('🎧 Rap position','survGo','rap','mint block'),B('Quick sim','survAuto',SK.slice(0,3).sort((a,b)=>S.st[b]-S.st[a])[0],'ghost block')];
+    else btns=[B('🎬 Perform','survGo','',`block`),B('Quick sim','survAuto','','ghost block')];
+    return {kick:`${SURV} · Episode ${s.ep}`,title:ep.n,html:`<p>${ep.d}</p>${r}<p class="muted"><small>${s.cast.filter(n=>!n.out).length+1} contestants left. After this episode: ${ep.keep} remain.</small></p>`,btns}},
+  survRes:t=>({kick:`${SURV} · Episode ${t.ep} results`,title:t.cut?'Eliminated':t.ep>=4?'You made the debut lineup!':`Rank #${t.rank} — safe!`,html:`${t.grade?`<div class="kpis"><div class="kpi"><b>${t.grade}</b><small>Grade</small></div><div class="kpi"><b>#${t.rank}</b><small>Rank</small></div><div class="kpi"><b>${t.total}</b><small>Contestants</small></div></div>`:`<div class="kpis"><div class="kpi"><b>#${t.rank}</b><small>Rank</small></div><div class="kpi"><b>${t.total}</b><small>Contestants</small></div><div class="kpi"><b>${t.screen>0?'😎':t.screen<0?'😬':'🙂'}</b><small>Edit</small></div></div>`}
+    ${t.screen<0?'<p class="bad">The editors gave you a villain edit. Ouch.</p>':''}<p class="muted"><small>Current top 7: ${t.top.map(esc).join(', ')}</small></p>${t.elim.length?`<p class="muted"><small>Eliminated: ${t.elim.map(esc).join(', ')}</small></p>`:''}`,btns:[B('Continue','afterSurv',null,'block')]}),
+  lineup:t=>({kick:'The lineup',title:'You are debuting! 🎉',html:`<p>${S.group.via==='survival'?'The final seven from '+SURV+' will debut together under '+esc(AG(S.agency).short)+'.':esc(AG(S.agency).short)+' announces the lineup. Your name is called.'}</p>${t.notes.map(n=>`<p class="muted">${esc(n)}</p>`).join('')}<p class="label">Positions</p>${memberCards()}<p class="muted"><small>Positions follow from everyone's stats. They can change later as you grow.</small></p>`,btns:[B('Next: name the group','toSetup',null,'block')]}),
+  setup:t=>{const f=UI.form;const list=teamStats('group');const rec=bestConcept(list);f.concept??=rec;f.name??=pick(SUGGEST.group);f.title??=pick(SUGGEST.song);
+    return {kick:'Debut planning',title:'Shape your group',html:`<label class="field"><span>Group name</span><input type="text" maxlength="20" data-f="name" value="${esc(f.name)}"></label>
+    <div class="row">${shuffle(SUGGEST.group).slice(0,4).map(n=>`<button class="pill" data-a="formSet" data-v="name|${esc(n)}">${esc(n)}</button>`).join('')}</div>
+    <p class="label">Concept <small class="muted" style="letter-spacing:0;text-transform:none">· agency suggests ${conceptName(rec,S.idol.gender)}</small></p>
+    <div class="opts">${CONCEPTS.map(c=>`<button class="opt ${f.concept===c.id?'on':''}" data-a="formSet" data-v="concept|${c.id}"><b>${c.e} ${conceptName(c.id,S.idol.gender)}</b><small>${c.d}</small><small>Fit ${stars(conceptFit(c.id,list))}</small></button>`).join('')}</div>
+    <label class="field"><span>Debut title track</span><input type="text" maxlength="28" data-f="title" value="${esc(f.title)}"></label>`,btns:[B('Start debut prep (3 weeks)','setupGo',null,'block')]}},
+  release:t=>{const s=songById(t.song);const first=!S.group.debutW&&s.kind==='group';return {kick:first?'Debut day':s.kind==='solo'?'Solo debut':s.kind==='unit'?'Sub-unit release':'Comeback day',title:`"${s.title}"`,html:`<p>${first?'The debut showcase: reporters, cameras and a hall full of curious fans.':'Release-day showcase. The new song hits every chart at 6 p.m.'}</p><p class="muted">${CN(s.concept).e} ${conceptName(s.concept,S.idol.gender)} · ${RELEASES.find(r=>r.id===s.type)?.n||''}</p>`,
+    btns:[B('🎬 Perform the showcase','mgRelease',null,'block'),B('Quick sim','autoRelease',null,'ghost block')]}},
+  releaseRes:t=>{const s=songById(t.song);const g=S.group;return {kick:t.first?'Debut results':'Release results',title:t.first?`${g.name} has debuted!`:`"${s.title}" is out`,html:`<div class="kpis"><div class="kpi"><b>${s.q}</b><small>Song quality</small></div><div class="kpi"><b>${fmt(s.sales)}</b><small>First-week sales</small></div><div class="kpi"><b>+${fmt(t.gain)}</b><small>Fans</small></div></div>
+    <p>${t.first?`Headlines call ${esc(g.name)} "the rookie to watch". `:''}Concept fit: ${stars(t.fit)}. Showcase stage: ${t.game}/100.</p><p class="muted">Now: ${S.promo.len} weeks of music shows. Chase that win!</p>`,btns:[B('Continue','done',null,'block')]}},
+  show:t=>{const s=songById(t.song);return {kick:`Promotion week ${S.promo.wk+1} of ${S.promo.len}`,title:t.show,html:`<p>Live stage of "${esc(s.title)}". Points come from digital charts, album sales, broadcast and the live vote. Your stage sways the vote.</p>${S.hiatus?'<p class="bad">You are on a break. The others perform without you.</p>':''}`,
+    btns:S.hiatus?[B('Watch from home','autoShow',null,'block')]:[B('🎬 Perform','mgShow',null,'block'),B('Quick sim','autoShow',null,'ghost block')]}},
+  showRes:t=>{const s=songById(t.song);return {kick:t.show,title:t.win?(t.first?'FIRST WIN!! 🏆':'1st place! 🏆'):'No trophy this week',html:`${t.first?'<p>The MC reads your name. Members collapse into a group hug. The encore stage is mostly crying, and fans say it was perfect.</p>':''}<div class="list">${t.rows.map((r,i)=>`<div class="li ${r.us?'me':''}"><span class="rk">${i+1}</span><div class="grow"><b>${esc(r.n)}</b></div><b>${r.p.toLocaleString()}</b></div>`).join('')}</div><p class="muted">Melody100 peak so far: <b>#${s.peak}</b>${t.auto?'':' · Stage '+t.game+'/100'}</p>`,btns:[B('Continue','afterShow',null,'block')]}},
+  debutWrap:t=>{const g=S.group;const s=S.songs.find(x=>x.kind==='group');return {kick:'Debut era wrapped',title:'Welcome to the industry',html:`<p>${esc(g.name)} wrapped promotions for "${esc(s.title)}" with <b>${s.wins}</b> win${s.wins===1?'':'s'} and <b>${fmt(g.fans)}</b> fans.</p><p class="muted">From now on you plan comebacks, grow the fandom, tour the world and survive everything the industry throws at you. Contract renewal comes around year 7.</p>`,btns:[B('Begin your career ✨','toCareer',null,'block')]}},
+  fandom:t=>{const f=UI.form;f.fname??=pick(SUGGEST.fandom);f.fcol??=FANDOM_COLORS[0];return {kick:'Milestone',title:'Name your fandom',html:`<p>Fans are asking: what do we call ourselves?</p><label class="field"><span>Fandom name</span><input type="text" maxlength="16" data-f="fname" value="${esc(f.fname)}"></label><div class="row">${shuffle(SUGGEST.fandom).slice(0,4).map(n=>`<button class="pill" data-a="formSet" data-v="fname|${n}">${n}</button>`).join('')}</div><p class="label">Official color</p><div class="swatches">${FANDOM_COLORS.map(c=>`<button class="sw ${f.fcol===c?'on':''}" style="background:${c}" data-a="formSet" data-v="fcol|${c}" aria-label="color ${c}"></button>`).join('')}</div>`,btns:[B('Announce it','fandomGo',null,'block')]}},
+  stick:t=>{const f=UI.form;f.shape??='heart';const col=S.fandom.color;return {kick:'Milestone',title:'Design the lightstick',html:`<div class="stick">${stickSVG(f.shape,col)}</div><div class="opts">${Object.entries(STICK_SHAPES).map(([k,n])=>`<button class="opt ${f.shape===k?'on':''}" data-a="formSet" data-v="shape|${k}"><b>${n}</b></button>`).join('')}</div><p class="muted"><small>${esc(S.fandom.name)} will wave this at every concert.</small></p>`,btns:[B('Launch the lightstick','stickGo',null,'block')]}},
+  awards:t=>t.res?{kick:`Prism Music Awards · Year ${yr()}`,title:t.res.some(r=>r.win)?'Award night 🏆':'Award night',html:`<div class="list">${t.res.map(r=>`<div class="li ${r.win?'me':''}"><span class="rk">${r.win?'🏆':'—'}</span><div class="grow"><b>${r.n}</b></div><span class="pill ${r.win?'hot':''}">${r.win?'WON':'Nominated'}</span></div>`).join('')}</div>${t.res.some(r=>r.win&&r.n.startsWith('Daesang'))?'<p><b>A Daesang. The highest honor of the year. You can barely hold the trophy.</b></p>':''}`,btns:[B('Continue','done',null,'block')]}
+    :{kick:'Year end',title:'Prism Music Awards',html:`<p>The biggest night of the year. ${esc(S.group.name)} walks the red carpet in matching outfits.</p><p class="muted">This year: ${S.year.wins||0} music show wins · ${fmt(S.year.sales||0)} albums sold.</p>`,btns:[B('Walk the red carpet','awardsGo',null,'block')]},
+  plan:t=>{const f=UI.form;const list=teamStats('group');f.type??='mini';f.concept??=bestConcept(list);f.producer??='inhouse';f.title??=pick(SUGGEST.song);const g=S.group;
+    return {kick:'Comeback planning',title:'Next era',html:`<label class="field"><span>Title track</span><input type="text" maxlength="28" data-f="title" value="${esc(f.title)}"></label>
+    <p class="label">Release</p><div class="opts">${RELEASES.map(r=>`<button class="opt ${f.type===r.id?'on':''}" data-a="formSet" data-v="type|${r.id}"><b>${r.n}</b><small>${r.weeks} weeks prep${r.q?` · quality +${r.q}`:''}</small></button>`).join('')}</div>
+    <p class="label">Concept</p><div class="opts">${CONCEPTS.map(c=>`<button class="opt ${f.concept===c.id?'on':''}" data-a="formSet" data-v="concept|${c.id}"><b>${c.e} ${conceptName(c.id,S.idol.gender)}</b><small>Fit ${stars(conceptFit(c.id,list))}${g.lastConcept===c.id?' · repeat −':''}</small></button>`).join('')}</div>
+    <p class="label">Producer</p><div class="opts">${PRODUCERS.map(p=>{const dis=p.agRel&&S.agRel<p.agRel;return `<button class="opt ${f.producer===p.id?'on':''}" data-a="formSet" data-v="producer|${p.id}"${dis?' disabled':''}><b>${p.n}</b><small>${p.d}${dis?' (needs agency favor '+p.agRel+')':''}</small></button>`}).join('')}</div>`,btns:[B('Start prep','planGo',null,'block'),B('Cancel','cancelTask',null,'ghost block')]}},
+  tourPick:t=>({kick:'Concerts',title:'Plan a tour',html:`<div class="opts">${TOURS.map(x=>{const ok=S.group.fans>=x.fans;return `<button class="opt ${UI.form.tour===x.id?'on':''}" data-a="formSet" data-v="tour|${x.id}"${ok?'':' disabled'}><b>${x.e} ${x.n}</b><small>${x.weeks} weeks · needs ${fmt(x.fans)} fans</small></button>`}).join('')}</div><p class="muted"><small>Tours are exhausting but huge for fans and income. No comebacks while touring.</small></p>`,btns:[B('Announce tour','tourGo',null,'block',!UI.form.tour),B('Cancel','cancelTask',null,'ghost block')]}),
+  concert:t=>({kick:S.tour.n,title:`Opening night: ${S.tour.cities[0]}`,html:`<p>Lights down. ${S.fandom?`An ocean of ${esc(S.fandom.name)} lightsticks`:'Thousands of phone lights'} fill the arena. A strong opening sets the tone for the whole tour.</p>`,btns:[B('🎬 Perform','mgConcert',null,'block'),B('Quick sim','autoConcert',null,'ghost block')]}),
+  unitOffer:t=>({kick:'Offer',title:'Sub-unit proposal',html:`<p>The agency wants to launch a duo sub-unit. Who do you want as your partner?</p>`,btns:[...S.group.members.slice().sort((a,b)=>b.rel-a.rel).slice(0,3).map(m=>B(`With ${esc(m.name)} (${relWord(m.rel)})`,'unitGo',m.id,'block')),B('Decline','declineOffer',null,'ghost block')]}),
+  soloOffer:t=>({kick:'Offer',title:'Solo debut?',html:`<p>Your personal fame is soaring (${Math.round(S.fame)}). The agency proposes a solo single. ${S.group.harmony<50?'<b class="bad">The group is already tense. This could sting.</b>':'The members cheer you on.'}</p>`,btns:[B('Go solo (single)','soloGo',null,'block'),B('Stay focused on the group','declineOffer',null,'ghost block')]}),
+  burnout:t=>({kick:'Health',title:'Burning out',html:`<p>You can't sleep. You can't eat. The stage lights feel heavy and your smile feels fake.</p>`,btns:[B('Take a 6-week break','bo','rest','mint block'),B('Push through','bo','push','block'),B(S.act==='trainee'?'Quit training':'Retire from the industry','bo','quit','ghost block')]}),
+  agencyDisband:t=>({kick:'Bad news',title:'The agency pulls the plug',html:`<p>Three years in, ${esc(S.group.name)} never broke through. ${esc(AG(S.agency).short)} announces the group's disbandment.</p>`,btns:[S.fame>=30?B('Go solo','end','solo','block'):'',B('Say goodbye','end','disband','ghost block')]}),
+  renewal:t=>{const ok=S.group.harmony>=40&&S.agRel>=30;return {kick:'Year 7',title:'Contract renewal',html:`<p>The infamous seven-year mark. Everyone's contracts end this month.</p><div class="kpis"><div class="kpi"><b>${Math.round(S.group.harmony)}</b><small>Harmony</small></div><div class="kpi"><b>${Math.round(S.agRel)}</b><small>Agency favor</small></div><div class="kpi"><b>${legacy()}</b><small>Legacy</small></div></div>${ok?'':'<p class="bad">Harmony or agency favor is low. Not everyone will re-sign.</p>'}`,
+    btns:[B('Renew together','renew',null,'block'),B('Leave for a solo career','end','solo','sky block'),S.idol.gender==='boy'?B('Enlist for military service','end','enlist','mint block'):'',B('Disband with dignity','end','disband','ghost block')]}},
+  finale:t=>({kick:'Ten years',title:`${S.group.name}: a decade`,html:`<p>Ten years since debut. Legacy score: <b>${legacy()}</b>.</p><p class="muted">${legacy()>=LEGEND?'Critics are already calling you one of the greats.':'You gave it everything. It is time for a new chapter.'}</p>`,btns:[B('See your ending','finaleGo',null,'block')]}),
+  enlistDue:t=>({kick:'Notice',title:'Enlistment papers',html:`<p>You've turned ${age()}. Military service can't be postponed any longer.</p>`,btns:[B('Enlist','end','enlist','block')]}),
+  event:t=>{const e=EVENTS.find(x=>x.id===t.id);const n=t.n?npcById(t.n):null;if(!e||(t.n&&!n))return null;return {kick:S.act==='trainee'?'Dorm life':'Industry news',title:'Something happened',html:`${n?`<div class="portrait">${av(n.look)}<div><b>${esc(n.name)}</b><br>${relPill(n.rel)}</div></div>`:''}<p>${esc(e.text(n))}</p>`,btns:e.ch.map((c,i)=>B(esc(c.t),'ev',i,i?'ghost block':'block'))}}
+};
+
+/* ============ screens ============ */
+function hud(){
+  const sub=S.act==='trainee'?`${AG(S.agency).short} trainee · ${dateStr()}`:`${S.group?.name||'Pre-debut'} · ${dateStr()}`;
+  return `<header class="hud"><div class="wrap"><div class="who">${av(S.idol.look)}<div class="grow"><div class="name">${esc(me())}</div><div class="sub">${esc(sub)}</div></div><span class="pill ${S.act==='trainee'?'sky':S.act==='debut'?'lemon':'hot'}">${S.act==='trainee'?(S.surv?'Survival':'Act I'):S.act==='debut'?'Act II':'Act III'}</span></div>
+  <div class="meters"><div class="meter">⚡${bar(S.stamina,'mint')}<span>${Math.round(Math.max(0,S.stamina))}</span></div><div class="meter">💢${bar(S.stress,'red')}<span>${Math.round(S.stress)}</span></div></div></div></header>`;
+}
+function allocCard(){
+  const A=S.alloc;const total=sum(Object.values(A));const keys=[...SK,'rest','bond',...(S.act!=='trainee'?['content','fanevent']:[])];
+  const meta={rest:['😴','Rest','Stamina up, stress down'],bond:['💞','Bond',`Time with ${npcById(S.bond)?.name||'someone'}`],content:['📱','Content','Vlogs, lives, variety: buzz & fame'],fanevent:['💌','Fan events','Fansigns: fans & reputation']};
+  const rows=keys.map(k=>{const m=meta[k]||[SKI[k],SKL[k],`${SKH[k]} · ${Math.round(S.st[k])}`];return `<div class="arow"><span class="ic">${m[0]}</span><div class="grow"><b>${m[1]}</b><small>${m[2]}</small></div><div class="step"><button data-a="al" data-v="${k}|-1" ${!A[k]?'disabled':''} aria-label="less ${m[1]}">−</button><span class="n">${A[k]||0}</span><button data-a="al" data-v="${k}|1" ${total>=BLOCKS?'disabled':''} aria-label="more ${m[1]}">+</button></div></div>`}).join('');
+  const L=S.act==='trainee'?S.trainees:S.group.members;
+  return `<section class="card"><div class="between"><h2>This week</h2><div class="dots">${Array.from({length:BLOCKS},(_,i)=>`<i class="${i<total?'on':''}"></i>`).join('')}</div></div>
+  ${S.hiatus?`<p class="pill lemon">On a break: ${S.hiatus} week${S.hiatus>1?'s':''} left. Your plan is paused.</p>`:''}
+  <div class="alloc">${rows}</div>
+  <label class="field"><span>Bond with</span><select data-sel="bond">${L.map(n=>`<option value="${n.id}" ${n.id===S.bond?'selected':''}>${esc(n.name)} · ${relWord(n.rel)}</option>`).join('')}</select></label>
+  ${total<BLOCKS?`<small class="muted">${BLOCKS-total} unused block${BLOCKS-total>1?'s':''} become free time (a little rest).</small>`:''}
+  ${UI.lastGain?`<small class="good">Last week: ${esc(UI.lastGain)}</small>`:''}</section>`;
+}
+function statusCard(){
+  if(S.act==='trainee'){const a=AG(S.agency);const N=S.trainees.length+1;const left=4-(S.week%4);
+    if(S.surv)return `<section class="card holo"><span class="label">On air</span><h2>${SURV}</h2><p>Episode ${S.surv.ep} films next week. ${S.surv.hist.length?`You're ranked <b>#${S.surv.hist[S.surv.hist.length-1]}</b>.`:''}</p></section>`;
+    return `<section class="card holo"><span class="label">${esc(a.name)}</span><div class="kpis"><div class="kpi"><b>${S.rank?'#'+S.rank:'–'}</b><small>Rank of ${N}</small></div><div class="kpi"><b>${S.months}</b><small>Months in</small></div><div class="kpi"><b>${left}</b><small>Wks to eval</small></div></div>
+    <div class="row"><span class="pill">Agency favor ${Math.round(S.agRel)}</span><span class="pill">Buzz ${Math.round(S.buzz)}</span><span class="pill">Debt ${won(S.debt)}</span>${S.lowStreak?'<span class="pill red">Cut risk!</span>':''}${S.months>=36?'<span class="pill lemon">Long-term trainee</span>':''}</div>
+    <small class="muted">Next evaluation: ${EVALK[(S.months+1)%2?'vocal':'dance'].n}. Debut talks usually start after ~${a.minMonths} months.</small></section>`}
+  const g=S.group;let phase='Free schedule';
+  if(S.prep)phase=`Preparing "${S.prep.title}" · ${S.prep.left} wk${S.prep.left>1?'s':''} to release`;else if(S.promo)phase=`Promoting "${songById(S.promo.song)?.title}" · week ${S.promo.wk+1}/${S.promo.len}`;else if(S.tour)phase=`${S.tour.n} · ${S.tour.cities[S.tour.i]||''} next`;else if(S.cooldown)phase=`Resting after promotions (${S.cooldown} wk)`;
+  return `<section class="card holo"><div class="between"><div><span class="label">${S.act==='debut'?'Pre-debut':esc(conceptName(g.concept,S.idol.gender))}</span><h2>${esc(g.name||'Your group')}</h2></div>${S.fandom?`<span class="pill" style="border-color:${S.fandom.color};color:${S.fandom.color}">💖 ${esc(S.fandom.name)}</span>`:''}</div>
+  <div class="kpis"><div class="kpi"><b>${fmt(g.fans)}</b><small>Fans</small></div><div class="kpi"><b>${S.wins}</b><small>Wins</small></div><div class="kpi"><b>${Math.round(g.pop)}</b><small>Buzz</small></div></div>
+  <div class="row"><span class="pill">Harmony ${Math.round(g.harmony)}</span><span class="pill">Rep ${Math.round(g.rep)}</span><span class="pill">Fame ${Math.round(S.fame)}</span>${g.debutW!=null?`<span class="pill">Legacy ${legacy()}</span>`:''}${g.debutW!=null?`<span class="pill">Year ${Math.floor(yearsIn())+1} since debut</span>`:''}</div>
+  <p><b>${esc(phase)}</b></p></section>`;
+}
+const SHOP=[{id:'spa',n:'Spa day',c:5e5,d:'Stress −20'},{id:'dinner',n:'Team dinner',c:2e6,d:'Harmony +6, bonds +3'},{id:'coach',n:'Private coach',c:6e6,d:'Your two weakest skills +2'},{id:'gift',n:'Fan gift event',c:1.5e7,d:'Fans +2%, rep +3'}];
+function actionsCard(){
+  if(S.act!=='career')return '';const g=S.group;const free=!S.prep&&!S.promo&&!S.tour&&!S.hiatus;
+  const canPlan=free&&S.cooldown<=0;const canTour=free&&g.fans>=TOURS[0].fans;
+  return `<section class="card"><h2>Career moves</h2><div class="stack">${B('💿 Plan a comeback','plan',null,'block',!canPlan)}${B(`🎫 Plan a tour${g.fans<TOURS[0].fans?` (needs ${fmt(TOURS[0].fans)} fans)`:''}`,'tour',null,'sky block',!canTour)}</div>
+  ${!canPlan&&free&&S.cooldown?`<small class="muted">Comebacks need ${S.cooldown} more week${S.cooldown>1?'s':''} of rest.</small>`:''}
+  <div class="between"><span class="label">Treats</span><b>${won(S.money)}</b></div><div class="opts">${SHOP.map(x=>`<button class="opt" data-a="buy" data-v="${x.id}" ${S.money<x.c?'disabled':''}><b>${x.n}</b><small>${won(x.c)} · ${x.d}</small></button>`).join('')}</div>${S.debt>0?`<small class="muted">Earnings repay your trainee debt first (${won(S.debt)} left).</small>`:''}</section>`;
+}
+function weekTab(){return statusCard()+actionsCard()+allocCard()}
+function idolTab(){
+  const pos=myPos();
+  return `<section class="card center"><div class="bigav av">${avatarSVG(S.idol.look)}</div><h2>${esc(me())}</h2><p class="muted">${esc(S.idol.name)} · ${age()} y/o · ${S.idol.gender==='girl'?'Girl group':'Boy group'}</p>${pos.length?`<div class="row" style="justify-content:center">${pos.map(p=>`<span class="pill hot">${p}</span>`).join('')}</div>`:''}${B('Edit look','lookEdit',null,'ghost sm')}</section>
+  <section class="card"><h2>Skills</h2><div class="stack">${statRows(S.st)}</div><small class="muted">Overall ${Math.round(myOverall())}</small></section>
+  <section class="card"><h2>Wallet</h2><div class="kpis"><div class="kpi"><b>${won(S.money)}</b><small>Money</small></div><div class="kpi"><b>${won(S.debt)}</b><small>Trainee debt</small></div><div class="kpi"><b>${Math.round(S.act==='trainee'?S.buzz:S.fame)}</b><small>${S.act==='trainee'?'Buzz':'Fame'}</small></div></div></section>`;
+}
+function teamTab(){
+  if(S.act==='trainee'&&S.surv){const s=S.surv;const rows=[...s.cast.filter(n=>!n.out).map(n=>({id:n.id,v:n.votes})),{id:'me',v:s.myVotes}].sort((a,b)=>b.v-a.v).map(x=>({id:x.id,s:fmt(x.v)}));
+    return `<section class="card"><h2>${SURV} standings</h2>${rankRows(rows)}</section>`}
+  if(S.act==='trainee'){const rows=[...S.trainees.map(n=>({id:n.id,s:n.last?Math.round(n.last):'–',k:n.last||overall(n.st)})),{id:'me',s:S.evals.length?Math.round(S.evals[S.evals.length-1].s):'–',k:S.evals.length?S.evals[S.evals.length-1].s:myOverall()}].sort((a,b)=>b.k-a.k);
+    return `<section class="card"><h2>Trainees</h2><p class="muted"><small>Ordered by last evaluation. Friends vouch for you when lineups are picked; rivals do the opposite. Tap a heart to bond with someone.</small></p><div class="list">${rows.map((r,i)=>{const n=r.id==='me'?null:npcById(r.id);return `<div class="li ${r.id==='me'?'me':''}"><span class="rk">${i+1}</span>${av(n?n.look:S.idol.look)}<div class="grow"><b>${esc(n?n.name:me()+' (you)')}</b>${n?`<br><small class="muted">${TRAITS[n.trait]} · ${npcAge(n)} y/o · ovr ${Math.round(overall(n.st))}</small><br>${relPill(n.rel)}`:''}</div>${n?`<button class="btn ${S.bond===n.id?'':'ghost'} sm" data-a="bondSet" data-v="${n.id}" aria-label="bond with ${esc(n.name)}">💞</button>`:''}</div>`}).join('')}</div></section>`}
+  const g=S.group;const popRank=[{id:'me',p:S.fame+30},...g.members.map(m=>({id:m.id,p:m.pop}))].sort((a,b)=>b.p-a.p);
+  return `<section class="card"><h2>${esc(g.name||'Your group')}</h2>${memberCards()}<p class="label">Member popularity</p><p>${popRank.map((x,i)=>`${i+1}. ${x.id==='me'?'<b>'+esc(me())+'</b>':esc(memberName(x.id))}`).join(' · ')}</p></section>
+  ${S.fandom?`<section class="card center"><span class="label">Fandom</span><h2 style="color:${S.fandom.color}">${esc(S.fandom.name)}</h2>${S.fandom.stick?`<div class="stick">${stickSVG(S.fandom.stick,S.fandom.color)}</div><small class="muted">Official lightstick · ${STICK_SHAPES[S.fandom.stick]}</small>`:'<small class="muted">Lightstick unlocks at 250K fans.</small>'}</section>`:''}
+  <section class="card"><h2>Discography</h2>${S.songs.length?`<div class="list">${S.songs.slice().reverse().map(s=>`<div class="li"><span class="rk">${CN(s.concept).e}</span><div class="grow"><b>${esc(s.title)}</b><br><small class="muted">${s.kind==='solo'?'Solo · ':s.kind==='unit'?'Sub-unit · ':''}${RELEASES.find(r=>r.id===s.type)?.n} · Y${yr(s.w)} · Q${s.q}</small></div><small><b>${s.peak<=100?'#'+s.peak:'–'}</b> · ${s.wins}🏆</small></div>`).join('')}</div>`:'<p class="muted">Nothing released yet.</p>'}</section>
+  <section class="card"><h2>Awards</h2>${S.awards.length?`<div class="list">${S.awards.map(a=>`<div class="li"><span class="rk">🏆</span><div class="grow"><b>${esc(a.n)}</b></div><small>Year ${a.y}</small></div>`).join('')}</div>`:'<p class="muted">The trophy shelf is waiting.</p>'}</section>`;
+}
+function newsTab(){return `<section class="card"><h2>News feed</h2><div class="news">${S.log.map(l=>`<div><small>${dateStr(l.w)}</small>${esc(l.t)}</div>`).join('')}</div></section>`}
+function menuTab(){
+  return `<section class="card"><h2>Game</h2><p class="muted">Slot ${S.slot} · saved automatically every week.</p><div class="stack">${B(S.sound?'🔊 Sound on':'🔈 Sound off','sound',null,'ghost block')}${B('How to play','howto',null,'ghost block')}${B('Back to title','toTitle',null,'ghost block')}</div></section>
+  <section class="card"><h2>About</h2><p class="muted">Debut Dream is a fan-made idol career simulator. Every agency, idol, group, show and award in it is fictional.</p></section>`;
+}
+const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm or choreo mini-game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p class="muted"><small>Mini-games: tap the lanes as notes hit the line, or watch the move sequence and repeat it. Every stage also has a Quick sim option.</small></p>`;
+function lookEditor(L,prefix){
+  const sw=(arr,key)=>`<div class="swatches">${arr.map((c,i)=>`<button class="sw ${L[key]===i?'on':''}" style="background:${c}" data-a="${prefix}" data-v="${key}|${i}" aria-label="${key} ${i+1}"></button>`).join('')}</div>`;
+  const op=(arr,key)=>`<div class="opts">${arr.map((n,i)=>`<button class="opt ${L[key]===i?'on':''}" data-a="${prefix}" data-v="${key}|${i}"><b>${n}</b></button>`).join('')}</div>`;
+  return `<p class="label">Skin</p>${sw(SKINS,'skin')}<p class="label">Hair color</p>${sw(HAIRC,'hairC')}<p class="label">Hairstyle</p>${op(HAIRS,'hair')}<p class="label">Eyes</p>${sw(EYEC,'eye')}<p class="label">Outfit</p>${sw(OUTFITC,'outfit')}<p class="label">Accessory</p>${op(ACCS,'acc')}`;
+}
+function titleScreen(){
+  const slots=[1,2,3].map(n=>{const s=readSlot(n);if(!s)return `<div class="li"><span class="rk">${n}</span><div class="grow"><b>Empty slot</b><br><small class="muted">Start a new story</small></div>${B('New','newIn',n,'sm')}</div>`;
+    const where=s.ending?`Ended: ${ENDINGS[s.ending.id]?.t}`:s.group?.name?`${s.group.name} · ${fmt(s.group.fans)} fans`:s.agency?`${AG(s.agency).short} trainee`:'Auditioning';
+    return `<div class="li">${av(s.idol.look)}<div class="grow"><b>${esc(s.idol.stage)}</b><br><small class="muted">${esc(where)} · Year ${Math.floor(s.week/48)+1}</small></div><div class="row" style="flex-wrap:nowrap">${B('Play','load',n,'sm')}${B('✕','delSlot',n,'ghost sm')}</div></div>`}).join('');
+  let H=[];try{H=JSON.parse(localStorage.getItem(HOF)||'[]')}catch(e){}
+  const hero=[lookFor(11,'girl'),lookFor(4242,'boy'),lookFor(777,'girl')];hero[1].hair=7;hero[0].acc=5;hero[2].hair=4;hero[2].hairC=5;
+  return `<main class="wrap title-main" style="padding-top:calc(28px + env(safe-area-inset-top,0px))"><div class="stack" style="gap:6px"><div class="hero">${hero.map(l=>av(l,'',pick(['#ffd1ea','#d9d0ff','#c9efff']))).join('')}</div><h1 class="logo">Debut<br>Dream</h1><p class="tag"><span class="sparkle">✦</span> trainee → idol → legend <span class="sparkle">✦</span></p></div>
+  <section class="card holo"><h2>Save slots</h2><div class="list">${slots}</div></section>
+  ${H.length?`<section class="card"><h2>Hall of fame</h2><div class="list">${H.slice(0,8).map(h=>`<div class="li"><span class="rk">${ENDINGS[h.end]?.e||'⭐'}</span><div class="grow"><b>${esc(h.stage)}</b>${h.group?` <small class="muted">of ${esc(h.group)}</small>`:''}<br><small class="muted">${ENDINGS[h.end]?.t} · ${h.wins} wins · legacy ${h.legacy}</small></div></div>`).join('')}</div></section>`:''}
+  <section class="card"><h2>How to play</h2>${HOWTO}</section><p class="center dim"><small>All agencies, idols and groups are fictional. Add to Home Screen for full-screen play.</small></p></main>`;
+}
+function createScreen(){
+  const d=UI.draft;
+  return `<main class="wrap title-main" style="padding-top:calc(18px + env(safe-area-inset-top,0px))"><div class="between"><h1 style="font-size:28px">Create your idol</h1>${B('Back','toTitle',null,'ghost sm')}</div>
+  <section class="card holo center"><div class="bigav av">${avatarSVG(d.look)}</div><h2>${esc(d.stage||'Your stage name')}</h2></section>
+  <section class="card"><label class="field"><span>Real name</span><input type="text" maxlength="20" data-d="name" value="${esc(d.name)}" placeholder="e.g. Kim Haeun"></label>
+  <label class="field"><span>Stage name</span><input type="text" maxlength="14" data-d="stage" value="${esc(d.stage)}" placeholder="e.g. HAEUN"></label>
+  <p class="label">Group type</p><div class="opts"><button class="opt ${d.gender==='girl'?'on':''}" data-a="dset" data-v="gender|girl"><b>👑 Girl group</b></button><button class="opt ${d.gender==='boy'?'on':''}" data-a="dset" data-v="gender|boy"><b>⚡ Boy group</b></button></div>
+  <p class="label">Age</p><div class="opts">${[14,15,16,17].map(a=>`<button class="opt ${+d.age===a?'on':''}" data-a="dset" data-v="age|${a}"><b>${a}</b></button>`).join('')}</div>
+  <p class="label">Natural talent</p><div class="opts">${['vocal','dance','rap','visual','variety'].map(k=>`<button class="opt ${d.strength===k?'on':''}" data-a="dset" data-v="strength|${k}"><b>${SKI[k]} ${SKL[k]}</b></button>`).join('')}</div></section>
+  <section class="card"><h2>Look</h2>${lookEditor(d.look,'dlook')}${B('🎲 Randomize','drand',null,'ghost sm')}</section>
+  ${B('Start the journey ✨','create',null,'big')}</main>`;
+}
+function auditionScreen(){
+  const piece=UI.piece||'vocal';
+  return `${hud()}<main class="wrap title-main"><section class="card holo"><span class="label">Act I · Auditions</span><h2>Choose an agency</h2><p class="muted">Big agencies are hard to get into but train you better and launch bigger. You get one shot at each.</p></section>
+  <section class="card"><p class="label">Audition piece</p><div class="opts">${['vocal','dance','rap'].map(k=>`<button class="opt ${piece===k?'on':''}" data-a="piece" data-v="${k}"><b>${SKI[k]} ${k==='vocal'?'Sing':k==='dance'?'Dance':'Rap'}</b><small>${SKL[k]} ${Math.round(S.st[k])}</small></button>`).join('')}</div></section>
+  ${AGENCIES.map(a=>{const tried=S.tried.includes(a.id);return `<section class="card" style="border-color:${a.col}55"><div class="between"><div><span class="pill" style="color:${a.col};border-color:${a.col}66">${a.tier}</span><h2 style="margin-top:6px">${esc(a.name)}</h2></div></div><p class="muted">${esc(a.desc)}</p><div class="row"><span class="pill">Difficulty ${stars(a.diff)}</span><span class="pill">Training ${stars((a.support-.7)*150)}</span><span class="pill">${a.size}-member groups</span></div>${tried?'<span class="pill red">Rejected</span>':B(`Audition at ${esc(a.short)}`,'aud',a.id,'block')}</section>`}).join('')}
+  ${S.tried.length>=AGENCIES.length?B('Give up','end','quit','ghost block'):''}</main>`;
+}
+function endingScreen(){
+  const E=ENDINGS[S.ending.id];const g=S.group;
+  return `<main class="wrap title-main" style="padding-top:calc(24px + env(safe-area-inset-top,0px))"><section class="card holo center"><div style="font-size:64px">${E.e}</div><span class="label">The end</span><h1 style="font-size:32px">${E.t}</h1><div class="bigav av">${avatarSVG(S.idol.look)}</div><p>${esc(E.d)}</p>${S.ending.note?`<p class="muted">${esc(S.ending.note)}</p>`:''}</section>
+  <section class="card"><h2>${esc(me())}'s story</h2><div class="kpis"><div class="kpi"><b>${yr()}</b><small>Years</small></div><div class="kpi"><b>${S.wins}</b><small>Music show wins</small></div><div class="kpi"><b>${S.awards.length}</b><small>Awards</small></div></div>
+  ${g&&g.name?`<div class="kpis"><div class="kpi"><b>${fmt(g.fans)}</b><small>Fans</small></div><div class="kpi"><b>${S.songs.length}</b><small>Releases</small></div><div class="kpi"><b>${S.ending.legacy}</b><small>Legacy</small></div></div><p>${esc(g.name)}${S.fandom?` & ${esc(S.fandom.name)}`:''} · ${S.flags.tours||0} tour${S.flags.tours===1?'':'s'}</p>`:`<p class="muted">Trained at ${esc(AG(S.agency||'comet').short)} for ${S.months} months.</p>`}
+  <div class="stack">${B('Back to title','toTitle',null,'block')}</div></section>
+  <section class="card"><h2>Timeline</h2><div class="news">${S.log.slice(0,30).map(l=>`<div><small>${dateStr(l.w)}</small>${esc(l.t)}</div>`).join('')}</div></section></main>`;
+}
+function sheet(m){if(!m)return '';if(m.build)m=m.build();return `<div class="scrim"><div class="sheet" role="dialog" aria-modal="true">${m.kick?`<span class="kick">${esc(m.kick)}</span>`:''}<h2>${esc(m.title)}</h2>${m.html}<div class="choices">${(m.btns||[]).join('')}</div></div></div>`}
+function render(){
+  const app=$('#app');const sc=$('.sheet')?.scrollTop||0;const hadSheet=!!$('.sheet');
+  let html='';
+  if(UI.scr==='title')html=titleScreen()+(UI.modal?sheet(UI.modal):'');
+  else if(UI.scr==='create')html=createScreen()+(UI.modal?sheet(UI.modal):'');
+  else if(S){
+    while(S.tasks[0]&&S.tasks[0].type==='noop')S.tasks.shift();
+    if(S.act==='ended')html=endingScreen();
+    else if(S.act==='audition')html=auditionScreen()+(UI.modal?sheet(UI.modal):'');
+    else{
+      const tab=UI.tab;const body=tab==='idol'?idolTab():tab==='team'?teamTab():tab==='news'?newsTab():tab==='menu'?menuTab():weekTab();
+      const t=curTask();let ts=null;if(t){const f=TR[t.type];ts=f?f(t):null;if(!ts){S.tasks.shift();save();return render()}}
+      const busy=!!t;
+      html=`${hud()}<main class="wrap">${body}</main>
+      <div class="go"><div class="wrap">${B(busy?'Finish the current event first':`Next week ▶`,'next',null,'big',busy)}</div></div>
+      <nav class="tabs"><div class="wrap">${[['week','🗓️','Week'],['idol','⭐','Idol'],['team','👥',S.act==='trainee'?'Trainees':'Group'],['news','📰','News'],['menu','☰','Menu']].map(([k,i,l])=>`<button class="tab ${tab===k?'on':''}" data-a="tab" data-v="${k}"><i>${i}</i>${l}</button>`).join('')}</div></nav>
+      ${UI.modal?sheet(UI.modal):sheet(ts)}`;
+    }
+  }
+  app.innerHTML=html;
+  const sh=$('.sheet');if(sh&&hadSheet&&UI.keepScroll)sh.scrollTop=sc;UI.keepScroll=false;
+}
+
+/* ============ sound ============ */
+let AC=null;
+function audio(){if(!S||S.sound!==false){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){AC=null}}return AC}
+function beep(f,d=.08,v=.08,type='triangle'){if(S&&S.sound===false)return;const a=AC;if(!a)return;try{const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+d+.02)}catch(e){}}
+
+/* ============ mini-games ============ */
+let MG=null;
+const autoScore=stat=>clamp(Math.round(stat*.85+rnd(0,15)),5,98);
+const LANEC=['#ff5fae','#ffcf3f','#3fd6b5','#6fa8ff'];
+const LANEF=[523,659,784,988];
+function startMG(kind,o,cb){MG={kind,o,cb,phase:'intro',alive:true};drawMG()}
+function closeMG(){if(MG)MG.alive=false;MG=null;const el=$('#mg');if(el)el.remove()}
+function mgShell(inner){let el=$('#mg');if(!el){el=document.createElement('div');el.id='mg';el.className='mg';document.body.appendChild(el)}el.innerHTML=inner;return el}
+function drawMG(){
+  if(!MG)return;const o=MG.o;
+  if(MG.phase==='intro'){
+    const how=MG.kind==='rhythm'?'Notes fall down four lanes. Tap the matching pad the moment a note crosses the glowing line. Perfect timing scores most.':'Watch the move sequence, then repeat it on the pads in the same order. Sequences get longer each round.';
+    mgShell(`<div class="top"><b>${esc(o.title)}</b><button class="x" data-mga="quit">✕</button></div><div class="mgintro"><div style="font-size:64px">${MG.kind==='rhythm'?'🎵':'💃'}</div><h2>${esc(o.title)}</h2>${o.sub?`<p>${esc(o.sub)}</p>`:''}<p>${how}</p><p><small>Your skill (${Math.round(o.stat||0)}) widens the timing window and slows the cues.</small></p><button class="btn big" data-mga="go">Start ✨</button><button class="btn ghost big" data-mga="auto">Quick sim</button></div>`);
+    return;
+  }
+  if(MG.phase==='done'){const s=MG.score;const r=s>=90?'PERFECT STAGE!':s>=75?'Amazing!':s>=55?'Nice!':s>=35?'Shaky...':'Rough night';
+    mgShell(`<div class="top"><b>${esc(o.title)}</b><span></span></div><div class="mgintro"><div style="font-size:64px">${s>=75?'🌟':s>=55?'✨':s>=35?'😅':'💦'}</div><h2>${r}</h2><div class="score" style="font-size:54px">${s}</div><p>${MG.detail||''}</p><button class="btn big" data-mga="ok">Continue</button></div>`);return}
+}
+function finishMG(score){if(!MG)return;MG.alive=false;MG.score=clamp(Math.round(score),0,100);MG.phase='done';beep(MG.score>=55?880:330,.25,.1);drawMG()}
+function mgRhythm(){
+  const o=MG.o,diff=clamp(o.diff??.4,0,1),stat=o.stat||40;
+  const bpm=96+diff*44,beat=60000/bpm,travel=1750-diff*500,pw=55+stat*.35,gw=120+stat*.6,lead=1800,len=13000+diff*6000;
+  const notes=[];let t=lead,last=-1;
+  while(t<lead+len){let lane=ri(0,3);if(lane===last&&Math.random()<.6)lane=(lane+ri(1,3))%4;notes.push({t,lane});if(diff>.55&&Math.random()<.12)notes.push({t,lane:(lane+2)%4});last=lane;t+=beat*pick(diff>.5?[1,1,.5,.5,1,2]:[1,1,1,2,.5])}
+  const el=mgShell(`<div class="top"><b>${esc(o.title)}</b><span class="score" id="mgs">0</span><button class="x" data-mga="quit">✕</button></div>
+  <div class="field-mg" id="mgf">${[0,1,2,3].map(i=>`<div class="lane" id="ln${i}"></div>`).join('')}<div class="hitline" id="mgh"></div><div class="judge" id="mgj"></div></div>
+  <div class="pads">${[0,1,2,3].map(i=>`<button class="pad" data-pad="${i}" style="background:${LANEC[i]}">${['♥','★','♪','◆'][i]}</button>`).join('')}</div>`);
+  const f=$('#mgf');const H=f.clientHeight;const hitY=H-46;$('#mgh').style.top=hitY+'px';$('#mgj').style.top=(hitY-70)+'px';
+  notes.forEach(n=>{const d=document.createElement('div');d.className='note';d.style.background=LANEC[n.lane];d.style.color=LANEC[n.lane];d.style.display='none';$('#ln'+n.lane).appendChild(d);n.el=d});
+  const R={p:0,g:0,m:0,combo:0,max:0};const t0=performance.now()+120;let lastBeat=-1;MG.notes=notes;MG.t0=t0;
+  const judge=(txt,c)=>{const j=$('#mgj');if(!j)return;j.textContent=txt;j.style.color=c;j.style.transform='scale(1.15)';setTimeout(()=>{if(j)j.style.transform=''},90)};
+  const score=()=>((R.p+R.g*.6)/notes.length*100+R.max/notes.length*6);
+  MG.press=lane=>{const now=performance.now()-t0;const pad=document.querySelector(`[data-pad="${lane}"]`);if(pad){pad.classList.add('hit');setTimeout(()=>pad.classList.remove('hit'),90)}
+    let best=null,bd=1e9;for(const n of notes){if(n.j||n.lane!==lane)continue;const d=Math.abs(now-n.t);if(d<bd){bd=d;best=n}}
+    if(best&&bd<=gw){best.j=1;best.el.style.display='none';if(bd<=pw){R.p++;judge('PERFECT','#fff36b')}else{R.g++;judge('GOOD','#9ff5d8')}R.combo++;R.max=Math.max(R.max,R.combo);beep(LANEF[lane],.12,.07);$('#mgs').textContent=Math.round(score())}
+    else{beep(150,.06,.04,'square')}};
+  const loop=()=>{if(!MG||!MG.alive)return;const now=performance.now()-t0;
+    const b=Math.floor((now-lead)/beat);if(b>lastBeat&&now>=lead-beat){lastBeat=b;beep(b%4===0?220:180,.05,.03,'sine')}
+    for(const n of notes){if(n.j)continue;const dt=n.t-now;if(dt<-gw){n.j=1;n.el.style.display='none';R.m++;R.combo=0;judge('MISS','#ff9aa8');continue}
+      if(dt<=travel){n.el.style.display='block';n.el.style.transform=`translateY(${hitY*(1-dt/travel)}px)`}}
+    if(now>notes[notes.length-1].t+gw+600){MG.detail=`Perfect ${R.p} · Good ${R.g} · Miss ${R.m} · Max combo ${R.max}`;finishMG(score());return}
+    requestAnimationFrame(loop)};
+  requestAnimationFrame(loop);
+}
+const MOVES=[{k:'L',i:'⬅️'},{k:'U',i:'⬆️'},{k:'R',i:'➡️'},{k:'D',i:'⬇️'},{k:'C',i:'👏'},{k:'S',i:'✨'}];
+function mgChoreo(){
+  const o=MG.o,diff=clamp(o.diff??.4,0,1),stat=o.stat||40;
+  const rounds=diff<.45?[3,4,5,6]:[4,5,6,7];const total=sum(rounds);const on=Math.max(300,600-diff*220+stat*1.4),gap=170;
+  mgShell(`<div class="top"><b>${esc(o.title)}</b><span class="score" id="mgs">0/${total}</span><button class="x" data-mga="quit">✕</button></div>
+  <div class="cue"><div id="mgr" style="font-weight:900;letter-spacing:.1em"></div><div class="big" id="mgc">🎬</div><div class="seq" id="mgq"></div><div class="bar" style="width:70%;background:rgba(255,255,255,.15)"><i id="mgt" style="width:100%"></i></div></div>
+  <div class="cpads">${MOVES.map((m,i)=>`<button class="pad" data-pad="${m.k}" style="background:${['#ff5fae','#a45cff','#3fb6ff','#22c9a6','#ffb020','#ff7b3f'][i]}">${m.i}</button>`).join('')}</div>`);
+  let r=0,correct=0,seq=[],pos=0,phase='show',deadline=0;const C=$('#mgc'),Q=$('#mgq'),RR=$('#mgr'),T=$('#mgt');
+  const nextRound=()=>{if(!MG||!MG.alive)return;if(r>=rounds.length){MG.detail=`${correct} of ${total} moves hit`;finishMG(correct/total*100);return}
+    seq=Array.from({length:rounds[r]},()=>pick(MOVES));MG.seq=seq;pos=0;phase='show';RR.textContent=`ROUND ${r+1} · WATCH`;Q.innerHTML='';C.textContent='👀';
+    let i=0;const step=()=>{if(!MG||!MG.alive)return;if(i>=seq.length){phase='input';RR.textContent='YOUR TURN!';C.textContent='💃';deadline=performance.now()+seq.length*1100+1500;tick();return}
+      C.textContent=seq[i].i;C.style.transform='scale(1.2)';beep(400+i*60,.1,.06);setTimeout(()=>{if(C){C.style.transform='';C.textContent='·'}},on);i++;setTimeout(step,on+gap)};setTimeout(step,700)};
+  const endRound=msg=>{phase='wait';RR.textContent=msg;r++;setTimeout(nextRound,800)};
+  const tick=()=>{if(!MG||!MG.alive||phase!=='input')return;const left=deadline-performance.now();T.style.width=clamp(left/(seq.length*1100+1500)*100,0,100)+'%';if(left<=0){endRound('TIME!');return}requestAnimationFrame(tick)};
+  MG.press=k=>{if(phase!=='input')return;const pad=document.querySelector(`[data-pad="${k}"]`);if(pad){pad.classList.add('hit');setTimeout(()=>pad.classList.remove('hit'),90)}
+    if(seq[pos].k===k){correct++;Q.innerHTML+=`<span>${seq[pos].i}</span>`;pos++;beep(600+pos*50,.08,.07);$('#mgs').textContent=`${correct}/${total}`;if(pos>=seq.length){C.textContent='🌟';endRound('CLEAN!')}}
+    else{beep(140,.15,.06,'square');C.textContent='❌';endRound('MISSED!')}};
+  nextRound();
+}
+document.addEventListener('pointerdown',e=>{const p=e.target.closest&&e.target.closest('[data-pad]');if(!p||!MG||!MG.press)return;e.preventDefault();const v=p.dataset.pad;MG.press(MG.kind==='rhythm'?+v:v)});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-mga]');if(!b||!MG)return;const a=b.dataset.mga;
+  if(a==='quit'){closeMG();return}
+  if(a==='go'){audio();MG.phase='play';if(MG.kind==='rhythm')mgRhythm();else mgChoreo();return}
+  if(a==='auto'){MG.detail='Simulated from your skills.';finishMG(autoScore(MG.o.stat||40));return}
+  if(a==='ok'){const cb=MG.cb,s=MG.score;closeMG();cb(s)}});
+document.addEventListener('keydown',e=>{if(!MG||!MG.press)return;const m=MG.kind==='rhythm'?{d:0,f:1,j:2,k:3,ArrowLeft:0,ArrowDown:1,ArrowUp:2,ArrowRight:3}:{ArrowLeft:'L',ArrowUp:'U',ArrowRight:'R',ArrowDown:'D',c:'C',s:'S'};if(e.key in m){e.preventDefault();MG.press(m[e.key])}});
+
+/* ============ actions ============ */
+const evalDiff=()=>clamp(.3+S.months*.025,.3,.8);
+function mgFor(kind,title,stat,diff,cb,sub){startMG(kind,{title,stat,diff,sub},cb)}
+function auditionResult(id,game){
+  const a=AG(id);const sc=auditionScore(game,UI.piece||'vocal');
+  if(sc>=a.diff||a.id==='comet'){joinAgency(id);UI.tab='week'}
+  else{S.tried.push(id);UI.modal={kick:'Audition result',title:'Not this time',html:`<p>${esc(a.short)} thanks you for coming. Your score: <b>${Math.round(sc)}</b> (they wanted ${a.diff}+).</p><p class="muted">Try another agency. Smaller labels are easier to get into.</p>`,btns:[B('OK','closeModal',null,'block')]}}
+  save();render();
+}
+function renewGroup(){
+  const g=S.group;S.flags.renewed=true;let left=[];
+  if(!(g.harmony>=40&&S.agRel>=30)){left=g.members.filter(m=>m.rel<15);if(left.length>=g.members.length)left=left.slice(0,g.members.length-1);g.members=g.members.filter(m=>!left.includes(m));g.size=g.members.length+1;assignPositions();if(!g.members.find(m=>m.id===S.bond))S.bond=g.members[0].id}
+  g.pop+=8;g.harmony+=5;log(`Renewed contracts.${left.length?' '+left.map(m=>m.name).join(', ')+' left.':' All members stay!'}`);
+  info('Contract renewal','We are staying together',`<p>${left.length?`${left.map(m=>esc(m.name)).join(', ')} chose not to renew. ${esc(g.name)} continues as ${g.size}.`:'Every member signs. Fans trend "#ForeverTogether" worldwide.'}</p><p class="muted">The group's 10th anniversary will decide its legacy.</p>`);
+}
+const ACT={
+  tab:v=>{UI.tab=v;window.scrollTo(0,0)},
+  next:()=>nextWeek(),
+  done:()=>doneTask(),
+  cancelTask:()=>{S.tasks.shift();UI.form={}},
+  al:v=>{const [k,d]=v.split('|');const A=S.alloc;const tot=sum(Object.values(A));if(+d>0&&tot>=BLOCKS)return;A[k]=clamp((A[k]||0)+(+d),0,BLOCKS);UI.keepScroll=true;save()},
+  bondSet:v=>{S.bond=v;save();toast(`Bond time goes to ${npcById(v)?.name}.`)},
+  mgEval:()=>{const t=curTask();const E=EVALK[t.kind];mgFor(E.mg,`${E.n} evaluation`,evalStat(S.st,t.kind),evalDiff(),finishEval)},
+  autoEval:()=>finishEval(autoScore(evalStat(S.st,curTask().kind))),
+  afterEval:()=>afterEval(),
+  cutAudition:()=>{S.tasks.shift();S.tried=[S.agency];S.agency=null;S.act='audition';S.trainees=[];S.surv=null;log('Back to auditions.')},
+  end:v=>{UI.modal=null;endGame(v)},
+  longKeep:()=>{S.tasks.shift();S.agRel+=6;S.stress+=6;log('Decided to keep going as a long-term trainee.')},
+  survYes:()=>{S.tasks.shift();S.flags.survInvite=true;S.flags.debutPlanned=true;startSurvival();info(SURV,'You are on the show!',`<p>Twenty contestants, four episodes. Episode 1 films next week. Keep training, and charm the cameras.</p>`)},
+  survNo:()=>{S.tasks.shift();S.agRel+=2},
+  mgLineup:()=>mgFor('rhythm','Debut evaluation',(myOverall()+S.st.vocal)/2,.55,computeLineup,'The directors decide the lineup today.'),
+  autoLineup:()=>computeLineup(autoScore((myOverall()+S.st.vocal)/2)),
+  survGo:v=>{const ep=S.surv.ep;const k=SKL[v]?v:ep===2?'dance':'vocal';mgFor(k==='dance'?'choreo':'rhythm',`${SURV}: ${SURVEP[ep].n}`,S.st[k],.4+ep*.08,g=>survPerform(g,v))},
+  survAuto:v=>{const ep=S.surv.ep;const k=SKL[v]?v:ep===2?'dance':'vocal';survPerform(autoScore(S.st[k]),v)},
+  afterSurv:()=>afterSurv(),
+  toSetup:()=>{S.tasks.shift();UI.form={};pushTask({type:'setup'},true)},
+  formSet:v=>{const i=v.indexOf('|');UI.form[v.slice(0,i)]=v.slice(i+1);UI.keepScroll=true},
+  setupGo:()=>{const f=UI.form;const n=(f.name||'').trim(),t=(f.title||'').trim();if(!n||!t){toast('Give the group and the song a name.');return}S.tasks.shift();finishSetup(n,f.concept,t);UI.form={};info('Debut prep','Three weeks to debut',`<p>Jacket shoots, choreo drills, teaser films. Train hard: vocal, dance and rap blocks during prep make the song better.</p>`)},
+  mgRelease:()=>{const s=songById(curTask().song);mgFor('rhythm',`"${s.title}" showcase`,avg([S.st.vocal,S.st.dance]),.5,doRelease)},
+  autoRelease:()=>doRelease(autoScore(avg([S.st.vocal,S.st.dance]))),
+  mgShow:()=>{const t=curTask();mgFor(Math.random()<.5?'rhythm':'choreo',`${t.show} live`,avg([S.st.vocal,S.st.dance,S.st.visual]),.55,g=>doShow(g,false))},
+  autoShow:()=>doShow(S.hiatus?45:autoScore(avg([S.st.vocal,S.st.dance,S.st.visual])),true),
+  afterShow:()=>afterShow(),
+  toCareer:()=>{S.tasks.shift();S.act='career';S.alloc=defAlloc('career');log('Act III begins: life as an idol.');fandomChecks()},
+  fandomGo:()=>{const f=UI.form;const n=(f.fname||'').trim();if(!n){toast('Pick a name for your fans.');return}S.tasks.shift();S.fandom={name:n,color:f.fcol||FANDOM_COLORS[0]};fansPct(.03);log(`Fans are officially called ${n}!`);UI.form={};fandomChecks()},
+  stickGo:()=>{const g=S.group;S.fandom.stick=UI.form.shape||'heart';S.tasks.shift();const sold=Math.round(g.fans*.12);pay(sold*45000*.08/g.size);log(`Official lightstick launched: ${fmt(sold)} sold.`);UI.form={};info('Lightstick launched',`${STICK_SHAPES[S.fandom.stick]} lightstick`,`<div class="stick">${stickSVG(S.fandom.stick,S.fandom.color)}</div><p>${fmt(sold)} sold in the first week. Concert halls will glow ${esc(S.fandom.name)} colors.</p>`)},
+  awardsGo:()=>{const t=curTask();t.res=runAwards();clampAll();save()},
+  plan:()=>{UI.form={};pushTask({type:'plan'},true)},
+  planGo:()=>{const f=UI.form;const t=(f.title||'').trim();if(!t){toast('Name the title track.');return}S.tasks.shift();startPrep({kind:'group',type:f.type,concept:f.concept,producer:f.producer,title:t});UI.form={};toast(`Prep started: ${S.prep.left} weeks.`)},
+  tour:()=>{UI.form={};pushTask({type:'tourPick'},true)},
+  tourGo:()=>{if(!UI.form.tour)return;S.tasks.shift();startTour(UI.form.tour);UI.form={}},
+  mgConcert:()=>mgFor('choreo',`${S.tour.n}: opening night`,avg([S.st.dance,S.st.vocal]),.55,g=>{S.tour.perf=g;S.tasks.shift();info('Opening night',g>=60?'The crowd roars':'A shaky start',`<p>Stage score ${g}. The tour runs for ${S.tour.weeks} weeks.</p>`);save();render()}),
+  autoConcert:()=>{const g=autoScore(avg([S.st.dance,S.st.vocal]));S.tour.perf=g;S.tasks.shift();toast(`Opening night: ${g}/100`)},
+  unitGo:v=>{S.tasks.shift();const p=npcById(v);startPrep({kind:'unit',type:'single',concept:bestConcept([S.st,p.st]),producer:'inhouse',title:pick(SUGGEST.song),partner:v});S.prep.left=2;info('Sub-unit','A new duo',`<p>You and ${esc(p.name)} will release "${esc(S.prep.title)}" in 2 weeks.</p>`)},
+  soloGo:()=>{S.tasks.shift();startPrep({kind:'solo',type:'single',concept:bestConcept([S.st]),producer:'inhouse',title:pick(SUGGEST.song)});info('Solo debut','Going solo',`<p>Your solo single "${esc(S.prep.title)}" drops in ${S.prep.left} weeks.</p>`)},
+  declineOffer:()=>{S.tasks.shift();S.group.harmony+=3},
+  bo:v=>{S.tasks.shift();if(v==='quit'){endGame(S.act==='trainee'?'quit':'retire');return}
+    if(v==='rest'){S.hiatus=6;S.stress=Math.min(S.stress,70);if(S.group)S.group.pop-=8;log('Took a 6-week break for your health.');info('Health first','Taking a break',`<p>The agency announces a short hiatus. Fans flood the hashtag with get-well messages.</p>`)}
+    else if(Math.random()<.45){S.hiatus=10;if(S.group){S.group.pop-=15}S.agRel-=5;log('Collapsed on stage. Ten weeks of forced rest.');info('Collapse','You collapsed on stage',`<p>Ten weeks of forced rest. You learn the hard way.</p>`)}
+    else{S.stress=80;log('Pushed through the burnout.');toast('You make it through… for now.')}},
+  renew:()=>{S.tasks.shift();renewGroup()},
+  finaleGo:()=>endGame(legacy()>=LEGEND?'legend':'disband',legacy()>=LEGEND?'':`Legacy ${legacy()}. Reach ${LEGEND}+ for the legendary ending.`),
+  ev:v=>chooseEvent(+v),
+  buy:v=>{const x=SHOP.find(s=>s.id===v);if(!x||S.money<x.c)return;S.money-=x.c;const g=S.group;
+    if(v==='spa')S.stress-=20;else if(v==='dinner'){g.harmony+=6;g.members.forEach(m=>m.rel+=3)}else if(v==='coach'){SK.slice().sort((a,b)=>S.st[a]-S.st[b]).slice(0,2).forEach(k=>S.st[k]+=2)}else if(v==='gift'){fansPct(.02);g.rep+=3}
+    clampAll();toast(`${x.n}: ${x.d}`);UI.keepScroll=true},
+  lookEdit:()=>{UI.modal={build:()=>({title:'Edit look',html:`<div class="bigav av" style="width:120px;height:120px">${avatarSVG(S.idol.look)}</div>${lookEditor(S.idol.look,'slook')}`,btns:[B('Done','closeModal',null,'block')]})}},
+  slook:v=>{const [k,i]=v.split('|');S.idol.look[k]=+i;UI.keepScroll=true;save()},
+  closeModal:()=>{UI.modal=null},
+  howto:()=>{UI.modal={title:'How to play',html:HOWTO,btns:[B('Got it','closeModal',null,'block')]}},
+  sound:()=>{S.sound=!S.sound},
+  toTitle:()=>{save();S=null;UI.scr='title';UI.modal=null;closeMG();window.scrollTo(0,0)},
+  newIn:v=>{UI.slot=+v;UI.draft=freshDraft();UI.scr='create';window.scrollTo(0,0)},
+  load:v=>{const s=readSlot(+v);if(!s){toast('That save could not be read.');return}S=migrate(s);S.slot=+v;UI.scr='game';UI.tab='week';UI.form={};window.scrollTo(0,0)},
+  delSlot:v=>{UI.modal={title:`Delete slot ${v}?`,html:'<p>This story will be gone for good.</p>',btns:[B('Delete','delGo',v,'warn block'),B('Keep it','closeModal',null,'ghost block')]}},
+  delGo:v=>{try{localStorage.removeItem(slotKey(+v));if(lastSlot()===+v)localStorage.removeItem(LAST)}catch(e){}UI.modal=null},
+  dset:v=>{const [k,val]=v.split('|');const d=UI.draft;if(k==='gender'&&d.gender!==val){d.look.hair=val==='boy'?2:0}d[k]=k==='age'?+val:val;UI.keepScroll=true},
+  dlook:v=>{const [k,i]=v.split('|');UI.draft.look[k]=+i},
+  drand:()=>{UI.draft.look=lookFor(ri(1,99999),UI.draft.gender)},
+  create:()=>{const d=UI.draft;if(!(d.stage||'').trim()&&!(d.name||'').trim()){toast('Give your idol a name first.');return}newGame(d,UI.slot||1);UI.scr='game';UI.tab='week';UI.form={};window.scrollTo(0,0)},
+  piece:v=>{UI.piece=v;UI.keepScroll=true},
+  aud:v=>{const p=UI.piece||'vocal';mgFor(p==='dance'?'choreo':'rhythm',`${AG(v).short} audition`,S.st[p],.3,g=>auditionResult(v,g),`Your piece: ${p==='vocal'?'a song':p==='dance'?'a dance':'a rap'}. The panel wants ${AG(v).diff}+ overall.`)}
+};
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-a]');if(!b||b.disabled)return;const f=ACT[b.dataset.a];if(!f)return;e.preventDefault();audio();f(b.dataset.v);if(S)clampAll();if(S&&UI.scr!=='title')save();render()});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.d&&UI.draft){UI.draft[t.dataset.d]=t.value;if(t.dataset.d==='stage'){const h=$('main .card.holo h2');if(h)h.textContent=t.value||'Your stage name'}}if(t.dataset.f){UI.form[t.dataset.f]=t.value}});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset.sel==='bond'&&S){S.bond=t.value;save();render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')e.target.blur()});
+
+function boot(){
+  UI.form={};
+  const n=lastSlot();const s=n?readSlot(n):null;
+  if(s&&!s.ending&&s.idol){S=migrate(s);S.slot=n;UI.scr='game'}else UI.scr='title';
+  render();
+}
+boot();
+</script>
+</body>
+</html>
