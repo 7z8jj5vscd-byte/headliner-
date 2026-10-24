@@ -1,0 +1,42 @@
+# Publishes Claude's work automatically: every push to a claude/... branch is
+# merged into main, and GitHub Pages serves main, so all the games in this repo
+# (Headliner, One-Hit Wonder, Debut Dream, Decades and any new ones) go live
+# without a pull request. If a merge conflicts, this run fails, GitHub emails
+# the repo owner, and that branch can still be merged with a normal pull request.
+name: Auto-publish Claude branches
+
+on:
+  push:
+    branches: ['claude/**']
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: auto-publish-main
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Merge the branch into main
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$BRANCH"
+          git merge --no-edit -m "Auto-publish $BRANCH" "origin/$BRANCH"
+          git push origin main
+
+      - name: Rebuild the site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "Pages will rebuild from the push to main."

@@ -22,8 +22,12 @@ Features 3D idols and a dancing group stage (drag to spin), a Dream board of goa
 
 ## Decades
 
-Start a band in 1965 and play one year per turn all the way to the present. Manage egos, lineup changes, breakups and reunions while the industry shifts from vinyl to cassettes, music videos, CDs, file-sharing, streaming and viral clips. Your band appears as 3D characters whose clothes and hair follow each decade, a rival band fights you for the charts, and you can replay your whole career as a documentary.
+Start a band in 1965 and play one year per turn all the way to the present. Manage egos, lineup changes, breakups and reunions while the industry shifts from vinyl to cassettes, music videos, CDs, file-sharing, streaming and viral clips. Your band appears as 3D characters whose clothes and hair follow each decade, a rival band fights you for the charts, and you can replay your whole career as a documentary. Every song plays its own short tune, there are 24 trophies to collect, and the ? button lists every feature and takes you straight to it.
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/decades/
 
 The other games install on iPhone the same way: open the link in Safari, tap Share, then Add to Home Screen.
+
+## Updates go live automatically
+
+Any push to a `claude/...` branch is merged into `main` by `.github/workflows/auto-publish.yml`, and GitHub Pages publishes `main`. No pull request is needed. If an automatic merge ever conflicts, GitHub emails the repo owner and that branch can be merged with a normal pull request instead.
