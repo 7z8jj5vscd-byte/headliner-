@@ -234,6 +234,27 @@ input[type=text]{width:100%;background:var(--chip);border:1px solid var(--line);
 .doc-ctl{display:flex;gap:8px;justify-content:center}
 .doc-bar{height:4px;background:rgba(127,127,127,.25);border-radius:2px;overflow:hidden}
 .doc-bar i{display:block;height:100%;background:var(--accent)}
+/* guide, tour, manager, trophies */
+.feat{display:flex;gap:10px;align-items:center}
+.fic{font-size:22px;width:30px;text-align:center;flex:none}
+.feat small{font-size:12.5px;line-height:1.3}
+.flash{animation:flash .6s ease 4;border-radius:var(--r)}
+@keyframes flash{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 4px var(--accent2)}}
+.coach-hl{outline:3px solid var(--accent2)!important;outline-offset:3px;animation:flash 1s ease infinite}
+#coach{position:fixed;left:0;right:0;bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;justify-content:center;padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));pointer-events:none}
+#coach.top{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 110px)}
+.coach{pointer-events:auto;width:100%;max-width:520px;background:var(--ink);color:var(--bg);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.coach .label{color:inherit;opacity:.7}.coach .row{justify-content:flex-end}
+.coach .btn.ghost{color:var(--bg);border-color:currentColor}
+.mgr-ic{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--chip);border:2px solid var(--line);flex:none}
+.linkbtn{background:none;border:0;padding:4px 0;font-size:12px;color:var(--muted);text-decoration:underline}
+.songbtn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.dot.new{min-width:8px;width:8px;height:8px;padding:0;vertical-align:top}
+.trophies{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.trophy{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px;opacity:.55;background:var(--chip)}
+.trophy.got{opacity:1;border-color:var(--accent)}
+.tic{font-size:26px;line-height:1.1}
+.trophy small{font-size:12px;color:var(--muted);line-height:1.3}
 /* timeline */
 .tl{position:relative;padding-left:22px}
 .tl::before{content:"";position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--line)}
@@ -431,13 +452,13 @@ const EV={
       tl('label',o.type==='self'?'Went independent, releasing records themselves':`Signed to ${o.name}`);return o.type==='self'?'You own your masters now.':`Signed with ${esc(o.name)}${o.adv?' for a '+fmt$(o.adv)+' advance':''}.`}},
   festival:{kick:'Scene',title:()=>'The Meadowlark Festival',text:()=>'Half a million people in a muddy field upstate. The promoters want you on the bill at dawn on Sunday. No pay, no showers, total chaos.',
     choices:()=>[{k:'go',label:'Play the dawn slot',hint:'Hype, fans and cred. Costs travel'},{k:'no',label:'Pass',hint:'Stay home and dry'}],
-    res(d,k){if(k==='go'){S.hype+=22;S.fans=Math.round(S.fans*1.3+15000);S.rep+=6;active().forEach(m=>m.mood+=6);S.money-=cost(800);tl('milestone','Played the Meadowlark Festival at dawn');return 'A legendary set as the sun came up.'}return 'You stayed home. Everyone else is talking about it.'}},
+    res(d,k){if(k==='go'){S.hype+=22;S.fans=Math.round(S.fans*1.3+15000);S.rep+=6;active().forEach(m=>m.mood+=6);S.money-=cost(800);tl('milestone','Played the Meadowlark Festival at dawn');award('mud');return 'A legendary set as the sun came up.'}return 'You stayed home. Everyone else is talking about it.'}},
   vidstar:{kick:'Industry',title:()=>'VidStar TV goes on the air',text:()=>'A new cable channel will play music videos all day, every day. Most bands think it\'s a fad.',
     choices:()=>{const c=cost(9000);return [{k:'go',label:`Shoot a video now (${fmt$(c)})`,hint:'Get in early. Lasting edge through the 80s',dis:S.money<c},{k:'no',label:'It\'s a fad',hint:'Keep your money'}]},
-    res(d,k){if(k==='go'){S.money-=cost(9000);S.flags.mtvEarly=true;S.hype+=15;tl('milestone','One of the first bands on VidStar TV');return 'Your clip is in heavy rotation. Teenagers know your faces now.'}return 'You sit it out. VidStar is not a fad.'}},
+    res(d,k){if(k==='go'){S.money-=cost(9000);S.flags.mtvEarly=true;S.hype+=15;tl('milestone','One of the first bands on VidStar TV');award('pioneer');return 'Your clip is in heavy rotation. Teenagers know your faces now.'}return 'You sit it out. VidStar is not a fad.'}},
   charity:{kick:'Scene',title:()=>'Global Jam',text:()=>'Two stadiums, two continents, one broadcast for famine relief. A billion people watching. They want you for 18 minutes.',
     choices:()=>[{k:'go',label:'Play Global Jam',hint:'Cred and huge exposure, no pay'},{k:'no',label:'Decline',hint:'The press will notice'}],
-    res(d,k){if(k==='go'){S.rep+=10;S.fans=Math.round(S.fans*1.15+20000);S.hype+=15;active().forEach(m=>m.mood+=5);tl('milestone','Played Global Jam to a billion viewers');return 'Eighteen minutes that everyone will remember.'}S.rep-=4;return 'Critics call it a snub.'}},
+    res(d,k){if(k==='go'){S.rep+=10;S.fans=Math.round(S.fans*1.15+20000);S.hype+=15;active().forEach(m=>m.mood+=5);tl('milestone','Played Global Jam to a billion viewers');award('globaljam');return 'Eighteen minutes that everyone will remember.'}S.rep-=4;return 'Critics call it a snub.'}},
   stripped:{kick:'Industry',title:()=>'Stripped Sessions',text:()=>'VidStar wants you for an acoustic special. No amps, no hiding. Bands either shine or get exposed.',
     choices:()=>[{k:'go',label:'Do the special',hint:'Live album, cred if you can really play'},{k:'no',label:'Decline',hint:'Not your thing'}],
     res(d,k){S.flags.stripped=true;if(k==='go'){const ch=avg(active().map(m=>m.chops));const good=ch+rnd(-20,20)>55;const inc=Math.round(S.fans*.12*perUnit());S.money+=inc;S.hype+=good?15:4;S.rep+=good?9:-3;
@@ -451,7 +472,7 @@ const EV={
     res(d,k){if(k==='yes'){const a=cost(4000)+Math.round(S.songs.filter(s=>s.peak).length*cost(1500));S.money+=a;S.licensed=true;tl('milestone','Put their catalog on streaming');return 'Your whole catalog is a tap away for anyone.'}S.licensed=false;return 'You hold out. Fewer people hear your old songs.'}},
   loopr:{kick:'Viral',title:d=>`"${esc(d.t)}" is blowing up`,text:d=>`A clip of your ${d.y} song is everywhere on Loopr. Kids who weren't born when you cut it are doing a dance to it.`,
     choices:()=>[{k:'lean',label:'Lean in',hint:'Play it everywhere, join the trend'},{k:'ad',label:'License it to a phone ad',hint:'Big cheque, some eye-rolls'},{k:'ride',label:'Let it ride',hint:'Enjoy it quietly'}],
-    res(d,k){let s=S.songs.find(x=>x.t===d.t&&x.y===d.y);if(!s){s={t:d.t,y:d.y,peak:null,single:false,classic:false};S.songs.push(s)}s.viral=S.year;
+    res(d,k){let s=S.songs.find(x=>x.t===d.t&&x.y===d.y);if(!s){s={t:d.t,y:d.y,peak:null,single:false,classic:false};S.songs.push(s)}s.viral=S.year;award('viral');
       if(k==='lean'){const pk=ri(2,30);s.repeak=pk;if(!s.peak||pk<s.peak)s.peak=pk;S.hype+=30;S.fans+=Math.round(Math.max(60000,S.fans*.4));S.flags.viralBoost=8;if(S.year-s.y>=15)s.classic=true;tl('hit',`"${s.t}" (${s.y}) went viral on Loopr and re-charted at #${pk}`);return `"${esc(s.t)}" is back in the charts at #${pk}.`}
       if(k==='ad'){const c=cost(60000)*(s.classic?2:1);S.money+=c;S.rep-=4;S.fans+=Math.round(S.fans*.12);S.flags.viralBoost=3;tl('hit',`"${s.t}" went viral and soundtracked a phone ad`);return `The ad pays ${fmt$(c)}.`}
       S.fans+=Math.round(S.fans*.18);S.flags.viralBoost=4;tl('hit',`"${s.t}" (${s.y}) went viral on Loopr`);return 'A new generation finds your music.'}},
@@ -517,8 +538,8 @@ const EV={
   poach:{kick:'Rivals',title:d=>`${esc(S.rival.name)} want ${mn(d.m)}`,text:d=>`Your rivals have offered ${first(M(d.m))} a spot, more money and a bigger stage.`,
     ok:()=>!!S.rival&&!S.rival.split,
     choices:d=>{const c=cost(6000);return [{k:'pay',label:`Match the offer (${fmt$(c)})`,hint:'Keeps them, for a price',dis:S.money<c},{k:'plead',label:'Remind them where they came from',hint:'Works if they are loyal'},{k:'go',label:'Let them go',hint:'Find a replacement'}]},
-    res(d,k){const m=M(d.m),r=S.rival;if(k==='pay'){S.money-=cost(6000);m.mood+=12;m.loyalty+=10;return `${first(m)} stays, a little richer.`}
-      if(k==='plead'&&chance(m.loyalty/100+.2)){m.loyalty+=6;m.mood+=4;return `${first(m)} tells ${esc(r.name)} where to go.`}
+    res(d,k){const m=M(d.m),r=S.rival;if(k==='pay'){S.money-=cost(6000);m.mood+=12;m.loyalty+=10;award('handsoff');return `${first(m)} stays, a little richer.`}
+      if(k==='plead'&&chance(m.loyalty/100+.2)){m.loyalty+=6;award('handsoff');m.mood+=4;return `${first(m)} tells ${esc(r.name)} where to go.`}
       leave(m,'left','poached by '+r.name);r.fans=Math.round(r.fans*1.05);return `${first(m)} has joined ${esc(r.name)}.`}},
   reunionoffer:{kick:'Offer',title:()=>'A promoter wants a reunion',text:d=>`"The fans never stopped asking." A promoter will guarantee ${fmt$(d.amt)} if the old lineup gets back together.`,
     ok:()=>!!S.split,
@@ -547,7 +568,7 @@ function startYear(){
     S.pending=P;S.carry=[];return}
   ensureLeader();
   const pl=S.plan||{};const fo=['split','apart','reunite','retire'].includes(pl.focus)||!pl.focus?'write':pl.focus;
-  S.plan={focus:fo,genre:S.genre,setlist:pl.setlist||'mix',budget:pl.budget||0,promo:false,scale:SCK.includes(pl.scale)&&S.fans>=SCALES[pl.scale].need?pl.scale:'clubs'};
+  S.plan={focus:fo,genre:S.genre,setlist:pl.setlist||'mix',single:pl.single||'catchy',budget:pl.budget||0,promo:false,scale:SCK.includes(pl.scale)&&S.fans>=SCALES[pl.scale].need?pl.scale:'clubs'};
   P.push(...(S.carry||[]));S.carry=[];
   if(!S.label||y>=S.label.until)P.push({t:'label',d:{offers:labelOffers(),renew:!!S.label}});
   if(y===1969)P.push({t:'festival',d:{}});
@@ -586,7 +607,7 @@ function startYear(){
 function doSplit(why){
   for(const m of active()){m.status='split'}
   S.split={y:S.year,why};S.splits++;S.pending=[];S.carry=[];S.plan={focus:'apart'};
-  tl('split',`${S.name} broke up${why?' ('+why+')':''}`);
+  tl('split',`${S.name} broke up${why?' ('+why+')':''}`);award('split');
 }
 
 /* ---------------- economics ---------------- */
@@ -602,11 +623,10 @@ function livingCost(){return active().length*cost(1500)}
 /* ---------------- playing a year ---------------- */
 function playYear(){
   const y=S.year;const R={y,pre:S.yearLog.slice(),lines:[],album:null,tour:null,money0:S.money,fans0:S.fans,hype0:S.hype,chem0:cohesion(),focus:S.plan.focus,reinvent:null,events:[]};
-  S.yearRes=R;
+  S.yearRes=R;UI._R=R;
   if(S.split)playSplitYear(R);else playBandYear(R);
-  if(S.over)return;
-  rivalYear(R);
-  endOfYear(R);
+  if(!S.over){rivalYear(R);endOfYear(R)}
+  UI._R=null;
 }
 function catalogIncome(R){const e=eraOf(S.year);let c=0;const lic=(e.k==='stream'||e.k==='viral')?(S.licensed===false?.25:1):1;
   for(const s of S.songs){if(!s.peak||s.peak>40)continue;let v=(41-s.peak)*90*infl(S.year)*e.cat*lic;if(s.classic)v*=3;if(s.viral===S.year)v*=6;c+=v}
@@ -619,7 +639,7 @@ function reinvent(g,R){
   const hot=gpop(g,S.year);S.rep+=hot>.65?-3:4;
   R.reinvent={from,to:g,lost,back};
   R.lines.push({i:'🔀',t:`Reinvented from ${GENRES[from].n} to ${GENRES[g].n}. Lost ${fmtN(lost)} old fans${back>0?`, won back ${fmtN(back)} who loved your old ${GENRES[g].n} days`:''}.`});
-  tl('genre',`Reinvented their sound: ${GENRES[from].n} → ${GENRES[g].n}`);
+  tl('genre',`Reinvented their sound: ${GENRES[from].n} → ${GENRES[g].n}`);if(S.reinvents>=3)award('chameleon');
   for(const m of active()){if(m.trait==='Visionary')m.mood+=8;if(m.taste===from&&m.taste!==g)m.mood-=8;if(m.taste===g)m.mood+=6}
 }
 function playBandYear(R){
@@ -651,7 +671,7 @@ function releaseAlbum(R){
   const chops=avg(a.map(m=>m.chops)),coh=cohesion(),mat=S.material;
   const matB=mat<10?-10:Math.min(mat,40)*.3;const fam=Math.min(S.fam[S.genre]||15,80);
   let q=wq*.42+chops*.18+coh*.15+matB+BUDGETS[P.budget].b+fam/10+(a.length<4?-4:0)+rnd(-10,10);
-  if(a.length<3)q-=6;q=Math.round(clamp(q,5,99));
+  if(a.length<3)q-=6;const SG=SINGLES[P.single]?P.single:'catchy';if(SG==='bold')q+=3;q=Math.round(clamp(q,5,99));
   S.material=Math.max(0,mat-30);S.fam[S.genre]=(S.fam[S.genre]||15)+8;
   const trend=gpop(S.genre,y);const pr=PROMO[promoKey()];
   let promoB=0,hypeB=0,viral=false;
@@ -680,15 +700,18 @@ function releaseAlbum(R){
   S.albums.push(al);R.album=al;
   const nS=peak&&peak<=40?3:2;const singles=[];
   for(let i=0;i<nS;i++){const sq=clamp(q+rnd(-12,12)+(i===0?5:0),5,99);
-    const ss=sq*.45+base+rnd(-9,9)-i*3;
+    const hot=avail(y).sort((u,w)=>gpop(w,y)-gpop(u,y))[0];const push=i?0:SG==='catchy'?5:SG==='bold'?-2:hot!==S.genre?4+(gpop(hot,y)-trend)*20:3;
+    const ss=sq*.45+base+push+rnd(-9,9)-i*3;
     const sp=chartPeak(ss);const song={t:tracks[i],y,peak:sp,single:true,classic:false,album:title,q:Math.round(sq)};S.songs.push(song);singles.push(song);
     if(sp)S.totals.units+=0;
     if(sp&&sp<=10)tl('hit',`"${song.t}" hit ${ord(sp)}`);}
-  al.singles=singles.map(s=>({t:s.t,peak:s.peak}));
+  al.singles=singles.map(s=>({t:s.t,peak:s.peak}));al.single=SG;S.tried.single=1;
+  if(SG==='bold')S.rep=clamp(S.rep+3,0,100);else if(SG==='trend'){S.rep=clamp(S.rep-3,0,100);active().filter(m=>m.taste===S.genre).forEach(m=>m.mood-=3)}
+  if(!S.albums[1])award('first');if(units>=1e6)award('platinum');if(singles.some(x=>x.peak&&x.peak<=10))award('top10');if(singles.some(x=>x.peak===1))award('number1');if(viral)award('viral');
   tl('album',`Released ${selfTitled?'their debut, the self-titled':''} "${title}" (${GENRES[S.genre].n}) · ${peak?'peaked at '+ord(peak):'missed the charts'}`);
   R.lines.push({i:'💿',t:`Released "${esc(title)}". Quality ${q}/100. ${peak?'Peaked at <b>'+ord(peak)+'</b>':'Missed the charts'}. ${fmtN(units)} sold, earning ${fmt$(revenue)}.`});
   if(viral)R.lines.push({i:'🔥',t:'A Loopr clip of the lead single went viral!'});
-  for(const s of singles)R.lines.push({i:'🎵',t:`Single "${esc(s.t)}": ${s.peak?ord(s.peak):'did not chart'}`});
+  for(const s of singles)R.lines.push({i:'🎵',t:`${s===singles[0]?'Lead single ('+SINGLES[SG].n.toLowerCase()+')':'Single'} "${esc(s.t)}": ${s.peak?ord(s.peak):'did not chart'}`});
   if(q<40)R.lines.push({i:'📉',t:'Critics were brutal. Rushed or tired, it shows.'});
   if(trend<.25)R.lines.push({i:'🧊',t:`${GENRES[S.genre].n} is out of fashion right now.`});
   R.peak=peak;
@@ -704,6 +727,7 @@ function runTour(scale,R,nost,setlist='mix'){
   R.lines.push({i:'🚐',t:`${nost>1?'Reunion tour':'Toured'} ${sc.n.toLowerCase()}: ${fmtN(att)} tickets (${Math.round(fill*100)}% full). ${net>=0?'Profit':'Loss'}: <b class="${net>=0?'good':'bad'}">${fmt$(net)}</b>.${setlist!=='mix'&&S.songs.some(s=>s.peak)?' Setlist: '+SL.n.toLowerCase()+'.':''}`});
   if(fill<.4)R.lines.push({i:'🪑',t:'Half-empty rooms. The press noticed.'});
   if(fill>.95&&scale!=='stadiums')R.lines.push({i:'🎟️',t:'Sold out everywhere. You could go bigger.'});
+  if(fill>.9&&scale==='stadiums')award('stadium');if(setlist==='hits'&&S.songs.some(x=>x.peak))award('hits');
   if(fill>.9)tl('tour',`Sold-out ${nost>1?'reunion ':''}${sc.n.toLowerCase()} tour`);
 }
 function reunionChance(m){if(m.status==='retired'||age(m)>82)return 0;const ya=S.year-(S.split?S.split.y:S.year);let p=.18+Math.min(ya,20)*.045+m.loyalty/260+m.mood/320-m.ego/420+(m.status==='split'?.1:-.15)+(S.flags.offer?.15:0);
@@ -723,7 +747,7 @@ function playSplitYear(R){
     for(const m of pool){let p=reunionChance(m);if(yes.some(o=>feuding(o.id,m.id)))p-=.3;(chance(p)?yes:no).push(m)}
     if(yes.length>=2){for(const m of yes){m.status='active';m.mood=clamp(m.mood+15,0,100)}
       for(const m of no)if(m.status==='split'){m.status='left';m.left=S.year}
-      S.reunions++;const yrs=ya;tl('reunion',`Reunited after ${yrs} year${yrs===1?'':'s'} apart with ${yes.map(m=>m.name.split(' ')[0]).join(', ')}`);
+      S.reunions++;award('reunion');const yrs=ya;tl('reunion',`Reunited after ${yrs} year${yrs===1?'':'s'} apart with ${yes.map(m=>m.name.split(' ')[0]).join(', ')}`);
       R.lines.push({i:'🤝',t:`<b>The reunion is on!</b> ${yes.map(first).join(', ')} are back.${no.length?' '+no.map(first).join(', ')+' said no.':''}`});
       if(S.flags.offer){S.money+=S.flags.offer;R.lines.push({i:'💰',t:`The promoter's guarantee: ${fmt$(S.flags.offer)}.`})}
       S.flags.offer=0;S.split=null;ensureLeader();
@@ -767,8 +791,9 @@ function endOfYear(R){
     else if(age(m)>=80&&m.stay<y&&!S.split){leave(m,'retired');R.lines.push({i:'🎩',t:`${esc(m.name)} retired at ${age(m)}.`})}}
   if(!S.split&&active().length===0){if(S.members.some(m=>m.status==='retired'&&m.left===y)&&!S.members.some(m=>m.status==='split')){S._aged=true}doSplit('everyone was gone');R.lines.push({i:'💔',t:'There is no one left in the band.'})}
   S.hype=clamp(S.hype,0,100);S.rep=clamp(S.rep,0,100);S.fans=Math.max(0,Math.round(S.fans));
-  for(const s of S.songs){if(!s.classic&&((s.peak&&s.peak<=10&&y-s.y>=15)||(s.viral&&y-s.y>=15&&s.repeak))){s.classic=true;R.lines.push({i:'⭐',t:`"${esc(s.t)}" (${s.y}) is now a classic.`});tl('classic',`"${s.t}" (${s.y}) became a classic`)}}
+  for(const s of S.songs){if(!s.classic&&((s.peak&&s.peak<=10&&y-s.y>=15)||(s.viral&&y-s.y>=15&&s.repeak))){s.classic=true;R.lines.push({i:'⭐',t:`"${esc(s.t)}" (${s.y}) is now a classic.`});tl('classic',`"${s.t}" (${s.y}) became a classic`);award('classic')}}
   S.peakFans=Math.max(S.peakFans,S.fans);
+  if(!S.split&&y-S.genreSince>=20)award('faithful');if(!S.split&&active().length>=2&&!active().some(m=>m.founder)&&S.members.some(m=>m.founder))award('theseus');
   const hits=S.songs.filter(s=>s.y===y&&s.peak&&s.peak<=40);
   const sc=(R.album&&R.album.peak?101-R.album.peak:0)+sum(hits.map(s=>41-s.peak))+(R.tour?R.tour.fill*30*(SCK.indexOf(R.tour.scale)+1):0);
   S.hist.push({y,fans:S.fans,money:S.money,hype:Math.round(S.hype),chem:cohesion(),split:!!S.split,score:Math.round(sc),album:R.album?R.album.peak:undefined,lineup:lineupNow,leader:leaderNow});
@@ -788,7 +813,7 @@ function legacy(){const sg=S.songs.filter(s=>s.peak);const n1=sg.filter(s=>s.pea
   const score=Math.round(cl*8+n1*5+t10*2.5+a10*3+a1*4+Math.log10(S.totals.units+1)*4+q*.25+yrs*.4+S.reunions*6+S.rep*.15);
   const debut=S.albums.length?S.albums[0].y:null;const eligible=debut&&(Math.min(S.year,END)-debut>=25);
   return {score,n1,t10,cl,a10,a1,q:Math.round(q),yrs,eligible,inducted:eligible&&score>=HOF_NEED,debut}}
-function finish(why){S.over=true;S.endWhy=why;S.endYear=Math.min(S.year,END);S.final=legacy();
+function finish(why){S.over=true;S.endWhy=why;S.endYear=Math.min(S.year,END);S.final=legacy();if(S.final.inducted)award('hof');if(why==='present'&&!S.split&&active().length)award('sixty');
   try{const H=JSON.parse(localStorage.getItem('decades_hof')||'[]');H.unshift({name:S.name,from:START,to:S.endYear,score:S.final.score,inducted:S.final.inducted,classics:S.final.cl,id:S.id});
     localStorage.setItem('decades_hof',JSON.stringify(H.filter((h,i)=>H.findIndex(x=>x.id===h.id)===i).slice(0,20)))}catch(e){}
   save();UI.tab='year';}
@@ -801,23 +826,24 @@ function delSlot(n){try{localStorage.removeItem(slotKey(n))}catch(e){}}
 
 function migrate(s){for(const m of s.members)if(!m.look)m.look=genLook(m.id);
   if(!s.rival){s.rival=genRival(s);s.rival.fans=s.rival.peakFans=Math.round(Math.max(2500,s.fans*rnd(.6,1.4)))}
-  s.rivalW=s.rivalW||0;s.rivalL=s.rivalL||0;if(s.plan&&!s.plan.setlist)s.plan.setlist='mix';return s}
+  s.rivalW=s.rivalW||0;s.rivalL=s.rivalL||0;if(s.plan&&!s.plan.setlist)s.plan.setlist='mix';if(s.plan&&!s.plan.single)s.plan.single='catchy';
+  s.tried=s.tried||{};s.seen=s.seen||{music:s.albums.length,scene:s.year};s.flags=s.flags||{};return s}
 /* ---------------- new game ---------------- */
 function newSetup(slot){UI.setup={slot,name:bandName(),genre:'rock',size:4,...genLineup(4)}}
 function startGame(){const u=UI.setup;const nm=($('#bandname')?.value||u.name).trim().slice(0,40)||u.name;
   S={v:1,id:Math.random().toString(36).slice(2),slot:u.slot,name:nm,year:START,money:1500,fans:2000,hype:5,rep:50,genre:u.genre,genreSince:START,fam:{[u.genre]:25},
     oldFans:{},material:15,members:u.members,leader:u.leader,feuds:[],label:null,albums:[],songs:[],timeline:[],hist:[],pending:[],carry:[],news:[],yearLog:[],
     split:null,splits:0,reunions:0,reinvents:0,noise:{},licensed:null,pubSold:false,over:false,lastFocus:null,plan:{focus:'write',genre:u.genre,budget:0,promo:false,scale:'clubs'},
-    totals:{units:0,gross:0},peakFans:2000,flags:{}};
+    totals:{units:0,gross:0},peakFans:2000,flags:{},tried:{},seen:{music:0,scene:START}};
   S.rival=genRival(S);S.rivalW=0;S.rivalL=0;
   tl('formed',`${nm} formed: ${S.members.map(m=>m.name+' ('+m.role.toLowerCase()+')').join(', ')}`);
-  UI.setup=null;UI.tab='year';startYear();save();render();window.scrollTo(0,0)}
+  UI.setup=null;UI.tab='year';startYear();save();if(!tourDone())UI.coach=0;render();window.scrollTo(0,0)}
 
 /* ---------------- rendering ---------------- */
 function setTheme(t){document.documentElement.dataset.theme=t;const c=getComputedStyle(document.documentElement).getPropertyValue('--hud').trim();$('meta[name=theme-color]').setAttribute('content',c||'#111')}
 function meter(v,cls=''){return `<div class="meter ${cls}"><i style="width:${clamp(v,0,100)}%"></i></div>`}
 function dots(v,max=5){const n=clamp(Math.round(v),0,max);return '<span class="dots">'+'●'.repeat(n)+'<span class="muted">'+'○'.repeat(max-n)+'</span></span>'}
-function render(){renderView();hydrate()}
+function render(){renderView();hydrate();renderCoach();syncSongButtons()}
 function renderView(){
   const app=$('#app');
   if(!S){setTheme(UI.setup?'sixties':'modern');app.className='app notabs';app.innerHTML=UI.setup?vSetup():vTitle();renderSheet();return}
@@ -830,11 +856,12 @@ function renderView(){
 }
 function hud(){const coh=S.split?'—':cohesion();
   const segs=[[1965,1970],[1970,1980],[1980,1990],[1990,2000],[2000,2010],[2010,END+1]].map((s,i)=>`<span style="width:${(s[1]-s[0])/(END+1-START)*100}%;background:${DEC_COLORS[i]}"></span>`).join('');
-  return `<header class="hud"><div class="hud-top"><button class="iconbtn" data-a="menu" aria-label="Menu">☰</button><div class="bandname">${esc(S.name)}</div><div class="year">${S.year}</div></div>
+  return `<header class="hud"><div class="hud-top"><button class="iconbtn" data-a="menu" aria-label="Menu">☰</button><div class="bandname">${esc(S.name)}</div><button class="iconbtn" data-a="guide" aria-label="Every feature">?</button><div class="year">${S.year}</div></div>
   <div class="hud-stats"><div><b>${fmt$(S.money)}</b><i>bank</i></div><div><b>${fmtN(S.fans)}</b><i>fans</i></div><div><b>${Math.round(S.hype)}</b><i>hype</i></div><div><b>${coh}</b><i>chemistry</i></div></div>
   <div class="timebar">${segs}<em style="left:calc(${(S.year-START)/(END-START)*100}% - 1px)"></em></div></header>`}
+function tabNew(t){const sn=S.seen||{};if(UI.tab===t)return false;if(t==='music')return S.albums.length>(sn.music||0);if(t==='scene')return (sn.scene||0)<S.year&&S.news.length>0;return false}
 function tabs(){const pend=S.pending.filter(evValid).length;const T=[['year','📅','Year'],['band','🎸','Band'],['music','💿','Music'],['scene','📻','Scene'],['history','📜','History']];
-  return `<nav class="tabs"><div class="in">${T.map(t=>`<button class="tab ${UI.tab===t[0]?'on':''}" data-a="tab" data-v="${t[0]}"><span class="ic">${t[1]}</span><span>${t[2]}${t[0]==='year'&&pend?`<span class="dot">${pend}</span>`:''}</span></button>`).join('')}</div></nav>`}
+  return `<nav class="tabs"><div class="in">${T.map(t=>`<button class="tab ${UI.tab===t[0]?'on':''}" data-a="tab" data-v="${t[0]}"><span class="ic">${t[1]}</span><span>${t[2]}${t[0]==='year'&&pend?`<span class="dot">${pend}</span>`:''}${tabNew(t[0])?'<span class="dot new" aria-label="new"></span>':''}</span></button>`).join('')}</div></nav>`}
 function eraCard(){const e=eraOf(S.year);const rec=e.units*e.roy;
   return `<div class="card era"><div class="between"><div><div class="label">${e.fmt}</div><h2>${e.n}</h2></div><div class="yr">${String(S.year).slice(2)}'</div></div>
   <p class="small">${e.d}</p>
@@ -844,7 +871,7 @@ function evCard(e,i){const E=EV[e.t];const ch=E.choices(e.d);const who=['m','a',
   <div class="stack" style="gap:8px">${ch.map(c=>{const inner=`<b>${c.label}</b>${c.hint?`<small>${c.hint}</small>`:''}`;return `<button class="choice ${c.img?'withimg':''}" data-a="choose" data-v="${i}|${c.k}" ${c.dis?'disabled':''}>${c.img?c.img+`<span class="stack0">${inner}</span>`:inner}</button>`}).join('')}</div></div>`}
 function vYear(){
   S.pending=S.pending.filter(evValid);
-  let h=stageHTML()+eraCard();
+  let h=stageHTML()+managerCard()+eraCard();
   if(S.news.length)h+=`<div class="card"><div class="label">Headlines</div>${S.news.map(n=>`<p class="small">📰 ${n}</p>`).join('')}</div>`;
   if(S.yearLog.length)h+=`<div class="card"><div class="label">So far this year</div>${S.yearLog.map(n=>`<p class="small">✔︎ ${n}</p>`).join('')}</div>`;
   h+=S.pending.map(evCard).join('');
@@ -853,20 +880,21 @@ function vYear(){
 function bandPlan(){
   const p=S.plan,a=active(),e=eraOf(S.year);const pend=S.pending.length;
   const fChips=Object.entries(FOCUS).map(([k,f])=>{const dis=(k==='album'||k==='albumtour')&&a.length<2;return `<button class="chip ${p.focus===k?'on':''}" data-a="focus" data-v="${k}" ${dis?'disabled':''}><b>${f.n}</b><small>${f.d}</small></button>`}).join('');
-  let h=`<div class="card"><div class="between"><h2>Plan ${S.year}</h2><span class="pill">${Math.round(S.material)} songs banked</span></div><div class="chips">${fChips}</div>`;
+  let h=`<div class="card" data-feat="plan"><div class="between"><h2>Plan ${S.year}</h2><span class="pill">${Math.round(S.material)} songs banked</span></div><div class="chips">${fChips}</div>`;
   const rel=p.focus==='album'||p.focus==='albumtour',tour=p.focus==='tour'||p.focus==='albumtour';
   if(rel){h+=`<div class="label">Production</div><div class="chips three">${BUDGETS.map((b,i)=>{const c=cost(b.cost);return `<button class="chip ${p.budget===i?'on':''}" data-a="budget" data-v="${i}" ${c>Math.max(0,S.money)&&c>0?'disabled':''}><b>${b.n}</b><small>${c?fmt$(c):'Free'}</small></button>`}).join('')}</div>`;
     if(S.material<10)h+=`<p class="small bad">Only ${Math.round(S.material)} songs banked. A rushed record will suffer. Consider writing first.</p>`}
   if(tour){h+=`<div class="label">Tour size</div><div class="chips">${SCK.map(k=>{const sc=SCALES[k];const fill=Math.min(1,tourDemand(k)/sc.cap);const lock=S.fans<sc.need;
     return `<button class="chip ${p.scale===k?'on':''}" data-a="scale" data-v="${k}" ${lock?'disabled':''}><b>${sc.n}</b><small>${lock?'Needs '+fmtN(sc.need)+' fans':'~'+Math.round(fill*100)+'% full · costs '+fmt$(cost(sc.cost))}</small></button>`}).join('')}</div>`;
-    if(S.songs.some(s=>s.peak))h+=`<div class="label">Setlist</div><div class="chips three">${Object.entries(SETLISTS).map(([k,v])=>`<button class="chip ${(p.setlist||'mix')===k?'on':''}" data-a="setlist" data-v="${k}"><b>${v.n}</b><small>${v.d}</small></button>`).join('')}</div>`}
-  if(rel||tour){const pr=PROMO[e.promo];const c=promoCost();h+=`<div class="label">Promotion</div><button class="chip ${p.promo?'on':''}" data-a="promo" ${c>S.money&&!p.promo?'disabled':''}><b>${p.promo?'✓ ':''}${pr.n} · ${fmt$(c)}</b><small>${pr.d}</small></button>`}
+    if(S.songs.some(s=>s.peak))h+=`<div class="label">Setlist</div><div class="chips three" data-feat="setlist">${Object.entries(SETLISTS).map(([k,v])=>`<button class="chip ${(p.setlist||'mix')===k?'on':''}" data-a="setlist" data-v="${k}"><b>${v.n}</b><small>${v.d}</small></button>`).join('')}</div>`}
+  if(rel){const hot=avail(S.year).sort((u,w)=>gpop(w,S.year)-gpop(u,S.year))[0];h+=`<div class="label">Lead single</div><div class="chips three" data-feat="single">${Object.entries(SINGLES).map(([k,v])=>`<button class="chip ${(p.single||'catchy')===k?'on':''}" data-a="single" data-v="${k}"><b>${v.n}</b><small>${k==='trend'&&hot!==S.genre?'Sounds like '+GENRES[hot].n+', cred drops':v.d}</small></button>`).join('')}</div>`}
+  if(rel||tour){const pr=PROMO[e.promo];const c=promoCost();h+=`<div class="label">Promotion</div><button class="chip ${p.promo?'on':''}" data-feat="promo" data-a="promo" ${c>S.money&&!p.promo?'disabled':''}><b>${p.promo?'✓ ':''}${pr.n} · ${fmt$(c)}</b><small>${pr.d}</small></button>`}
   if(p.focus!=='rest'&&p.focus!=='split'){
     const cur=S.genre,gp=gpop(cur,S.year);
     h+=`<div class="label">Your sound</div>`;
     if(p.genre!==cur){const risk=Math.round((0.08+.45*gdist(cur,p.genre))*100);h+=`<p class="small"><b class="bad">Reinventing:</b> ${GENRES[cur].n} → <b>${GENRES[p.genre].n}</b>. You could lose ~${risk}% of your fans${S.oldFans[p.genre]?' (but win back old ones)':''}.</p>`}
     else h+=`<p class="small">${GENRES[cur].n} for ${S.year-S.genreSince+1} year${S.year-S.genreSince?'s':''}. Popularity now: <b>${Math.round(gp*100)}%</b>. ${gp<.25?'It\'s out of fashion. Stay the course and hope it comes back, or reinvent.':''}</p>`;
-    h+=`<details ${p.genre!==cur?'open':''}><summary>Change your sound</summary><div class="chips" style="margin-top:8px">${avail(S.year).map(g=>{const v=gpop(g,S.year),t=v-gpop(g,S.year-1);
+    h+=`<details data-feat="sound" ${p.genre!==cur?'open':''}><summary>Change your sound</summary><div class="chips" style="margin-top:8px">${avail(S.year).map(g=>{const v=gpop(g,S.year),t=v-gpop(g,S.year-1);
       return `<button class="chip ${p.genre===g?'on':''}" data-a="genre" data-v="${g}"><b>${g===cur?'● ':''}${GENRES[g].n}</b><small>${Math.round(v*100)}% ${t>.03?'▲':t<-.03?'▼':'▬'}${g!==cur?' · fan risk ~'+Math.round((0.08+.45*gdist(cur,g))*100)+'%':' · current'}</small></button>`}).join('')}</div></details>`}
   const spend=planSpend(),live=livingCost();
   h+=`<p class="small muted">Upfront spend ${fmt$(spend)} · wages ${fmt$(live)}${tour?' · tour costs come out of ticket sales':''}</p>`;
@@ -876,7 +904,7 @@ function bandPlan(){
   else if(!can)h+=`<p class="small bad" style="text-align:center">You can't afford this plan.</p>`;
   return h+'</div>'}
 function splitPlan(){const p=S.plan,ya=S.year-S.split.y;const pool=reunionPool();
-  let h=`<div class="card hl"><div class="label">Broken up since ${S.split.y}</div><h2>${ya} year${ya===1?'':'s'} apart</h2><p class="small">Your old songs keep earning and nostalgia keeps growing. The longer you wait, the bigger a reunion could be, if anyone still wants to do it.</p></div>`;
+  let h=managerCard()+`<div class="card hl"><div class="label">Broken up since ${S.split.y}</div><h2>${ya} year${ya===1?'':'s'} apart</h2><p class="small">Your old songs keep earning and nostalgia keeps growing. The longer you wait, the bigger a reunion could be, if anyone still wants to do it.</p></div>`;
   h+=`<div class="card"><h2>Plan ${S.year}</h2><div class="chips">${Object.entries(SPLITFOCUS).map(([k,f])=>`<button class="chip ${p.focus===k?'on':''}" data-a="focus" data-v="${k}" ${k==='reunite'&&pool.length<2?'disabled':''}><b>${f.n}</b><small>${f.d}</small></button>`).join('')}</div>`;
   if(pool.length)h+=`<div class="label">Who might come back</div><div class="list">${pool.map(m=>{const c=reunionChance(m);return `<div class="between small"><span class="memhead">${pimg(m,'xs')}<span>${esc(m.name)} <span class="muted">· ${m.role} · ${age(m)}</span></span></span><b class="${c>.55?'good':c<.3?'bad':''}">${c>.7?'Keen':c>.5?'Likely':c>.3?'Maybe':'Unlikely'}</b></div>`}).join('')}</div>`;
   else h+=`<p class="small muted">Nobody from the old lineup can come back.</p>`;
@@ -891,7 +919,7 @@ function memCard(m){const lead=S.leader===m.id;const feuds=S.feuds.filter(f=>f.i
 function vBand(){
   if(S.split){const ex=S.members.filter(m=>m.status==='split');return `<div class="card"><h2>The band is split</h2><p class="small">Since ${S.split.y}. Former members:</p><div class="list">${S.members.filter(m=>m.status!=='active').map(exRow).join('')}</div></div>`}
   const a=active(),coh=cohesion(),w=writers();
-  let h=`<div class="card"><div class="between"><h2>Chemistry</h2><b class="num" style="font-size:22px">${coh}</b></div>${meter(coh,coh<30?'bad':coh>65?'good':'')}
+  let h=`<div class="card" data-feat="chem"><div class="between"><h2>Chemistry</h2><b class="num" style="font-size:22px">${coh}</b></div>${meter(coh,coh<30?'bad':coh>65?'good':'')}
   <p class="small muted">${coh<25?'This band is one bad night from splitting.':coh<45?'Tense. Watch the moods.':coh<70?'Working, mostly.':'Tight as a gang.'} Writers: ${w.map(first).join(', ')}${w.length>3?' (too many cooks)':''}. Label: ${S.label?esc(S.label.name)+' until '+S.label.until:'none yet'}.</p></div>`;
   h+=a.map(memCard).join('');
   const ex=S.members.filter(m=>m.status!=='active');
@@ -902,15 +930,15 @@ function vMusic(){
   if(!S.albums.length)return `<div class="card"><h2>No records yet</h2><p class="small muted">Write some songs, then record an album from the Year tab.</p></div>`;
   const hits=S.songs.filter(s=>s.peak).sort((a,b)=>a.peak-b.peak);const L=legacy();
   let h=`<div class="card"><h2>Discography</h2><div class="kv"><div><b>${S.albums.length}</b><span>albums</span></div><div><b>${L.t10}</b><span>top 10 hits</span></div><div><b>${L.cl}</b><span>classics</span></div><div><b>${L.n1}</b><span>#1 singles</span></div><div><b>${fmtN(S.totals.units)}</b><span>records sold</span></div><div><b>${S.rep}</b><span>critics</span></div></div></div>`;
-  if(hits.length)h+=`<div class="card"><h3>Biggest songs</h3><div class="list">${hits.slice(0,12).map(s=>`<div class="between small"><span>${s.classic?'⭐ ':''}"${esc(s.t)}" <span class="muted">${s.y}${s.viral?' · viral '+s.viral:''}</span></span><b>${ord(s.peak)}</b></div>`).join('')}</div></div>`;
+  if(hits.length)h+=`<div class="card"><h3>Biggest songs</h3><div class="list">${hits.slice(0,12).map(s=>`<div class="between small"><span>${s.classic?'⭐ ':''}"${esc(s.t)}" <span class="muted">${s.y}${s.viral?' · viral '+s.viral:''}</span></span><span class="row" style="flex-wrap:nowrap">${songBtn('s'+S.songs.indexOf(s))}<b>${ord(s.peak)}</b></span></div>`).join('')}</div></div>`;
   h+=`<div class="card"><h3>Album wall</h3><div class="wall">${S.albums.map(a=>coverSVG(a)).join('')}</div></div>`;
   h+=S.albums.slice().reverse().map(a=>`<div class="card"><div class="between"><div class="memhead">${coverSVG(a,'cover sm')}<div><h3>${esc(a.t)}</h3><div class="small muted">${a.y} · ${GENRES[a.g].n} · ${a.fmt}</div></div></div><span class="pill ${a.peak&&a.peak<=10?'acc':''}">${a.peak?ord(a.peak):'—'}</span></div>
-    <div class="small">Quality ${a.q} · ${fmtN(a.units)} sold</div><details><summary class="small">Tracks</summary>${a.tracks.map((t,i)=>{const s=a.singles&&a.singles.find(x=>x.t===t);const so=S.songs.find(x=>x.t===t&&x.y===a.y);return `<div class="track"><span>${i+1}. ${esc(t)}${so&&so.classic?' ⭐':''}</span><span class="muted">${s?(s.peak?'single '+ord(s.peak):'single'):''}</span></div>`}).join('')}<p class="small muted">Written by ${a.writers.map(esc).join(', ')}</p></details></div>`).join('');
+    <div class="between"><span class="small">Quality ${a.q} · ${fmtN(a.units)} sold${a.single?' · '+SINGLES[a.single].n.toLowerCase()+' lead single':''}</span>${songBtn('a'+S.albums.indexOf(a))}</div><details><summary class="small">Tracks</summary>${a.tracks.map((t,i)=>{const s=a.singles&&a.singles.find(x=>x.t===t);const so=S.songs.find(x=>x.t===t&&x.y===a.y);return `<div class="track"><span>${i+1}. ${esc(t)}${so&&so.classic?' ⭐':''}</span><span class="muted">${s?(s.peak?'single '+ord(s.peak):'single'):''}</span></div>`}).join('')}<p class="small muted">Written by ${a.writers.map(esc).join(', ')}</p></details></div>`).join('');
   return h}
 function vScene(){const y=S.year;const e=eraOf(y);
   let h=eraCard();
   const gs=avail(y).sort((a,b)=>gpop(b,y)-gpop(a,y));
-  h+=`<div class="card"><h2>What's hot in ${y}</h2><div class="list">${gs.map(g=>{const v=gpop(g,y),t=v-gpop(g,y-1);return `<div class="genre-row ${g===S.genre?'me':''}"><b>${g===S.genre?'● ':''}${GENRES[g].n}</b>${meter(v*100,g===S.genre?'a2':'')}<span class="trend ${t>.03?'good':t<-.03?'bad':'muted'}">${Math.round(v*100)} ${t>.03?'▲':t<-.03?'▼':'▬'}</span></div>`}).join('')}</div>
+  h+=`<div class="card" data-feat="trends"><h2>What's hot in ${y}</h2><div class="list">${gs.map(g=>{const v=gpop(g,y),t=v-gpop(g,y-1);return `<div class="genre-row ${g===S.genre?'me':''}"><b>${g===S.genre?'● ':''}${GENRES[g].n}</b>${meter(v*100,g===S.genre?'a2':'')}<span class="trend ${t>.03?'good':t<-.03?'bad':'muted'}">${Math.round(v*100)} ${t>.03?'▲':t<-.03?'▼':'▬'}</span></div>`}).join('')}</div>
   ${S.rumor?`<p class="small">👂 Word in the clubs: <b>${GENRES[S.rumor].n}</b> is about to get big.</p>`:''}</div>`;
   const old=Object.entries(S.oldFans).filter(x=>x[1]>500);
   h+=`<div class="card"><h3>Your audience</h3><p class="small">${fmtN(S.fans)} current fans. Critics rate you ${S.rep}/100.</p>${old.length?`<p class="small muted">Fans you left behind: ${old.map(([g,n])=>`${fmtN(n)} ${GENRES[g].n}`).join(', ')}. Some come back for reunions, or if you return to that sound.</p>`:''}
@@ -957,7 +985,7 @@ function vTitle(){
   const slots=[1,2,3].map(n=>{const s=readSlot(n);if(!s)return `<div class="card slot"><div><b>Slot ${n}</b><div class="small muted">Empty</div></div><button class="btn" data-a="new" data-v="${n}">New band</button></div>`;
     return `<div class="card slot"><div style="min-width:0"><b>${esc(s.name)}</b><div class="small muted">${s.over?'Finished '+START+'–'+s.endYear:s.year+' · '+fmtN(s.fans)+' fans'+(s.split?' · split':'')}</div></div><div class="row" style="flex-wrap:nowrap"><button class="btn" data-a="load" data-v="${n}">${s.over?'View':'Play'}</button><button class="btn ghost sm" data-a="del" data-v="${n}" aria-label="Delete">✕</button></div></div>`}).join('');
   return `<div class="title-hero"><h1>Decades</h1><div class="stripes">${DEC_COLORS.map(c=>`<span style="background:${c}"></span>`).join('')}</div><p class="muted">One band. 1965 to now. Every format, every fad, every falling-out.</p></div>
-  <div class="view">${slots}
+  <div class="view"><div class="row" style="justify-content:center"><button class="btn ghost" data-a="guide">📖 What's in the game</button><button class="btn ghost" data-a="trophies">🏆 Trophies</button></div>${slots}
   <div class="card"><h3>How it works</h3><p class="small">Each turn is a year. Pick what the band does, keep egos in check, chase or ignore the trends, and ride vinyl, tapes, VidStar, CDs, Swapster, streaming and Loopr. Break up, reunite, become a classic. Watch your band's looks change with every decade, fight a rival band for the charts, and replay it all as a documentary.</p></div>
   ${H.length?`<div class="card"><h3>Hall of Sound</h3><div class="list">${H.map(h=>`<div class="between small"><span>${h.inducted?'🏛️ ':''}${esc(h.name)} <span class="muted">${h.from}–${h.to}</span></span><b>${h.score}</b></div>`).join('')}</div></div>`:''}
   <p class="small muted" style="text-align:center">All bands, labels and people are fictional. Saves stay on this device.<br><a href="../" style="color:inherit">Also play Headliner</a></p></div>`}
@@ -974,7 +1002,7 @@ function renderSheet(){const el=$('#sheet');
     el.innerHTML=`<div class="scrim"><div class="sheet" role="dialog" aria-label="Year in review"><div class="between"><div><div class="label">Year in review</div><h2>${R.y}</h2></div><span class="pill">${esc(eraOf(R.y).n)}</span></div>
     <div class="kv"><div><b class="${dm>=0?'good':'bad'}">${dm>=0?'+':'−'}${fmt$(Math.abs(dm)).replace('$','$')}</b><span>money</span></div><div><b class="${df>=0?'good':'bad'}">${sgn(df)}</b><span>fans</span></div><div><b>${Math.round(R.hype1)}</b><span>hype</span></div></div>
     ${R.pre.length?`<div class="stack" style="gap:6px">${R.pre.map(t=>`<div class="rline"><span class="i">✔︎</span><span>${t}</span></div>`).join('')}</div>`:''}
-    ${R.album?`<div class="memhead">${coverSVG(R.album,'cover lg')}<div><div class="label">New album</div><h3>${esc(R.album.t)}</h3><p class="small muted">${GENRES[R.album.g].n} · ${R.album.peak?'peaked at '+ord(R.album.peak):'missed the charts'}</p></div></div>`:''}
+    ${R.album?`<div class="memhead">${coverSVG(R.album,'cover lg')}<div><div class="label">New album</div><h3>${esc(R.album.t)}</h3><p class="small muted">${GENRES[R.album.g].n} · ${R.album.peak?'peaked at '+ord(R.album.peak):'missed the charts'}</p>${songBtn('a'+S.albums.indexOf(R.album))}</div></div>`:''}
     <div class="stack" style="gap:8px">${R.lines.map(l=>`<div class="rline"><span class="i">${l.i}</span><span>${l.t}</span></div>`).join('')}</div>
     <button class="btn big wide" data-a="closereport">${over?'See the legacy':'On to '+(R.y+1)+' ▸'}</button></div></div>`;return}
   if(UI.sheet){el.innerHTML=`<div class="scrim" data-a="closesheet"><div class="sheet" data-stop="1">${typeof UI.sheet==='function'?UI.sheet():UI.sheet}</div></div>`;return}
@@ -1200,13 +1228,13 @@ function rivalYear(R){const r=S.rival;if(!r)return;const y=S.year;
     const pk=chartPeak(sc);let t;do{t=albumTitle()}while(S.albums.some(a=>a.t===t));const al={y,t,peak:pk,g:r.genre};r.albums.push(al);
     if(pk)r.fans+=Math.round(2.5e6/Math.pow(pk,1.1)*.25);if(pk&&pk<=10)r.hits++;if(pk===1)r.n1++;
     if(R.album){const a=R.album.peak||999,b=pk||999;
-      if(a<b){S.rivalW=(S.rivalW||0)+1;S.hype+=6;active().forEach(m=>m.mood+=3);R.lines.push({i:'🥊',t:`<b>Chart battle won.</b> "${esc(R.album.t)}" (${ord(a)}) beat ${esc(r.name)}'s "${esc(t)}" (${pk?ord(pk):'no chart'}).`});tl('rival',`Won a chart battle against ${r.name}`)}
+      if(a<b){S.rivalW=(S.rivalW||0)+1;if(S.rivalW>=3)award('warrior');S.hype+=6;active().forEach(m=>m.mood+=3);R.lines.push({i:'🥊',t:`<b>Chart battle won.</b> "${esc(R.album.t)}" (${ord(a)}) beat ${esc(r.name)}'s "${esc(t)}" (${pk?ord(pk):'no chart'}).`});tl('rival',`Won a chart battle against ${r.name}`)}
       else if(b<a){S.rivalL=(S.rivalL||0)+1;S.hype-=3;active().forEach(m=>m.mood-=m.ego>60?7:3);R.lines.push({i:'🥊',t:`<b>Chart battle lost.</b> ${esc(r.name)}'s "${esc(t)}" (${ord(b)}) beat "${esc(R.album.t)}" (${a<999?ord(a):'no chart'}).`});tl('rival',`Lost a chart battle to ${r.name}`)}}
     else if(pk&&pk<=10)R.lines.push({i:'🥊',t:`Rivals ${esc(r.name)} hit ${ord(pk)} with "${esc(t)}".`})}
   if(y-START>8&&chance(.025)){r.split=y;R.lines.push({i:'🥊',t:`Your rivals ${esc(r.name)} have split up.`});tl('rival',`Rivals ${r.name} split up`)}
   r.peakFans=Math.max(r.peakFans||0,r.fans)}
 function rivalCard(){const r=S.rival;if(!r)return '';const last=r.albums[r.albums.length-1];
-  return `<div class="card"><div class="between"><div><div class="label">Your rivals</div><h3>${esc(r.name)}</h3></div><span class="pill ${r.split?'':'acc2'}">${r.split?'split since '+r.split:GENRES[r.genre].n}</span></div>
+  return `<div class="card" data-feat="rival"><div class="between"><div><div class="label">Your rivals</div><h3>${esc(r.name)}</h3></div><span class="pill ${r.split?'':'acc2'}">${r.split?'split since '+r.split:GENRES[r.genre].n}</span></div>
   <div class="kv"><div><b>${fmtN(r.fans)}</b><span>fans</span></div><div><b>${r.hits}</b><span>top 10s</span></div><div><b>${S.rivalW||0}–${S.rivalL||0}</b><span>chart battles</span></div></div>
   <p class="small muted">${last?`Latest: "${esc(last.t)}" (${last.y}), ${last.peak?'peaked at '+ord(last.peak):'missed the charts'}. `:''}They chase whatever is hot. Release a record the same year they do and it's a chart battle.</p></div>`}
 function rivalVerdict(L){const r=S.rival;if(!r)return '';const you=L.t10*2+L.n1*4+L.cl*3+Math.log10(S.peakFans+1)*5,them=r.hits*2+r.n1*4+Math.log10((r.peakFans||r.fans)+1)*5;
@@ -1227,13 +1255,198 @@ function renderDoc(){let el=$('#doc');
   <div class="doc-cap"><div class="between"><div><div class="doc-year">${y}</div><div class="label">${era.n}</div></div>${al?coverSVG(al,'cover'):''}</div>
   ${items.length?items.map(t=>`<p>${esc(t.text)}</p>`).join(''):`<p class="muted">${filler}</p>`}</div>
   <div class="doc-bar"><i style="width:${(D.i+1)/S.hist.length*100}%"></i></div>
-  <div class="doc-ctl"><button class="btn ghost sm" data-a="docprev" aria-label="Previous year">◀</button><button class="btn sm" data-a="docplay">${D.play?'Pause':D.i>=S.hist.length-1?'Replay':'Play'}</button><button class="btn ghost sm" data-a="docnext" aria-label="Next year">▶</button><button class="btn ghost sm" data-a="docspeed">${D.speed}×</button></div></div>`;
-  hydrate(el);clearTimeout(AV.docT);
-  if(D.play)AV.docT=setTimeout(()=>{if(!UI.doc)return;if(UI.doc.i<S.hist.length-1)UI.doc.i++;else UI.doc.play=false;renderDoc()},(items.length?1900:900)/D.speed)}
+  <div class="doc-ctl"><button class="btn ghost sm" data-a="docprev" aria-label="Previous year">◀</button><button class="btn sm" data-a="docplay">${D.play?'Pause':D.i>=S.hist.length-1?'Replay':'Play'}</button><button class="btn ghost sm" data-a="docnext" aria-label="Next year">▶</button><button class="btn ghost sm" data-a="docspeed">${D.speed}×</button><button class="btn ghost sm" data-a="docsound" aria-label="Sound">${D.sound?'🔊':'🔇'}</button></div></div>`;
+  hydrate(el);clearTimeout(AV.docT);const withSong=D.sound&&al&&D.play;if(withSong&&AU.playing!=='doc'+y)playSong('doc'+y,{t:al.t,y,g:al.g},7);
+  if(D.play)AV.docT=setTimeout(()=>{if(!UI.doc)return;if(UI.doc.i<S.hist.length-1)UI.doc.i++;else UI.doc.play=false;renderDoc()},(withSong?6500:items.length?1900:900)/D.speed)}
+
+/* ---------------- your songs, as sound ---------------- */
+const MODES={maj:[0,2,4,5,7,9,11],min:[0,2,3,5,7,8,10],dor:[0,2,3,5,7,9,10],mix:[0,2,4,5,7,9,10],phr:[0,1,3,5,7,8,10]};
+const GSOUND={
+  folk:{bpm:100,mode:'maj',drums:'light',bass:'tri',chord:'arp',wave:'triangle',lead:'triangle',cut:2500},
+  psych:{bpm:108,mode:'dor',drums:'rock',bass:'tri',chord:'pad',wave:'sawtooth',lead:'sawtooth',vib:1,cut:1800},
+  rock:{bpm:128,mode:'mix',drums:'rock',bass:'saw',chord:'power',wave:'sawtooth',dist:1,lead:'square',cut:2600},
+  soul:{bpm:98,mode:'dor',drums:'soul',bass:'busy',chord:'stab',wave:'square',lead:'triangle',cut:2000,swing:.18},
+  pop:{bpm:116,mode:'maj',drums:'pop',bass:'saw',chord:'stab',wave:'square',lead:'square',cut:3000},
+  disco:{bpm:120,mode:'min',drums:'disco',bass:'oct',chord:'stab',wave:'sawtooth',lead:'square',cut:3200},
+  punk:{bpm:172,mode:'maj',drums:'punk',bass:'saw',chord:'power',wave:'sawtooth',dist:1,lead:null,cut:3000},
+  newwave:{bpm:124,mode:'min',drums:'pop',bass:'oct',chord:'arp',wave:'square',lead:'square',cut:3500},
+  metal:{bpm:140,mode:'phr',drums:'metal',bass:'saw',chord:'power',wave:'sawtooth',dist:2,lead:'sawtooth',cut:3000},
+  grunge:{bpm:90,mode:'min',drums:'rock',bass:'saw',chord:'power',wave:'sawtooth',dist:2,lead:null,cut:1400},
+  indie:{bpm:122,mode:'maj',drums:'pop',bass:'saw',chord:'arp',wave:'triangle',lead:'square',cut:2800},
+  hiphop:{bpm:90,mode:'min',drums:'boom',bass:'sub',chord:'pad',wave:'triangle',lead:null,cut:1600,swing:.12},
+  edm:{bpm:128,mode:'min',drums:'four',bass:'oct',chord:'pad',wave:'sawtooth',lead:'square',cut:4000},
+};
+// kick / snare / hat, 16 steps per bar
+const DRUMS={rock:['x.......x.x.....','....x.......x...','x.x.x.x.x.x.x.x.'],light:['x.......x.......','................','....x.......x...'],
+  soul:['x..x......x.....','....x.......x..x','x.xxx.xxx.xxx.x.'],pop:['x.....x.x.......','....x.......x...','x.x.x.x.x.x.x.x.'],
+  disco:['x...x...x...x...','....x.......x...','..x...x...x...x.'],four:['x...x...x...x...','....x.......x...','..x...x...x...x.'],
+  punk:['x...x...x...x...','..x...x...x...x.','x.x.x.x.x.x.x.x.'],metal:['xx.xxx.xxx.xxx.x','....x.......x...','x.x.x.x.x.x.x.x.'],
+  boom:['x.....x...x.....','....x.......x...','x.x.x.x.x.x.x.x.']};
+const PROGS=[[0,4,5,3],[0,5,3,4],[0,3,4,4],[5,3,0,4],[0,6,3,4],[0,3,0,4],[0,5,2,3]];
+const AU={ctx:null,master:null,playing:null,t:0,noise:null};
+function audioCtx(){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;if(!AU.ctx)AU.ctx=new C();if(AU.ctx.state==='suspended')AU.ctx.resume();return AU.ctx}
+function noiseBuf(ctx){if(AU.noise)return AU.noise;const b=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return AU.noise=b}
+function stopSong(){clearTimeout(AU.t);if(AU.master&&AU.ctx){const m=AU.master;try{m.gain.cancelScheduledValues(AU.ctx.currentTime);m.gain.setTargetAtTime(0,AU.ctx.currentTime,.04)}catch(e){}setTimeout(()=>{try{m.disconnect()}catch(e){}},400)}AU.master=null;AU.playing=null;syncSongButtons()}
+function syncSongButtons(){document.querySelectorAll('[data-a=song]').forEach(b=>{const on=b.dataset.v===AU.playing;b.textContent=on?'■ Stop':'▶ Play';b.classList.toggle('on',on)})}
+function songSpec(v){if(!S)return null;if(v[0]==='a'){const a=S.albums[+v.slice(1)];return a&&{t:a.t,y:a.y,g:a.g}}
+  if(v[0]==='s'){const s=S.songs[+v.slice(1)];if(!s)return null;const a=S.albums.find(x=>x.y===s.y&&x.tracks.includes(s.t));return {t:s.t,y:s.y,g:a?a.g:S.genre}}return null}
+const songBtn=v=>`<button class="btn sm ghost songbtn ${AU.playing===v?'on':''}" data-a="song" data-v="${v}">${AU.playing===v?'■ Stop':'▶ Play'}</button>`;
+// Every song gets its own short tune: the genre sets tempo, drums and instruments; the decade sets the tone
+function playSong(v,spec,maxSec){
+  if(AU.playing===v){stopSong();return}stopSong();const ctx=audioCtx();if(!ctx){toast('This device can\'t play audio.');return}spec=spec||songSpec(v);if(!spec)return;
+  const G=GSOUND[spec.g]||GSOUND.pop,r=srand(hsh(spec.t+'|'+spec.y)),mode=MODES[G.mode],root=45+Math.floor(r()*10),prog=PROGS[Math.floor(r()*PROGS.length)];
+  const bpm=G.bpm+Math.floor(r()*8)-4,st=60/bpm/4,bars=clamp(Math.floor((maxSec||16)/(st*16)),2,8),t0=ctx.currentTime+.08,d=decTheme(spec.y);
+  const master=ctx.createGain();master.gain.setValueAtTime(.0001,ctx.currentTime);master.gain.setTargetAtTime(.5,t0,.02);AU.master=master;
+  const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value={sixties:3200,seventies:5200,eighties:9000,nineties:7000,noughties:12000,modern:16000}[d];master.connect(lp);lp.connect(ctx.destination);
+  if(d==='eighties'||d==='noughties'){const dl=ctx.createDelay();dl.delayTime.value=st*3;const fb=ctx.createGain();fb.gain.value=.28;master.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(lp)}
+  const drum=ctx.createGain();drum.gain.value=.9;drum.connect(master);const mus=ctx.createGain();mus.connect(master);
+  let inst=mus;if(G.dist){const ws=ctx.createWaveShaper(),k=G.dist*40,c=new Float32Array(1024);for(let i=0;i<1024;i++){const x=i/512-1;c[i]=(1+k)*x/(1+k*Math.abs(x))}ws.curve=c;const g=ctx.createGain();g.gain.value=.35;ws.connect(g);g.connect(mus);inst=ws}
+  const hz=n=>440*Math.pow(2,(n-69)/12);
+  const deg=(dg,oct=0)=>root+mode[((dg%7)+7)%7]+12*(Math.floor(dg/7)+oct);
+  const tone=(type,f,t,dur,vol,dest,cut)=>{const o=ctx.createOscillator();o.type=type;o.frequency.value=f;const g=ctx.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    let n=o;if(cut){const f2=ctx.createBiquadFilter();f2.type='lowpass';f2.frequency.value=cut;o.connect(f2);n=f2}n.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.05);
+    if(G.vib&&dur>.3){const l=ctx.createOscillator();l.frequency.value=5.5;const lg=ctx.createGain();lg.gain.value=f*.012;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+dur)}};
+  const nz=(t,dur,vol,type,freq)=>{const s=ctx.createBufferSource();s.buffer=noiseBuf(ctx);const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;const g=ctx.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f);f.connect(g);g.connect(drum);s.start(t,Math.random()*.5);s.stop(t+dur+.02)};
+  const kick=t=>{const o=ctx.createOscillator();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(42,t+.12);const g=ctx.createGain();g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.0001,t+.3);o.connect(g);g.connect(drum);o.start(t);o.stop(t+.32)};
+  const pat=DRUMS[G.drums],open=G.drums==='disco'||G.drums==='four';
+  for(let b=0;b<bars;b++){const ch=prog[b%4],tri=[deg(ch),deg(ch+2),deg(ch+4)],bn=deg(ch,-1);
+    for(let s=0;s<16;s++){const t=t0+(b*16+s)*st+(s%2?(G.swing||0)*st:0);
+      if(pat[0][s]==='x')kick(t);if(pat[1][s]==='x')nz(t,.16,.45,'bandpass',1900);if(pat[2][s]==='x')nz(t,open?.12:.04,.12,'highpass',7000);
+      if(G.bass==='oct'){if(s%2===0)tone('sawtooth',hz(s%4?bn+12:bn),t,st*1.6,.16,mus,900)}
+      else if(G.bass==='sub'){if(s===0||s===10)tone('sine',hz(bn-12),t,st*5,.35,mus)}
+      else if(G.bass==='busy'){if(s%8===0||r()<.4)tone('triangle',hz(bn+(r()<.3?7:0)),t,st*1.5,.3,mus)}
+      else if(s%(G.drums==='punk'?2:4)===0)tone(G.bass==='tri'?'triangle':'sawtooth',hz(bn),t,st*(G.drums==='punk'?1.8:3.5),G.bass==='tri'?.3:.16,mus,700);
+      if(G.chord==='power'){if(s%2===0)for(const n of [deg(ch),deg(ch)+7,deg(ch)+12])tone(G.wave,hz(n),t,st*1.7,.06,inst,G.cut)}
+      else if(G.chord==='stab'){if(s%4===2)for(const n of tri)tone(G.wave,hz(n+12),t,st*1.2,.045,inst,G.cut)}
+      else if(G.chord==='arp'){if(s%2===0)tone(G.wave,hz(tri[(s/2)%3]+12),t,st*2.5,.08,inst,G.cut)}
+      else if(G.chord==='pad'&&s===0)for(const n of tri)tone(G.wave,hz(n+12),t,st*16,.035,inst,G.cut)}
+    if(G.lead&&b>=bars/2){let x=Math.floor(r()*5);for(let s=0;s<16;s+=2)if(r()<.55){x=clamp(x+Math.floor(r()*5)-2,-2,9);tone(G.lead,hz(deg(ch+x,1)),t0+(b*16+s)*st,st*(r()<.3?4:2),.07,mus,G.cut*1.5)}}}
+  if(d==='sixties'||d==='seventies')for(let i=0;i<bars*6;i++)nz(t0+r()*bars*16*st,.01,.05,'highpass',3000);
+  const total=bars*16*st;master.gain.setTargetAtTime(.0001,t0+total-.1,.15);
+  AU.playing=v;AU.t=setTimeout(()=>{if(AU.playing===v)stopSong()},(total+.6)*1000);syncSongButtons();
+  award('listen');if(S&&S.tried)S.tried.listen=1}
+
+/* ---------------- trophies (shared by every band on this device) ---------------- */
+const TROPHIES=[
+  {id:'first',ic:'💿',n:'First pressing',d:'Release your first album'},{id:'top10',ic:'🔟',n:'Top 10',d:'Score a top-10 single'},
+  {id:'number1',ic:'🥇',n:'Number one',d:'Top the singles chart'},{id:'platinum',ic:'💽',n:'Platinum',d:'Sell a million copies of one album'},
+  {id:'classic',ic:'⭐',n:'Timeless',d:'A hit becomes a classic, 15 years on'},{id:'stadium',ic:'🏟️',n:'Stadium rock',d:'Sell out a stadium tour'},
+  {id:'hits',ic:'🎤',n:'Greatest hits',d:'Tour a greatest-hits setlist'},{id:'chameleon',ic:'🦎',n:'Chameleon',d:'Reinvent your sound three times in one career'},
+  {id:'faithful',ic:'🪨',n:'True believers',d:'Keep one sound for 20 years'},{id:'split',ic:'💔',n:'Creative differences',d:'Break up the band'},
+  {id:'reunion',ic:'🤝',n:'Back together',d:'Pull off a reunion'},{id:'viral',ic:'📱',n:'Gone viral',d:'Go viral on Loopr'},
+  {id:'warrior',ic:'🥊',n:'Chart warrior',d:'Win three chart battles against your rivals'},{id:'handsoff',ic:'✋',n:'Hands off',d:'Stop your rivals poaching a member'},
+  {id:'mud',ic:'🌧️',n:'Mud and glory',d:'Play the Meadowlark Festival'},{id:'globaljam',ic:'🌍',n:'Global Jam',d:'Play the famine-relief mega-gig'},
+  {id:'pioneer',ic:'📺',n:'Video pioneer',d:'Be on VidStar TV from day one'},{id:'makeover',ic:'💇',n:'Makeover',d:"Change a band member's look"},
+  {id:'listen',ic:'🎧',n:'Press play',d:'Listen to one of your songs'},{id:'director',ic:'🎬',n:"Director's cut",d:"Watch your band's documentary"},
+  {id:'manager',ic:'💼',n:'Trust the manager',d:"Use your manager's plan"},{id:'theseus',ic:'🚢',n:'Ship of Theseus',d:'Every founder gone, the band plays on'},
+  {id:'sixty',ic:'🕰️',n:'Sixty years',d:'Reach the present with the band still together'},{id:'hof',ic:'🏛️',n:'Hall of Sound',d:'Get inducted'}];
+function trophies(){try{return JSON.parse(localStorage.getItem('decades_trophies')||'{}')||{}}catch(e){return {}}}
+function award(id){const T=trophies();if(T[id])return;const t=TROPHIES.find(x=>x.id===id);if(!t)return;T[id]={y:S?Math.min(S.year,END):0,band:S?S.name:''};
+  try{localStorage.setItem('decades_trophies',JSON.stringify(T))}catch(e){}
+  if(UI._R)UI._R.lines.push({i:'🏆',t:`Trophy unlocked: <b>${t.n}</b>`});else toast(`🏆 Trophy unlocked: <b>${t.n}</b>`)}
+function trophySheet(){const T=trophies();const n=TROPHIES.filter(t=>T[t.id]).length;
+  return `<h2>Trophy room</h2><p class="small muted">${n} of ${TROPHIES.length} unlocked across every band you've played on this device. Locked ones are ideas for things to try.</p>
+  <div class="trophies">${TROPHIES.map(t=>`<div class="trophy ${T[t.id]?'got':''}"><div class="tic">${T[t.id]?t.ic:'🔒'}</div><b>${t.n}</b><small>${t.d}${T[t.id]&&T[t.id].band?`<br><span class="muted">${esc(T[t.id].band)}, ${T[t.id].y}</span>`:''}</small></div>`).join('')}</div>
+  <button class="btn wide" data-a="closesheet">Close</button>`}
+
+/* ---------------- feature guide, "show me", tour ---------------- */
+const SINGLES={catchy:{n:'Catchy',d:'Radio-friendly, charts higher'},bold:{n:'Ambitious',d:'Better record, critics love it'},trend:{n:'On-trend',d:'Chases the hot sound, cred drops'}};
+const planFocus=f=>()=>{if(S&&!S.split&&!['album','albumtour','tour'].includes(S.plan.focus))S.plan.focus=f};
+const FEATS=[
+  {g:'Your year',key:'plan',ic:'🗓️',n:'Plan the year',d:'Write, record, tour, rest or split up. One turn is one year, 1965 to 2026.',tab:'year',sel:'[data-feat=plan]'},
+  {g:'Your year',key:'events',ic:'⚡',n:'Band matters',d:'Arguments, offers and crises to decide before you play the year.',tab:'year',sel:'.card.ev',miss:'No band matters right now. They turn up most years.'},
+  {g:'Your year',key:'manager',ic:'💼',n:"Manager's plan",d:'Dee points at things to try and can fill in a sensible plan for you.',tab:'year',sel:'[data-feat=manager]',miss:'Turn manager tips back on from the ☰ menu.'},
+  {g:'Your year',key:'single',ic:'🎯',n:'Lead single',d:'Push a catchy, ambitious or on-trend single when you record.',tab:'year',sel:'[data-feat=single]',prep:planFocus('album'),miss:'Pick "Record an album" to choose a lead single.'},
+  {g:'Your year',key:'setlist',ic:'🎤',n:'Setlist',d:'New material, balanced or greatest hits on tour.',tab:'year',sel:'[data-feat=setlist]',prep:planFocus('tour'),miss:'Setlists unlock once you have a single in the charts.'},
+  {g:'Your year',key:'promo',ic:'📣',n:'Promotion',d:'Radio, music videos, websites, playlists or Loopr clips, depending on the era.',tab:'year',sel:'[data-feat=promo]',prep:planFocus('album')},
+  {g:'Your year',key:'sound',ic:'🔀',n:'Reinvent your sound',d:'Chase a new genre and risk old fans, or stay the course and hope it comes back.',tab:'year',sel:'[data-feat=sound]'},
+  {g:'Your band',key:'stage',ic:'🎭',n:'Live 3D stage',d:'Your lineup in that decade\'s fashion. Unhappy bands stand apart; feuding members turn away.',tab:'year',sel:'.stage'},
+  {g:'Your band',key:'restyle',ic:'💇',n:'Change looks',d:'Tap a member on stage or their portrait to change skin, hair, outfit, shades and beard.',tab:'band',sel:'[data-a=style]'},
+  {g:'Your band',key:'roles',ic:'⭐',n:'Leader & writers',d:'Pick who fronts the band and who writes. Egos notice.',tab:'band',sel:'[data-a=writer]'},
+  {g:'Your band',key:'chem',ic:'🧪',n:'Chemistry',d:'Mood, ego and feuds add up. Let it fall too far and the band splits.',tab:'band',sel:'[data-feat=chem]'},
+  {g:'Your music',key:'listen',ic:'🎧',n:'Hear your songs',d:'Every album plays its own tune in its genre and decade. Ring switch on!',tab:'music',sel:'[data-a=song]',miss:'Release an album first.'},
+  {g:'Your music',key:'covers',ic:'🖼️',n:'Album wall',d:'Every cover is drawn in the art style of its decade.',tab:'music',sel:'.wall',miss:'Release an album first.'},
+  {g:'The world',key:'era',ic:'📻',n:'Era rules',d:'Vinyl, cassette, video, CD, Swapster, streaming, Loopr: each changes what pays.',tab:'scene',sel:'.era'},
+  {g:'The world',key:'trends',ic:'📈',n:'Genre chart',d:"What's hot, what's fading, and rumours of what's next.",tab:'scene',sel:'[data-feat=trends]'},
+  {g:'The world',key:'rival',ic:'🥊',n:'Your rivals',d:'A band that chases every trend. Release the same year for a chart battle.',tab:'scene',sel:'[data-feat=rival]'},
+  {g:'Your story',key:'history',ic:'📜',n:'Timeline',d:'Hits, lineup changes, splits and peak years.',tab:'history',sel:'.tl'},
+  {g:'Your story',key:'doc',ic:'🎬',n:'The documentary',d:'Replay your career year by year on stage, with sound.',tab:'history',sel:'[data-a=doc]',miss:'Play at least one year first.'},
+  {g:'Your story',key:'trophies',ic:'🏆',n:'Trophy room',d:'24 trophies shared by every band you play.',act:'trophies'},
+  {g:'Your story',key:'hof',ic:'🏛️',n:'Hall of Sound',d:'Score a big enough legacy, 25+ years after your debut, to be inducted at the end.'},
+];
+function guideSheet(){const T=(S&&S.tried)||{};const groups=[...new Set(FEATS.map(f=>f.g))];
+  let h=`<h2>Everything in Decades</h2><p class="small muted">${S?'Tap “Show me” to jump straight to a feature.':'Start a band, then come back here to jump to any feature.'}</p>`;
+  for(const g of groups)h+=`<div class="label">${g}</div><div class="list">${FEATS.filter(f=>f.g===g).map(f=>`<div class="feat"><span class="fic">${f.ic}</span><div class="stack0" style="flex:1"><b>${f.n}${T[f.key]?' <span class="pill good">tried</span>':''}</b><small class="muted">${f.d}</small></div>${(S&&!S.over&&f.tab)||f.act?`<button class="btn sm ghost" data-a="show" data-v="${f.key}">${f.act?'Open':'Show me'}</button>`:''}</div>`).join('')}</div>`;
+  h+=`<div class="row">${S&&!S.over?'<button class="btn" data-a="tour">Replay the tour</button>':''}<button class="btn ghost" data-a="closesheet">Close</button></div>`;return h}
+function showFeat(key){const f=FEATS.find(x=>x.key===key);if(!f)return;if(f.act){ACT[f.act]();return}if(!S||S.over||!f.tab){UI.sheet=null;render();return}
+  UI.sheet=null;if(f.prep)f.prep();ACT.tab(f.tab);
+  requestAnimationFrame(()=>{const el=document.querySelector(f.sel);if(!el){toast(f.miss||'Not available yet.');return}
+    const det=el.tagName==='DETAILS'?el:el.closest('details');if(det)det.open=true;el.scrollIntoView({block:'center',behavior:'smooth'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),2600)})}
+const TOUR=[
+  {sel:'.stage',t:'This is your band, live. Clothes and hair change with each decade. Tap anyone to change their look.'},
+  {sel:'[data-feat=manager]',t:'Dee, your manager, points at things worth trying. "Use Dee\'s plan" fills in a sensible plan for the year.'},
+  {sel:'.era',t:'Every era has its own rules: what records pay, what touring pays and how you promote.'},
+  {sel:'[data-feat=plan]',t:'Plan your year here: write, record, tour or rest. Decide any band matters above it first.'},
+  {sel:'[data-a=play]',t:'Then play the year. Each turn is one year, all the way from 1965 to 2026.'},
+  {sel:'.tab[data-v=band]',t:'Band: moods, egos, looks, and who leads and writes.'},
+  {sel:'.tab[data-v=music]',t:'Music: your albums and their covers. Press play to hear them.'},
+  {sel:'.tab[data-v=scene]',t:"Scene: what's hot, the rules of the era, and your rival band."},
+  {sel:'.tab[data-v=history]',t:'History: your timeline and the documentary.'},
+  {sel:'[data-a=guide]',t:'Lost? The ? button lists every feature and takes you straight to it.'}];
+function renderCoach(){let el=$('#coach');document.querySelectorAll('.coach-hl').forEach(x=>x.classList.remove('coach-hl'));
+  if(UI.coach==null||!S||S.over||UI.doc||UI.report){if(el)el.remove();return}
+  const st=TOUR[UI.coach];if(!st){UI.coach=null;try{localStorage.setItem('decades_tour','1')}catch(e){}if(el)el.remove();return}
+  const tg=document.querySelector(st.sel);if(tg){tg.classList.add('coach-hl');if(!tg.closest('.tabs,.hud'))tg.scrollIntoView({block:'center'})}
+  if(!el){el=document.createElement('div');el.id='coach';document.body.appendChild(el)}
+  el.className=tg&&tg.getBoundingClientRect().top>innerHeight*.5?'top':'';
+  el.innerHTML=`<div class="coach" role="dialog" aria-label="Tour"><div class="label">Tour · ${UI.coach+1} of ${TOUR.length}</div><p>${st.t}</p><div class="row"><button class="btn sm ghost" data-a="tourskip">Skip</button><button class="btn sm" data-a="tournext">${UI.coach+1<TOUR.length?'Next':'Got it'}</button></div></div>`}
+const tourDone=()=>{try{return localStorage.getItem('decades_tour')==='1'}catch(e){return true}};
+
+/* ---------------- Dee, your manager ---------------- */
+function managerTip(){const T=S.tried||{},y=S.year,hits=S.songs.some(s=>s.peak);
+  if(S.split)return {t:y-S.split.y<4?'Give it a few years. Nostalgia builds, and so does the reunion money.':'It might be time. See who is likely to come back below, then try a reunion.'};
+  const L=[[!S.label,'First things first: pick a label from the offers above.'],
+    [y===START,'Write and rehearse this year to bank songs, then record. Or let me plan it for you.','plan'],
+    [!T.restyle&&y>START,"Tap anyone on the stage to change their look. They'll keep it through the decades.",'stage'],
+    [!T.music&&S.albums.length>0,'Your album has a cover and its own sound. Have a listen in the Music tab.','listen'],
+    [!T.single&&S.material>=20,'When you record, choose what kind of lead single to push.','single'],
+    [cohesion()<35,'The band is fraying. A year off, or giving people what they want, will help.','chem'],
+    [gpop(S.genre,y)<.22,`${GENRES[S.genre].n} is out of fashion. Reinvent, or stay the course and wait for a revival.`,'sound'],
+    [!T.scene&&y>=START+3,`Keep an eye on the Scene tab: trends, era rules and your rivals, ${S.rival?esc(S.rival.name):''}.`,'rival'],
+    [!T.setlist&&hits,'On tour, a greatest-hits setlist sells more tickets. The band may get bored.','setlist'],
+    [!T.doc&&S.hist.length>=12,'You have a story worth telling. Watch the documentary in the History tab.','doc'],
+    [!T.guide,'Tap ? at the top any time to see every feature in the game.','guide'],
+    [!T.trophies&&y>=START+8,'Check the trophy room for ideas. Locked trophies hint at things to try.','trophies']];
+  const hit=L.find(x=>x[0]);if(hit)return {t:hit[1],k:hit[2]};
+  const e=eraOf(y);return {t:['piracy','stream','viral'].includes(e.k)?'Records barely pay now. The road is where the money is.':e.k==='cd'?'Everyone is rebuying old records on CD. Hits from your past pay well right now.':e.k==='video'?'Looks sell records now. A video with a charismatic frontperson goes a long way.':'Records are king in this era. A strong album with a radio push is the way up.',k:'era'}}
+function managerPlan(){const P=S.plan;let why;
+  if(cohesion()<35){P.focus='rest';why='Morale is low. Everyone needs a break.'}
+  else if(S.material<18){P.focus='write';why='You need more songs before the next record.'}
+  else{P.focus=S.fans>=12000?'albumtour':'album';why=P.focus==='album'?'You have the songs. Record them.':'You have the songs. Record them and take them on the road.'}
+  let best='clubs';for(const k of SCK){if(S.fans>=SCALES[k].need&&tourDemand(k)/SCALES[k].cap>=.65)best=k}P.scale=best;
+  P.budget=0;for(let i=2;i>0;i--)if(cost(BUDGETS[i].cost)<=Math.max(0,S.money)*.35){P.budget=i;break}
+  P.promo=['album','albumtour'].includes(P.focus)&&promoCost()<=Math.max(0,S.money)*.25;
+  P.setlist=classics()>=2?'hits':'mix';P.single=gpop(S.genre,S.year)<.3?'trend':'catchy';P.genre=S.genre;
+  if(planSpend()>Math.max(0,S.money)){P.promo=false;P.budget=0}
+  if(S.tried)S.tried.manager=1;award('manager');return why}
+function managerCard(){if(S.flags.mgrOff)return '';const tip=managerTip();
+  return `<div class="card mgr" data-feat="manager"><div class="memhead"><div class="mgr-ic" aria-hidden="true">💼</div><div style="flex:1;min-width:0"><div class="between"><div class="label">Dee, your manager</div><button class="linkbtn" data-a="mgroff" aria-label="Hide manager tips">Hide</button></div><p class="small">${tip.t}</p></div></div>
+  <div class="row">${tip.k?`<button class="btn sm ghost" data-a="show" data-v="${tip.k}">${tip.k==='guide'||tip.k==='trophies'?'Open':'Show me'}</button>`:''}${!S.split&&S.label?`<button class="btn sm" data-a="mgrplan">Use Dee's plan</button>`:''}</div></div>`}
 
 /* ---------------- actions ---------------- */
 const ACT={
-  tab(v){UI.tab=v;render();window.scrollTo(0,0)},
+  tab(v){UI.tab=v;if(S&&S.tried){S.tried[v]=1;if(v==='music')S.seen.music=S.albums.length;if(v==='scene')S.seen.scene=S.year}render();window.scrollTo(0,0)},
+  single(v){S.plan.single=v;S.tried.single=1;render()},
+  song(v){playSong(v)},
+  guide(){if(S&&S.tried)S.tried.guide=1;UI.coach=null;UI.sheet=guideSheet;render()},
+  trophies(){if(S&&S.tried)S.tried.trophies=1;UI.sheet=trophySheet;render()},
+  show(v){if(v==='guide')return ACT.guide();showFeat(v)},
+  tour(){UI.sheet=null;UI.tab='year';UI.coach=0;render();window.scrollTo(0,0)},
+  tournext(){UI.coach++;render()},
+  tourskip(){UI.coach=TOUR.length;render()},
+  mgrplan(){const why=managerPlan();toast(`💼 ${why}`);render()},
+  mgroff(){S.flags.mgrOff=true;toast('Manager tips hidden. Turn them back on from the ☰ menu.');render()},
+  mgron(){S.flags.mgrOff=false;UI.sheet=null;render()},
   focus(v){S.plan.focus=v;if(v==='rest'||v==='split')S.plan.genre=S.genre;if(v!=='album'&&v!=='albumtour'&&v!=='tour')S.plan.promo=false;render()},
   genre(v){S.plan.genre=v;render()},
   budget(v){S.plan.budget=+v;render()},
@@ -1242,13 +1455,13 @@ const ACT={
   choose(v){const [i,k]=v.split('|');const e=S.pending[+i];if(!e)return;const E=EV[e.t];const key=isNaN(+k)?k:+k;
     S.pending.splice(+i,1);const msg=E.res(e.d,key);if(msg)S.yearLog.push(msg);save();render()},
   play(){if(S.pending.filter(evValid).length)return;playYear();render()},
-  closereport(){UI.report=null;render();window.scrollTo(0,0)},
+  closereport(){UI.report=null;stopSong();render();window.scrollTo(0,0)},
   leader(id){const m=M(id),old=M(S.leader);if(old&&old.ego>50)old.mood-=10;m.mood+=8;S.leader=id;S.flags.leadY=S.year;tl('lead',`${m.name} becomes the face of the band`);toast(`${first(m)} now leads the band.`);save();render()},
   writer(id){const m=M(id);if(m.writer&&active().filter(x=>x.writer).length<=1){toast('Someone has to write the songs.');return}m.writer=!m.writer;save();render()},
   fire(id){const m=M(id);UI.sheet=`<h2>Fire ${esc(m.name)}?</h2><p class="small">They'll be gone for good (unless a reunion brings them back). Loyal members won't like it.</p><div class="row"><button class="btn danger" data-a="firey" data-v="${id}">Fire them</button><button class="btn ghost" data-a="closesheet">Cancel</button></div>`;render()},
   firey(id){const m=M(id);UI.sheet=null;active().filter(x=>x!==m).forEach(x=>{if(feuding(x.id,m.id))x.mood+=8;else if(x.trait==='Peacemaker'||x.loyalty>70)x.mood-=5});leave(m,'fired');toast(`${first(m)} is out.`);save();render()},
   closesheet(){UI.sheet=null;render()},
-  menu(){UI.sheet=`<h2>${esc(S.name)}</h2><p class="small muted">Slot ${S.slot} · saved automatically every year.</p><button class="btn wide" data-a="totitle">Save & exit to title</button><button class="btn ghost wide" data-a="closesheet">Back to ${S.year}</button>`;render()},
+  menu(){UI.sheet=`<h2>${esc(S.name)}</h2><p class="small muted">Slot ${S.slot} · saved automatically every year.</p><button class="btn ghost wide" data-a="guide">📖 Every feature</button><button class="btn ghost wide" data-a="trophies">🏆 Trophy room</button><button class="btn ghost wide" data-a="tour">🧭 Replay the tour</button>${S.flags.mgrOff?'<button class="btn ghost wide" data-a="mgron">💼 Show manager tips</button>':''}<button class="btn wide" data-a="totitle">Save & exit to title</button><button class="btn ghost wide" data-a="closesheet">Back to ${S.year}</button>`;render()},
   endnow(){UI.sheet=`<h2>End the career now?</h2><p class="small">The band's story ends in ${S.year} and you'll see the full history and whether you make the Hall of Sound.</p><div class="row"><button class="btn danger" data-a="endy">End it</button><button class="btn ghost" data-a="closesheet">Keep playing</button></div>`;render()},
   endy(){UI.sheet=null;finish('retired');render();window.scrollTo(0,0)},
   totitle(){save();S=null;UI.sheet=null;UI.report=null;UI.setup=null;render();window.scrollTo(0,0)},
@@ -1261,11 +1474,12 @@ const ACT={
   ssize(v){UI.setup.name=$('#bandname')?.value||UI.setup.name;UI.setup.size=+v;Object.assign(UI.setup,genLineup(+v));render()},
   reroll(){UI.setup.name=$('#bandname')?.value||UI.setup.name;Object.assign(UI.setup,genLineup(UI.setup.size));render()},
   start(){startGame()},
-  setlist(v){S.plan.setlist=v;render()},
+  setlist(v){S.plan.setlist=v;S.tried.setlist=1;render()},
   style(id){if(!findMember(id))return;UI.styleId=id;UI.sheet=styleSheet;render()},
-  look(v){const m=findMember(UI.styleId);if(!m)return;const [f,val]=v.split('|');m.look=m.look||genLook(m.id);m.look[f]=val==='!'?!m.look[f]:val;if(S)save();render()},
-  doc(){if(!S||!S.hist.length)return;UI.sheet=null;UI.doc={i:0,play:true,speed:1};renderSheet();renderDoc()},
-  docclose(){UI.doc=null;renderDoc()},
+  look(v){const m=findMember(UI.styleId);if(!m)return;const [f,val]=v.split('|');m.look=m.look||genLook(m.id);m.look[f]=val==='!'?!m.look[f]:val;award('makeover');if(S&&S.tried)S.tried.restyle=1;if(S)save();render()},
+  doc(){if(!S||!S.hist.length)return;S.tried.doc=1;award('director');UI.coach=null;UI.sheet=null;UI.doc={i:0,play:true,speed:1};renderSheet();renderDoc()},
+  docclose(){UI.doc=null;stopSong();renderDoc()},
+  docsound(){UI.doc.sound=!UI.doc.sound;if(!UI.doc.sound)stopSong();renderDoc()},
   docplay(){const D=UI.doc;if(!D.play&&D.i>=S.hist.length-1)D.i=0;D.play=!D.play;renderDoc()},
   docprev(){UI.doc.play=false;UI.doc.i=Math.max(0,UI.doc.i-1);renderDoc()},
   docnext(){UI.doc.play=false;UI.doc.i=Math.min(S.hist.length-1,UI.doc.i+1);renderDoc()},
@@ -1273,8 +1487,8 @@ const ACT={
 };
 document.addEventListener('click',e=>{if(e.target.closest('[data-stop]')&&!e.target.closest('[data-a]'))return;const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   if(b.classList.contains('scrim')&&e.target!==b)return;const f=ACT[b.dataset.a];if(f)f(b.dataset.v,b)});
-document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(UI.doc){UI.doc=null;renderDoc()}else if(UI.sheet){UI.sheet=null;render()}});
-window.DECADES={get S(){return S},set S(v){S=v},playYear,startYear,render,UI,EV,legacy,gpop,AV};
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(UI.coach!=null){UI.coach=TOUR.length;render()}else if(UI.doc){UI.doc=null;stopSong();renderDoc()}else if(UI.sheet){UI.sheet=null;render()}});
+window.DECADES={get S(){return S},set S(v){S=v},playYear,startYear,render,UI,EV,legacy,gpop,AV,AU,trophies,FEATS,playSong};
 (function boot(){render()})();
 </script>
 </body>
