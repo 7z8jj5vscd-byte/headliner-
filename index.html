@@ -3893,7 +3893,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610240230';
+const APP_VER='202610240237';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
@@ -4199,8 +4199,8 @@ function reelSlides(){const yrs=year(),top=S.songs.filter(s=>s.status==='release
   return L}
 function playReel(){const L=reelSlides();let i=0;const el=document.createElement('div');el.className='reel';document.body.appendChild(el);
   const top=S.songs.filter(s=>s.status==='released').sort((a,b)=>b.streams-a.streams)[0];try{if(top)playSong(top)}catch(e){}
-  const show=()=>{const s=L[i];let pic='';try{pic=G3.ok?snap(S.look,s.p,{rot:.25}):''}catch(e){}el.innerHTML=`<div class="reel-in" style="background:radial-gradient(circle at 30% 20%,hsl(${(S.hue||280)+i*40} 70% 35%),#07060b 70%)">${pic?`<img src="${pic}" alt="">`:''}<div class="reel-t"><span class="label">${i+1} / ${L.length}</span><h1>${esc(s.t)}</h1><p>${esc(s.s)}</p></div><div class="reel-dots">${L.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div><button class="btn ghost sm reel-x" data-reelx="1">Close</button></div>`};
-  show();const iv=setInterval(()=>{i++;if(i>=L.length){clearInterval(iv);setTimeout(()=>el.remove(),5000);return}show()},3600);el.addEventListener('click',e=>{if(e.target.closest('[data-reelx]')){clearInterval(iv);el.remove()}})}
+  const hue0=S.hue||280,look0=JSON.parse(JSON.stringify(S.look));const show=()=>{const s=L[i];let pic='';try{pic=G3.ok?snap(look0,s.p,{rot:.25}):''}catch(e){}el.innerHTML=`<div class="reel-in" style="background:radial-gradient(circle at 30% 20%,hsl(${hue0+i*40} 70% 35%),#07060b 70%)">${pic?`<img src="${pic}" alt="">`:''}<div class="reel-t"><span class="label">${i+1} / ${L.length}</span><h1>${esc(s.t)}</h1><p>${esc(s.s)}</p></div><div class="reel-dots">${L.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div><button class="btn ghost sm reel-x" data-reelx="1">Close</button></div>`};
+  show();const iv=setInterval(()=>{if(!el.isConnected){clearInterval(iv);return}i++;if(i>=L.length){clearInterval(iv);setTimeout(()=>el.remove(),5000);return}show()},3600);el.addEventListener('click',e=>{if(e.target.closest('[data-reelx]')){clearInterval(iv);el.remove()}})}
 A.reel=()=>{playReel();return false};
 {const _rc=retireCareer;retireCareer=function(...a){const r=_rc.apply(this,a);setTimeout(playReel,400);return r}}
 
