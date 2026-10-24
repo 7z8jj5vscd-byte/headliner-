@@ -1491,7 +1491,7 @@ function newsTab(){const chat=UI.newsView==='chat';if(chat)S.flags.chatSeen=(S.c
   return seg+`<section class="card"><h2>News feed</h2><div class="news">${S.log.map(l=>`<div><small>${dateStr(l.w)}</small>${esc(l.t)}</div>`).join('')}</div></section>`}
 function menuTab(){
   return `<section class="card"><h2>Game</h2><p class="muted">Slot ${S.slot} · saved automatically every week.</p><div class="stack">${B(S.sound?'🔊 Sound on':'🔈 Sound off','sound',null,'ghost block')}${window.THREE?B(can3D()?'🧊 3D avatars on':'🖼️ 3D avatars off (2D)','toggle3d',null,'ghost block'):''}${B('How to play','howto',null,'ghost block')}${B('Back to title','toTitle',null,'ghost block')}</div></section>
-  <section class="card"><h2>About</h2><p class="muted">Debut Dream is a fan-made idol career simulator. Every agency, idol, group, show and award in it is fictional.</p></section>`;
+  <section class="card"><h2>About</h2><p class="muted">Debut Dream is a fan-made idol career simulator. Every agency, idol, group, show and award in it is fictional.</p><p class="dim"><small>Version ${APP_VER}. Updates install automatically when you reopen the app.</small></p></section>`;
 }
 const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm game or the Pose Match dance game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p><b>Stage life.</b> Every release starts with a fitting day: pick and tailor the era's costumes (fit, comfort, wow). Before each live stage, choose how to rehearse and plan your ending fairy, then watch the stage play out as a live broadcast, mishaps and all.</p><p class="muted"><small>Trainee tests: Rhythm Lanes, Pose Match, Hit the High Note, Echo the Coach and Rhyme Flow. Each rehearsal method is its own game too (Hit Your Marks, Mirror Mirror, Sound Check, Deep Breaths, Find Your Spot, Quick Change), and the Practice room lets you play any game once a week. On stage: Camera Catch and Press Q&amp;A. Showcases, music shows, concerts and the survival finale are Live Stages that chain these games section by section, with live mishaps you decide on the spot. Every stage also has a Quick sim option.</small></p>`;
 function lookEditor(L,prefix){
@@ -2099,6 +2099,11 @@ document.addEventListener('input',e=>{const t=e.target;if(t.dataset.d&&UI.draft)
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset.sel==='bond'&&S){S.bond=t.value;save();render()}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')e.target.blur()});
 
+// Live updates (same approach as Headliner): when the app opens or returns to the foreground, fetch the
+// latest page and reload into it if its version is newer. Never interrupts a mini-game in progress.
+const APP_VER='202610241913';
+function checkUpdate(){if(!/^https?:/.test(location.protocol)||MG)return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER&&!MG){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
+setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 function boot(){
   UI.form={};
   const n=lastSlot();const s=n?readSlot(n):null;
