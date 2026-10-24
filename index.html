@@ -358,6 +358,7 @@ tr.me td{background:color-mix(in srgb,var(--gold) 12%,transparent)}
 .photobar .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.photobar .chip{padding:5px 10px;font-size:12px;white-space:nowrap}
 body.photo-on .panel,body.photo-on .scap,body.photo-on .ticker{display:none!important}
 
+.sf{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
 .mgr{display:flex;gap:12px;align-items:center;margin-top:6px}
 .mgr-av{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,rgba(139,92,246,.35),rgba(236,72,153,.35));border:1px solid rgba(255,255,255,.15);flex:none}
 .mgr-b{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:4px 16px 16px 16px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
@@ -1279,9 +1280,10 @@ function checkAch(){ACH.forEach(([id,n,d,f])=>{if(!S.ach[id]&&f()){S.ach[id]=S.t
 
 /* ============ studio actions ============ */
 function writeSong(bonus=0,feat=null){
-  const theme=$('#song-theme')?.value||pick(THEMES);
-  let title=($('#song-title')?.value||'').trim()||songTitle();
-  const tempo=$('#song-tempo')?.value||pick(TEMPOS),inst=$('#song-inst')?.value||pick(INSTS),fit=GFIT[S.genre]||[];if(fit[0]===tempo)bonus+=3;if(fit[1]===inst)bonus+=3;if(S.breakupBoost&&!feat){bonus+=8;S.breakupBoost=0}if(S.mentor&&S.mentor.until>S.t)bonus+=3;
+  const SF=UI.songForm;
+  const theme=(SF?SF.theme:$('#song-theme')?.value)||pick(THEMES);
+  let title=((SF?SF.title:$('#song-title')?.value)||'').trim()||songTitle();
+  const tempo=(SF?SF.tempo:$('#song-tempo')?.value)||pick(TEMPOS),inst=(SF?SF.inst:$('#song-inst')?.value)||pick(INSTS),fit=GFIT[S.genre]||[];if(fit[0]===tempo)bonus+=3;if(fit[1]===inst)bonus+=3;if(S.breakupBoost&&!feat){bonus+=8;S.breakupBoost=0}if(S.mentor&&S.mentor.until>S.t)bonus+=3;
   const s={id:S.nextId++,title,theme,tempo,inst,lyric:pick(LYR[theme]||LYR.Love),q:songQuality(bonus+(feat?0:takeStudioBonus())),status:'demo',streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null};
   S.songs.unshift(s);S.stats.written++;
   S.skills.songwriting=Math.min(100,S.skills.songwriting+.6*(1-S.skills.songwriting/130));
@@ -1623,7 +1625,7 @@ function studioView(){
       <label class="field"><span class="label">Title</span><input type="text" id="song-title" placeholder="Leave blank for a random title" maxlength="40"></label>
       <label class="field"><span class="label">Theme</span><select id="song-theme">${THEMES.filter(t=>t!=='Family'||S.kids).map(t=>`<option>${t}</option>`).join('')}</select></label>
       <div class="row"><label class="field"><span class="label">Tempo</span><select id="song-tempo">${TEMPOS.map(t=>`<option ${(GFIT[S.genre]||[])[0]===t?'selected':''}>${t}</option>`).join('')}</select></label><label class="field"><span class="label">Lead instrument</span><select id="song-inst">${INSTS.map(t=>`<option ${(GFIT[S.genre]||[])[1]===t?'selected':''}>${t}</option>`).join('')}</select></label></div><small class="muted">${esc(S.genre)} fans like ${(GFIT[S.genre]||[]).join(' and ').toLowerCase()} songs (+3 each).${S.breakupBoost?' Your heartbreak will make the next song +8.':''}</small>
-      <div class="row"><button class="btn" data-a="write">Write song · 12E</button><button class="btn ghost" data-a="writeCamp">Writing week: 2 songs · 20E</button></div><small class="muted">A writing week gives you two songs at once, each with a small quality bonus.</small></div>
+      <div class="row"><button class="btn" data-a="write">Write song · 12E</button><button class="btn ghost" data-a="writeForm" data-v="two">Writing week: 2 songs · 20E</button></div><small class="muted">A writing week gives you two songs at once, each with a small quality bonus.</small></div>
     <div class="card"><h3>Songwriting retreat</h3><p class="muted">Spend the whole week in a cabin and come back with <b>2 new songs</b>, each with +5 quality. Costs $250 and needs 30 energy. Ends the week.</p><div><button class="btn" data-a="retreat">Go on retreat</button></div></div>
     <div class="card"><h3>Collaborate</h3>${S.level<3?`<span class="lock">${lockTxt(3)}</span>`:''}<p class="muted">Pitch a feature to a charting artist. Their fans stream the song too. 25 energy plus their fee (refunded if they pass).</p>
       <select data-ui="collab" id="collab-sel"><option value="">Choose an artist</option>${npcs.map(n=>`<option value="${esc(n.name)}" ${UI.collab===n.name?'selected':''}>${esc(n.name)} · ${cash(collabFee(n))} · ${Math.round(collabChance(n)*100)}% chance</option>`).join('')}</select>
@@ -3658,14 +3660,14 @@ function runPlanned(i){
   const it=planItem(p);let txt='';
   if(p.a==='opp'){const o=OPPS.find(x=>x.k===p.v);if(!o)return;if(!spend(o.e)){txt=`Skipped ${o.l}: not enough energy.`}else{txt=o.f();UI.scene={...o.sc,cap:o.l}}}
   else if(p.a==='rest'){S.health=clamp(S.health+15,0,100);S.happy=clamp(S.happy+8,0,100);S.stress=clamp((S.stress||0)-12,0,100);txt='Day off: health +15, happiness +8.';UI.scene={k:'home1',cap:'Day off',pose:'idle'}}
-  else if(p.a==='ws'){const ok=runAct('write',{});txt=ok?'Wrote a song ✓':'Skipped writing: not enough energy.'}
+  else if(['ws','write','writeCamp'].includes(p.a)){if(S.energy<(p.a==='writeCamp'?20:12))txt='Skipped writing: not enough energy.';else{A.writeForm({v:p.a==='writeCamp'?'two':'one'});txt='Writing day: name your song'}}
   else{const before=S.energy;
     if(p.a==='post'){UI.social=p.v;UI.postType='';const P=PLAT[p.v];const t=P.types.find(t=>!t.song&&!t.beef&&!t.apology&&(!t.req||t.req()));UI.postType=t?t.id:P.types[0].id}
     const ok=runAct(p.a,{v:p.v});txt=ok?`${it.l} ✓`:`Skipped ${it.l}: not enough energy or money.`;if(!ok&&S.energy===before){}}
   UI.live.last=`${DAYN[i]}: ${txt}`;UI.live.lastDay=i;log(`${DAYN[i]}: ${txt}`);
 }
 {const _dp=dayPass;dayPass=function(){const d=UI.live.day+1;_dp();if(d<7&&UI.live.day===d&&UI.live.on){runPlanned(d);eraCheck();levelCheck();checkAch();save();render()}}}
-{const _nw=nextWeek;nextWeek=function(...a){const L=UI.live;for(let i=Math.max(0,L.day||0);i<7;i++)if(S.plan&&S.plan[i]&&!S.planDone[i]&&S.plan[i].a!=='ws')runPlanned(i);
+{const _nw=nextWeek;nextWeek=function(...a){const L=UI.live;for(let i=Math.max(0,L.day||0);i<7;i++)if(S.plan&&S.plan[i]&&!S.planDone[i]&&!['ws','write','writeCamp'].includes(S.plan[i].a))runPlanned(i);
   const r=_nw.apply(this,a);S.planDone=[];S.plan=S.planRepeat?S.plan.map(p=>p&&p.a==='opp'?null:p):[null,null,null,null,null,null,null];genOpps();return r}}
 Object.assign(A,{
   planOpen:d=>{UI.planDay=+d.v;openModal(`Plan ${DAYN[+d.v]}`,planMenu(+d.v))},
@@ -3769,7 +3771,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610240027';
+const APP_VER='202610240042';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
@@ -4142,13 +4144,30 @@ A.writeCamp=()=>{if(!spend(20))return;const a=writeSong(2),b=writeSong(2);toast(
 SCENE_ON.writeCamp=()=>({k:'studio',cap:'Writing week',pose:'studio'});
 A.wsStart=()=>{A.write();render()};
 
+/* ---- song form: name and shape every song you write ---- */
+function songFormHTML(n){const fit=GFIT[S.genre]||[],th=THEMES.filter(t=>t!=='Family'||S.kids),m=curMonth();
+  const blk=i=>`<div class="sf">${n>1?`<span class="label">Song ${i}</span>`:''}<label class="field"><span class="label">Title</span><input type="text" id="sf-title-${i}" maxlength="40" placeholder="${esc(songTitle())}"></label>
+   <div class="row"><label class="field"><span class="label">Theme</span><select id="sf-theme-${i}">${th.filter(t=>t!=='Holiday'||m>=9).map(t=>`<option>${t}</option>`).join('')}</select></label>
+   <label class="field"><span class="label">Tempo</span><select id="sf-tempo-${i}">${TEMPOS.map(t=>`<option value="${t}" ${fit[0]===t?'selected':''}>${t}${fit[0]===t?' ★':''}</option>`).join('')}</select></label>
+   <label class="field"><span class="label">Lead instrument</span><select id="sf-inst-${i}">${INSTS.map(t=>`<option value="${t}" ${fit[1]===t?'selected':''}>${t}${fit[1]===t?' ★':''}</option>`).join('')}</select></label></div></div>`;
+  return `<p class="muted">${n>1?'A whole week of writing: two songs, each with a small quality bonus.':'Name it and choose the vibe.'} ★ fits ${esc(S.genre)} (+3 quality each).${S.nextProd?` <b>${esc(S.nextProd.n)}</b> is booked for this session.`:''}</p>
+  ${Array.from({length:n},(_,k)=>blk(k+1)).join('')}
+  <div class="row"><button class="btn" data-a="sfGo" data-v="${n}">Write ${n>1?'both songs':'it'} · ${n>1?20:12}E</button><button class="btn ghost sm" data-a="sfCancel">Cancel</button></div>`}
+Object.assign(A,{
+  writeForm:d=>{const n=d.v==='two'?2:1;if(S.energy<(n>1?20:12)){toast(`You need ${n>1?20:12} energy for that. End the week to recharge.`);return}openModal(n>1?'Writing week':'Write a song',songFormHTML(n))},
+  sfGo:d=>{const n=+d.v;const F=[];for(let i=1;i<=n;i++)F.push({title:(($('#sf-title-'+i)||{}).value||'').trim(),theme:($('#sf-theme-'+i)||{}).value,tempo:($('#sf-tempo-'+i)||{}).value,inst:($('#sf-inst-'+i)||{}).value});
+    if(!spend(n>1?20:12))return;const out=F.map(f=>{UI.songForm=f;const s=writeSong(n>1?2:0);UI.songForm=null;return s});
+    UI.modal=UI.queue.shift()||null;sfx('release');UI.scene={k:'studio',cap:'Writing session',pose:'studio'};
+    toast(out.map(s=>`"${s.title}" (${grade(s.q)})`).join(' and ')+' written. Record it in the Studio.');log(`Wrote ${out.map(s=>`"${s.title}"`).join(' and ')}.`)},
+  sfCancel:()=>{UI.modal=UI.queue.shift()||null}});
+
 /* ---- manager advice + quick actions ---- */
 function nextGoal(){const N=LEVELS[S.level+1];if(!N)return null;const r=N.reqs.find(([k,,n])=>metric(k)<n);return r?{t:r[1],have:metric(r[0]),need:r[2],lv:N.n}:null}
 function advice(){const L=[],rel=S.songs.filter(s=>s.status==='released'),demos=S.songs.filter(s=>s.status==='demo'),recs=S.songs.filter(s=>s.status==='recorded');
   if(S.inbox.some(o=>o.kind==='label'))L.push({ic:'📝',t:'A record label wants to sign you',d:'Read the offer before it expires.',a:'tab',v:'business'});
   if(recs.length)L.push(S.t-S.lastRelease<2?{ic:'⏳',t:`"${recs[0].title}" is ready`,d:'Wait a week between releases so they land better. Promote it in the meantime.',a:'openApp',v:'tok'}:{ic:'🚀',t:`Release "${recs[0].title}"`,d:`Quality ${recs[0].q}. Fans are waiting.`,a:'release',id:recs[0].id,e:10});
   if(demos.length)L.push({ic:'🎙',t:`Record "${demos[0].title}"`,d:'Recording raises quality before you release it.',a:'record',id:demos[0].id,e:15});
-  if(demos.length+recs.length===0)L.push({ic:'✍',t:'Write a new song',d:'You have nothing ready to release.',a:'write',e:12});
+  if(demos.length+recs.length===0)L.push({ic:'✍',t:'Write a new song',d:'You have nothing ready to release.',a:'writeForm',v:'one',e:12});
   if(rel.length>=7&&(!S.albums.length||S.t-S.albums[S.albums.length-1].rel>20))L.push({ic:'💿',t:'Put out an album',d:`You have ${rel.length} songs. Albums sell big and count for levels.`,a:'goSub',v:'studio|Make an album or EP'});
   if((S.stress||0)>70||S.health<40)L.push({ic:'🛋',t:'You need a break',d:'Stress and health are hurting your shows and songs.',a:'goSub',v:'personal|Life and wellbeing'});
   if(S.money<150)L.push({ic:'☕',t:'Money is tight',d:'Pick up a side job shift.',a:'job',v:'barista',e:20});
@@ -4156,7 +4175,7 @@ function advice(){const L=[],rel=S.songs.filter(s=>s.status==='released'),demos=
   if(S.energy>=15&&L.length<4){const v=VENUES.filter(venueOk).filter(x=>x.cap>0).pop();L.push(v?{ic:'🎤',t:`Play the ${v.name}`,d:'Shows build fans and pay well.',a:'gig',v:v.id,e:v.e}:{ic:'🎸',t:'Go busking',d:'Easy tips and new fans.',a:'busk',e:has('car')?10:15})}
   return L.slice(0,4)}
 function managerCard(){const L=advice();
-  const QA=[['✍','Write','write','',12],['📝','Write 2','writeCamp','',20],['🎙','Record','goSub','studio|Song library'],['🚀','Release','goSub','studio|Song library'],['🎸','Busk','busk','',has('car')?10:15],['🎤','Gig','goSub','live|Venues'],['📱','Post','openApp','insta'],['⏭','Next week','next','']];
+  const QA=[['✍','Write','writeForm','one',12],['📝','Write 2','writeForm','two',20],['🎙','Record','goSub','studio|Song library'],['🚀','Release','goSub','studio|Song library'],['🎸','Busk','busk','',has('car')?10:15],['🎤','Gig','goSub','live|Venues'],['📱','Post','openApp','insta'],['⏭','Next week','next','']];
   return `<div class="section" data-title="Manager"><div class="mgr"><div class="mgr-av">🧑‍💼</div><div class="mgr-b"><span class="label">Your manager</span><b>${L.length&&L[0].a?esc(L[0].t)+'.':'Looking good. Keep the momentum going!'}</b></div></div>
   <div class="qa">${QA.map(([ic,l,a,v,e])=>`<button class="qab" data-a="${a}" ${v?`data-v="${v}"`:''}><i>${ic}</i><span>${l}</span>${e?`<small>${e}E</small>`:''}</button>`).join('')}</div>
   <div class="advice">${L.map(x=>`<div class="adv"><i>${x.ic}</i><div><b>${esc(x.t)}</b><small class="muted">${esc(x.d)}</small>${x.prog!=null?meter(x.prog*100,100):''}</div>${x.a?`<button class="btn sm" data-a="${x.a}" ${x.v?`data-v="${esc(x.v)}"`:''} ${x.id?`data-id="${x.id}"`:''}>${x.e?'Do it · '+x.e+'E':'Go'}</button>`:''}</div>`).join('')}</div></div>`}
