@@ -390,6 +390,13 @@ body.photo-on .panel,body.photo-on .scap,body.photo-on .ticker{display:none!impo
 .dd i{font-style:normal;font-size:20px}.dd small{color:var(--muted)}
 .dd.got{opacity:.45}.dd.now{border-color:rgba(167,139,250,.8);background:rgba(139,92,246,.18);box-shadow:0 0 0 1px rgba(167,139,250,.5) inset}
 
+.fart{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fa{display:flex;flex-direction:column;gap:3px;font-size:11px}
+.fa-img{aspect-ratio:3/4;border-radius:10px;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center}
+.fa-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.fa-img span{position:relative;font-size:10px;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:6px;margin:4px}
+.carpet{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.carpet .choice{align-items:center;text-align:center}.carpet img{height:150px;object-fit:contain}
 /* venues */
 .venue{display:flex;flex-direction:column;gap:8px}
 .venue .facts{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
@@ -2034,7 +2041,7 @@ function styleView(){
   return `<div class="section"><div class="between"><h2>Style</h2><span class="row" style="gap:6px">${dateChip()}<span class="pill gold">Style ${sc}</span></span></div><p class="muted">Your character appears in the display up top, on every stage, at busking spots and at press events. Style adds to show scores and post reach: right now +${(sc*.12).toFixed(1)} show score and +${Math.round(sc/2)}% reach.</p>
   <div class="card">${lookEditor(S.look)}<div class="row">${G3.ok?'<button class="chip" data-a="rotPrev" data-v="-1" aria-label="Turn left">⟲ Turn</button><button class="chip" data-a="rotPrev" data-v="1" aria-label="Turn right">Turn ⟳</button>':''}<span class="label">Preview pose</span>${[['idle','Chill'],['perform','On stage'],['busk','Busking'],['press','Press'],['trophy','Trophy']].map(([p,n])=>`<button class="chip ${(UI.prevPose||'idle')===p?'on':''}" data-a="prevPose" data-v="${p}">${n}</button>`).join('')}</div></div></div>
   <div class="section"><h2>Wardrobe</h2><div class="card">${slots.map(([k,n])=>`<div class="stack" style="gap:6px"><span class="label">${n}</span><div class="chips">${ITEMS.filter(i=>i.slot===k&&S.wardrobe.includes(i.id)).map(i=>`<button class="chip ${S.look[k]===i.id?'on':''}" data-a="equip" data-v="${i.id}">${esc(i.n)}${i.style?` · +${i.style}`:''}</button>`).join('')}</div></div>`).join('')}</div></div>
-  <div class="section"><h2>Boutique</h2><p class="muted">Each card shows the piece on you. Buying it puts it on right away.</p>${slots.map(([k,n])=>{const it=ITEMS.filter(i=>i.slot===k&&!S.wardrobe.includes(i.id));return `<h3>${n}</h3>${it.length?`<div class="shop">${it.map(shopCard).join('')}</div>`:'<div class="empty">You own everything here.</div>'}`}).join('')}</div>`;
+  <div class="section"><h2>Boutique</h2><p class="muted">Each card shows the piece on you. Buying it puts it on right away.</p>${slots.map(([k,n])=>{const it=ITEMS.filter(i=>i.slot===k&&!S.wardrobe.includes(i.id)&&!i.excl);return `<h3>${n}</h3>${it.length?`<div class="shop">${it.map(shopCard).join('')}</div>`:'<div class="empty">You own everything here.</div>'}`}).join('')}</div>`;
 }
 
 /* ============ rivals ============ */
@@ -2122,7 +2129,7 @@ const DRAMA={
     {l:'Accept it',f:x=>{S.contract.promo=Math.max(1,+(S.contract.promo-.25).toFixed(2));cr(5);RV(x).heat=clamp(RV(x).heat+15,0,100);return 'You kept the peace, but your releases get less push now.'}},
     {l:'Threaten to leave',cls:'pink',f:()=>{cr(-25);S.contract.adv=Math.round(S.contract.adv*.5);return 'They called your bluff, but your buyout price dropped by half.'}}]},
   rebrand:{label:1,t:'Image makeover',b:()=>`${esc(S.contract.name)} wants a total image makeover. New look, new sound, new you.`,opts:[
-    {l:'Go along with it',cls:'',f:()=>{const pool=ITEMS.filter(i=>i.price>0&&!S.wardrobe.includes(i.id));const it=pool.length?pick(pool):null;if(it){S.wardrobe.push(it.id);S.look[it.slot]=it.id}S.fans-=S.fans*.02;S.hype=clamp(S.hype+15,0,100);cr(10);return `The stylists put you in a ${it?it.n.toLowerCase():'whole new look'} (yours to keep). Some old fans miss the old you.`}},
+    {l:'Go along with it',cls:'',f:()=>{const pool=ITEMS.filter(i=>i.price>0&&!S.wardrobe.includes(i.id)&&!i.excl);const it=pool.length?pick(pool):null;if(it){S.wardrobe.push(it.id);S.look[it.slot]=it.id}S.fans-=S.fans*.02;S.hype=clamp(S.hype+15,0,100);cr(10);return `The stylists put you in a ${it?it.n.toLowerCase():'whole new look'} (yours to keep). Some old fans miss the old you.`}},
     {l:'Refuse',cls:'pink',f:()=>{cr(-10);return 'You kept your look. The label sighed loudly.'}}]},
   royalty:{label:1,t:'Missing royalties',b:()=>`An audit shows ${esc(S.contract.name)} underpaid your royalties.`,opts:[
     {l:'Sue them ($20K legal fees)',cls:'pink',f:()=>{if(S.money<20000)return 'You cannot afford the lawyers right now.';S.money-=20000;if(Math.random()<.55){const w=Math.round(Math.max(60000,S.stats.earned*.06));S.money+=w;cr(-30);return `You won ${cash(w)} in court. The label is livid.`}cr(-20);return 'You lost the case and the legal fees.'}},
@@ -2318,8 +2325,8 @@ const PROD=[{id:'dancers',n:'Dance crew',cost:80000,b:3,lvl:3},{id:'pyro',n:'Pyr
 function prodBonus(){return sum(S.prod||[],id=>(PROD.find(p=>p.id===id)||{b:0}).b)}
 function setBonus(){const set=(S.setlist||[]).map(id=>S.songs.find(s=>s.id===id)).filter(s=>s&&s.status!=='demo');if(!set.length)return 0;const avg=sum(set,s=>s.q)/set.length,isH=s=>s.recv==='hit'||s.recv==='smash';let b=avg/10-4+Math.min(8,set.filter(isH).length*1.5);const top=set.map(s=>s.q).sort((a,c)=>c-a)[Math.min(2,set.length-1)];if(set[0].q>=top)b+=2;if(set.length>1&&isH(set[set.length-1]))b+=3;b+=set.length>=8&&set.length<=16?2:-2;if(set.some(s=>s.status==='recorded'))b+=1;return clamp(Math.round(b),-5,15)}
 function cityLoyalty(c){const v=(S.cityPlays||{})[c];if(!v||v.last==null)return 1;const d=S.t-v.last;return d<=52?1.1:d>104?.9:1}
-function openerOpts(){const o=[['none','No opener'],['local','Local up-and-comer ($5K)']];S.rivals.filter(r=>r.truce).forEach(r=>o.push(['rival:'+r.id,r.name+' (truce)']));((S.ownLabel&&S.ownLabel.roster)||[]).forEach((a,i)=>o.push(['label:'+i,a.name+' (your label)']));return o}
-function openerFx(){const v=S.opener||'none';if(v==='local')return {dm:1.03,cost:5000};if(v.startsWith('rival:')){const r=S.rivals.find(x=>x.id===+v.split(':')[1]);if(r&&r.truce)return {dm:1.12,cost:0,after:()=>{r.fans*=1.03;r.heat=0}}}if(v.startsWith('label:')&&S.ownLabel){const a=S.ownLabel.roster[+v.split(':')[1]];if(a)return {dm:1.05,cost:0,after:()=>{a.fans=Math.round(a.fans*1.4+5000)}}}return {dm:1,cost:0}}
+function openerOpts(){const o=[['none','No opener'],['local','Local up-and-comer ($5K)']];S.rivals.filter(r=>r.truce).forEach(r=>o.push(['rival:'+r.id,r.name+' (truce)']));((S.mylabel&&S.mylabel.roster)||[]).forEach((a,i)=>o.push(['label:'+i,a.name+' (your label)']));return o}
+function openerFx(){const v=S.opener||'none';if(v==='local')return {dm:1.03,cost:5000};if(v.startsWith('rival:')){const r=S.rivals.find(x=>x.id===+v.split(':')[1]);if(r&&r.truce)return {dm:1.12,cost:0,after:()=>{r.fans*=1.03;r.heat=0}}}if(v.startsWith('label:')&&S.mylabel){const a=S.mylabel.roster[+v.split(':')[1]];if(a)return {dm:1.05,cost:0,after:()=>{a.fans=Math.round(a.fans*1.4+5000)}}}return {dm:1,cost:0}}
 function liveExtras(){
   const songs=S.songs.filter(s=>s.status!=='demo'),set=(S.setlist||[]).map(id=>S.songs.find(s=>s.id===id)).filter(Boolean),tix=S.ticket||'fair',sb=setBonus();
   return `<div class="section"><h2>Show planning</h2><div class="grid">
@@ -2578,7 +2585,8 @@ const HELP=[
     <div class="card"><h3>Seasons</h3><ul class="hl"><li>Every month has a bonus: Valentine's love songs, the Song of the Summer race, Black Friday merch and holiday songs that come back every December.</li><li>The Holiday theme can be picked when writing.</li></ul></div>
     <div class="card"><h3>Studio marketplace & side jobs</h3><ul class="hl"><li>Book a producer or songwriter in Studio → Marketplace. They boost your next song. Songwriters take a cut.</li><li>Side jobs in Live pay the rent early on and can get you discovered.</li></ul></div>
     <div class="card"><h3>Fans, PR and habits</h3><ul class="hl"><li>Chirp → Fans shows your community, stan accounts and fan wars. Big communities throw streaming parties when you release.</li><li>Business → PR & image: press releases, interviews, stunts, damage control, media training and a PR firm.</li><li>Personal → Habits: partying, drinking, gambling and spending can become problems. Support groups, therapy and rehab help.</li></ul></div>
-    <div class="card"><h3>Photo mode & cloud save</h3><ul class="hl"><li>Tap 📸 on the stage, pick a pose, face and filter, and take a photo. Save it, post it or use it as your profile picture.</li><li>Home → Goals & saves → Cloud save keeps your career in a private file on your GitHub account so you can play on any device.</li></ul></div>`},
+    <div class="card"><h3>Photo mode & cloud save</h3><ul class="hl"><li>Tap 📸 on the stage, pick a pose, face and filter, and take a photo. Save it, post it or use it as your profile picture.</li><li>Home → Goals & saves → Cloud save keeps your career in a private file on your GitHub account so you can play on any device.</li></ul></div>
+    <div class="card"><h3>Even more</h3><ul class="hl"><li><b>Studio → Versions & rollout:</b> acoustic, sped-up, live and feature versions; pre-save campaigns, listening parties and teasers for albums; genre fusion.</li><li><b>Live → Tour extras:</b> tour merch booths and Verified Fan tickets. Tours now have road events, and stars may ask you to open for them.</li><li><b>Personal:</b> Band room (personalities, fights, solo dreams), Inner circle (best friend, assistant, pets, kids who grow up and can become your heir).</li><li><b>Business → Publishing & investments:</b> sync placements in movies and ads, selling your catalog, your own studio, venue and festival.</li><li><b>Style:</b> new hairstyles, glasses, makeup, tattoos and home decor (your plaques and trophies hang at home).</li><li>Live Q&As, interview questions, paparazzi moments, fan art in the Fan Club, a red carpet before the awards, exclusive outfits from challenges, career modes, and music you can switch on in Help.</li></ul></div>`},
   {id:'social',n:'Social & fans',h:()=>`
     <div class="card"><h3>Posting</h3><ul class="hl"><li>Each post costs 8 energy. Posting several times in one week has diminishing returns.</li><li>Song snippets, dance challenges and covers can go viral. Your first viral moment can bring tens of thousands of fans.</li><li>During a Hate Train, posts can draw backlash. Post an apology on Chirp to start fixing it.</li></ul></div>
     <div class="card"><h3>Your fan community</h3><ul class="hl"><li><b>Loyalty</b> softens scandals and boosts your businesses. It rises with fan meets, livestreams, fair tickets and following fan polls.</li><li>The fan club pays every week. Higher prices bring in fewer members.</li><li>Fan polls pick a theme for your next single. Release a song with that theme before the poll closes.</li></ul></div>`},
@@ -3771,7 +3779,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610240042';
+const APP_VER='202610240103';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
@@ -4229,6 +4237,264 @@ setInterval(dailyCheck,20000);document.addEventListener('visibilitychange',()=>{
 /* ---- section hooks ---- */
 {const _he=homeExtras;homeExtras=function(){return trophyCard()+_he()}}
 SUB_ICONS.unshift([/^manager/i,'🧑‍💼'],[/trophy/i,'🏆']);
+
+/* ============ v15: versions, rollout, fusion, touring life, Q&A, band, circle, kids, decor, publishing, investments, modes, outfits, avatar extras, sound, red carpet ============ */
+{const _mig=migrate;migrate=function(s){_mig(s);
+  if(s.ownLabel&&!s.mylabel){const O=s.ownLabel;s.mylabel={name:O.name,rep:40,roster:(O.roster||[]).map(a=>({id:s.nextId++,name:a.name,genre:a.genre,pot:Math.round(a.q||50),fans:Math.round(a.fans||1000),stars:clamp(Math.round((a.q||50)/20),1,5),mkt:1,hits:0,last:s.t})),pool:[],earned:O.earned||0,hits:0,founded:s.t}}s.ownLabel=null;
+  s.rollout??={};s.fusion??=null;s.support??=null;s.tourMerch??=null;s.verified??=false;s.bff??={name:pick(FIRST)+' '+pick(['Lane','Cruz','Park','Moss','Reyes','Hart']),rel:70};s.assistant??=false;
+  s.decor??={neon:'',rug:'#8b5cf6',plants:false};s.pet??=null;s.syncPitch??=0;s.catalogSold??=false;s.invest??={};s.chalDone??=0;s.mode??='normal';s.fanart??=[];
+  (s.members||[]).forEach(m=>{m.trait??=pick(['Hothead','Perfectionist','Joker','Dreamer','Chill']);m.dream??=Math.random()<.4});
+  (s.people||[]).forEach(p=>{if(p.role==='Child'&&p.born==null)p.born=s.t-52*ri(0,4)});
+  if(s.invest&&s.invest.studio&&!STUDIOS.some(x=>x.id==='own'))addOwnStudio();
+  return s}}
+const yrs=w=>Math.floor(w/52);
+
+/* ---- lyrics off ---- */
+const _lyr=document.createElement('style');_lyr.textContent='.song .lyric{display:none}';document.head.appendChild(_lyr);
+
+/* ---- 2. song versions & 3. album rollout & 6. genre fusion ---- */
+function relSingles(){return S.songs.filter(s=>s.status==='released'&&!s.versionOf)}
+function versionsCard(){const rel=relSingles(),R=S.rollout,cost=Math.round(2000+S.fans*.01);
+  return `<div class="section"><h2>Versions & rollout</h2><div class="grid">
+  <div class="card"><h3>Song versions</h3><small class="muted">Give a released song a second life. Each version is a new track that streams on its own.</small>
+   ${rel.length?`<select id="ver-song" aria-label="Song">${rel.map(s=>`<option value="${s.id}">${esc(s.title)}</option>`).join('')}</select>
+   <div class="row"><button class="btn sm" data-a="version" data-v="acoustic">Acoustic · 10E</button><button class="btn sm" data-a="version" data-v="sped">Sped up · 8E</button><button class="btn sm" data-a="version" data-v="feat">Feature version · 20E</button><button class="btn sm ghost" data-a="version" data-v="live">Live version · 10E</button></div>`:'<small class="muted">Release a single first.</small>'}</div>
+  <div class="card"><h3>Album rollout</h3><small class="muted">Set these up before you release your next album or EP. They kick in on release day.</small>
+   <button class="chk ${R.presave?'on':''}" data-a="rollout" data-v="presave"><span class="box"></span>Pre-save campaign · ${cash(cost)} <span class="muted">first-week sales +25%</span></button>
+   <button class="chk ${R.party?'on':''}" data-a="rollout" data-v="party"><span class="box"></span>Listening party · 15E <span class="muted">hype +15, loyalty +3</span></button>
+   <button class="chk ${R.teaser?'on':''}" data-a="rollout" data-v="teaser"><span class="box"></span>Teaser trailer on MeTube · 10E <span class="muted">hype +8, subscribers</span></button></div>
+  <div class="card"><h3>Genre fusion</h3><small class="muted">Blend ${esc(S.genre)} with another sound. Releases get riskier but reach new fans (+10% fan growth).</small>
+   ${S.fusion?`<div class="between"><span class="pill pink">${esc(S.genre)} × ${esc(S.fusion)}</span><button class="btn sm ghost" data-a="fusion" data-v="">Stop fusion</button></div>`:`<div class="row"><select id="fus-g" aria-label="Genre">${Object.keys(GENRES).filter(g=>g!==S.genre).map(g=>`<option>${g}</option>`).join('')}</select><button class="btn sm" data-a="fusion" data-v="go">Start fusion</button></div>`}</div>
+  </div></div>`}
+Object.assign(A,{
+  version:d=>{const sel=$('#ver-song');const s=sel&&S.songs.find(x=>x.id==sel.value);if(!s)return;const V={acoustic:{e:10,t:'Acoustic',dq:-4,m:.8},sped:{e:8,t:'Sped Up',dq:-6,m:1},feat:{e:20,t:'',dq:2,m:1.1},live:{e:10,t:'Live',dq:-2,m:.7}}[d.v];
+    if(S.songs.some(x=>x.versionOf===s.id&&x.vkind===d.v)){toast('You already made that version.');return}
+    let feat=null,fee=0;if(d.v==='feat'){const n=S.npcs.filter(n=>collabChance(n)>.3).sort((a,b)=>b.power-a.power)[0]||S.npcs[S.npcs.length-1];feat=n;fee=collabFee(n)}
+    if(!spend(V.e,fee))return;const v={id:S.nextId++,title:s.title+(feat?` (feat. ${feat.name})`:` (${V.t})`),theme:s.theme,tempo:s.tempo,inst:s.inst,q:clamp(s.q+V.dq,1,100),status:'released',rel:S.t,share:share(),streams:0,week:0,peak:null,mv:0,mvViews:0,mvWeek:0,album:null,versionOf:s.id,vkind:d.v,recv:'solid',recvM:V.m,debut:1,cover:s.cover};
+    if(feat){v.feat=feat.name;v.featPower=feat.power}
+    if(d.v==='sped'&&Math.random()<.35+S.skills.charisma/400){v.boost=2;s.boost=Math.max(s.boost||0,2);S.stats.virals++;log(`The sped-up "${s.title}" went viral on TokTune!`,'big')}
+    if(d.v==='acoustic')bump('loyalty',2);
+    S.songs.unshift(v);toast(`"${v.title}" is out.`)},
+  rollout:d=>{const R=S.rollout;if(R[d.v]){toast('Already set up for your next album.');return}const cost=Math.round(2000+S.fans*.01);
+    if(d.v==='presave'){if(S.money<cost){toast(`You need ${cash(cost)}.`);return}S.money-=cost}else if(!spend(d.v==='party'?15:10))return;R[d.v]=1;toast('Added to your next album rollout.')},
+  fusion:d=>{if(d.v==='go'){const g=($('#fus-g')||{}).value;if(!g)return;S.fusion=g;log(`New sound: ${S.genre} × ${g}.`,'good');toast(`Fusion on: ${S.genre} × ${g}.`)}else{S.fusion=null;toast('Back to your classic sound.')}}});
+{const _ra=A.releaseAlbum;A.releaseAlbum=function(d){const n=S.albums.length;const r=_ra(d);if(S.albums.length>n){const a=S.albums[S.albums.length-1],R=S.rollout;if(R.presave)a.recvM=(a.recvM||1)*1.25;if(R.party){S.hype=clamp(S.hype+15,0,100);bump('loyalty',3)}if(R.teaser){S.hype=clamp(S.hype+8,0,100);S.social.tube.f+=Math.round(S.fans*.01)}if(R.presave||R.party||R.teaser)toast('Your rollout plan kicked in.');S.rollout={}}return r}}
+{const _fm=fanMult;fanMult=function(){return _fm()*(S&&S.fusion?1.1:1)}}
+{const _ro3=releaseOutcome;releaseOutcome=function(q,kind,title){return _ro3(S.fusion?q+rnd(-6,10):q,kind,title)}}
+
+/* ---- 8. opening for a star, 9. tour bus life, 10. tour merch, 15. verified fan ---- */
+Object.assign(DRAMA,{
+  openFor:{t:'Support slot offer',b:x=>{const n=S.npcs.find(y=>y.name===x);return `<b>${esc(x)}</b> wants you to open their ${n&&n.power>2e7?'stadium':'arena'} tour for 3 weeks. Big crowds who have never heard of you.`},opts:[
+    {l:'Join the tour',cls:'pink',f:x=>{S.support={npc:x,left:3};UI.scene={k:'arena',pose:'perform',fill:1,cap:'Opening for '+x};return `You are on the road with ${x}. You will play to their fans for 3 weeks.`}},{l:'Pass',f:()=>'You passed. Maybe next time.'}]},
+  bus:{t:'On the road',b:x=>({brk:'The tour bus broke down in the middle of nowhere. The next show is tomorrow night.',guest:'A huge star is in town and wants to join you on stage tonight.',flight:'Your flight got canceled. The only way to make the show is a private jet.',fan:'A fan snuck backstage and is crying. Security is about to throw them out.',prank:'Your crew is planning a prank on the headliner. Do you join in?'})[x],opts:[
+    {l:'Option A',f:x=>({brk:(()=>{const c=8000;S.money-=c;return `You paid ${cash(c)} for a fast repair and made it on time.`})(),guest:(()=>{S.hype=clamp(S.hype+12,0,100);addFans(S.fans*.02);return 'The surprise duet is all over TokTune. Hype +12.'})(),flight:(()=>{const c=40000+S.level*20000;S.money-=c;bump('loyalty',2);return `Private jet: ${cash(c)}. The crowd went crazy when you walked out.`})(),fan:(()=>{bump('loyalty',4);if(Math.random()<.4){addFans(S.fans*.01);return 'You hugged them and took a photo. It went viral. Loyalty +4.'}return 'You made their year. Loyalty +4.'})(),prank:(()=>{S.happy=clamp(S.happy+6,0,100);S.members.forEach(m=>m.morale=clamp(m.morale+8,0,100));return 'Legendary prank. Everyone is still laughing.'})()})[x]},
+    {l:'Option B',f:x=>({brk:(()=>{S.fans-=S.fans*.005;return 'You rode in a rental van and showed up late. Some fans left.'})(),guest:'You kept it to your own set. Solid show.',flight:(()=>{S.fans-=S.fans*.01;imgAdj(-3);return 'You canceled the show. Fans were upset.'})(),fan:'Security walked them out. It felt bad.',prank:'You stayed professional.'})[x]}]}});
+{const _rt=runTour;runTour=function(T){const r=_rt(T);if(T&&T.id!=='busk'&&S.tourMerch){S.tourMerch.left--;if(S.tourMerch.left<=0)S.tourMerch=null}if(T&&T.id!=='busk'&&Math.random()<.6){const k=pick(['brk','guest','flight','fan','prank']);DRAMA.bus.opts[0].l={brk:'Pay for a fast repair',guest:'Bring them out!',flight:'Charter the jet',fan:'Invite them in',prank:'Join the prank'}[k];DRAMA.bus.opts[1].l={brk:'Rent a van',guest:'Keep it to your set',flight:'Cancel the show',fan:'Let security handle it',prank:'Stay professional'}[k];choice('bus',k)}return r}}
+const TMERCH=[{id:'tee',n:'Tour dates tee',c:3000,m:1.2,d:'Every city on the back.'},{id:'hoodie',n:'City-exclusive hoodies',c:12000,m:1.35,d:'Different for every stop.'},{id:'vinyl',n:'Signed tour vinyl',c:30000,m:1.6,d:'Limited and signed.'}];
+{const _ms=merchAtShow;merchAtShow=function(att){const r=_ms(att);if(S.tourMerch){r.total=Math.round(r.total*S.tourMerch.m)}return r}}
+function tourExtrasCard(){const M=S.tourMerch;return `<div class="section"><h2>Tour extras</h2><div class="grid">
+  <div class="card"><h3>Tour merch booth</h3><small class="muted">Design merch for your next 2 tours. Sells at every show on top of your store merch.</small>${M?`<span class="pill gold">${esc(M.n)} · ${M.left} tour${M.left>1?'s':''} left</span>`:TMERCH.map(t=>`<div class="between"><span><b>${t.n}</b><br><small class="muted">${t.d} Show merch ×${t.m}</small></span><button class="btn sm" data-a="tmerch" data-v="${t.id}">${cash(t.c)}</button></div>`).join('')}</div>
+  <div class="card"><h3>Verified Fan tickets</h3><small class="muted">Real fans get tickets first, not scalpers. Loyalty grows every week, and your image improves.</small><button class="chip ${S.verified?'on':''}" data-a="verified">${S.verified?'On':'Off'}</button></div>
+  ${S.support?`<div class="card"><h3>Opening for ${esc(S.support.npc)}</h3><small class="muted">${S.support.left} week${S.support.left>1?'s':''} left on their tour.</small></div>`:''}
+  </div></div>`}
+Object.assign(A,{tmerch:d=>{const t=TMERCH.find(x=>x.id===d.v);if(S.money<t.c){toast(`You need ${cash(t.c)}.`);return}S.money-=t.c;S.tourMerch={id:t.id,n:t.n,m:t.m,left:2};toast(`${t.n} ready for your next tours.`)},verified:()=>{S.verified=!S.verified;toast(S.verified?'Verified Fan is on.':'Verified Fan is off.')}});
+
+/* ---- 11. livestream Q&A, 12. paparazzi, 13. interview questions ---- */
+const QA_Q=['What was the hardest moment of your career so far?','Who is your celebrity crush?','When is the next album coming?','What do you think of {rival}?','Will you ever come to my city?','What song are you most proud of?'];
+Object.assign(DRAMA,{
+  qa:{t:'Live Q&A',b:x=>`A fan asks: <b>"${esc(QA_Q[x].replace('{rival}',(S.rivals[0]||{name:'your rivals'}).name))}"</b>`,opts:[
+    {l:'Be honest',f:()=>{bump('loyalty',3);imgAdj(2);return 'Fans loved how real you were. Loyalty +3.'}},
+    {l:'Make a joke',cls:'pink',f:()=>{if(Math.random()<.45+S.skills.charisma/250){const g=addFans(S.fans*.02+100);S.hype=clamp(S.hype+8,0,100);return `The clip went viral! +${fmt(g)} fans.`}return 'The joke fell flat, but people laughed politely.'}},
+    {l:'Dodge it',f:()=>{S.hype=clamp(S.hype+2,0,100);return 'Mysterious. Fans are making theories. Hype +2.'}}]},
+  interview:{t:'Tough question',b:x=>`The host leans in: <b>"${esc(['So, are the dating rumors true?','Some critics say your last song was weak. Thoughts?','What is your relationship with {rival} really like?','Do you ever miss being normal?'][x].replace('{rival}',(S.rivals[0]||{name:'the competition'}).name))}"</b>`,opts:[
+    {l:'Open up honestly',f:()=>{imgAdj(3);bump('loyalty',2);return 'Thoughtful answer. The clip is everywhere. Image +3.'}},
+    {l:'Charm and joke',cls:'pink',f:()=>{if(Math.random()<.5+S.skills.charisma/250){S.hype=clamp(S.hype+10,0,100);return 'You had the audience in tears laughing. Hype +10.'}imgAdj(-2);return 'It came off a bit awkward.'}},
+    {l:'Throw some shade',f:()=>{S.hype=clamp(S.hype+12,0,100);imgAdj(-4);const r=S.rivals[0];if(r)r.heat=clamp(r.heat+15,0,100);return 'Headlines everywhere. Hype +12, but your rival is furious.'}}]},
+  papa:{t:'Paparazzi',b:x=>{const p=S.people.find(q=>q.id===x);return `Photographers snapped you and <b>${esc(p?p.name:'someone')}</b> leaving a restaurant together. The internet wants answers.`},opts:[
+    {l:'Confirm it',cls:'pink',f:x=>{const p=S.people.find(q=>q.id===x);if(p){p.rel=clamp(p.rel+8,0,100);p.public=true}S.hype=clamp(S.hype+10,0,100);return 'You confirmed it. Fans are shipping you. Hype +10.'}},
+    {l:'Just friends',f:x=>{const p=S.people.find(q=>q.id===x);if(p&&['dating','engaged'].includes(p.kind))p.rel=clamp(p.rel-10,0,100);return 'You played it down. The story fizzled.'}},
+    {l:'No comment',f:()=>{S.hype=clamp(S.hype+5,0,100);return 'The mystery keeps people talking. Hype +5.'}}]}});
+A.liveQA=()=>{if(!spend(10))return;choice('qa',ri(0,QA_Q.length-1))};
+SCENE_ON.liveQA=()=>({k:'home1',cap:'Live Q&A',pose:'press'});
+{const _md=A.media;A.media=function(d){const e=S.energy;const r=_md(d);if(S.energy<e&&d.v!=='halftime'&&Math.random()<.6)choice('interview',ri(0,3));return r}}
+
+/* ---- 14. fan art ---- */
+const FA_POSES=['press','cheer','perform','dance','trophy','idle'];
+function fanArtWeek(){if(Math.random()<.5||S.fans<200)return;S.fanart.unshift({id:S.nextId++,pose:pick(FA_POSES),hue:ri(0,359),by:'@'+pick(HANDLES)+pick(HANDLE2)+ri(1,99),likes:ri(50,5000)*(1+S.level),liked:false,kind:pick(['Fan art','Edit','Sketch','Painting'])});S.fanart=S.fanart.slice(0,9)}
+function fanArtCard(){if(!S.fanart.length)return `<div class="card"><h3>Fan art</h3><small class="muted">Fans will start sending art and edits as you grow.</small></div>`;
+  return `<div class="card"><h3>Fan art & edits</h3><div class="fart">${S.fanart.map(f=>{let src='';try{src=G3.ok?snap(S.look,f.pose,{rot:.3}):''}catch(e){}return `<div class="fa"><div class="fa-img" style="background:linear-gradient(150deg,hsl(${f.hue} 70% 55%),hsl(${f.hue+90} 70% 25%))">${src?`<img src="${src}" alt="" style="filter:hue-rotate(${f.hue}deg) saturate(1.3)">`:''}<span>${esc(f.kind)}</span></div><small>${esc(f.by)}</small><button class="likebtn ${f.liked?'on':''}" data-a="faLike" data-id="${f.id}">♥ ${fmt(f.likes)}</button></div>`}).join('')}</div><small class="muted">Liking fan art raises loyalty.</small></div>`}
+A.faLike=d=>{const f=S.fanart.find(x=>x.id==d.id);if(!f||f.liked)return;f.liked=true;f.likes++;bump('loyalty',.5);toast('The artist is screaming. Loyalty up.')};
+{const _sx=socialExtras;socialExtras=function(){return _sx()+fanArtCard()}}
+
+/* ---- 16. band chemistry ---- */
+Object.assign(DRAMA,{
+  bandFight:{t:'Band fight',b:x=>{const [a,b]=x.split('|');return `<b>${esc(a)}</b> and <b>${esc(b)}</b> are arguing about the new songs. Practice stopped. Everyone is looking at you.`},opts:[
+    {l:'Side with the first',f:x=>{const [a,b]=x.split('|');S.members.forEach(m=>{if(m.name===a)m.morale=clamp(m.morale+10,0,100);if(m.name===b)m.morale=clamp(m.morale-15,0,100)});return `${a} is happy. ${b} is sulking.`}},
+    {l:'Side with the second',f:x=>{const [a,b]=x.split('|');S.members.forEach(m=>{if(m.name===b)m.morale=clamp(m.morale+10,0,100);if(m.name===a)m.morale=clamp(m.morale-15,0,100)});return `${b} is happy. ${a} is sulking.`}},
+    {l:'Call a band meeting',cls:'pink',f:()=>{if(!spend(10)){return 'You were too tired to mediate. It blew over, barely.'}S.members.forEach(m=>m.morale=clamp(m.morale+5,0,100));return 'Everyone said their piece. The band is closer for it.'}}]},
+  soloDream:{t:'Solo project',b:x=>`<b>${esc(x)}</b> wants to release a solo song on the side. They promise it will not get in the way.`,opts:[
+    {l:'Support them',cls:'pink',f:x=>{const m=S.members.find(y=>y.name===x);if(m){m.morale=clamp(m.morale+20,0,100);m.dream=false}if(Math.random()<.5){addFans(S.fans*.015);return `${x}'s solo song did well and brought new fans to the band.`}return `${x} is grateful. Their song did okay.`}},
+    {l:'Ask them to wait',f:x=>{const m=S.members.find(y=>y.name===x);if(m)m.morale=clamp(m.morale-18,0,100);return `${x} agreed, but they are not happy.`}}]}});
+function bandWeek(){if(S.members.length<2||Math.random()>.1)return;const dr=S.members.find(m=>m.dream&&m.morale>30);if(dr&&Math.random()<.4){choice('soloDream',dr.name);return}const hh=S.members.filter(m=>m.trait==='Hothead'||m.trait==='Perfectionist');const a=hh.length?pick(hh):pick(S.members);const b=pick(S.members.filter(m=>m!==a));choice('bandFight',a.name+'|'+b.name)}
+function bandCard(){if(!S.members.length)return '';const avg=Math.round(sum(S.members,m=>m.morale)/S.members.length);
+  return `<div class="section"><div class="between"><h2>Band room</h2><span class="${avg<40?'bad':avg>70?'good':''}">Chemistry ${avg}</span></div><div class="grid">${S.members.map(m=>`<div class="card"><div class="between"><h3>${esc(m.name)}</h3><span class="pill">${esc(m.role)}</span></div><small class="muted">${esc(m.trait)}${m.dream?' · dreams of going solo':''} · skill ${Math.round(m.skill)}</small><div><span class="label">Morale</span>${meter(m.morale,100,m.morale<30?'pink':'good')}</div></div>`).join('')}
+   <div class="card"><h3>Team bonding</h3><small class="muted">Band dinner: everyone's morale +10.</small><button class="btn sm" data-a="bandDinner">Dinner · ${cash(300+S.level*800)}</button></div></div></div>`}
+A.bandDinner=()=>{const c=300+S.level*800;if(S.money<c){toast(`You need ${cash(c)}.`);return}S.money-=c;S.members.forEach(m=>m.morale=clamp(m.morale+10,0,100));toast('Great night. Morale up for everyone.')};
+
+/* ---- 17. inner circle, 18. kids, 25. pets ---- */
+const BFF_TXT=[()=>S.stress>60?'you sound stressed. take a night off, please':'proud of you, seriously',()=>S.money<500?'want me to bring you groceries lol':'dinner on you this time 😂',()=>Object.values(S.habits||{}).some(v=>v>40)?'hey... I am worried about you. call me?':'saw you on my feed again!!',()=>S.rivals[0]&&S.rivals[0].heat>50?`ignore ${S.rivals[0].name}, they are jealous`:'remember when we sang in my garage?'];
+function circleWeek(){if(Math.random()<.45&&S.dsp){S.dsp.dms.unshift({id:S.nextId++,from:S.bff.name,kind:'person',text:pick(BFF_TXT)(),t:S.t})}
+  if(S.assistant){S.energy+=10}
+  S.people.forEach(p=>{if(p.role==='Child'&&p.born!=null){const age=yrs(S.t-p.born);if(age===18&&!p.adult){p.adult=1;log(`${p.name} turned 18. They could carry on your legacy one day.`,'good')}}});
+  if(S.pet){S.happy=clamp(S.happy+2,0,100);S.stress=clamp((S.stress||0)-1,0,100)}}
+const PETS=[['dog','🐶 Dog',800],['cat','🐱 Cat',600],['bunny','🐰 Bunny',300]];
+function circleCard(){const kids=S.people.filter(p=>p.role==='Child');
+  return `<div class="section"><h2>Inner circle</h2><div class="grid">
+  <div class="card"><h3>Best friend: ${esc(S.bff.name)}</h3><small class="muted">Your oldest friend. They text you advice and keep you grounded.</small>${meter(S.bff.rel)}<button class="btn sm" data-a="bffHang">Hang out · 10E</button></div>
+  <div class="card"><h3>Personal assistant</h3><small class="muted">Handles your schedule: +10 energy every week. ${cash(1000+S.level*600)} a week.</small><button class="btn sm ${S.assistant?'ghost':''}" data-a="assistant">${S.assistant?'Let them go':'Hire'}</button></div>
+  <div class="card"><h3>Pet</h3>${S.pet?`<p>${esc(S.pet.n)} the ${S.pet.type} lives with you. Happiness up every week, and they show up at home.</p>`:`<small class="muted">A pet makes you happier every week and appears in your home.</small><div class="row">${PETS.map(([id,n,c])=>`<button class="btn sm ghost" data-a="pet" data-v="${id}">${n} · ${cash(c)}</button>`).join('')}</div>`}</div>
+  ${kids.length?`<div class="card"><h3>Your kids</h3>${kids.map(k=>{const age=yrs(S.t-(k.born??S.t));return `<div class="between"><span><b>${esc(k.name)}</b> <small class="muted">age ${age}</small></span>${age>=6&&age<18?`<button class="btn sm ghost" data-a="kidStage" data-id="${k.id}">Bring on stage</button>`:age>=18?`<button class="btn sm ${S.heir===k.name?'':'ghost'}" data-a="heir" data-id="${k.id}">${S.heir===k.name?'Your heir':'Make heir'}</button>`:'<small class="muted">little one</small>'}</div>`}).join('')}</div>`:''}
+  </div></div>`}
+Object.assign(A,{
+  bffHang:()=>{if(!spend(10))return;S.bff.rel=clamp(S.bff.rel+8,0,100);S.happy=clamp(S.happy+6,0,100);S.stress=clamp((S.stress||0)-8,0,100);toast(`You and ${S.bff.name} laughed for hours. Stress down.`)},
+  assistant:()=>{S.assistant=!S.assistant;toast(S.assistant?'Assistant hired. +10 energy each week.':'Assistant let go.')},
+  pet:d=>{const p=PETS.find(x=>x[0]===d.v);if(S.money<p[2]){toast(`You need ${cash(p[2])}.`);return}S.money-=p[2];S.pet={type:p[0],n:pick({dog:['Biscuit','Rex','Mochi','Bear'],cat:['Luna','Miso','Tofu','Salem'],bunny:['Clover','Bun','Pip','Daisy']}[p[0]])};S.happy=clamp(S.happy+10,0,100);toast(`Welcome home, ${S.pet.n}!`)},
+  kidStage:d=>{const k=S.people.find(p=>p.id==d.id);if(!k)return;if((k.stageAt||-99)>S.t-26){toast(`${k.name} was on stage recently.`);return}if(!spend(10))return;k.stageAt=S.t;k.rel=clamp(k.rel+10,0,100);addFans(S.fans*.01);imgAdj(3);toast(`${k.name} sang with you on stage. The crowd melted.`)},
+  heir:d=>{const k=S.people.find(p=>p.id==d.id);if(k){S.heir=k.name;toast(`${k.name} will carry on your legacy.`)}}});
+SCENE_ON.bffHang=()=>({k:'home1',cap:'With your best friend',pose:'cheer'});SCENE_ON.kidStage=()=>({k:'arena',cap:'Family moment',pose:'cheer',fill:1});
+{const _fa=A.family;A.family=function(d){const n=S.people.length;const r=_fa(d);if(S.people.length>n)S.people[S.people.length-1].born=S.t;return r}}
+{const _lg=A.legacy;if(_lg)A.legacy=function(d){const h=S&&S.heir;const r=_lg(d);if(h&&UI.draft)UI.draft.name=h;return r}}
+
+/* ---- 19. home decor & trophies in 3D, pets ---- */
+function decorCard(){const D=S.decor;return `<div class="card"><h3>Home decor</h3><small class="muted">Your plaques and trophies hang at home automatically. Make the place yours.</small>
+  <label class="field"><span class="label">Neon sign</span><input type="text" id="neon-t" maxlength="14" value="${esc(D.neon)}" placeholder="e.g. DREAM BIG"></label>
+  <span class="label">Rug</span><div class="sws">${['#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6','#f4f4f5','#111827'].map(c=>`<button class="sw ${D.rug===c?'on':''}" style="background:${c}" data-a="decor" data-k="rug" data-v="${c}" aria-label="Rug ${c}"></button>`).join('')}</div>
+  <div class="row"><button class="chip ${D.plants?'on':''}" data-a="decor" data-k="plants">Plants</button><button class="btn sm" data-a="decor" data-k="neon">Save sign</button><button class="btn sm ghost" data-a="goHome">See it</button></div></div>`}
+Object.assign(A,{decor:d=>{const D=S.decor;if(d.k==='rug')D.rug=d.v;else if(d.k==='plants')D.plants=!D.plants;else D.neon=(($('#neon-t')||{}).value||'').toUpperCase().slice(0,14);G3.sig=''},goHome:()=>{UI.scene=null;G3.sig='';window.scrollTo(0,0)}});
+function trophyCount(){return S.stats.awards.length+S.albums.filter(a=>cert(a.sales)).length+S.songs.filter(s=>s.peak===1).length}
+function dressHome(g,c,wallZ){try{const D=S.decor;
+  const rug=add(g,new THREE.CircleGeometry(1.25,28),M(D.rug,{flatShading:false}),0,.013,.15);rug.rotation.x=-Math.PI/2;
+  if(D.neon){add(g,PL(1.9,.42),MB('#fff',{map:TX.text(D.neon,{w:512,h:112,bg:'#1a0b22',col:'#ff7ae0',size:60})}),1.55,1.42,wallZ+.13);const l=new THREE.PointLight('#ff7ae0',.7,4);l.position.set(1.55,1.45,wallZ+.7);g.add(l)}
+  if(D.plants)for(const x of[-2.5,c.cx+.9]){add(g,CY(.16,.12,.3,10),M('#c2410c'),x,.15,-1.6);for(let i=0;i<6;i++){const lf=add(g,new THREE.ConeGeometry(.07,.55,4),M('#15803d'),x+Math.sin(i)*.08,.55,-1.6+Math.cos(i)*.08);lf.rotation.set(Math.sin(i*2)*.5,0,Math.cos(i*2)*.5)}}
+  const n=Math.min(8,trophyCount());const gold=M('#ffc83d',{metalness:.7,roughness:.3}),plat=M('#dfe6f0',{metalness:.8,roughness:.25}),frame=M('#1b1622');
+  const certs=S.albums.filter(a=>cert(a.sales));
+  for(let i=0;i<n;i++){const x=.85+(i%4)*.5,y=2.5-Math.floor(i/4)*.56;add(g,BX(.46,.52,.04),frame,x,y,wallZ+.13);const isP=i<certs.length&&/Plat|Diamond/.test(cert(certs[i].sales));const disc=add(g,CY(.17,.17,.02,24),isP?plat:gold,x,y+.05,wallZ+.16);disc.rotation.x=Math.PI/2}
+  if(S.stats.awards.length){add(g,BX(1.3,.06,.3),frame,1.6,.95,wallZ+.18);S.stats.awards.slice(0,4).forEach((a,i)=>{add(g,CY(.04,.06,.12,8),gold,1.15+i*.3,1.04,wallZ+.18);add(g,SP(.065,10,8),gold,1.15+i*.3,1.16,wallZ+.18)})}
+  if(S.pet){const p=new THREE.Group();p.position.set(.75,0,.6);p.rotation.y=-.6;g.add(p);const col={dog:'#b07a45',cat:'#f2a65a',bunny:'#f4f4f5'}[S.pet.type];const mm=M(col,{flatShading:false});
+    if(S.pet.type==='bunny'){add(p,SP(.13,10,8),mm,0,.13,0);add(p,SP(.09,10,8),mm,0,.27,.08);for(const s of[-1,1]){const e=add(p,SP(.03,6,5),mm,s*.04,.4,.07);e.scale.set(1,3.2,1)}}
+    else{const b=add(p,SP(.15,10,8),mm,0,.2,0);b.scale.set(1,.8,1.5);add(p,SP(.11,10,8),mm,0,.32,.2);for(const s of[-1,1]){add(p,S.pet.type==='cat'?new THREE.ConeGeometry(.04,.09,4):SP(.045,6,5),mm,s*.06,S.pet.type==='cat'?.43:.4,.19)}for(const [x,z] of[[-.07,-.12],[.07,-.12],[-.07,.12],[.07,.12]])add(p,CY(.03,.03,.12,6),mm,x,.06,z);const t=add(p,CY(.02,.015,.22,6),mm,0,.28,-.22);t.rotation.x=-.8}
+    G3.anim.spin.push({o:p,ax:'y',v:0})}
+}catch(e){}}
+for(const k of['home1','home2','home3']){const _e=ENV[k];ENV[k]=function(c,sc){_e.call(this,c,sc);if(k==='home3'){add(c.w,BX(2.4,2.2,.08),M('#1b1622'),1.6,2.2,-3.05);dressHome(c.w,c,-3.05)}else dressHome(c.w,c,-3.5)}}
+{const _ms2=stage3dMount;stage3dMount=function(){const sc=curScene();if(sc&&/^home/.test(sc.k)){const sig=JSON.stringify([S.decor,S.pet,trophyCount()]);if(G3._dsig!==sig){G3._dsig=sig;G3.sig=''}}return _ms2()}}
+
+/* ---- 21. publishing & sync, 22. investments ---- */
+const SYNC=[['a movie trailer',2.2],['a hit TV drama',1.6],['a sneaker ad',1.2],['a video game soundtrack',1.4],['a sports highlight reel',1.1]];
+function syncWeek(r){const rel=S.songs.filter(s=>s.status==='released');if(!rel.length||S.catalogSold)return;const ch=.04*(S.syncPitch>0?3:1)*(1+S.level/8);if(S.syncPitch>0)S.syncPitch--;
+  if(Math.random()<ch){const s=pick(rel.slice(0,20)),[w,m]=pick(SYNC);const fee=Math.round((3000+S.fans*.03)*m*(s.q/70));S.money+=fee;s.boost=Math.max(s.boost||0,1);r.inc['Sync licensing']=(r.inc['Sync licensing']||0)+fee;const t=`"${s.title}" was placed in ${w}. ${cash(fee)} fee and a streaming bump.`;log(t,'good');r.ev.push(t)}}
+function catalogValue(){return Math.round(sum(S.songs.filter(s=>s.status==='released'),s=>s.streams*.004*(s.share??share())*4+s.week*.004*52*3)+sum(S.albums,a=>a.sales*2))}
+const INV=[{id:'studio',n:'Your own recording studio',c:2e6,lv:4,d:'Record at your own studio for free with the best quality bonus.'},{id:'venue',n:'Your own music venue',c:5e6,lv:5,d:'Weekly income from other artists playing your room.'},{id:'festival',n:'Your own festival',c:1.5e7,lv:7,d:'Host a festival every July. Huge payday and fans.'}];
+function addOwnStudio(){if(STUDIOS.some(x=>x.id==='own'))return;STUDIOS.push({id:'own',name:'Your own studio',cost:0,bonus:16});LVL_STUDIO.own=0}
+function pubCard(){const v=catalogValue();return `<div class="section"><h2>Publishing & investments</h2><div class="grid">
+  <div class="card"><h3>Publishing & sync</h3><small class="muted">Music supervisors place songs in movies, shows, ads and games. Each placement pays a fee and boosts streams.</small>${S.catalogSold?'<span class="pill">Catalog sold</span>':`<div class="row"><button class="btn sm" data-a="syncPitch">Pitch your catalog · 15E</button>${S.syncPitch?`<span class="pill gold">Pitching · ${S.syncPitch} wk</span>`:''}</div><div class="between"><span>Catalog value</span><b class="num">${cash(v)}</b></div><button class="btn sm ghost" data-a="sellCatalog" ${v<1e5?'disabled':''}>Sell your catalog</button><small class="muted">Selling pays a lump sum now, but you keep only a small share of future streams.</small>`}</div>
+  ${INV.map(i=>{const own=S.invest[i.id];return `<div class="card"><h3>${esc(i.n)}</h3><small class="muted">${esc(i.d)}</small>${own?'<span class="pill good">Owned</span>':`<button class="btn sm" data-a="invest" data-v="${i.id}" ${S.level<i.lv?'disabled':''}>${S.level<i.lv?lockTxt(i.lv):'Buy · '+cash(i.c)}</button>`}</div>`}).join('')}
+  </div></div>`}
+Object.assign(A,{
+  syncPitch:()=>{if(!spend(15))return;S.syncPitch=4;toast('Your catalog is out to music supervisors for 4 weeks.')},
+  sellCatalog:()=>{const v=catalogValue();if(!confirm(`Sell your catalog for ${cash(v)}? You keep only 10% of future streaming royalties on these songs.`))return false;S.money+=v;S.catalogSold=true;S.songs.forEach(s=>{if(s.status==='released')s.share=(s.share??share())*.1});log(`You sold your catalog for ${cash(v)}.`,'big')},
+  invest:d=>{const i=INV.find(x=>x.id===d.v);if(S.level<i.lv)return;if(S.money<i.c){toast(`You need ${cash(i.c)}.`);return}S.money-=i.c;S.invest[i.id]=S.t;if(i.id==='studio'){addOwnStudio();UI.studio='own'}log(`You bought ${i.n.toLowerCase()}.`,'big');confetti()}});
+function investWeek(r){if(S.invest.venue){const p=Math.round(25000+S.fans*.002);S.money+=p;r.inc['Your venue']=(r.inc['Your venue']||0)+p}
+  if(S.invest.festival&&curMonth()===6&&gameDate().getDate()<=7&&S.festYear!==year()){S.festYear=year();const p=Math.round(5e6+S.fans*.2),g=addFans(S.fans*.04);S.money+=p;r.inc['Your festival']=(r.inc['Your festival']||0)+p;const lineup=S.npcs.slice(0,3).map(n=>n.name).join(', ');log(`${S.stage} Fest sold out! Lineup: you, ${lineup}. ${cash(p)} and +${fmt(g)} fans.`,'big');openModal(`${S.stage} Fest`,`<p>Your festival sold out. You headlined, with ${esc(lineup)} on the bill.</p><div class="kv"><div><span class="label">Profit</span><b>${cash(p)}</b></div><div><span class="label">New fans</span><b>${fmt(g)}</b></div></div><button class="btn" data-a="closeModal">Best weekend ever</button>`);UI.scene={k:'festival',cap:S.stage+' Fest',pose:'perform',fill:1}}}
+
+/* ---- 23. career modes ---- */
+const MODES=[['normal','Classic','The standard career.'],['rags','Rags to riches','No money, no fans. Fans grow 15% faster.'],['nepo','Nepo baby','Famous parent: $250K and 20K fans, but critics are harsher and some people hate you.'],['comeback','One-hit wonder','You had one huge hit 10 years ago. Can you prove you are more?'],['timed','Superstar challenge','Reach Superstar (Level 8) within 8 years.']];
+{const _sv=setupView;setupView=function(){const d=UI.draft,m=d.mode||'normal';return _sv().replace('<section class="card"><div class="between"><h2>1. Who are you</h2>',`<section class="card"><h2>Career mode</h2><div class="choices">${MODES.map(([id,n,ds])=>`<button class="choice ${m===id?'on':''}" data-a="pickMode" data-v="${id}"><b>${n}</b><small>${ds}</small></button>`).join('')}</div></section><section class="card"><div class="between"><h2>1. Who are you</h2>`)}}
+A.pickMode=d=>{UI.draft.mode=d.v;UI.draft.name=$('#f-name')?.value??UI.draft.name;UI.draft.stage=$('#f-stage')?.value??UI.draft.stage;UI.draft.fandom=$('#f-fandom')?.value??UI.draft.fandom};
+{const _ng=newGame;newGame=function(d){const r=_ng(d);const m=(d&&d.mode)||'normal';S.mode=m;
+  if(m==='rags'){S.money=0;S.fans=0;Object.values(S.social).forEach(a=>a.f=Math.round(a.f*.2))}
+  if(m==='nepo'){S.money+=250000;S.fans+=20000;S.hype=40;S.image=45;S.nepo=1;Object.values(S.social).forEach(a=>a.f+=8000)}
+  if(m==='comeback'){S.age+=10;S.fans+=80000;const s={id:S.nextId++,title:pick(['Summer Again','That Song','Number One Fan','Neon Heart']),theme:'Love',tempo:'Uptempo',inst:'Synth',q:72,status:'released',rel:-500,share:1,streams:4e8,week:0,peak:1,mv:60,mvViews:2e8,mvWeek:0,album:null,recv:'smash',recvM:1,debut:1};S.songs.unshift(s);S.stats.ones=1;S.stats.hits=1;if(ERAS.onehit)S.era={id:'onehit',t:S.t,prog:{}}}
+  if(m==='timed')S.deadline=S.t+52*8;
+  return r}}
+{const _fm2=fanMult;fanMult=function(){return _fm2()*(S&&S.mode==='rags'?1.15:1)}}
+{const _ro4=releaseOutcome;releaseOutcome=function(q,kind,title){return _ro4(S.nepo?q-4:q,kind,title)}}
+function modeWeek(){if(S.mode==='timed'&&!S.timedDone){if(S.level>=7){S.timedDone='won';openModal('Challenge complete!',`<p>You reached Superstar in ${yrs(S.t)} years. Legendary.</p><button class="btn" data-a="closeModal">Yes!</button>`);confetti(160)}else if(S.t>=S.deadline){S.timedDone='lost';openModal('Time is up',`<p>Eight years passed and you reached ${LEVELS[S.level].n}. You can keep playing, but the challenge is over.</p><button class="btn" data-a="closeModal">Keep going</button>`)}}}
+
+/* ---- 24. exclusive outfits from challenges ---- */
+ITEMS.push({id:'champjacket',slot:'top',n:'Champion jacket',price:0,style:9,c:'#d4a017',long:1,open:'#111',excl:1},{id:'starsuit',slot:'top',n:'Starlight top',price:0,style:10,c:'#1e1b4b',spark:'#ffffff',excl:1},{id:'chromepants',slot:'bottom',n:'Chrome pants',price:0,style:8,c:'#c0c4cc',shine:1,excl:1},{id:'neonkicks',slot:'shoes',n:'Neon kicks',price:0,style:7,c:'#22d3ee',accent:1,excl:1},{id:'glasses',slot:'acc',n:'Round glasses',price:120,style:3},{id:'cateye',slot:'acc',n:'Cat-eye sunglasses',price:600,style:5});
+ITEMS.forEach(i=>ITEM[i.id]=i);
+const EXCL=['neonkicks','chromepants','champjacket','starsuit'];
+{const _gw=goalsWeek;goalsWeek=function(r){const before=S.goals.slice();_gw(r);const done=before.filter(g=>!S.goals.includes(g)&&GOALT[g.type]&&GOALT[g.type].m()-g.base>=g.n).length;if(done){S.chalDone+=done;const next=EXCL.find(id=>!S.wardrobe.includes(id));if(next&&S.chalDone>=3*(EXCL.indexOf(next)+1)){S.wardrobe.push(next);openModal('Exclusive outfit unlocked',`<p>You completed ${S.chalDone} challenges and earned the <b>${esc(ITEM[next].n)}</b>. It is only available through challenges.</p><button class="btn" data-a="tab" data-v="style">Wear it</button>`)}}}}
+function exclNote(){const next=EXCL.find(id=>!S.wardrobe.includes(id));return next?`<small class="muted">Exclusive reward: <b>${esc(ITEM[next].n)}</b> at ${3*(EXCL.indexOf(next)+1)} completed challenges (${S.chalDone} done).</small>`:'<small class="good">You own every exclusive outfit.</small>'}
+{const _gc=goalsCard;goalsCard=function(){return _gc().replace(/<\/div><\/div>$/,exclNote()+'</div></div>')}}
+
+/* ---- 25. new hairstyles, makeup, tattoos, glasses ---- */
+HAIRS.splice(HAIRS.length-1,0,['braids','Braids'],['locs','Locs'],['pigtails','Pigtails'],['wolf','Wolf cut']);
+{const _hb=hairBuild;hairBuild=function(h,m,hs){const A2=(geo,x,y,z,rx=0,ry=0,rz=0)=>{const k=add(hs,geo,m,x,y,z);k.rotation.set(rx,ry,rz);return k};
+  if(h==='braids'){_hb('short',m,hs);for(const s of[-1,1])for(let i=0;i<7;i++)A2(new THREE.IcosahedronGeometry(.085-i*.004,0),s*.3,-.05-i*.12,-.12+i*.01);return}
+  if(h==='pigtails'){_hb('short',m,hs);for(const s of[-1,1]){A2(new THREE.ConeGeometry(.13,.55,6),s*.47,-.05,-.12,Math.PI,0,s*.35);A2(new THREE.TorusGeometry(.05,.02,5,8),s*.4,.15,-.12,0,Math.PI/2,0)}return}
+  if(h==='locs'){_hb('buzz',m,hs);for(let i=0;i<22;i++){const a=Math.PI*.25+i/21*Math.PI*1.5,r=.37;A2(new THREE.CylinderGeometry(.03,.025,.7,5),Math.sin(a)*r,-.18,Math.cos(a)*r-.02,Math.cos(a)*.12,0,-Math.sin(a)*.12)}for(let i=0;i<6;i++)A2(new THREE.CylinderGeometry(.03,.025,.22,5),-.2+i*.08,.25,.31,-.6,0,0);return}
+  if(h==='wolf'){_hb('bob',m,hs);for(let i=0;i<14;i++){const a=i/14*Math.PI*2;A2(new THREE.ConeGeometry(.08,.3,4),Math.sin(a)*.36,.18,Math.cos(a)*.34-.03,Math.cos(a)*.9-Math.PI*.1,a,0)}return}
+  return _hb(h,m,hs)}}
+{const _ab2=accBuild;accBuild=function(id,hs,gold){if(id==='glasses'||id==='cateye'){const fr=MT(id==='glasses'?'#2a2a2a':'#111',{shininess:60});for(const s of[-1,1]){const r=add(hs,new THREE.TorusGeometry(.085,.012,6,18),fr,s*.12,-.01,.355);r.rotation.y=s*.25;if(id==='cateye'){r.scale.set(1.15,.8,1);const l=add(hs,new THREE.CircleGeometry(.08,16),MT('#111',{transparent:true,opacity:.75}),s*.12,-.01,.352);l.rotation.y=s*.25;l.scale.set(1.15,.8,1)}}add(hs,BX(.08,.012,.012),fr,0,.0,.37);return}return _ab2(id,hs,gold)}}
+const MAKEUP=[['none','None'],['natural','Natural'],['glam','Glam'],['goth','Goth'],['pop','Pop star']],TATS=[['none','None'],['sleeve','Sleeve'],['star','Stars'],['rose','Rose']];
+function drawMakeup(x,mk){if(!mk||mk==='none')return;const C={natural:['#c98b7a','#c2566a'],glam:['#a35bd1','#d1135f'],goth:['#1b1020','#3a0a1a'],pop:['#ff4fa3','#ff2d6f']}[mk];if(!C)return;
+  x.save();x.globalAlpha=mk==='goth'?.55:.38;x.fillStyle=C[0];for(const cx of[86,170]){x.beginPath();x.ellipse(cx,100,32,14,0,0,7);x.fill()}x.restore();
+  x.save();x.globalCompositeOperation='multiply';x.globalAlpha=.85;x.fillStyle=C[1];x.beginPath();x.ellipse(128,216,22,13,0,0,7);x.fill();x.restore()}
+{const _fmat=faceMat;faceMat=function(L,expr){if(!L||!L.makeup||L.makeup==='none')return _fmat(L,expr);const e=expr===true?'sing':(expr||'smile');const key='mk|'+L.makeup+'|'+[L.skin,L.hairColor,L.eyes,L.hair==='bald',e].join('|');if(FACE.has(key))return FACE.get(key);
+  const sk=SKINS[L.skin]??SKINS[2],hc=HAIRC[L.hairColor]??HAIRC[0],ec=EYEC[L.eyes||0]||EYEC[0];const t=ctex(256,256,x=>{drawFace(x,sk,hc,ec,L.hair==='bald',e);drawMakeup(x,L.makeup)});const m=_fmat(L,expr).clone();m.map=t;m.userData.keep=true;FACE.set(key,m);return m}}
+{const _cb=charBuild;charBuild=function(L,pose,o){const c=_cb(L,pose,o);try{if(L&&L.tattoo&&L.tattoo!=='none'){const T=ITEM[L.top]||ITEM.tee;if(!T.long){const ink=MT('#1f2a44',{transparent:true,opacity:.6});const arms=L.tattoo==='sleeve'?[c.AL,c.AR]:[c.AR];arms.forEach(a=>{const band=add(a.el,new THREE.CylinderGeometry(.052,.046,L.tattoo==='sleeve'?.24:.08,10,1,true),ink,0,-.15,0);if(L.tattoo!=='sleeve'){band.scale.set(1.02,1,1.02)}})}}}catch(e){}return c}}
+function extrasCard(){const L=S.look;return `<div class="section"><h2>Makeup & tattoos</h2><div class="card">
+  <span class="label">Makeup</span><div class="chips">${MAKEUP.map(([v,n])=>`<button class="chip ${(L.makeup||'none')===v?'on':''}" data-a="lookX" data-k="makeup" data-v="${v}">${n}</button>`).join('')}</div>
+  <span class="label">Tattoos</span><div class="chips">${TATS.map(([v,n])=>`<button class="chip ${(L.tattoo||'none')===v?'on':''}" data-a="lookX" data-k="tattoo" data-v="${v}">${n}</button>`).join('')}</div><small class="muted">Tattoos show with short sleeves. New hairstyles (braids, locs, pigtails, wolf cut) and glasses are in the Style options and Boutique.</small></div></div>`}
+A.lookX=d=>{S.look[d.k]=d.v;G3.sig='';if(typeof SNAPS!=='undefined')SNAPS.clear()};
+
+/* ---- 26. music & crowd sounds ---- */
+let NOISE=null;function noiseBuf(c){if(NOISE)return NOISE;NOISE=c.createBuffer(1,c.sampleRate*1.5,c.sampleRate);const d=NOISE.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return NOISE}
+function drum(kind,t0,vol=.25){const c=ac();if(!c)return;const t=c.currentTime+t0;if(kind==='kick'){const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(42,t+.18);g.gain.setValueAtTime(vol*1.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g).connect(c.destination);o.start(t);o.stop(t+.32);return}
+  const s=c.createBufferSource();s.buffer=noiseBuf(c);const f=c.createBiquadFilter(),g=c.createGain();f.type=kind==='hat'?'highpass':'bandpass';f.frequency.value=kind==='hat'?7000:1800;const d=kind==='hat'?.05:kind==='clap'?.12:.16;g.gain.setValueAtTime(vol*(kind==='hat'?.35:.8),t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f).connect(g).connect(c.destination);s.start(t);s.stop(t+d+.02)}
+function crowdSfx(sec=2.2,vol=.18){const c=ac();if(!c||S.settings.sfx===false)return;const t=c.currentTime,s=c.createBufferSource();s.buffer=noiseBuf(c);s.loop=true;const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=900;f.Q.value=.6;const g=c.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.25);g.gain.linearRampToValueAtTime(vol*.7,t+sec*.6);g.gain.linearRampToValueAtTime(0,t+sec);s.connect(f).connect(g).connect(c.destination);s.start(t);s.stop(t+sec+.1);for(let i=0;i<10;i++)drum('clap',.3+Math.random()*sec*.7,.12)}
+const GSTYLE={'Hip-Hop':{bpm:88,wave:'square',kick:[0,3,6,10],snare:[4,12],hat:16,bass:'sine'},'Rock':{bpm:126,wave:'sawtooth',kick:[0,8,10],snare:[4,12],hat:8,bass:'sawtooth'},'EDM':{bpm:126,wave:'sawtooth',kick:[0,4,8,12],snare:[4,12],hat:8,bass:'sawtooth'},'Country':{bpm:104,wave:'triangle',kick:[0,8],snare:[4,12],hat:8,bass:'triangle'},'R&B':{bpm:76,wave:'sine',kick:[0,7,10],snare:[4,12],hat:8,bass:'sine'},'Latin':{bpm:96,wave:'triangle',kick:[0,4,8,12],snare:[3,6,11,14],hat:8,bass:'sine'},'K-Pop':{bpm:120,wave:'square',kick:[0,4,8,12],snare:[4,12],hat:16,bass:'square'},'Pop':{bpm:116,wave:'triangle',kick:[0,4,8,12],snare:[4,12],hat:8,bass:'triangle'},'Indie':{bpm:110,wave:'triangle',kick:[0,8],snare:[4,12],hat:8,bass:'triangle'}};
+function playSong2(s){const c=ac();if(!c){toast('Sound is not available in this browser.');return}const G=GSTYLE[S.genre]||GSTYLE.Pop;const bpm=s.tempo==='Ballad'?Math.min(G.bpm,80):s.tempo==='Uptempo'?Math.max(G.bpm,118):G.bpm,st=60/bpm/4;
+  const minor=['Heartbreak','Nostalgia','Rebellion'].includes(s.theme),sc=minor?[0,2,3,5,7,8,10,12]:[0,2,4,5,7,9,11,12],prog=minor?[0,5,3,4]:[0,4,5,3];let seed=(s.id||1)*97+13;const r=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  const wave={Synth:'sawtooth','808s':'square',Guitar:'triangle',Piano:'triangle',Strings:'sine',Brass:'sawtooth'}[s.inst]||G.wave;const mel=Array.from({length:16},()=>r()<.7?sc[Math.floor(r()*8)]:null);
+  for(let bar=0;bar<4;bar++){const root=sc[prog[bar]%8];for(const n of[0,minor?3:4,7])tone(NOTE(root+n),bar*16*st,16*st*.95,'sine',.035);tone(NOTE(root-24),bar*16*st,4*st,G.bass,.12);tone(NOTE(root-24),bar*16*st+8*st,4*st,G.bass,.1);
+    for(let i=0;i<16;i++){const t=(bar*16+i)*st;if(G.kick.includes(i))drum('kick',t,.28);if(G.snare.includes(i))drum(S.genre==='Hip-Hop'?'clap':'snare',t,.22);if(i%(16/G.hat)===0)drum('hat',t,.18);if(mel[i]!=null&&i%2===0)tone(NOTE(root+mel[i]+12),t,st*2.2,wave,.06)}}
+  toast(`Playing a preview of "${s.title}"`)}
+playSong=playSong2;
+let BGM=null;function bgmTick(){const c=ac();if(!c||!S||!S.settings.bgm||document.hidden)return;const prog=[[0,4,7],[9,12,16],[5,9,12],[7,11,14]];const ch=prog[BGM.i++%4];ch.forEach(n=>tone(NOTE(n-12),0,3.8,'sine',.018));tone(NOTE(ch[0]-24),0,3.6,'triangle',.025)}
+function bgmSet(on){S.settings.bgm=on;if(on&&!BGM){BGM={i:0,iv:setInterval(bgmTick,4000)};bgmTick()}if(!on&&BGM){clearInterval(BGM.iv);BGM=null}}
+A.bgm=()=>{bgmSet(!S.settings.bgm);toast(S.settings.bgm?'Background music on.':'Background music off.')};
+document.addEventListener('click',()=>{if(S&&S.settings.bgm&&!BGM)bgmSet(true)},{once:false,capture:true});
+{const _gg=A.gig;A.gig=function(d){const e=S.energy;const r=_gg(d);if(S.energy<e&&d.v!=='openmic')crowdSfx(2.4,.16);return r}}
+{const _tt=A.tour;A.tour=function(d){const r=_tt(d);crowdSfx(3,.2);return r}}
+{const _dc=diffCard;diffCard=function(){return _dc()+`<div class="card" style="margin-bottom:16px"><div class="between"><h3>Music</h3><button class="chip ${S.settings.bgm?'on':''}" data-a="bgm">${S.settings.bgm?'Background music on':'Background music off'}</button></div><small class="muted">A soft soundtrack while you play. Song previews now have drums, bass and chords in your genre's style, and big shows have crowd noise.</small></div>`}}
+
+/* ---- 27. red carpet ---- */
+function carpetLooks(){const own=sl=>ITEMS.filter(i=>i.slot===sl&&S.wardrobe.includes(i.id));const L=[];for(let k=0;k<3;k++){const t=pick(own('top')),b=pick(own('bottom')),sh=pick(own('shoes')),a=pick(own('acc'));L.push(Object.assign({},S.look,{top:t?t.id:S.look.top,bottom:b?b.id:S.look.bottom,shoes:sh?sh.id:S.look.shoes,acc:a?a.id:S.look.acc}))}return L}
+function lookStyle(L){return sum(['top','bottom','shoes','acc'],k=>(ITEM[L[k]]||{style:0}).style||0)}
+function redCarpet(){if(S.level<3||S.carpetY===year())return;S.carpetY=year();UI.carpet=carpetLooks();
+  openModal('Red carpet',`<p>The Golden Mic Awards are next week. Pick your red carpet look.</p><div class="carpet">${UI.carpet.map((L,i)=>{let src='';try{src=G3.ok?snap(L,'press',{rot:.2}):''}catch(e){}return `<button class="choice" data-a="carpetPick" data-v="${i}">${src?`<img src="${src}" alt="Look ${i+1}">`:''}<b>Look ${i+1}</b><small>Style ${lookStyle(L)}</small></button>`}).join('')}</div><button class="btn ghost sm" data-a="carpetPick" data-v="-1">Wear what I have on</button>`)}
+A.carpetPick=d=>{const i=+d.v;if(i>=0&&UI.carpet&&UI.carpet[i])Object.assign(S.look,UI.carpet[i]);UI.modal=UI.queue.shift()||null;G3.sig='';const st=lookStyle(S.look);UI.scene={k:'press',cap:'Red carpet',pose:'press'};
+  if(Math.random()<st/30){S.hype=clamp(S.hype+15,0,100);addFans(S.fans*.02);imgAdj(4);openModal('Best dressed!',`<p>Fashion sites put you at the top of the best-dressed list. Hype +15.</p><button class="btn" data-a="closeModal">Iconic</button>`);confetti()}else{S.hype=clamp(S.hype+5,0,100);toast('Cameras flashed all night. Hype +5.')}};
+
+/* ---- weekly hook and sections ---- */
+{const _xw=extraWeek;extraWeek=function(r){_xw(r);try{
+  if(S.support){const n=S.npcs.find(x=>x.name===S.support.npc);const g=addFans((n?n.power:1e6)*.0015+S.fans*.01);const p=Math.round(2000+S.level*3000);S.money+=p;r.inc['Support slot']=(r.inc['Support slot']||0)+p;r.ev.push(`Opening for ${S.support.npc}: +${fmt(g)} fans`);if(--S.support.left<=0){log(`Your run opening for ${S.support.npc} wrapped.`,'good');S.support=null}}
+  else if(S.level>=2&&S.level<=5&&Math.random()<.05){const n=pick(S.npcs.slice(0,10));choice('openFor',n.name)}
+  if(S.verified){bump('loyalty',.4);imgAdj(.3)}
+  if(S.assistant){const c=1000+S.level*600;S.money-=c;r.exp['Assistant']=(r.exp['Assistant']||0)+c}
+  const crush=S.people.find(p=>['crush','dating'].includes(p.kind)&&!p.public);if(crush&&S.level>=3&&Math.random()<.05)choice('papa',crush.id);
+  fanArtWeek();bandWeek();circleWeek();syncWeek(r);investWeek(r);modeWeek();
+  if(wkOfYear()===51)redCarpet();
+}catch(e){console.error(e)}}}
+{const _se2=studioExtras;studioExtras=function(){return _se2()+versionsCard()}}
+{const _le2=liveExtras;liveExtras=function(){return _le2()+tourExtrasCard()}}
+{const _pe2=personalExtras;personalExtras=function(){return _pe2()+bandCard()+circleCard()}}
+{const _be2=bizExtras;bizExtras=function(){return _be2()+pubCard()}}
+{const _sv2=styleView;styleView=function(){return _sv2()+extrasCard()+`<div class="section"><h2>Home decor</h2>${decorCard()}</div>`}}
+ownLabelCard=function(){return ''};
+SUB_ICONS.unshift([/versions/i,'🎚'],[/tour extras/i,'🚌'],[/band room/i,'🥁'],[/inner circle/i,'🫶'],[/publishing/i,'💼'],[/makeup/i,'💄'],[/decor/i,'🛋']);
 
 function render(){
   const app=$('#app');
