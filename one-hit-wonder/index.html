@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="One-Hit Wonder">
+<meta name="theme-color" content="#f4eee1">
+<meta name="description" content="You have the biggest song in the world. Now prove you're not a one-hit wonder.">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>One-Hit Wonder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  /* Look: a sun-faded tabloid / CD-single insert. Cream paper, hard ink outlines, sticker colors that drain to grey as you lose relevance */
+  --paper:#f4eee1; --paper2:#ebe3d0; --card:#fffaf0; --ink:#16151a; --ink2:#46424f; --mute:#7a7484; --line:#d9cfba;
+  --tang:#ff5b14; --blue:#2340ff; --lime:#d4f53c; --bad:#e0263f; --good:#14864f; --sky:#9fd8ff;
+  --fade:0;
+  --display:'Bricolage Grotesque',system-ui,-apple-system,sans-serif;
+  --serif:'DM Serif Display',Georgia,'Times New Roman',serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --tabh:62px;
+  color-scheme:light;
+  -webkit-text-size-adjust:100%;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--display);font-size:15px;line-height:1.4;min-height:100vh;-webkit-tap-highlight-color:transparent;
+  background-image:radial-gradient(rgba(22,21,26,.06) 1px,transparent 1.2px);background-size:5px 5px}
+button,input{font:inherit;color:inherit}
+button{touch-action:manipulation;cursor:pointer}
+h1,h2,h3{margin:0;line-height:1.05;text-wrap:balance}
+p{margin:0}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.mute{color:var(--mute)} .good{color:var(--good)} .bad{color:var(--bad)}
+.k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.fadeable{filter:grayscale(calc(var(--fade)*.92)) contrast(calc(1 - var(--fade)*.15))}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--ink);color:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:10px 16px;font-weight:800;font-size:14px;box-shadow:3px 3px 0 var(--tang);transition:transform .06s,box-shadow .06s;white-space:nowrap;min-height:42px}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--tang)}
+.btn.alt{background:var(--card);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.btn.alt:active{box-shadow:1px 1px 0 var(--ink)}
+.btn.hot{background:var(--tang);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.btn.lime{background:var(--lime);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.btn.sm{padding:6px 12px;font-size:13px;min-height:34px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn:focus-visible,.tab:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* cards */
+.card{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:14px;box-shadow:4px 4px 0 var(--ink);display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{font-size:21px;font-weight:800;letter-spacing:-.01em}
+.card h3{font-size:16px;font-weight:800}
+.sec{display:flex;flex-direction:column;gap:16px;padding:16px 0 calc(var(--tabh) + 92px + env(safe-area-inset-bottom,0px))}
+.pill{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1.5px solid var(--ink);background:var(--card);white-space:nowrap}
+.pill.t{background:var(--tang)} .pill.l{background:var(--lime)} .pill.b{background:var(--blue);color:#fff} .pill.i{background:var(--ink);color:var(--paper)}
+.pill.g{color:var(--good);border-color:var(--good)} .pill.r{color:var(--bad);border-color:var(--bad)}
+.sticker{display:inline-block;background:var(--lime);border:2px solid var(--ink);padding:3px 10px;border-radius:6px;font-weight:800;transform:rotate(-2.5deg);box-shadow:2px 2px 0 var(--ink)}
+.bar{height:10px;border:2px solid var(--ink);border-radius:99px;background:var(--paper2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink)}
+.bar.t i{background:var(--tang)} .bar.b i{background:var(--blue)} .bar.l i{background:var(--lime)} .bar.g i{background:var(--good)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{border:1.5px solid var(--ink);border-radius:10px;padding:7px 8px;background:var(--paper)}
+.stat b{display:block;font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.15}
+.stat span{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.list{display:flex;flex-direction:column}
+.list>*{padding:10px 0;border-top:1.5px dashed var(--line)}
+.list>*:first-child{border-top:0;padding-top:2px}
+.empty{color:var(--mute);border:2px dashed var(--line);border-radius:12px;padding:14px;text-align:center;font-size:14px}
+small{font-size:12.5px}
+
+/* action rows */
+.act{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}
+.act .nm{font-weight:800;font-size:15px}
+.act .ds{grid-column:1;font-size:13px;color:var(--ink2)}
+.act .go{grid-row:1/3;grid-column:2}
+.ap{display:inline-flex;gap:3px;vertical-align:middle}
+.ap i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink);background:var(--ink)}
+.ap i.off{background:transparent}
+.why{font-size:12px;color:var(--bad);grid-column:1}
+
+/* HUD */
+.hud{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--ink);padding-top:env(safe-area-inset-top,0px)}
+.hud .wrap{padding-top:8px;padding-bottom:9px;display:flex;flex-direction:column;gap:6px}
+.hud .who{font-family:var(--serif);font-style:italic;font-size:21px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.hud .menu{border:2px solid var(--ink);background:var(--card);border-radius:10px;width:38px;height:34px;display:grid;place-items:center;flex:none;box-shadow:2px 2px 0 var(--ink)}
+.relbox{display:flex;align-items:center;gap:8px}
+.relbar{position:relative;flex:1;height:22px;border:2px solid var(--ink);border-radius:99px;background:repeating-linear-gradient(-45deg,var(--paper2) 0 6px,var(--paper) 6px 12px);overflow:hidden}
+.relbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#b9b1a3,var(--tang) 45%,var(--lime));transition:width 1.2s cubic-bezier(.3,.7,.2,1);border-right:2px solid var(--ink)}
+.relbar span{position:absolute;inset:0;display:flex;align-items:center;padding-left:10px;font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:.08em;mix-blend-mode:multiply}
+.relnum{font-family:var(--mono);font-weight:700;font-size:20px;min-width:52px;text-align:right}
+.hudline{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:12px;align-items:center}
+.relbar.low{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(224,38,63,.35)}}
+
+/* bottom chrome */
+.endbar{position:fixed;left:0;right:0;bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px));z-index:19;pointer-events:none}
+.endbar .wrap{display:flex;padding-bottom:10px;pointer-events:none}
+.endbar .btn{pointer-events:auto;flex:1;min-height:50px;font-size:16px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs .wrap{display:grid;grid-template-columns:repeat(5,1fr);height:var(--tabh)}
+.tab{background:none;border:0;color:#a8a2b0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;position:relative}
+.tab svg{width:22px;height:22px}
+.tab.on{color:var(--lime)}
+.tab .dot{position:absolute;top:8px;right:calc(50% - 18px);min-width:16px;height:16px;border-radius:9px;background:var(--tang);color:var(--ink);font-size:10px;display:grid;place-items:center;padding:0 4px;font-family:var(--mono)}
+
+/* modal */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(22,21,26,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));animation:fadein .15s}
+.modal{background:var(--card);border:2px solid var(--ink);border-radius:20px;box-shadow:5px 5px 0 var(--ink);width:100%;max-width:520px;max-height:calc(100vh - 40px - env(safe-area-inset-top,0px));max-height:calc(100dvh - 40px - env(safe-area-inset-top,0px));overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px;animation:up .2s cubic-bezier(.2,.8,.3,1)}
+.modal .kick{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tang);font-weight:700}
+.modal h2{font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.02}
+.modal .body{display:flex;flex-direction:column;gap:10px;font-size:15px}
+.choice{text-align:left;background:var(--paper);border:2px solid var(--ink);border-radius:14px;padding:11px 13px;box-shadow:3px 3px 0 var(--ink);display:flex;flex-direction:column;gap:2px;width:100%}
+.choice:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.choice b{font-size:15px}
+.choice small{color:var(--ink2)}
+.choice.hot{background:var(--lime)}
+.fx{display:flex;flex-wrap:wrap;gap:5px}
+.fx span{font-family:var(--mono);font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:6px;border:1.5px solid currentColor}
+.fx .up{color:var(--good)} .fx .dn{color:var(--bad)}
+@keyframes up{from{transform:translateY(30px);opacity:.3}}
+@keyframes fadein{from{opacity:0}}
+.sumline{display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;padding:3px 0}
+.sumline.tot{border-top:2px solid var(--ink);margin-top:4px;padding-top:6px;font-weight:700}
+
+/* voices */
+.voice{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:start}
+.av{width:40px;height:40px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:800;font-size:15px;background:var(--sky)}
+.bubble{background:var(--paper);border:1.5px solid var(--ink);border-radius:4px 14px 14px 14px;padding:8px 10px;font-size:14px}
+.bubble .who{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:700;display:block;margin-bottom:2px}
+
+/* hit card */
+.hitcard{position:relative;overflow:hidden;background:var(--tang);border:2px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);padding:16px;display:grid;grid-template-columns:1fr 88px;gap:12px;align-items:center}
+.hitcard h2{font-family:var(--serif);font-weight:400;font-size:30px;line-height:.98}
+.disc{width:88px;height:88px;border-radius:50%;background:radial-gradient(circle,var(--lime) 0 17%,var(--ink) 18% 22%,#2a2830 23% 30%,var(--ink) 31% 40%,#2a2830 41% 50%,var(--ink) 51% 60%,#2a2830 61% 70%,var(--ink) 71%);border:2px solid var(--ink);animation:spin 6s linear infinite}
+.disc.slow{animation-duration:16s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.legacy{position:relative;height:12px;border:2px solid var(--ink);border-radius:99px;background:linear-gradient(90deg,#ff9fb0,var(--paper) 50%,#b8f0c9)}
+.legacy i{position:absolute;top:-6px;width:6px;height:20px;background:var(--ink);border-radius:3px;transform:translateX(-3px);transition:left .8s}
+
+/* feed */
+.clip{background:#fff;border:1.5px solid var(--ink);padding:10px 12px;box-shadow:2px 2px 0 rgba(0,0,0,.18);transform:rotate(var(--r,0deg))}
+.clip .src{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);display:flex;justify-content:space-between;gap:8px}
+.clip h3{font-family:var(--serif);font-weight:400;font-size:20px;line-height:1.08;margin-top:3px}
+.clip.big h3{font-size:24px}
+
+/* title & setup */
+.title{min-height:100vh;min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 24px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px);display:flex;flex-direction:column;gap:18px}
+.logo{position:relative;padding:22px 0 8px}
+.logo h1{font-family:var(--display);font-weight:800;font-size:clamp(46px,15vw,76px);letter-spacing:-.04em;line-height:.85;text-transform:uppercase}
+.logo h1 em{font-family:var(--serif);font-weight:400;font-style:italic;text-transform:none;letter-spacing:-.02em;color:var(--tang);-webkit-text-stroke:1.5px var(--ink)}
+.logo .disc{position:absolute;right:0;top:0;width:110px;height:110px;z-index:-1;opacity:.95}
+.logo p{margin-top:12px;font-size:16px;max-width:30ch}
+.field{display:flex;flex-direction:column;gap:5px}
+.field input{border:2px solid var(--ink);border-radius:12px;padding:11px 12px;background:#fff;font-size:17px;width:100%;min-width:0}
+.ends{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.endtile{border:2px solid var(--ink);border-radius:12px;padding:8px 6px;text-align:center;font-size:11px;font-weight:800;background:var(--paper2);min-height:64px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.endtile.got{background:var(--lime)}
+.endtile .ic{font-size:20px}
+
+/* ending */
+.front{background:#fff;border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:16px;display:flex;flex-direction:column;gap:12px}
+.front .mast{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px double var(--ink);padding-bottom:6px;gap:8px}
+.front .mast b{font-family:var(--serif);font-size:24px;font-weight:400}
+.front h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,10vw,50px);line-height:.95}
+.front .deck{font-size:16px;font-style:italic;font-family:var(--serif)}
+.spark{width:100%;height:56px;display:block}
+
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 96px);transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--paper);padding:9px 14px;border-radius:12px;font-size:14px;font-weight:600;max-width:calc(100vw - 32px);box-shadow:3px 3px 0 var(--tang);animation:fadein .2s}
+.flash{animation:flash .9s}
+@keyframes flash{30%{background:var(--lime)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* ================= helpers ================= */
+const MONTHS=36,SAVE_PREFIX='ohw_slot_',LAST_KEY='ohw_last',END_KEY='ohw_endings';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const chance=p=>Math.random()<p;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=q=>document.querySelector(q);
+function cash(n){const s=n<0?'−':'',a=Math.abs(n);return s+'$'+(a>=1e6?(a/1e6).toFixed(a>=1e7?1:2)+'M':a>=1e3?Math.round(a/1e3)+'K':Math.round(a))}
+function fmt(n){const a=Math.abs(n);return a>=1e9?(n/1e9).toFixed(1)+'B':a>=1e6?(n/1e6).toFixed(a>=1e7?0:1)+'M':a>=1e3?(n/1e3).toFixed(a>=1e4?0:1)+'K':String(Math.round(n))}
+function wpick(list){const t=list.reduce((s,x)=>s+x.w,0);let r=Math.random()*t;for(const x of list){r-=x.w;if(r<=0)return x}return list[list.length-1]}
+
+/* ================= content ================= */
+const TA=['Microwave','Banana','Disco','Velvet','Lemonade','Turbo','Cardboard','Sunburn','Laser','Penguin','Bubblegum','Spaghetti','Neon','Tuesday','Glitter','Ketchup','Hologram','Cowboy','Wobble','Pineapple','Jacuzzi','Moped','Lasagna','Karaoke','Flamingo','Trampoline'];
+const TB=['Heart','Summer','Telephone','Kiss','Shuffle','Romance','Drama','Party','Paradise','Baby','Fever','Situation','Boogie','Feelings','Weekend','Machine','Heartbreak','Attitude','Lover','Emergency'];
+const TITLE_T=[(a,b)=>`${a} ${b}`,(a,b)=>`${a} ${b}`,(a,b)=>`${a} ${b} (Ooh-Ah)`,(a,b)=>`Do the ${a}`,(a,b)=>`My ${b} Is a ${a}`,(a,b)=>`Hey, ${a}!`,(a,b)=>`${b} in a ${a}`];
+const HOOKS=['na-na-na-NOPE','put it on my tab, tab, tab','who let the llamas in','baby, I\'m a microwave','spin it like a pizza','beep beep, here comes my heart','ooh-ah, ooh-ah, oh no','I got sand in my feelings','call me on the landline','don\'t touch my snacks','wiggle it, giggle it','turn it up, Grandma','yee-haw, ya\'ll, yee-haw','one more lap around the parking lot'];
+const DANCES=['the elbow wiggle','the shopping cart','the sideways shrug','the lawnmower 2.0','the noodle arms','the toaster pop','the dizzy flamingo','the office chair spin','the hokey-hokey','the slow-mo sneeze'];
+const ORIGINS=['recorded on your phone in a parked car','made as a joke for your cousin\'s wedding','set to a cat video by a total stranger','written in eleven minutes during a power cut','an old demo someone found and posted','a jingle you wrote for a carpet store','sung into a voice memo on the night bus','your first ever upload, made on a borrowed laptop'];
+const GENRES=['bubblegum pop','bedroom pop','country trap','synth-funk','pop-punk','novelty disco','drill-pop','folk stomp','eurodance','yacht soul'];
+const TRENDS=['sea shanty revival','hyperpop glitch','slowed + reverb','80s power ballads','sad-girl folk','jersey club','gregorian techno','polka-core','yacht rock revival','amapiano crossover','emo revival','whisper-pop','cowboy disco','lo-fi study beats'];
+const NAME_A=['Lil','Big','DJ','Young','Saint','Baby','MC','','','',''];
+const NAME_B=['Pickle','Tavi','Jojo Rae','Marlo','Kip','Velvet June','Dmitri','Sunny Vale','Rex Moon','Pip Harlow','Nova Kade','Benny Glass','Lulu Static','Teddy Orbit','Mo Bennett','Ziggy Plum'];
+const BANDS=['The Tuesday Club','Cardboard Kings','Mild Panic','The Hot Waters','Sofa Wolves','Gloria Gloria'];
+const STARS=['Kayla Vox','Jaylen Prince','Lil Mortgage','Aria Delacroix','Marcus Vale','Ocean Teeth','Nadia Reign','Big Tuna'];
+const OUTLETS={spin:'The Daily Spin',gaz:'Vinyl Gazette',loopy:'Trending on Loopy',gut:'Gossip Gutter',chart:'Chart Watch',biz:'MusicBiz Ledger'};
+
+const LABELS={
+  titan:{n:'Titan Records',kind:'major',cut:.18,promo:1.45,showCut:.8,masters:true},
+  bramble:{n:'Bramble & Co.',kind:'indie',cut:.5,promo:1.22,showCut:1,masters:false}
+};
+const MGRS={
+  vance:{n:'Vance Sterling',cut:.25,init:'VS',color:'#ffd27a',style:'flash'},
+  ruth:{n:'Ruth Okafor',cut:.15,init:'RO',color:'#b8f0c9',style:'steady'}
+};
+const ITEMS=[
+  {id:'chain',n:'Diamond chain spelling the hit',cost:60000,up:0,d:'Flex. +4 relevance once, −3 cred.',fx:{rel:4,cred:-3}},
+  {id:'car',n:'Lime-green supercar',cost:280000,up:4000,d:'+6 relevance once. $4K/mo upkeep.',fx:{rel:6,cred:-2}},
+  {id:'mansion',n:'Hilltop mansion, face-shaped pool',cost:1100000,up:18000,d:'+8 relevance, +15 wellbeing once. $18K/mo.',fx:{rel:8,well:15,cred:-3}},
+  {id:'tiger',n:'A pet tiger named ' ,cost:90000,up:6000,d:'+10 relevance. What could go wrong? $6K/mo.',fx:{rel:10,cred:-4}},
+  {id:'studio',n:'Home studio',cost:160000,up:2000,d:'Songwriting improves faster, albums sound better. $2K/mo.',fx:{craft:3}},
+  {id:'therapist',n:'A genuinely good therapist',cost:0,up:3500,d:'+6 wellbeing every month. $3.5K/mo.',fx:{well:5}},
+  {id:'accountant',n:'A boring, honest accountant',cost:5000,up:2500,d:'Protects you from fraud and softens the tax bill. $2.5K/mo.',fx:{}}
+];
+const TIGER_NAMES=['Kevin','Señor Stripes','Lady Gravy','Duke'];
+const CREW_POOL=[
+  {id:'dez',n:'Cousin Dez',role:'Head of Vibes',cost:6000,init:'CD'},
+  {id:'skyler',n:'Skyler',role:'"Creative Director"',cost:9000,init:'SK'},
+  {id:'bluetooth',n:'DJ Bluetooth',role:'Hype man',cost:5000,init:'DB'},
+  {id:'brenda',n:'Brenda from school',role:'Personal assistant (allegedly)',cost:4500,init:'BR'}
+];
+const ENDINGS={
+  forgotten:{n:'Trivia Answer',ic:'❓',head:'Forgotten'},
+  nostalgia:{n:'Nostalgia Circuit',ic:'📼',head:'Nostalgia act'},
+  cult:{n:'Cult Favorite',ic:'🕯️',head:'Cult favorite'},
+  career:{n:'Not a One-Hit Wonder',ic:'🏆',head:'Long career'}
+};
+
+/* ================= state ================= */
+let S=null;
+const UI={screen:'title',tab:'now',modal:null,queue:[],draft:null,prevRel:null,toast:null};
+
+function genHit(){
+  const a=pick(TA);let b=pick(TB);const title=pick(TITLE_T)(a,b);
+  return {title,genre:pick(GENRES),origin:pick(ORIGINS),hook:pick(HOOKS),dance:pick(DANCES),peak:ri(45,80)*1e6};
+}
+function genName(){return chance(.2)?pick(BANDS):(pick(NAME_A)+' '+pick(NAME_B)).trim()}
+
+function newGame(slot,name,hit){
+  const h=Object.assign({},hit);
+  S={v:1,slot,name,created:Date.now(),month:1,ap:3,busy:0,
+    rel:100,relHist:[100],zero:0,cash:40000,cred:22,legacy:0,well:75,craft:ri(28,40),core:3000,
+    hit:Object.assign(h,{heat:h.peak,total:0,cut:.8,owned:true}),
+    label:null,patience:0,mgr:null,crew:[],owned:[],tiger:pick(TIGER_NAMES),
+    demos:[],album:null,releases:[],best:{peak:0,title:''},newTotal:0,surpassed:false,
+    trend:{n:pick(TRENDS),age:0,life:ri(4,6)},seq:0,fatigue:0,momentum:0,lastRel:0,producer:0,
+    offers:[],voices:[],feed:[],seen:{},cool:{},stats:{talk:0,ads:0,reality:0,nostalgia:0,memes:0,tours:0,shows:0,feud:0,bankrupt:0,sold:0,hits10:0},
+    yearInc:0,mInc:{},mExp:{},voiceAct:null,followed:0,ending:null};
+  resetMonthBooks();
+  news('spin',`“${h.title}” is the #1 song on the planet. Who is ${name}?`,true);
+  news('loopy',`40 million people have now done ${h.dance} to “${h.title}”`);
+  makeOffers(true);makeVoices();
+  save();
+}
+function resetMonthBooks(){S.mInc={hit:0,music:0,shows:0,other:0};S.mExp={life:0,crew:0,mgr:0,interest:0,other:0}}
+function news(src,t,big){S.feed.unshift({m:S.month,src,t,big:!!big});if(S.feed.length>80)S.feed.length=80}
+
+/* ---- saving ---- */
+const slotKey=n=>SAVE_PREFIX+n;
+function save(){if(!S)return;try{localStorage.setItem(slotKey(S.slot),JSON.stringify(S));localStorage.setItem(LAST_KEY,String(S.slot))}catch(e){}}
+function readSlot(n){try{const r=localStorage.getItem(slotKey(n));return r?JSON.parse(r):null}catch(e){return null}}
+function delSlot(n){try{localStorage.removeItem(slotKey(n))}catch(e){}}
+function endingsFound(){try{return JSON.parse(localStorage.getItem(END_KEY)||'{}')}catch(e){return {}}}
+function recordEnding(k){try{const E=endingsFound();E[k]=(E[k]||0)+1;localStorage.setItem(END_KEY,JSON.stringify(E))}catch(e){}}
+
+/* ================= effects ================= */
+const FXN={rel:'Relevance',cred:'Cred',legacy:'Legacy',well:'Wellbeing',cash:'',core:'Core fans',heat:'Hit plays',craft:'Craft',patience:'Label patience'};
+function eff(o){
+  const out=[];
+  for(const k in o){let v=o[k];if(!v)continue;
+    if(k==='rel'){const b=S.rel;if(v>0)v*=clamp(1.1-S.rel/95,.15,1);S.rel=clamp(S.rel+v,0,100);v=Math.round(S.rel-b);if(!v)continue}
+    else if(k==='cred')S.cred=clamp(S.cred+v,0,100);
+    else if(k==='legacy')S.legacy=clamp(S.legacy+v,-100,100);
+    else if(k==='well')S.well=clamp(S.well+v,0,100);
+    else if(k==='craft')S.craft=clamp(S.craft+v,0,100);
+    else if(k==='patience'){if(!S.label)continue;S.patience=clamp(S.patience+v,0,100)}
+    else if(k==='core'){v=Math.round(v);S.core=Math.max(0,S.core+v)}
+    else if(k==='heat')S.hit.heat*=1+v/100;
+    else if(k==='cash'){v=Math.round(v);S.cash+=v;if(v>0){S.mInc.other+=v;S.yearInc+=v}else S.mExp.other-=v}
+    const up=v>0,label=k==='cash'?(up?'+':'−')+cash(Math.abs(v)).replace('−',''):`${FXN[k]} ${up?'+':'−'}${k==='core'?fmt(Math.abs(v)):k==='heat'?Math.abs(v)+'%':Math.abs(Math.round(v))}`;
+    out.push(`<span class="${up?'up':'dn'}">${label}</span>`)}
+  return out.length?`<div class="fx">${out.join('')}</div>`:'';
+}
+const promo=v=>Math.round(v/(1+.32*S.fatigue));
+function useFatigue(){S.fatigue+=1}
+
+/* ================= music ================= */
+function chartPos(streams){const r=streams/S.hit.peak;if(r>=.8)return 1;const p=Math.round(1+26*Math.pow(Math.log10(.8/r),1.2));return p>100?null:p}
+function legacyLabel(v=S.legacy){return v<=-60?'Punchline':v<=-20?'Meme':v<20?'Novelty':v<60?'Fan favorite':'Modern classic'}
+function trendLate(){return S.trend.age>=Math.ceil(S.trend.life/2)}
+function labelPromo(){return S.label?LABELS[S.label].promo:1}
+function newCut(){return S.label?LABELS[S.label].cut:.8}
+function seqTitle(){const w=S.hit.title.replace(/\(.*\)/,'').trim();return pick([`${w} 2`,`${w} (Again)`,`Still ${w}`,`${w} Forever`,`Return of the ${w.split(' ').pop()}`,`${w}: The Sequel`])}
+function songTitle(){return pick([`${pick(TB)} ${pick(['Season','Weather','Lines','Static','Glow','Ghost','Signal','Road','Echo','Room'])}`,`${pick(['Last','Slow','Paper','Golden','Quiet','Broken','Sunday','Electric','Cold'])} ${pick(TB)}`,`${pick(['Don\'t','Can\'t','Won\'t'])} ${pick(['Forget','Stop','Wait','Leave','Look Back'])}`,`${pick(['Ordinary','Second','Brand New','Late Bloomer','Not Done Yet','Afterglow','Encore','Real Life','Small Town Gold'])}`])}
+
+function release(o){
+  // o:{type:'sequel'|'trend'|'demo'|'album'|'collab'|'diss', title, q, mult}
+  const relW=o.type==='sequel'?.55:o.type==='demo'?.28:o.type==='album'?.3:.38;
+  const base=o.q*(1-relW)+S.rel*relW;
+  // the market: label push, fanbase, momentum, critics, and how sick people are of you releasing stuff
+  const recent=S.releases.filter(r=>r.month>=S.month-1).length;
+  let mult=labelPromo()*(o.mult||1)*(1+.3*S.core/(S.core+150000))*(1+.05*S.momentum)*(.75+S.cred/400)/(1+.45*recent);
+  if(S.legacy<=-50)mult*=.88;else if(S.legacy>=50)mult*=1.06;
+  if(o.type==='sequel'){mult*=S.seq===0?1.3:Math.pow(.68,S.seq);S.seq++}
+  if(o.type==='trend')mult*=trendLate()?.7:1.45;
+  if(o.type==='album')mult*=1.25*(S.album&&S.album.lead?1.1:1);
+  const noise=rnd(.72,1.3);
+  const streams=Math.round(S.hit.peak*Math.pow(base/100,3)*mult*.6*noise);
+  const ratio=streams/S.hit.peak,pos=chartPos(streams);
+  const decay=o.type==='sequel'?.5:o.type==='trend'?(trendLate()?.4:.55):o.type==='album'?.72+o.q/600:.62+o.q/520;
+  const r={title:o.title,type:o.type,q:Math.round(o.q),peak:streams,streams,total:0,month:S.month,pos,decay:Math.min(.9,decay)};
+  S.releases.unshift(r);S.lastRel=S.month;
+  const fx={};
+  fx.rel=ratio<.04?-3:clamp(Math.round(45*ratio),0,22)+1;
+  fx.core=streams/1200/(1+S.core/400000)*Math.pow(o.q/100,2)*(o.type==='album'?2.2:1)*(o.dir==='personal'?1.5:1);
+  if(o.type==='sequel'){fx.cred=-6;fx.legacy=-4}
+  else if(o.type==='trend'){fx.cred=trendLate()?-8:-3}
+  else if(o.type==='diss'){fx.cred=-2}
+  else fx.cred=Math.min(4,Math.round((o.q-60)/8))+(o.dir==='pivot'&&o.q>65?6:0)+(o.dir==='hitfactory'?-4:0);
+  if(ratio>.45&&o.q>65)fx.legacy=(fx.legacy||0)+5;
+  if(ratio<.05&&o.type!=='demo')fx.legacy=(fx.legacy||0)-4;
+  if(ratio>.25&&o.q>60)S.momentum=Math.min(4,S.momentum+1);else if(ratio<.08)S.momentum=0;
+  if(pos&&pos<=10)S.stats.hits10++;
+  const fxh=eff(fx);
+  if(S.label){eff({patience:ratio>.25?20:ratio>.1?6:-10})}
+  let head,src='chart';
+  if(pos===1)head=`${S.name} is back at #1 with “${o.title}”`;
+  else if(pos&&pos<=10)head=`“${o.title}” crashes into the top 10 at #${pos}`;
+  else if(pos&&pos<=40)head=`“${o.title}” debuts at #${pos}. Respectable. Not “${S.hit.title}”.`;
+  else if(pos)head=`“${o.title}” limps in at #${pos}`;
+  else{head=`${S.name}'s “${o.title}” fails to chart`;src='gut'}
+  news(src,head,pos&&pos<=10);
+  let surpass='';
+  if(streams>S.best.peak)S.best={peak:streams,title:o.title};
+  if(streams>=S.hit.peak&&!S.surpassed){S.surpassed=true;eff({legacy:12,cred:6});news('spin',`BIGGER THAN “${S.hit.title.toUpperCase()}”: ${S.name} tops their own monster hit`,true);surpass=`<p class="sticker">Bigger than “${esc(S.hit.title)}”!</p><p>Nobody can call you a one-hit wonder now. Probably.</p>`}
+  const verdict=pos===1?'Number one. Again.':pos&&pos<=10?'A genuine hit.':pos&&pos<=40?'A modest hit.':pos?'Barely charted.':'A flop.';
+  return `<p><b>“${esc(o.title)}”</b> · quality ${r.q}/100</p><div class="stats"><div class="stat"><span>Chart peak</span><b>${pos?'#'+pos:'—'}</b></div><div class="stat"><span>First month</span><b>${fmt(streams)}</b></div><div class="stat"><span>vs. the hit</span><b>${Math.round(ratio*100)}%</b></div></div><p>${verdict}</p>${surpass}${fxh}`;
+}
+
+/* ================= actions ================= */
+function apDots(n){return `<span class="ap" aria-label="${n} moves">${Array.from({length:n},()=>'<i></i>').join('')}</span>`}
+const ACTIONS={
+  write:{n:'Write songs',tab:'studio',ap:1,d:()=>`Fill your demo pile and sharpen your craft (${Math.round(S.craft)}).`,run(){
+    const k=chance(.45)?2:1;const made=[];
+    for(let i=0;i<k;i++){const q=clamp(S.craft*.85+rnd(-10,22)+(own('studio')?4:0),5,98);const d={title:songTitle(),q:Math.round(q)};S.demos.push(d);made.push(d)}
+    S.demos.sort((a,b)=>b.q-a.q);if(S.demos.length>8)S.demos.length=8;
+    const g=Math.max(.4,(95-S.craft)/16)*(own('studio')?1.4:1);
+    return modalR('Songwriting',`<p>You wrote ${made.map(d=>`<b>“${esc(d.title)}”</b> (${d.q})`).join(' and ')}.</p>`+eff({craft:g,well:-3}))}},
+  albumStart:{n:'Start an album',tab:'studio',ap:0,d:()=>'Pick a direction for a real record. Takes a few months of sessions.',cond:()=>!S.album,run(){
+    openModal({kick:'New album',title:'What kind of record is this?',body:`<p>Everyone has an opinion. Titan wants “${esc(S.hit.title)}” times ten. Your gut wants something real.</p>`,choices:[
+      {t:'The Hit Factory',d:'Bigger, brighter, more of what worked. Easier to sell, harder to respect.',fn:()=>startAlbum('hitfactory')},
+      {t:'Personal & raw',d:'Your real life since the hit. Core fans love it; casual fans may drift.',fn:()=>startAlbum('personal')},
+      {t:'Genre pivot',d:'Reinvent yourself completely. Big swing, big risk.',fn:()=>startAlbum('pivot')}]});return true}},
+  albumWork:{n:'Album sessions',tab:'studio',ap:2,d:()=>S.album?`Progress ${Math.min(100,Math.round(S.album.prog))}%. Extra sessions past 100% add polish.`:'',cond:()=>!!S.album,run(){
+    const A=S.album,before=A.prog;
+    const q=clamp(S.craft*.6+20+rnd(-8,14)+S.producer+(own('studio')?4:0)+(A.dir==='pivot'?rnd(-12,12):0),5,99);
+    A.qs.push(q);A.prog+=30+S.craft/9;
+    const done=before<100&&A.prog>=100;
+    return modalR('In the studio',`<p>${pick(['A late night that turned into sunrise.','You threw out three songs and kept the best one.','The engineer cried. Good tears, probably.','You found the bridge in the car park at 2am.'])}</p><p>Album progress <b>${Math.min(100,Math.round(A.prog))}%</b>${done?' — <b>it\'s finished.</b> Release it from the Studio tab.':''}</p>`+eff({craft:1,well:-7}))}},
+  albumRelease:{n:'Release the album',tab:'studio',ap:1,d:()=>S.album?`Expected quality ≈ ${albumQ()}. ${S.album.lead?'Lead single already out (+hype).':'Tip: drop a lead single first for extra hype.'}`:'',cond:()=>S.album&&S.album.prog>=100,run(){
+    const A=S.album,q=albumQ();const res=release({type:'album',title:A.title,q,dir:A.dir});S.album=null;S.albums=(S.albums||0)+1;
+    return modalR('Album out now',res)}},
+  leadSingle:{n:'Drop a lead single',tab:'studio',ap:1,d:()=>'Tease the album with its best track. Builds hype for the album drop.',cond:()=>S.album&&S.album.prog>=50&&!S.album.lead,run(){
+    S.album.lead=true;const q=Math.min(97,albumQ()+3);return modalR('Lead single',release({type:'demo',title:songTitle(),q,mult:1.15}))}},
+  single:{n:'Release your best demo',tab:'studio',ap:1,d:()=>S.demos.length?`“${S.demos[0].title}” (quality ${S.demos[0].q}). Something new, that's actually you.`:'Write some songs first.',cond:()=>S.demos.length>0,run(){
+    const d=S.demos.shift();return modalR('New single',release({type:'demo',title:d.title,q:d.q}))}},
+  sequel:{n:'Rush a sound-alike single',tab:'studio',ap:1,d:()=>`Same chords, same hook energy. Fast attention, ${S.seq?'and it works less every time.':'and the critics will notice.'}`,run(){
+    const q=clamp(S.craft*.45+28+rnd(-6,10),5,62);return modalR('“Part two” energy',release({type:'sequel',title:seqTitle(),q}))}},
+  trend:{n:'Chase the trend',tab:'studio',ap:1,d:()=>`Make a ${S.trend.n} track. ${trendLate()?'<b class="bad">This trend is peaking. You might be late.</b>':'<b class="good">The trend is still rising.</b>'}`,run(){
+    const q=clamp(S.craft*.6+rnd(0,25),5,90);const t=pick([`${pick(TB)} (${S.trend.n} version)`,`${pick(TA)} ${pick(['Shanty','Glitch','Ballad','Club','Waltz','Riddim'])}`]);
+    return modalR(`Chasing ${S.trend.n}`,release({type:'trend',title:t,q}))}},
+  press:{n:'Press run',tab:'spot',ap:1,d:()=>`Interviews and radio. ${S.fatigue>1?'<b class="bad">People are getting tired of seeing you.</b>':'Reliable attention.'}`,run(){
+    const g=promo(11);useFatigue();
+    if(chance(S.well<30?.45:.18)){S.stats.gaffe=1;news('gut',`${S.name} storms out of radio interview after “${S.hit.title}” question`);return modalR('Press run',`<p>The host asked you to sing the hook “just once more”. You did not take it well. The clip is everywhere.</p>`+eff({rel:g+4,cred:-6,legacy:-3,well:-6}))}
+    news('gaz',pick([`${S.name}: “I'm more than one song”`,`${S.name} opens up about life after “${S.hit.title}”`,`Ten minutes with ${S.name}, who would like to talk about anything else`]));
+    return modalR('Press run',`<p>${pick(['Eleven interviews in two days. You said “it\'s been a wild ride” nine times.','Morning radio, evening podcasts. You were charming.','You promised new music “very soon”. The internet wrote it down.'])}</p>`+eff({rel:g,well:-4}))}},
+  post:{n:'Post online',tab:'spot',ap:1,d:()=>'Feed the algorithm. Choose your tone.',run(){
+    openModal({kick:'Loopy · Chirp',title:'What are you posting?',choices:[
+      {t:'A self-aware meme about the hit',d:'Lean into the joke. Endearing, or a reminder it\'s all you have.',fn:()=>{const g=promo(12);useFatigue();S.stats.memes++;const ok=chance(.6);news('loopy',ok?`${S.name} roasting their own song is the best thing online today`:`Even ${S.name} is tired of “${S.hit.title}”`);return eff({rel:g,legacy:ok?5:-6,heat:6})}},
+      {t:'A raw clip of a new song',d:'Better with good demos. Builds core fans and cred.',dis:()=>!S.demos.length,fn:()=>{const d=S.demos[0];if(!d)return '';const g=promo(5+d.q/12);useFatigue();const hit=d.q>65&&chance(.5);if(hit)news('loopy',`Fans are begging ${S.name} to release “${d.title}”`);return `<p>“${esc(d.title)}” ${hit?'got stitched thousands of times.':'got some nice comments.'}</p>`+eff({rel:g+(hit?6:0),core:d.q*40*(hit?3:1),cred:hit?3:1})}},
+      {t:'A spicy hot take',d:'Starts a fire. Attention is attention… right?',fn:()=>{const g=promo(16);useFatigue();if(chance(.45)){S.stats.feud++;news('gut',`${S.name} vs. ${pick(STARS)}: the feud nobody asked for`);return `<p>A much bigger star replied. It's a feud now.</p>`+eff({rel:g+6,cred:-7,well:-5})}news('gut',`${S.name}'s take on ${pick(['pineapple pizza','vinyl snobs','award shows','gym selfies'])} divides the internet`);return eff({rel:g,cred:-3})}}]});return true}},
+  shows:{n:'Play shows',tab:'spot',ap:2,d:()=>`Theatres and clubs. Est. ${cash(showGross(1)*0.85)}. Builds core fans.`,run(){
+    const gross=showGross(1)*rnd(.8,1.1),cost=12000+S.crew.length*2000;const net=gross*(S.label?LABELS[S.label].showCut:1)-cost;S.stats.shows++;
+    const nc=1500+S.rel*80+Math.min(S.core*.05,12000);S.mInc.shows+=Math.max(0,net);S.cash+=net;S.yearInc+=Math.max(0,net);
+    return modalR('On stage',`<p>${pick(['They screamed the hook so loud you couldn\'t hear the band.',`You played “${esc(S.hit.title)}” twice. Nobody complained.`,'Someone in the front row knew every word of your new stuff.','Half the room left after the hit. The other half stayed and became fans.'])}</p><div class="sumline"><span>Takings after costs</span><b>${cash(net)}</b></div>`+eff({core:nc,well:-10,rel:2}))}},
+  tour:{n:'Go on tour',tab:'spot',ap:3,d:()=>`A full month on the road. Est. ${cash(showGross(2.7)*0.8-60000)}. Big core fan growth, exhausting.`,cond:()=>S.rel>=20||S.core>=25000,why:'Promoters need relevance 20+ or 25K core fans.',run(){
+    const gross=showGross(2.7)*rnd(.75,1.15),cost=60000+S.crew.length*6000;const net=gross*(S.label?LABELS[S.label].showCut:1)-cost;S.stats.tours++;
+    const nc=6000+S.rel*260+Math.min(S.core*.15,40000);S.mInc.shows+=Math.max(0,net);S.cash+=net;S.yearInc+=Math.max(0,net);
+    news('gaz',`${S.name}'s tour review: “${pick(['better than it had any right to be','the hit was the least interesting song','a sweaty, joyful mess','tight, loud, surprisingly moving'])}”`);
+    return modalR('Tour wrap',`<p>Thirty cities, one bus, a lot of gas-station sandwiches.</p><div class="sumline"><span>Tour profit</span><b>${cash(net)}</b></div>`+eff({core:nc,well:-20,rel:4,cred:2}))}},
+  stunt:{n:'Publicity stunt',tab:'spot',ap:1,d:()=>'$20K. Skydive into a mall? Fake a feud? Wildly random.',run(){
+    S.cash-=20000;S.mExp.other+=20000;useFatigue();const r=Math.random();
+    if(r<.35){news('loopy',`${S.name} ${pick(['crowd-surfed a shopping mall','released 1,000 balloons shaped like their face','proposed to a cardboard cutout of themself'])}`);return modalR('Stunt',`<p>It worked. Everyone's talking.</p>`+eff({rel:18,cred:-6,legacy:-3}))}
+    if(r<.7){return modalR('Stunt',`<p>A few people noticed. Most of them were confused.</p>`+eff({rel:6,cred:-4}))}
+    news('gut',`${S.name}'s desperate stunt goes viral for all the wrong reasons`);return modalR('Stunt',`<p>It went badly. “Desperate” is trending next to your name.</p>`+eff({rel:8,cred:-10,legacy:-8,well:-6}))}},
+  rest:{n:'Take real time off',tab:'life',ap:1,d:()=>'Phone off. Sleep. See your friends. +wellbeing.',run(){return modalR('Time off',`<p>${pick(['You slept for fourteen hours.','You went to the beach and nobody recognised you. It was nice?','Your mum made your favourite dinner.'])}</p>`+eff({well:20,rel:-2}))}},
+  party:{n:'Party with the crew',tab:'life',ap:1,d:()=>'Be seen. Spend money. Feel amazing (briefly).',run(){
+    const c=8000+S.crew.length*5000;S.cash-=c;S.mExp.other+=c;
+    if(chance(.3)){news('gut',`${S.name} spotted ${pick(['falling into a fountain','arguing with a valet','singing their own song at karaoke, badly'])} at 4am`);return modalR('Big night',`<p>It got messy. There are photos.</p><div class="sumline"><span>Bar tab</span><b>${cash(-c)}</b></div>`+eff({rel:6,cred:-4,well:-8}))}
+    return modalR('Big night',`<p>VIP booth, bottomless everything, and a selfie with a famous footballer.</p><div class="sumline"><span>Bar tab</span><b>${cash(-c)}</b></div>`+eff({rel:3,well:5}))}}
+};
+function own(id){return S.owned.includes(id)}
+function albumQ(){const A=S.album;if(!A||!A.qs.length)return 0;const avg=A.qs.reduce((s,x)=>s+x,0)/A.qs.length;const polish=Math.min(9,Math.max(0,(A.prog-100)/12));return Math.round(clamp(avg+polish,5,99))}
+function startAlbum(dir){S.album={dir,prog:0,qs:[],title:songTitle(),lead:false};news('gaz',`${S.name} is making an album. A ${dir==='hitfactory'?'big pop':dir==='personal'?'personal':'genre-bending'} one, apparently.`);return `<p>Working title: <b>“${esc(S.album.title)}”</b>. Book album sessions in the Studio tab (2 moves each).</p>`}
+function showGross(scale){return (S.core*.12+Math.pow(S.rel,1.5)*7)*24*scale}
+function modalR(title,body){openModal({kick:'Result',title,body});return true}
+
+function doAction(id){
+  const A=ACTIONS[id];if(!A||S.ending)return;
+  if(A.cond&&!A.cond())return;
+  if(S.ap<A.ap){toast('Not enough moves left this month.');return}
+  S.ap-=A.ap;
+  if(S.voiceAct&&S.voiceAct.includes(id)){S.followed++;if(S.label)eff({patience:8})}
+  A.run();
+  save();
+}
+
+/* ================= offers ================= */
+const OFFERS={
+  titan:{tag:'label',title:()=>'Titan Records wants to sign you',text:o=>`<p>A glass office, a gold pen, and a <b>${cash(o.adv)}</b> advance today. They want the masters to “${esc(S.hit.title)}” and a follow-up single “soon”. They'd take 82% of new music, 20% of shows, and push you everywhere.</p>`,
+    once:1,gen:()=>({adv:ri(12,18)*100000}),accept:o=>{signLabel('titan',o.adv);return `<p>You signed. The advance hit your account. Your A&R, Brad, has already sent four voice notes.</p>`+eff({cash:o.adv,rel:5})}},
+  bramble:{tag:'label',title:()=>'Bramble & Co. would love to work with you',text:o=>`<p>A tiny, respected indie. <b>${cash(o.adv)}</b> advance, 50/50 on new music, and you keep your hit. “Take your time. Make the record you want.”</p>`,
+    once:1,gen:()=>({adv:ri(12,20)*10000}),accept:o=>{signLabel('bramble',o.adv);return `<p>You signed with Bramble. The office is above a bike shop. It smells like coffee and ambition.</p>`+eff({cash:o.adv,cred:5})}},
+  vance:{tag:'mgr',title:()=>'Vance Sterling wants to manage you',text:()=>`<p>Veneers, a white suit, three phones. “Baby, I'll get you on every screen in the country.” He takes <b>25%</b> and he knows <i>everyone</i>.</p>`,
+    once:1,accept:()=>{S.mgr='vance';news('biz',`Super-manager Vance Sterling adds ${S.name} to his roster`);return `<p>Vance is in. Expect a lot more offers. Expect some of them to be terrible.</p>`}},
+  ruth:{tag:'mgr',title:()=>'Ruth Okafor wants to manage you',text:()=>`<p>Calm, organised, has managed three artists for twenty years each. She takes <b>15%</b>. “I don't do quick money. I do long careers.”</p>`,
+    once:1,accept:()=>{S.mgr='ruth';news('biz',`Respected manager Ruth Okafor takes on ${S.name}`);return `<p>Ruth is in. She has already cancelled two things you didn't know you'd agreed to.</p>`+eff({well:5})}},
+  talk:{tag:'good',ap:1,title:()=>`“Late Night with Dale Brennan” wants you`,text:()=>`<p>One song, one sit-down. Millions watching.</p>`,accept:()=>{S.stats.talk++;openModal({kick:'Live on air',title:'The band starts vamping. What do you play?',choices:[
+      {t:`Perform “${S.hit.title}” again`,d:'Safe. They love it. You\'ve done it 400 times.',fn:()=>eff({rel:promo(10),heat:8,legacy:1})},
+      {t:'Debut a new song',d:S.demos.length?`“${S.demos[0].title}” (quality ${S.demos[0].q}).`:'You have no demos.',dis:()=>!S.demos.length,fn:()=>{const d=S.demos[0];if(!d)return eff({rel:promo(8)});const good=d.q+rnd(-15,15)>60;news('gaz',good?`${S.name}'s new song stuns late-night audience`:`${S.name}'s new song gets polite applause`);return eff({rel:promo(good?14:6),cred:good?5:0,core:good?d.q*120:500,legacy:good?4:-2})}},
+      {t:'Do the comedy sketch Dale wrote',d:'A wig, a puppet, and your hook as a punchline.',fn:()=>eff({rel:promo(15),legacy:-7,cred:-3})}]});useFatigue();return ''}},
+  podcast:{tag:'neutral',ap:1,title:()=>'“Chill Bros Podcast” invite',text:()=>`<p>Three hours, two microphones, one very long conversation about cold plunges.</p>`,accept:()=>{useFatigue();if(chance(.35)){news('gut',`${S.name}'s podcast rant about ${pick(['the moon landing','seed oils','their ex'])} goes viral`);return `<p>You said something unhinged at hour two.</p>`+eff({rel:promo(10),cred:-6})}return eff({rel:promo(6),core:800})}},
+  car:{tag:'trap',title:()=>`Zoomcar wants “${S.hit.title}” for an ad`,text:o=>`<p><b>${cash(o.pay)}</b> to soundtrack a hatchback commercial that will air roughly every eight minutes for a year.</p>`,
+    gen:()=>({pay:ri(15,35)*10000}),accept:o=>{S.stats.ads++;news('biz',`Zoomcar ad turns “${S.hit.title}” into the year's most skipped commercial`);return eff({cash:o.pay*S.hit.cut/.8,heat:15,legacy:-6,cred:-5})}},
+  soda:{tag:'trap',title:()=>'FizzCo wants you to rewrite the hook',text:o=>`<p>“${esc(S.hit.hook)}” but about lime soda. <b>${cash(o.pay)}</b>. You'd have to sing it on a giant can.</p>`,
+    gen:()=>({pay:ri(40,70)*10000}),accept:o=>{S.stats.ads++;news('gut',`${S.name} sells the hook to FizzCo. The internet is not kind.`);return eff({cash:o.pay,legacy:-12,cred:-11,rel:6})}},
+  reality:{tag:'trap',title:()=>'“Celebrity Swamp Camp” wants you',text:o=>`<p>Six weeks in a swamp with a weatherman, two influencers and a former boxer. <b>${cash(o.pay)}</b>. It eats this month <i>and</i> next month.</p>`,
+    once:1,gen:()=>({pay:ri(20,32)*10000}),cond:()=>S.month>=3&&S.month<=32,accept:o=>{S.stats.reality=1;S.ap=0;S.busy=1;const win=chance(.3);news('gut',win?`${S.name} WINS Celebrity Swamp Camp!`:`${S.name} eats a bug for a ${S.hit.title} singalong on Swamp Camp`,true);return `<p>${win?'You won. You are King of the Swamp. Your music career is… somewhere.':'You ate a beetle on national TV. The ratings were incredible.'}</p>`+eff({cash:o.pay+(win?100000:0),rel:win?30:22,cred:-14,legacy:-6,well:-10})}},
+  remix:{tag:'neutral',title:()=>`DJ Velcro wants to remix “${S.hit.title}”`,text:()=>`<p>A stadium-sized EDM remix. Free money, more plays. Purists might scream.</p>`,accept:()=>{const good=chance(.55);news('chart',`DJ Velcro's remix of “${S.hit.title}” ${good?'is everywhere':'is… a choice'}`);return eff({heat:good?35:15,rel:good?8:3,legacy:good?3:-5})}},
+  collab:{tag:'good',ap:1,title:o=>`${o.star} wants a collab`,text:o=>`<p>${esc(o.star)} has ${fmt(o.fans)} monthly listeners and an opening in their next single.</p>`,gen:()=>({star:pick(STARS),fans:ri(15,60)*1e6,q:ri(55,85)}),
+    accept:o=>{const q=clamp((S.craft*.85+o.q)/2+rnd(-5,10),5,97);return release({type:'collab',title:`${songTitle()} (with ${o.star})`,q,mult:1.2})}},
+  festival:{tag:'good',ap:1,title:()=>'Sunflower Fields Festival: 4pm slot',text:o=>`<p>Second stage, sunshine, <b>${cash(o.pay)}</b>. A chance to win over people who only know one song.</p>`,gen:()=>({pay:ri(3,8)*10000}),
+    accept:o=>{const great=chance(.3+S.craft/250);if(great)news('gaz',`${S.name} quietly steals Sunflower Fields`);return eff({cash:o.pay,core:great?5000+S.rel*50:2000,rel:great?8:3,cred:great?4:1,well:-4})}},
+  headline:{tag:'good',ap:2,title:()=>'Headline a festival main stage',text:o=>`<p>Your name, top of the poster, 60,000 people. <b>${cash(o.pay)}</b>.</p>`,cond:()=>S.rel>=60&&S.releases.some(r=>r.pos&&r.pos<=15),gen:()=>({pay:ri(25,45)*10000}),
+    accept:o=>{news('spin',`${S.name}'s headline set proves there's more than one song`,true);return eff({cash:o.pay,core:20000,rel:10,cred:6,legacy:6,well:-8})}},
+  nostalgia:{tag:'trap',title:()=>'“Remember When?” package tour',text:o=>`<p>Twelve acts, one hit each. You close the first half. <b>${cash(o.pay)}</b> for a month of your time.</p>`,ap:2,cond:()=>S.month>=8||S.rel<40,gen:()=>({pay:ri(18,35)*10000}),
+    accept:o=>{S.stats.nostalgia++;news('gaz',`${S.name} joins the “Remember When?” tour, alongside acts from twenty years ago`);return eff({cash:o.pay,rel:3,legacy:3,cred:-6,core:3000,well:-6})}},
+  masters:{tag:'trap',title:()=>'Pinnacle Catalog Fund wants your hit',text:o=>`<p>They'll buy the master recording of “${esc(S.hit.title)}” outright for <b>${cash(o.pay)}</b>. You'd never earn another cent from it.</p>`,cond:()=>S.hit.owned&&S.hit.cut>=.5,gen:()=>({pay:Math.round(S.hit.heat*.0035*S.hit.cut*ri(9,14)/10000)*10000}),
+    accept:o=>{S.hit.owned=false;S.hit.cut=0;S.stats.sold=1;news('biz',`${S.name} sells “${S.hit.title}” to Pinnacle Catalog Fund`);return eff({cash:o.pay})}},
+  award:{tag:'good',ap:1,title:()=>'Perform at the Gilded Mic Awards',text:()=>`<p>${S.month<=14?'You\'re nominated for Best New Artist. ':''}A televised performance in front of the whole industry.</p>`,cond:()=>S.rel>=45,
+    accept:()=>{let t='';if(S.month<=14&&chance(.45)){S.stats.award=1;news('spin',`${S.name} wins Best New Artist. Cue “Best New Artist curse” think pieces.`,true);t='<p>You <b>won Best New Artist</b>. The curse discourse begins immediately.</p>'+eff({cred:6,rel:8})}return t+eff({rel:promo(10),cred:3,well:-4})}},
+  producer:{tag:'good',title:()=>'Hitmaker Marisol Reyes will produce your album',text:o=>`<p>She's behind six #1s. <b>${cash(o.pay)}</b> up front. Albums made with her sound noticeably better.</p>`,cond:()=>!S.producer,gen:()=>({pay:ri(12,20)*10000}),
+    accept:o=>{S.producer=8;return `<p>Marisol is booked. Every album session gets a big quality boost.</p>`+eff({cash:-o.pay})}},
+  camp:{tag:'good',ap:2,title:()=>'Invite to a songwriting camp',text:()=>`<p>A week writing for other artists with serious pros. Little glamour, real growth.</p>`,accept:()=>{const q=clamp(S.craft*.85+rnd(0,22),5,98);S.demos.push({title:songTitle(),q:Math.round(q)});S.demos.sort((a,b)=>b.q-a.q);return `<p>You came back with a new demo and a lot of new tricks.</p>`+eff({craft:5,cash:20000,cred:3})}},
+  cameo:{tag:'trap',title:()=>'Shoutout app wants you',text:()=>`<p>Record birthday messages singing “${esc(S.hit.hook)}” for strangers. $15K guaranteed.</p>`,accept:()=>eff({cash:15000,cred:-3,legacy:-3})},
+  gameshow:{tag:'trap',ap:1,title:()=>'“Celebrity Price Guess” booking',text:()=>`<p>Guess the price of a blender on primetime TV. $25K.</p>`,accept:()=>eff({cash:25000,rel:promo(6),cred:-4})},
+  sync:{tag:'good',title:o=>`Prestige drama wants “${o.song}”`,text:o=>`<p>“Glass Harbor” wants your song “${esc(o.song)}” for its season finale. Critics will notice.</p>`,cond:()=>S.releases.some(r=>r.q>=60&&r.type!=='sequel'),gen:()=>({song:S.releases.filter(r=>r.q>=60&&r.type!=='sequel')[0].title}),
+    accept:o=>{const r=S.releases.find(x=>x.title===o.song);if(r)r.streams*=2.2;news('gaz',`Everyone is Shazaming ${S.name}'s “${o.song}” after the Glass Harbor finale`);return eff({rel:9,cred:4,cash:30000,legacy:4})}},
+  doc:{tag:'neutral',ap:1,title:()=>'“Where Are They Now?” documentary',text:()=>`<p>A streaming crew wants to follow you for a week. They'll decide what story to tell.</p>`,cond:()=>S.month>=12,
+    accept:()=>{const good=S.cred>45||S.releases.some(r=>r.pos&&r.pos<=20&&r.month>S.month-8);news('spin',good?`New doc reveals ${S.name} as a serious artist`:`Doc shows ${S.name} still living off “${S.hit.title}”`,true);return eff(good?{rel:16,cred:6,legacy:6}:{rel:12,legacy:-8,cred:-4})}}
+};
+function signLabel(id,adv){S.label=id;S.patience=60;if(LABELS[id].masters&&S.hit.owned){S.hit.cut=.18;S.hit.owned=false}news('biz',`${S.name} signs with ${LABELS[id].n}`,true);S.offers=S.offers.filter(o=>OFFERS[o.id].tag!=='label')}
+function makeOffers(first){
+  S.offers=S.offers.filter(o=>(o.keep=(o.keep||0)-1)>=0);
+  if(first){
+    S.offers.push(mkOffer('titan',1),mkOffer('bramble',1),mkOffer('vance',1),mkOffer('ruth',1),mkOffer('talk'));return}
+  let n=1+(S.mgr?1:0)+(chance(S.rel/140)?1:0)+(S.mgr==='vance'?1:0);
+  if(S.rel<15&&!S.mgr)n=chance(.5)?1:0;
+  const pool=Object.keys(OFFERS).filter(id=>{const O=OFFERS[id];if(O.tag==='label'||O.tag==='mgr')return false;if(O.once&&S.seen['o_'+id])return false;if(O.cond&&!O.cond())return false;if(S.offers.some(x=>x.id===id))return false;return true});
+  const w=pool.map(id=>{const t=OFFERS[id].tag;let x=1;if(S.mgr==='vance'&&t==='trap')x=2.4;if(S.mgr==='ruth'&&t==='good')x=2;if(t==='good')x*=.6+S.rel/120;return {id,w:x}});
+  for(let i=0;i<n&&w.length;i++){const c=wpick(w);w.splice(w.indexOf(c),1);S.offers.push(mkOffer(c.id))}
+  // independent artists get a second chance at a deal / manager later
+  if(!S.label&&S.month%9===0&&S.rel>25)S.offers.push(mkOffer(chance(.5)?'bramble':'titan',1));
+  if(!S.mgr&&S.month%7===0)S.offers.push(mkOffer(chance(.5)?'vance':'ruth',1));
+}
+function mkOffer(id,keep){const O=OFFERS[id];return Object.assign({id,keep:keep?2:0},O.gen?O.gen():{})}
+function acceptOffer(i){
+  const o=S.offers[i];if(!o)return;const O=OFFERS[o.id];const ap=O.ap||0;
+  if(S.ap<ap){toast(`Needs ${ap} move${ap>1?'s':''}.`);return}
+  S.ap-=ap;S.offers.splice(i,1);S.seen['o_'+o.id]=1;
+  if(S.voiceAct&&S.voiceAct.includes('offer:'+o.id)){S.followed++}
+  const res=O.accept(o);
+  if(res)openModal({kick:'Deal done',title:O.title(o),body:res});
+  save();
+}
+function declineOffer(i){const o=S.offers[i];if(!o)return;S.offers.splice(i,1);if(OFFERS[o.id].once)S.seen['o_'+o.id]=1;save()}
+
+/* ================= voices ================= */
+function makeVoices(){
+  const V=[];const acts=[];
+  if(S.label==='titan'){
+    if(S.album&&S.album.prog>=100)V.push(['BR','Brad · Titan A&R','#ffb3a1','The album\'s done? Drop it. Yesterday.',['albumRelease']]);
+    else if(S.month-S.lastRel>=3)V.push(['BR','Brad · Titan A&R','#ffb3a1',`Kid, it's been ${S.month-S.lastRel||S.month} months. Give me another “${S.hit.title}”. Same tempo. Same vibe. Done.`,['sequel']]);
+    else V.push(['BR','Brad · Titan A&R','#ffb3a1',`Did you see what's trending? ${S.trend.n}. Jump on it.`,['trend']]);
+  }else if(S.label==='bramble'){
+    V.push(['MJ','Maya · Bramble','#c9e7ff',S.album?'Keep going on the record. Don\'t let anyone rush you.':'Write. Start the album when it feels right. We\'re not in a hurry.',S.album?['albumWork']:['write','albumStart']]);
+  }
+  if(S.mgr==='vance'){
+    const trap=S.offers.find(o=>OFFERS[o.id].tag==='trap');
+    if(trap)V.push(['VS','Vance Sterling','#ffd27a',`Take the ${OFFERS[trap.id].title(trap).replace(/ wants.*/,'')} money! Money is relevance, baby!`,['offer:'+trap.id]]);
+    else V.push(['VS','Vance Sterling','#ffd27a','We need a stunt. Something big. Something with a helicopter.',['stunt']]);
+  }else if(S.mgr==='ruth'){
+    if(S.well<35)V.push(['RO','Ruth Okafor','#b8f0c9','You look exhausted. Take time off. That\'s not a request.',['rest']]);
+    else if(S.cash<0)V.push(['RO','Ruth Okafor','#b8f0c9','We\'re in the red. Play shows, cut the crew, stop buying things.',['shows']]);
+    else if(S.core<30000)V.push(['RO','Ruth Okafor','#b8f0c9','Build a real fanbase. Play shows. Those people stay when the hit fades.',['shows','tour']]);
+    else V.push(['RO','Ruth Okafor','#b8f0c9',S.album?'Finish the record properly. Polish beats speed.':'You\'re ready for a real album.',S.album?['albumWork']:['albumStart','write']]);
+  }
+  if(S.crew.length){const c=S.crew[0];V.push([c.init,c.n,'#f6c6ff',pick(['Bro. Supercar. Think about it.','Big night out tonight. Everyone who matters will be there.','Honestly? Just do the hit again. People love the hit.',`Post a meme about “${S.hit.title}”. Trust me.`]),['party','sequel','post']])}
+  // the honest inner voice
+  let inner;
+  if(S.well<25)inner=['You are running on fumes. Burnout is close.',['rest']];
+  else if(S.rel<30)inner=['People are forgetting your name. You need something big, now.',['press','single','tour']];
+  else if(S.cash<-50000)inner=['The money is gone. How did the money go?',['shows','tour']];
+  else if(!S.album&&S.month>5)inner=['Singles fade. A great album is how careers last.',['albumStart']];
+  else if(S.craft<50)inner=['You only really know how to write one song. Get better.',['write']];
+  else inner=['Your core fans are your safety net when the spotlight moves on.',['shows','tour']];
+  V.push(['ME','Your gut','#ffffff',inner[0],inner[1]]);
+  S.voices=V.map(v=>({init:v[0],who:v[1],color:v[2],line:v[3],acts:v[4]}));
+  S.voiceAct=S.label&&S.voices[0]?S.voices[0].acts:null;
+}
+
+/* ================= random events ================= */
+const EVENTS=[
+  {id:'dance',w:()=>S.hit.heat/S.hit.peak*3,title:()=>`${S.hit.dance} is back`,text:()=>`<p>A famous actor did ${esc(S.hit.dance)} ironically at an awards after-party. Now everyone is doing it again, also ironically.</p>`,ch:[
+    {t:'Join in and laugh at yourself',fx:()=>eff({rel:10,legacy:6,heat:15,cred:-1})},
+    {t:'Ask people to respect the art',fx:()=>{news('gut',`${S.name} asks fans to “stop doing the dance”. Fans do the dance harder.`);return eff({rel:5,legacy:-8,cred:2})}},
+    {t:'Ignore it',fx:()=>eff({rel:4,heat:8})}]},
+  {id:'parody',once:1,title:()=>'Weird Earl made a parody',text:()=>`<p>Comedy legend Weird Earl turned “${esc(S.hit.title)}” into “${esc(S.hit.title.split(' ')[0])} Burrito”. It has 30 million views.</p>`,ch:[
+    {t:'Cameo in the video',fx:()=>eff({rel:9,legacy:5,cred:-1})},
+    {t:'Sue him',d:'$40K in legal fees.',fx:()=>{news('gut',`${S.name} sues beloved Weird Earl. Yikes.`);return eff({cash:-40000,rel:4,legacy:-8,cred:-4})}},
+    {t:'Say nothing',fx:()=>eff({rel:3,legacy:-2})}]},
+  {id:'dez',once:1,title:()=>'Cousin Dez has an idea',text:()=>`<p>“What you need is a Head of Vibes. Me. $6K a month. I'll keep the energy right.”</p>`,ch:[
+    {t:'Hire him. He\'s family.',fx:()=>{hire('dez');return eff({well:5})}},
+    {t:'Say no',fx:()=>eff({well:-4})}]},
+  {id:'skyler',once:1,cond:()=>S.cash>100000,title:()=>'A "creative director" appears',text:()=>`<p>Skyler, who you met at a party, says your “visual universe” needs work. $9K a month. Has a lot of rings.</p>`,ch:[
+    {t:'Hire Skyler',fx:()=>{hire('skyler');return eff({rel:3,cred:-2})}},
+    {t:'Pass',fx:()=>''}]},
+  {id:'bluetooth',once:1,title:()=>'DJ Bluetooth wants in',text:()=>`<p>Your old friend from school now calls himself DJ Bluetooth. He wants to be your hype man. $5K a month.</p>`,ch:[
+    {t:'Bring him along',fx:()=>{hire('bluetooth');return eff({well:4})}},
+    {t:'Not right now',fx:()=>''}]},
+  {id:'fraud',once:1,cond:()=>S.cash>150000&&!own('accountant'),title:()=>'Where did the money go?',text:()=>`<p>Your business manager has stopped answering calls. So has your bank. About <b>${cash(S.cash*.4)}</b> has… moved.</p>`,ch:[
+    {t:'Hire forensic accountants',d:'$30K. Might get some back.',fx:()=>{const lost=S.cash*.4,back=lost*rnd(.3,.6);news('biz',`${S.name}'s ex-manager under investigation for missing millions`);return eff({cash:-lost+back-30000,well:-8})}},
+    {t:'Let it go and move on',fx:()=>eff({cash:-S.cash*.4,well:-12})}]},
+  {id:'plagiarism',once:1,title:()=>'The Velvet Hendersons want a word',text:()=>`<p>A 1970s soft-rock duo claims “${esc(S.hit.title)}” copied their B-side, “Moonlight Tuesday”.</p>`,ch:[
+    {t:'Settle quietly',d:()=>`About ${cash(Math.max(50000,S.cash*.15))}.`,fx:()=>eff({cash:-Math.max(50000,S.cash*.15)})},
+    {t:'Fight it in court',d:'Win, and you look great. Lose, and you lose a slice of the hit forever.',fx:()=>{if(chance(.55)){news('biz',`${S.name} wins “${S.hit.title}” copyright case`);return eff({rel:6,legacy:5,cash:-60000})}S.hit.cut*=.6;news('biz',`${S.name} loses copyright case; Velvet Hendersons get 40% of the hit`);return '<p>You lost. The Hendersons own 40% of your hit now.</p>'+eff({rel:6,cash:-60000,legacy:-3})}},
+    {t:'Give them a co-writing credit',fx:()=>{S.hit.cut*=.8;return eff({cred:3})}}]},
+  {id:'politics',once:1,title:()=>'A politician used your song',text:()=>`<p>Senator Hal Brightwater blasted “${esc(S.hit.title)}” at a rally. Without asking.</p>`,ch:[
+    {t:'Demand he stops',fx:()=>{news('spin',`${S.name} to Sen. Brightwater: “Not my song, not your rally”`);return eff({rel:8,cred:4})}},
+    {t:'Send him an invoice',fx:()=>eff({cash:30000,rel:3,cred:-2})},
+    {t:'Stay out of it',fx:()=>eff({legacy:-3})}]},
+  {id:'wedding',once:1,cond:()=>S.legacy>-20,title:()=>'Wedding season',text:()=>`<p>“${esc(S.hit.title)}” is now the most played song at weddings. Uncles everywhere are doing ${esc(S.hit.dance)}.</p>`,ch:[{t:'Lovely',fx:()=>eff({legacy:8,heat:12,rel:2})}]},
+  {id:'toby',once:1,title:()=>'Your old bandmate surfaces',text:()=>`<p>Toby from your teenage band says <i>he</i> wrote “${esc(S.hit.hook)}”. He has a podcast now.</p>`,ch:[
+    {t:'Pay him off',d:'$80K.',fx:()=>eff({cash:-80000})},
+    {t:'Deny it publicly',fx:()=>chance(.4)?eff({rel:6,cred:-6}):eff({rel:5,cred:1})},
+    {t:'Invite him on stage',fx:()=>eff({rel:6,legacy:4,core:3000})}]},
+  {id:'feud',once:1,title:()=>'Kayla Vox came for you',text:()=>`<p>Rising star Kayla Vox called “${esc(S.hit.title)}” “elevator music for toddlers” on a livestream.</p>`,ch:[
+    {t:'Drop a diss track',d:'Released immediately. Risky.',fx:()=>{S.stats.feud++;return release({type:'diss',title:`${pick(['Elevator','Toddler','Going Down','Vox Populi'])} (Kayla Freestyle)`,q:clamp(S.craft*.8+rnd(-10,20),5,95),mult:1.3})}},
+    {t:'Clap back online',fx:()=>{S.stats.feud++;return eff({rel:12,cred:-3,well:-4})}},
+    {t:'Take the high road',fx:()=>eff({cred:4,rel:2})}]},
+  {id:'feud2',once:1,cond:()=>S.stats.feud>0,title:()=>'The feud escalates',text:()=>`<p>Her fans are flooding your comments with clown emojis. A gossip account says you're “finished”.</p>`,ch:[
+    {t:'Make peace and suggest a collab',fx:()=>{S.offers.push(Object.assign(mkOffer('collab'),{star:'Kayla Vox',keep:1}));news('spin',`${S.name} and Kayla Vox bury the hatchet`);return '<p>She said yes. Check your offers.</p>'+eff({cred:3})}},
+    {t:'Escalate',fx:()=>eff({rel:10,cred:-6,well:-8})}]},
+  {id:'romance',once:1,title:()=>'Tabloid romance',text:()=>`<p>Photos of you having coffee with reality star Brock Daniels. Headlines are calling you “Brockstar”.</p>`,ch:[
+    {t:'Lean into it',fx:()=>{news('gut',`${S.name} and Brock Daniels: it's official (it's not)`);return eff({rel:12,cred:-5})}},
+    {t:'Deny it',fx:()=>eff({rel:3})}]},
+  {id:'essay',once:1,cond:()=>S.cred>=40,title:()=>'“In Defense of '+S.hit.title+'”',text:()=>`<p>A famous critic wrote a 6,000-word essay arguing your hit is secretly a masterpiece.</p>`,ch:[{t:'Frame it',fx:()=>{news('gaz',`“In Defense of ${S.hit.title}” is the essay everyone is sharing`);return eff({legacy:12,cred:4,rel:3})}}]},
+  {id:'overparty',once:1,cond:()=>S.legacy<25&&S.month<20,title:()=>`#${S.hit.title.replace(/[^A-Za-z]/g,'')}IsOverParty`,text:()=>`<p>The internet has collectively decided your hit is cringe now.</p>`,ch:[
+    {t:'Post a funny apology',fx:()=>eff({rel:6,legacy:-2})},
+    {t:'Get defensive',fx:()=>eff({rel:4,legacy:-10,cred:-3})}]},
+  {id:'crewstory',cond:()=>S.crew.length>0,title:()=>`${S.crew[0].n} talked to the tabloids`,text:()=>`<p>“${esc(S.name)} cries at Pixar movies and hasn't written a song in months,” says a “close friend”. It was ${esc(S.crew[0].n)}.</p>`,ch:[
+    {t:'Fire them',fx:()=>{const c=S.crew.shift();return `<p>${esc(c.n)} is gone.</p>`+eff({well:-4,rel:3})}},
+    {t:'Forgive them',fx:()=>eff({rel:4,cred:-3,well:-6})}]},
+  {id:'fanletter',cond:()=>S.releases.some(r=>r.q>=65&&r.type!=='sequel'),title:()=>'A letter from a fan',text:()=>`<p>“Your new song got me through the worst year of my life. I never even liked ‘${esc(S.hit.title)}’.”</p>`,ch:[{t:'Keep it forever',fx:()=>eff({well:12,core:2000})}]},
+  {id:'cover',once:1,title:()=>'A teenager covered your hit',text:()=>`<p>A slow, acoustic version of “${esc(S.hit.title)}” by a 16-year-old is making people cry. It's honestly better than yours.</p>`,ch:[
+    {t:'Duet with them',fx:()=>{news('loopy',`${S.name} surprises teen with a duet. We are not okay.`);return eff({rel:9,legacy:10,cred:3})}},
+    {t:'Let them have their moment',fx:()=>eff({legacy:6,heat:10})}]},
+  {id:'ai',once:1,title:()=>'A fake "new song" by you',text:()=>`<p>An AI-generated track called “${esc(S.hit.title)} 2” is all over Loopy. It's… not bad. That's the problem.</p>`,ch:[
+    {t:'Denounce it',fx:()=>eff({rel:6,cred:3})},
+    {t:'Drop a real song right now',d:'Releases your best demo.',dis:()=>!S.demos.length,fx:()=>{const d=S.demos.shift();if(!d)return eff({rel:4});return release({type:'demo',title:d.title,q:d.q,mult:1.25})}},
+    {t:'Claim it was you all along',fx:()=>eff({rel:10,cred:-8,legacy:-4})}]},
+  {id:'tiger',once:1,cond:()=>own('tiger'),title:()=>`${S.tiger} escaped`,text:()=>`<p>Your tiger, ${esc(S.tiger)}, was found in a neighbour's hot tub. The neighbour was also in the hot tub.</p>`,ch:[{t:'Pay the fines',d:'$120K and a lot of paperwork.',fx:()=>{S.owned=S.owned.filter(x=>x!=='tiger');news('gut',`${S.name}'s tiger ${S.tiger} seized after hot-tub incident`,true);return eff({cash:-120000,rel:10,cred:-6})}}]},
+  {id:'brad',cond:()=>S.label==='titan'&&S.patience<45,title:()=>'Titan is losing patience',text:()=>`<p>Brad from Titan: “Where's my next ‘${esc(S.hit.title)}’? You've got two months or we shelve you.”</p>`,ch:[
+    {t:'Promise a sound-alike single',fx:()=>{S.seq=Math.max(0,S.seq-1);return eff({patience:15})}},
+    {t:'Push back: "I\'m making art"',fx:()=>eff({patience:-15,cred:3})}]},
+  {id:'telethon',once:1,title:()=>'Charity telethon',text:()=>`<p>You're invited to sing for a children's hospital fundraiser.</p>`,ch:[
+    {t:'Sing the hit',fx:()=>eff({rel:5,legacy:4,well:3})},
+    {t:'Sing a new song',fx:()=>eff({rel:4,cred:4,core:1500})}]},
+  {id:'karaoke',once:1,title:()=>'Karaoke kingdom',text:()=>`<p>“${esc(S.hit.title)}” is officially the most-requested karaoke song in the country.</p>`,ch:[{t:'Ha!',fx:()=>chance(.5)?eff({legacy:6,heat:8}):eff({legacy:-5,heat:8})}]},
+  {id:'sample',once:1,cond:()=>S.month>=6,title:()=>'Jaylen Prince wants to sample you',text:()=>`<p>Megastar Jaylen Prince wants to build his next single around the “${esc(S.hit.hook)}” hook.</p>`,ch:[
+    {t:'Take a $100K flat fee',fx:()=>eff({cash:100000,heat:25,legacy:6})},
+    {t:'Take royalty points',d:'Less now, more if it hits.',fx:()=>{const big=chance(.5);news('chart',big?`Jaylen Prince's “${S.hit.hook}” flip is #1; ${S.name}'s original re-enters the chart`:`Jaylen Prince's sample flip underwhelms`,big);return eff(big?{heat:70,legacy:10,rel:10}:{heat:15,legacy:2})}},
+    {t:'Refuse',fx:()=>eff({cred:3})}]},
+  {id:'coin',once:1,cond:()=>S.cash>80000,title:()=>`${(S.crew[0]||{n:'A stranger in your DMs'}).n} has an investment`,text:()=>`<p>“${esc(S.hit.title.replace(/[^A-Za-z]/g,''))}Coin. It's a token. The fans buy it. We all get rich.”</p>`,ch:[
+    {t:'Invest $75K',fx:()=>{if(chance(.12)){news('biz',`${S.name}'s meme coin actually moons`);return eff({cash:225000,cred:-6})}news('biz',`${S.name}'s meme coin collapses 98% in a day`);return eff({cash:-75000,cred:-6,rel:4})}},
+    {t:'Absolutely not',fx:()=>eff({cred:1})}]},
+  {id:'tweets',once:1,title:()=>'Old posts resurface',text:()=>`<p>Someone dug up your posts from age 15. They are… a lot. Mostly about a cartoon frog.</p>`,ch:[
+    {t:'Apologise sincerely',fx:()=>eff({rel:-2,cred:1})},
+    {t:'Double down on the frog',fx:()=>eff({rel:7,cred:-6})}]},
+  {id:'mentor',once:1,cond:()=>S.craft>=50,title:()=>'A legend calls',text:()=>`<p>Songwriting icon Delphine Moreau heard your new demos. She wants to spend a weekend writing with you.</p>`,ch:[{t:'Go',fx:()=>eff({craft:7,cred:4,well:4})}]},
+  {id:'voice',once:1,cond:()=>S.stats.shows+S.stats.tours>=2,title:()=>'You lost your voice',text:()=>`<p>Too many shows. The doctor says total silence for two weeks.</p>`,ch:[{t:'Rest it',fx:()=>eff({well:6,rel:-5,cash:-15000})}]},
+  {id:'fashion',once:1,cond:()=>S.rel>=40,title:()=>'Fashion week',text:()=>`<p>Designer Ottavio Brun wants you in his campaign, wearing a coat made of what appears to be lettuce.</p>`,ch:[
+    {t:'Wear the lettuce',fx:()=>eff({cash:60000,rel:8,cred:-2})},
+    {t:'Decline',fx:()=>''}]}
+];
+function hire(id){const c=CREW_POOL.find(x=>x.id===id);if(c&&!S.crew.some(x=>x.id===id))S.crew.push(Object.assign({},c))}
+function pickEvent(){
+  const pool=EVENTS.filter(e=>{if(e.once&&S.seen[e.id])return false;if((S.cool[e.id]||0)>S.month)return false;if(e.cond&&!e.cond())return false;return true});
+  if(!pool.length)return null;
+  return wpick(pool.map(e=>({e,w:typeof e.w==='function'?e.w():(e.w||1)}))).e;
+}
+function fireEvent(e){
+  S.seen[e.id]=1;S.cool[e.id]=S.month+6;
+  openModal({kick:`Month ${S.month} · Something happened`,title:e.title(),body:e.text(),choices:e.ch.map(c=>({t:c.t,d:typeof c.d==='function'?c.d():c.d,dis:c.dis,fn:c.fx}))});
+}
+
+/* ================= month end ================= */
+function endMonth(){
+  if(S.ending)return;
+  const relFrom=S.rel;resetBooksKeep();
+  const inc=S.mInc,exp=S.mExp;
+  // streams & royalties
+  const hitStreams=S.hit.heat;S.hit.total+=hitStreams;
+  inc.hit=hitStreams*.0035*S.hit.cut;
+  let mine=0;for(const r of S.releases){mine+=r.streams;r.total+=r.streams;S.newTotal+=r.streams}
+  inc.music=mine*.0035*newCut();
+  const gross=inc.hit+inc.music;
+  // hit decay: classics hold, punchlines fade
+  const dec=.87+S.legacy/1000+(S.stats.memes>3?-.01:0);
+  const floor=S.hit.peak*(.015+Math.max(0,S.legacy)/2500);
+  S.hit.heat=Math.max(floor,S.hit.heat*dec);
+  for(const r of S.releases)r.streams*=r.decay;
+  // expenses
+  exp.life=S.owned.reduce((s,id)=>s+(ITEMS.find(x=>x.id===id)||{up:0}).up,0)+4000;
+  exp.crew=S.crew.reduce((s,c)=>s+c.cost,0);
+  exp.mgr=S.mgr?(gross+inc.shows)*MGRS[S.mgr].cut:0;
+  exp.interest=S.cash<0?-S.cash*.04:0;
+  S.cash+=gross-exp.life-exp.crew-exp.mgr-exp.interest;
+  S.yearInc+=gross;
+  // year end taxes
+  const taxDue=S.month%12===0?Math.round(S.yearInc*(own('accountant')?.18:.3)):0;
+  exp.tax=taxDue;S.cash-=taxDue;if(taxDue>0)S.yearInc=0;
+  const net=gross+inc.shows+inc.other-exp.life-exp.crew-exp.mgr-exp.interest-exp.other-taxDue;
+  // relevance drain
+  const since=S.month-S.lastRel;
+  let drain=7+S.month*.2+(since>5?3:0)+(since>10?3:0);
+  const support=(S.hit.heat/S.hit.peak)*3.5+(S.legacy>=40?1.5:0);
+  const relFloor=Math.min(30,S.core/6000);
+  const before=S.rel;
+  S.rel=clamp(S.rel-drain+support,0,100);
+  if(S.rel<relFloor&&before>=relFloor)S.rel=relFloor;else if(S.rel<relFloor)S.rel=Math.min(relFloor,before+1);
+  S.rel=Math.round(S.rel*10)/10;
+  // other drift
+  S.core=Math.round(S.core*.98);
+  S.well=clamp(S.well+4+(own('therapist')?6:0)-S.crew.length*1,0,100);
+  S.fatigue=Math.max(0,S.fatigue-1.5);
+  if(since>=4)S.cred=Math.max(0,S.cred-1.5);
+  if(S.label){S.patience=clamp(S.patience-(since>=3?(S.label==='titan'?9:3):0),0,100)}
+  S.trend.age++;let trendNews='';
+  if(S.trend.age>=S.trend.life){const old=S.trend.n;S.trend={n:pick(TRENDS.filter(t=>t!==old)),age:0,life:ri(4,6)};trendNews=`New trend: ${S.trend.n}`;news('loopy',`Everyone is suddenly obsessed with ${S.trend.n}`)}
+  // fade headline
+  const r=S.rel;
+  news(r>75?'spin':r>45?'gut':r>20?'gaz':'gut',r>75?pick([`Is ${S.name} the face of the year?`,`${S.name} can't leave the house without being mobbed`,`“${S.hit.title}” still everywhere, month ${S.month}`]):r>45?pick([`${S.name} spotted at a smoothie bar`,`What's next for ${S.name}?`,`Fans wonder when ${S.name} will drop new music`]):r>20?pick([`Remember “${S.hit.title}”? We checked in on ${S.name}`,`${S.name}: still around, technically`,`Whatever happened to the “${S.hit.title}” singer?`]):pick([`Pub quiz: who sang “${S.hit.title}”? (Nobody got it)`,`“${S.hit.title}” — that song you forgot you knew`,`${S.name}'s name trends after someone mistakes them for a furniture brand`]));
+  const summary={m:S.month,relFrom,relTo:S.rel,drain:Math.round(drain-support),inc:Object.assign({},inc),exp:Object.assign({},exp),net,hitStreams,mine,trendNews};
+  S.lastSummary=summary;resetMonthBooks();
+  // next month
+  S.month++;
+  S.relHist.push(Math.round(S.rel));
+  S.zero=S.rel<=1?S.zero+1:0;
+  S.ap=3;
+  if(S.busy>0){S.busy--;S.ap=0}
+  else if(S.well<20)S.ap=2;
+  UI.prevRel=relFrom;
+  // label drop
+  let dropped=false;
+  if(S.label&&S.patience<=0){dropped=S.label;S.label=null;news('biz',`${LABELS[dropped].n} drops ${S.name}`,true);eff({rel:-6,cred:2})}
+  // ending check
+  const end=checkEnding();
+  if(end){S.ending=end;recordEnding(end);save();UI.screen='ending';UI.modal=null;UI.queue=[];render();return}
+  makeOffers(false);
+  openModal({kick:`End of month ${summary.m}`,title:monthTitle(summary),body:summaryHTML(summary)});
+  if(taxDue>0)openModal({kick:'Year-end',title:'The tax bill arrives',body:`<p>You earned a lot this year. The government noticed. <b class="bad">${cash(-taxDue)}</b> is gone${own('accountant')?' (your accountant saved you a chunk)':''}.</p>`+(S.cash<0?'<p class="bad">You\'re now in debt. Interest is 4% a month.</p>':'')});
+  if(dropped)openModal({kick:'Bad news',title:`${LABELS[dropped].n} dropped you`,body:`<p>“We've decided to go in a different direction.” ${LABELS[dropped].masters?'They keep the hit\'s masters.':''} You're independent again.</p>`});
+  if(S.cash<-150000&&!S.stats.bankrupt)bankruptcy();
+  if(S.well<12)openModal({kick:'Burnout',title:'You collapsed backstage',body:`<p>Exhaustion. The doctor orders a full month off. This month you only have one move.</p>`+eff({well:30,rel:-5}),after:()=>{S.ap=1}});
+  else if(chance(.78)){const e=pickEvent();if(e)fireEvent(e)}
+  if(S.zero===2)openModal({kick:'Warning',title:'You\'re on the edge of oblivion',body:'<p>Your relevance has been at zero for two months. One more and you\'re a pub-quiz question forever.</p>'});
+  makeVoices();
+  save();
+}
+function resetBooksKeep(){/* shows/other already accumulated during the month */for(const k of ['hit','music'])S.mInc[k]=0;for(const k of ['life','crew','mgr','interest'])S.mExp[k]=0}
+function monthTitle(s){const d=s.relTo-s.relFrom;return d>2?'You\'re heating up':d>-4?'Holding on':d>-10?'The spotlight drifts':'Fading fast'}
+function summaryHTML(s){
+  const L=(a,b,c)=>`<div class="sumline"><span>${a}</span><b class="${c||''}">${b}</b></div>`;
+  const totInc=s.inc.hit+s.inc.music+s.inc.shows+s.inc.other,totExp=s.exp.life+s.exp.crew+s.exp.mgr+s.exp.interest+s.exp.other+(s.exp.tax||0);
+  return `<div class="relbox"><div class="relbar"><i style="width:${s.relFrom}%" data-to="${s.relTo}"></i><span>RELEVANCE</span></div><div class="relnum">${Math.round(s.relTo)}</div></div>
+  <p class="mute"><small>${Math.round(s.relFrom)} → ${Math.round(s.relTo)}. ${s.drain>0?`The world forgets about ${s.drain} points of you every month and it gets worse over time.`:'Your songs are holding attention.'}</small></p>
+  <div>${L(`“${esc(S.hit.title)}” · ${fmt(s.hitStreams)} plays`,cash(s.inc.hit))}${s.mine?L(`New music · ${fmt(s.mine)} plays`,cash(s.inc.music)):''}${s.inc.shows?L('Shows',cash(s.inc.shows)):''}${s.inc.other?L('Deals & other',cash(s.inc.other)):''}
+  ${L('Lifestyle & upkeep',cash(-s.exp.life),'bad')}${s.exp.crew?L('Entourage',cash(-s.exp.crew),'bad'):''}${s.exp.mgr?L('Manager\'s cut',cash(-s.exp.mgr),'bad'):''}${s.exp.interest?L('Debt interest',cash(-s.exp.interest),'bad'):''}${s.exp.other?L('Spending & fees',cash(-s.exp.other),'bad'):''}${s.exp.tax?L('Taxes',cash(-s.exp.tax),'bad'):''}
+  ${L('This month',cash(totInc-totExp),totInc-totExp>=0?'good':'bad').replace('sumline','sumline tot')}</div>${s.trendNews?`<p><span class="pill l">${esc(s.trendNews)}</span></p>`:''}`;
+}
+function bankruptcy(){
+  S.stats.bankrupt=1;const back=S.owned.reduce((s,id)=>s+(ITEMS.find(x=>x.id===id)||{cost:0}).cost*.35,0);S.owned=[];S.crew=[];
+  news('gut',`${S.name} declares bankruptcy; face-shaped pool up for auction`,true);
+  openModal({kick:'Rock bottom',title:'Bankrupt',body:`<p>The debt collectors came for everything. The crew left the same afternoon.</p>`+eff({cash:back+Math.max(0,-S.cash)*.5,rel:4,cred:-5,well:-15})});
+}
+
+/* ================= endings ================= */
+function checkEnding(){
+  if(S.zero>=3)return 'forgotten';
+  if(S.month>MONTHS)return finalEnding();
+  return null;
+}
+function finalEnding(){
+  const recentHits=S.releases.filter(r=>r.pos&&r.pos<=5&&r.month>MONTHS-18).length;
+  if(S.cred>=45&&S.core>=80000&&((S.surpassed&&S.rel>=40)||(recentHits>=5&&S.rel>=65)))return 'career';
+  if(S.core>=110000&&S.cred>=55)return 'cult';
+  if(S.rel>=18||S.core>=60000)return 'nostalgia';
+  return 'forgotten';
+}
+function endingText(k){
+  const n=esc(S.name),t=esc(S.hit.title),L=S.legacy;
+  if(k==='career')return {kick:'Three years later',head:`${n}: Not a One-Hit Wonder`,deck:`The “${t}” singer has quietly become one of the most important artists of the decade.`,body:`<p>${S.surpassed?`“${esc(S.best.title)}” outgrew the song that made you famous.`:'Hit after hit after hit.'} When people talk about “${t}” now, they call it <i>an early single</i>. Ten years from now there'll be a box set. There'll be a documentary, and this time you get to choose the story.</p>`};
+  if(k==='cult')return {kick:'Three years later',head:`${n} Is Your Favourite Artist's Favourite Artist`,deck:`Mainstream radio moved on. ${fmt(S.core)} people never did.`,body:`<p>You sell out the same 2,000-capacity rooms every night, and the crowd sings the deep cuts louder than “${t}”. Critics write long essays about you. Younger artists name-check you. You will never be on a talk show again, and you are completely fine with that.</p>`};
+  if(k==='nostalgia')return {kick:'Three years later',head:L>=20?`“${t}” Is Forever. So Is the Tour.`:`Still Doing ${esc(S.hit.dance.replace(/^the /,'The '))} at County Fairs`,deck:L>=20?`${n} plays the hit every night and everyone sings every word.`:`${n} has found a comfortable home on the cruise ship circuit.`,body:`<p>${S.stats.nostalgia?'The “Remember When?” tour keeps calling, and you keep saying yes. ':''}You open with a new song, and people check their phones. Then the first notes of “${t}” play and the whole room lights up. It pays the bills. ${L>=20?'It\'s a beloved song, and you\'re its keeper.':'It\'s a punchline, and you\'ve made your peace with being in on the joke.'}</p>`};
+  return {kick:'Pub quiz, round four',head:`Q: Who Sang “${t}”?`,deck:`A: Nobody at the table could remember.`,body:`<p>${S.stats.bankrupt?'The money went first. ':''}${L<=-40?`The song lives on as a meme template. Your face does not.`:`The song still pops up on throwback playlists. Your name, increasingly, does not.`} Somewhere, a quizmaster reads out the answer and a whole pub goes “ohhh, <i>them</i>”. You're doing okay, honestly. You have a normal job. Sometimes you hum the hook at the supermarket and nobody notices.</p>`};
+}
+
+/* ================= UI plumbing ================= */
+function openModal(m){if(UI.modal)UI.queue.push(m);else UI.modal=m}
+function isDis(c){return typeof c.dis==='function'?c.dis():!!c.dis}
+function closeModal(){const m=UI.modal;UI.modal=UI.queue.shift()||null;if(m&&m.after)m.after()}
+function toast(t){UI.toast=t;clearTimeout(toast.t);toast.t=setTimeout(()=>{UI.toast=null;const e=$('.toast');if(e)e.remove()},2200);render()}
+const ICONS={
+  now:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  studio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  spot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20l5-11 6 6-11 5z"/><path d="M14 4l6 6M16 2l1 3M22 8l-3-1"/></svg>',
+  life:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 11l9-7 9 7v9H3z"/><path d="M10 20v-6h4v6"/></svg>',
+  feed:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h6"/></svg>'
+};
+function spark(arr,h=56){if(arr.length<2)arr=[arr[0]||0,arr[0]||0];const w=300,st=w/(arr.length-1);const pts=arr.map((v,i)=>`${(i*st).toFixed(1)},${(h-3-(v/100)*(h-6)).toFixed(1)}`).join(' ');return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-label="Relevance history"><polyline points="0,${h} ${pts} ${w},${h}" fill="rgba(255,91,20,.18)" stroke="none"/><polyline points="${pts}" fill="none" stroke="#16151a" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>`}
+
+/* ---------- views ---------- */
+function titleView(){
+  const E=endingsFound();const slots=[1,2,3].map(n=>({n,d:readSlot(n)}));
+  return `<div class="wrap title"><div class="logo"><div class="disc"></div><h1>One-Hit<br><em>Wonder</em></h1><p>You have the biggest song in the world. Everyone will forget you by Christmas. <b>Prove them wrong.</b></p></div>
+  <div class="card"><h2>Save slots</h2><div class="list">${slots.map(({n,d})=>`<div class="between"><div style="min-width:0"><b>Slot ${n}</b><br><small class="mute">${d?`${esc(d.name)} · “${esc(d.hit.title)}” · ${d.ending?ENDINGS[d.ending].n:`Month ${Math.min(d.month,MONTHS)} of ${MONTHS}`}`:'Empty'}</small></div><div class="row" style="flex:none">${d?`<button class="btn sm" data-a="load" data-n="${n}">${d.ending?'View':'Play'}</button><button class="btn sm alt" data-a="delslot" data-n="${n}" aria-label="Delete slot ${n}">✕</button>`:`<button class="btn sm hot" data-a="newgame" data-n="${n}">New</button>`}</div></div>`).join('')}</div></div>
+  <div class="card"><div class="between"><h2>Endings found</h2><span class="pill">${Object.keys(E).length}/4</span></div><div class="ends">${Object.keys(ENDINGS).map(k=>`<div class="endtile ${E[k]?'got':''}"><span class="ic">${E[k]?ENDINGS[k].ic:'🔒'}</span>${E[k]?ENDINGS[k].n:'???'}</div>`).join('')}</div></div>
+  <button class="btn alt wide" data-a="help">How to play</button>
+  <p class="mute" style="text-align:center"><small>All artists, labels and people are fictional. Add to Home Screen from Safari's Share menu to play full screen.</small></p></div>`;
+}
+function setupView(){
+  const D=UI.draft;const h=D.hit;
+  return `<div class="wrap title"><div class="logo" style="padding-bottom:0"><h1 style="font-size:44px">Out of<br><em>nowhere</em></h1></div>
+  <div class="card"><label class="field"><span class="k">Your artist name</span><input id="f-name" type="text" maxlength="28" value="${esc(D.name)}" autocomplete="off" autocapitalize="words"></label><button class="btn sm alt" data-a="rname" style="align-self:flex-start">Random name</button></div>
+  <div class="hitcard"><div class="stack" style="gap:6px;min-width:0"><span class="k">Your accidental hit</span><h2>“${esc(h.title)}”</h2><small><b>${esc(h.genre)}</b>, ${esc(h.origin)}.</small><small>Hook: <i>“${esc(h.hook)}”</i><br>Dance: ${esc(h.dance)}</small></div><div class="disc"></div></div>
+  <div class="row"><button class="btn alt" data-a="rhit">Different hit</button></div>
+  <div class="card"><p>This week it's <b>#1 in 14 countries</b> with <b class="num">${fmt(h.peak)}</b> plays a month. You have ${MONTHS} months to prove it wasn't a fluke.</p></div>
+  <div class="row"><button class="btn alt" data-a="title">Back</button><button class="btn hot" style="flex:1" data-a="start">Let's go</button></div></div>`;
+}
+function hud(){
+  const low=S.rel<25;
+  return `<header class="hud"><div class="wrap"><div class="between"><div class="who fadeable">${esc(S.name)}</div><div class="row" style="flex:none;gap:8px"><span class="pill i">M${Math.min(S.month,MONTHS)}/${MONTHS}</span><button class="menu" data-a="menu" aria-label="Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div></div>
+  <div class="relbox"><div class="relbar ${low?'low':''}"><i style="width:${UI.prevRel??S.rel}%" data-to="${S.rel}"></i><span>RELEVANCE</span></div><div class="relnum">${Math.round(S.rel)}</div></div>
+  <div class="hudline"><span class="${S.cash<0?'bad':''}">${cash(S.cash)}</span><span>Moves <span class="ap">${[0,1,2].map(i=>`<i class="${i<S.ap?'':'off'}"></i>`).join('')}</span></span><span>Cred ${Math.round(S.cred)}</span></div></div></header>`;
+}
+function actRow(id){
+  const A=ACTIONS[id];const ok=!A.cond||A.cond();
+  if(!ok&&!A.why)return '';
+  const can=ok&&S.ap>=A.ap;
+  return `<div class="act"><div class="nm">${A.n} ${A.ap?apDots(A.ap):'<span class="pill">free</span>'}</div><div class="ds">${A.d()}</div>${!ok?`<div class="why">${A.why}</div>`:''}<button class="btn sm go ${id==='albumRelease'?'hot':''}" data-a="act" data-id="${id}" ${can?'':'disabled'}>${A.ap?'Do it':'Open'}</button></div>`;
+}
+function nowView(){
+  const hs=S.hit.heat,L=S.legacy;
+  const last=S.lastSummary;
+  return `<div class="sec">
+  <div class="hitcard fadeable"><div class="stack" style="gap:6px;min-width:0"><span class="k">The hit</span><h2>“${esc(S.hit.title)}”</h2><small class="num">${fmt(hs)} plays/mo · ${Math.round(hs/S.hit.peak*100)}% of peak${S.hit.owned?'':S.hit.cut?` · you get ${Math.round(S.hit.cut/.8*100)}%`:' · sold'}</small></div><div class="disc ${hs<S.hit.peak*.3?'slow':''}"></div></div>
+  <div class="card"><div class="between"><h3>How the world sees the hit</h3><span class="pill ${L>=20?'g':L<=-20?'r':''}">${legacyLabel()}</span></div><div class="legacy"><i style="left:${(L+100)/2}%"></i></div><div class="between"><small class="mute">Punchline</small><small class="mute">Modern classic</small></div></div>
+  <div class="card"><h3>Your career</h3><div class="stats">
+    <div class="stat"><span>Core fans</span><b>${fmt(S.core)}</b></div><div class="stat"><span>Wellbeing</span><b class="${S.well<30?'bad':''}">${Math.round(S.well)}</b></div><div class="stat"><span>Craft</span><b>${Math.round(S.craft)}</b></div>
+    <div class="stat"><span>Best since</span><b>${S.best.peak?Math.round(S.best.peak/S.hit.peak*100)+'%':'—'}</b></div><div class="stat"><span>Since release</span><b>${S.releases.length?(S.month-S.lastRel)+' mo':'never'}</b></div><div class="stat"><span>${S.label?'Label':'Label'}</span><b>${S.label?(S.label==='titan'?'Titan':'Bramble'):'none'}</b></div></div>
+    ${S.label?`<div><div class="between"><small class="k">${LABELS[S.label].n} patience</small><small class="num">${Math.round(S.patience)}</small></div><div class="bar ${S.patience<35?'t':'g'}"><i style="width:${S.patience}%"></i></div></div>`:''}
+    ${spark(S.relHist)}<small class="mute">Relevance since the hit. ${S.surpassed?'<b class="good">You\'ve topped the hit.</b>':`Goal: a release bigger than “${esc(S.hit.title)}”, or a loyal fanbase that outlasts it.`}</small></div>
+  <div class="card"><h2>Voices in your ear</h2><div class="stack">${S.voices.map(v=>`<div class="voice"><div class="av" style="background:${v.color}">${esc(v.init)}</div><div class="bubble"><span class="who">${esc(v.who)}</span>${esc(v.line)}</div></div>`).join('')}</div></div>
+  <div class="card" id="offers"><div class="between"><h2>Offers</h2><small class="mute">Expire at month end</small></div>${S.offers.length?`<div class="list">${S.offers.map((o,i)=>{const O=OFFERS[o.id];const ap=O.ap||0;return `<div class="stack" style="gap:6px"><div class="between" style="align-items:flex-start"><b>${esc(O.title(o))}</b>${ap?apDots(ap):''}</div><div style="font-size:14px">${O.text(o)}</div><div class="row"><button class="btn sm ${O.tag==='trap'?'':'hot'}" data-a="accept" data-i="${i}" ${S.ap<ap?'disabled':''}>Accept</button><button class="btn sm alt" data-a="decline" data-i="${i}">Decline</button></div></div>`}).join('')}</div>`:'<div class="empty">Nobody\'s calling. That should worry you.</div>'}</div>
+  </div>`;
+}
+function studioView(){
+  const A=S.album;
+  return `<div class="sec">
+  <div class="card"><div class="between"><h2>Make music</h2><span class="pill">${S.ap} move${S.ap===1?'':'s'} left</span></div><div class="list">${['write','single','sequel','trend'].map(actRow).join('')}</div></div>
+  <div class="card"><h2>The album</h2>${A?`<div class="between"><b>“${esc(A.title)}”</b><span class="pill b">${A.dir==='hitfactory'?'Hit factory':A.dir==='personal'?'Personal':'Pivot'}</span></div><div class="bar b"><i style="width:${Math.min(100,A.prog)}%"></i></div><small class="mute">${A.qs.length} session${A.qs.length===1?'':'s'} · quality so far ${albumQ()||'—'}${S.producer?' · produced by Marisol Reyes':''}</small>`:'<p class="mute">No album in progress. Singles keep you visible; albums build careers.</p>'}<div class="list">${['albumStart','albumWork','leadSingle','albumRelease'].map(actRow).join('')}</div></div>
+  <div class="card"><div class="between"><h2>Demos</h2><small class="mute">Best first · max 8</small></div>${S.demos.length?`<div class="list">${S.demos.map(d=>`<div class="between"><span>“${esc(d.title)}”</span><span class="pill ${d.q>=70?'l':''}">Q ${d.q}</span></div>`).join('')}</div>`:'<div class="empty">No demos. Write some songs.</div>'}</div>
+  <div class="card"><h2>Discography</h2><div class="list"><div class="between"><span><b>“${esc(S.hit.title)}”</b><br><small class="mute">The hit · ${fmt(S.hit.total)} plays since</small></span><span class="pill t">#1</span></div>${S.releases.map(r=>`<div class="between"><span style="min-width:0"><b>“${esc(r.title)}”</b><br><small class="mute">M${r.month} · ${r.type==='album'?'Album':r.type==='sequel'?'Sound-alike':r.type==='trend'?'Trend chase':r.type==='collab'?'Collab':r.type==='diss'?'Diss track':'Single'} · Q ${r.q} · ${fmt(r.total+r.streams)} plays</small></span><span class="pill ${r.pos&&r.pos<=10?'l':r.pos?'':'r'}">${r.pos?'#'+r.pos:'flop'}</span></div>`).join('')}</div></div>
+  </div>`;
+}
+function spotView(){
+  return `<div class="sec">
+  <div class="card"><div class="between"><h2>Get seen</h2><span class="pill">${S.ap} move${S.ap===1?'':'s'} left</span></div><div class="list">${['press','post','stunt'].map(actRow).join('')}</div>${S.fatigue>=2?'<small class="bad">Overexposed: promo is less effective until people miss you a bit.</small>':''}</div>
+  <div class="card"><h2>Play live</h2><div class="list">${['shows','tour'].map(actRow).join('')}</div></div>
+  <div class="card"><div class="between"><h2>What's trending</h2><span class="pill ${trendLate()?'t':'l'}">${trendLate()?'peaking':'rising'}</span></div><p style="font-family:var(--serif);font-size:26px;line-height:1">${esc(S.trend.n)}</p><div class="bar ${trendLate()?'t':'l'}"><i style="width:${Math.round(S.trend.age/S.trend.life*100)}%"></i></div><small class="mute">Trends burn out in a few months. Chase early or not at all.</small></div>
+  </div>`;
+}
+function lifeView(){
+  const s=S.lastSummary;
+  return `<div class="sec">
+  <div class="card"><h2>Look after yourself</h2><div class="list">${['rest','party'].map(actRow).join('')}</div></div>
+  <div class="card"><h2>Money</h2><div class="stats"><div class="stat"><span>Cash</span><b class="${S.cash<0?'bad':''}">${cash(S.cash)}</b></div><div class="stat"><span>Burn / mo</span><b>${cash(4000+S.owned.reduce((a,id)=>a+(ITEMS.find(x=>x.id===id)||{up:0}).up,0)+S.crew.reduce((a,c)=>a+c.cost,0))}</b></div><div class="stat"><span>Hit share</span><b>${Math.round(S.hit.cut*100)}%</b></div></div>${s?`<small class="mute">Last month: ${cash(s.net)} net. Taxes are due at the end of each year.</small>`:'<small class="mute">Royalties arrive at the end of each month. Taxes are due at year end.</small>'}</div>
+  <div class="card"><h2>Team</h2><div class="list">
+    <div class="between"><span><b>Label</b><br><small class="mute">${S.label?`${LABELS[S.label].n} · you keep ${Math.round(LABELS[S.label].cut*100)}% of new music`:'Independent · you keep 80% of new music'}</small></span></div>
+    <div class="between"><span><b>Manager</b><br><small class="mute">${S.mgr?`${MGRS[S.mgr].n} · ${MGRS[S.mgr].cut*100}% of income`:'Self-managed · fewer offers'}</small></span>${S.mgr?'<button class="btn sm alt" data-a="firemgr">Fire</button>':''}</div>
+    ${S.crew.map((c,i)=>`<div class="between"><span><b>${esc(c.n)}</b><br><small class="mute">${esc(c.role)} · ${cash(c.cost)}/mo</small></span><button class="btn sm alt" data-a="fire" data-i="${i}">Fire</button></div>`).join('')}
+  </div></div>
+  <div class="card"><h2>Spend it</h2><div class="list">${ITEMS.map(it=>{const o=own(it.id);return `<div class="between" style="align-items:flex-start"><span style="min-width:0"><b>${esc(it.n)}${it.id==='tiger'?esc(S.tiger):''}</b><br><small class="mute">${esc(it.d)}</small></span>${o?`<button class="btn sm alt" data-a="sell" data-id="${it.id}">Sell</button>`:`<button class="btn sm" data-a="buy" data-id="${it.id}" ${S.cash<it.cost?'disabled':''}>${it.cost?cash(it.cost):'Hire'}</button>`}</div>`}).join('')}</div></div>
+  </div>`;
+}
+function feedView(){
+  return `<div class="sec"><div class="card" style="background:transparent;box-shadow:none;border:0;padding:0"><h2 style="font-family:var(--serif);font-weight:400;font-size:30px">The Feed</h2><small class="mute">What the world is saying about you.</small></div>
+  ${S.feed.map((f,i)=>`<div class="clip ${f.big?'big':''}" style="--r:${(i%3-1)*.6}deg"><div class="src"><span>${esc(OUTLETS[f.src]||f.src)}</span><span>Month ${f.m}</span></div><h3>${esc(f.t)}</h3></div>`).join('')}</div>`;
+}
+function endingView(){
+  const k=S.ending,T=endingText(k),E=endingsFound();
+  return `<div class="wrap title"><div class="front"><div class="mast"><b>The Daily Spin</b><span class="k">${esc(T.kick)}</span></div><span class="sticker" style="align-self:flex-start">Ending: ${ENDINGS[k].n}</span><h1>${T.head}</h1><p class="deck">${T.deck}</p>${T.body}
+  ${spark(S.relHist)}<small class="mute">Relevance, month by month.</small>
+  <div class="stats"><div class="stat"><span>Core fans</span><b>${fmt(S.core)}</b></div><div class="stat"><span>Cred</span><b>${Math.round(S.cred)}</b></div><div class="stat"><span>Cash</span><b>${cash(S.cash)}</b></div><div class="stat"><span>Releases</span><b>${S.releases.length}</b></div><div class="stat"><span>Top 10s</span><b>${S.stats.hits10}</b></div><div class="stat"><span>The hit is</span><b>${legacyLabel()}</b></div></div>
+  ${S.best.peak?`<small>Biggest since the hit: <b>“${esc(S.best.title)}”</b>, ${Math.round(S.best.peak/S.hit.peak*100)}% as big.</small>`:''}</div>
+  <div class="card"><div class="between"><h2>Endings found</h2><span class="pill">${Object.keys(E).length}/4</span></div><div class="ends">${Object.keys(ENDINGS).map(x=>`<div class="endtile ${E[x]?'got':''}"><span class="ic">${E[x]?ENDINGS[x].ic:'🔒'}</span>${E[x]?ENDINGS[x].n:'???'}</div>`).join('')}</div></div>
+  <div class="row"><button class="btn alt" data-a="title" style="flex:1">Title screen</button><button class="btn hot" data-a="again" style="flex:1">New hit</button></div></div>`;
+}
+function helpHTML(){return `<p>You start with a massive viral hit. Your <b>relevance</b> drains every month, and faster as time goes on. Hit zero for three months and you're forgotten.</p>
+<p>Each month you get <b>3 moves</b>. Write, record, release, promote, tour, or rest. Then end the month: royalties arrive, bills leave, and something usually happens.</p>
+<p><b>Quick tricks</b> (sound-alike singles, trend chasing, ads, reality TV) buy attention but cost credibility and turn your hit into a joke. <b>Real work</b> (better songs, albums, touring) is slow but builds core fans who stick around.</p>
+<p>After ${MONTHS} months you'll get one of four endings: <b>Trivia Answer</b>, <b>Nostalgia Circuit</b>, <b>Cult Favorite</b>, or <b>Not a One-Hit Wonder</b>. To get the last one you'll need a release bigger than the hit, or a run of top-10s, plus the respect to match.</p>
+<p class="mute"><small>Saves automatically after every move.</small></p>`}
+function modalHTML(){
+  const m=UI.modal;if(!m)return '';
+  const ch=m.choices&&m.choices.length?m.choices.map((c,i)=>`<button class="choice ${i===0&&m.choices.length>1?'':''}" data-a="mc" data-i="${i}" ${isDis(c)?'disabled style="opacity:.4"':''}><b>${esc(c.t)}</b>${c.d?`<small>${esc(c.d)}</small>`:''}</button>`).join(''):`<button class="btn wide" data-a="mok">${UI.queue.length?'Next':'OK'}</button>`;
+  return `<div class="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">${m.kick?`<div class="kick">${esc(m.kick)}</div>`:''}<h2 id="mt">${esc(m.title)}</h2>${m.body?`<div class="body">${m.body}</div>`:''}<div class="stack">${ch}</div></div></div>`;
+}
+function gameView(){
+  const views={now:nowView,studio:studioView,spot:spotView,life:lifeView,feed:feedView};
+  const tabs=[['now','Now'],['studio','Studio'],['spot','Spotlight'],['life','Life'],['feed','Feed']];
+  const nOff=S.offers.length;
+  return hud()+`<main class="wrap">${views[UI.tab]()}</main>
+  <div class="endbar"><div class="wrap"><button class="btn ${S.ap===0?'hot':''}" data-a="end">${S.month>=MONTHS?'Finish the final month':`End month ${S.month}`} ▸</button></div></div>
+  <nav class="tabs"><div class="wrap">${tabs.map(([k,n])=>`<button class="tab ${UI.tab===k?'on':''}" data-a="tab" data-v="${k}">${ICONS[k]}${n}${k==='now'&&nOff?`<span class="dot">${nOff}</span>`:''}</button>`).join('')}</div></nav>`;
+}
+function render(){
+  const app=$('#app');
+  let html;
+  if(UI.screen==='game'&&S)html=gameView();
+  else if(UI.screen==='ending'&&S)html=endingView();
+  else if(UI.screen==='setup')html=setupView();
+  else html=titleView();
+  app.innerHTML=html+modalHTML()+(UI.toast?`<div class="toast" role="status">${esc(UI.toast)}</div>`:'');
+  const f=S&&UI.screen!=='title'?clamp(1-S.rel/100,0,1):0;
+  document.documentElement.style.setProperty('--fade',f.toFixed(3));
+  // animate relevance bars from previous value to current
+  const bars=document.querySelectorAll('.relbar i[data-to]');
+  if(bars.length)requestAnimationFrame(()=>requestAnimationFrame(()=>bars.forEach(b=>b.style.width=b.dataset.to+'%')));
+  UI.prevRel=null;
+}
+
+/* ---------- input ---------- */
+const ACT={
+  tab:d=>{UI.tab=d.v;window.scrollTo(0,0)},
+  act:d=>doAction(d.id),
+  accept:d=>acceptOffer(+d.i),
+  decline:d=>declineOffer(+d.i),
+  end:()=>{if(S.ap>0&&!S.busy){openModal({kick:'Wait',title:`You still have ${S.ap} move${S.ap>1?'s':''}`,body:'<p>Unused moves are lost. The world won\'t wait for you.</p>',choices:[{t:'End the month anyway',fn:()=>{UI.modal=null;UI.queue=[];endMonth();return null}},{t:'Keep playing',fn:()=>null}]});return}endMonth()},
+  mc:d=>{const m=UI.modal;const c=m&&m.choices[+d.i];if(!c||isDis(c))return;closeModal();const r=c.fn?c.fn():null;if(r)openModal({kick:'Result',title:m.title,body:r});if(S)save()},
+  mok:()=>{closeModal();if(S)save()},
+  menu:()=>openModal({kick:'Menu',title:S.name,body:`<p class="mute">Month ${S.month} of ${MONTHS} · Slot ${S.slot}. Your progress saves automatically.</p>`,choices:[{t:'How to play',fn:()=>helpHTML()},{t:'Back to title screen',d:'Your game is saved.',fn:()=>{save();UI.screen='title';UI.queue=[];return null}},{t:'Close',fn:()=>null}]}),
+  help:()=>openModal({kick:'How to play',title:'Don\'t fade away',body:helpHTML()}),
+  newgame:d=>{UI.draft={slot:+d.n,name:genName(),hit:genHit()};UI.screen='setup'},
+  load:d=>{const s=readSlot(+d.n);if(!s)return;S=s;S.slot=+d.n;UI.screen=S.ending?'ending':'game';UI.tab='now'},
+  delslot:d=>openModal({kick:'Delete',title:`Delete slot ${d.n}?`,body:'<p>This can\'t be undone.</p>',choices:[{t:'Delete it',fn:()=>{delSlot(+d.n);if(S&&S.slot===+d.n)S=null;return null}},{t:'Cancel',fn:()=>null}]}),
+  rname:()=>{UI.draft.name=genName()},
+  rhit:()=>{UI.draft.name=($('#f-name')||{}).value||UI.draft.name;UI.draft.hit=genHit()},
+  start:()=>{const nm=(($('#f-name')||{}).value||'').trim()||UI.draft.name;newGame(UI.draft.slot,nm.slice(0,28),UI.draft.hit);UI.screen='game';UI.tab='now';
+    openModal({kick:'Week one',title:`“${UI.draft.hit.title}” is everywhere`,body:`<p>It was ${esc(UI.draft.hit.origin)}. Now it's #1 in 14 countries, and ${esc(UI.draft.hit.dance)} is on every phone on Earth.</p><p>Your phone has not stopped ringing. Labels, managers, talk shows. Check your <b>Offers</b>.</p><p>The <b>relevance</b> meter at the top is the most important number in your life. It only goes one way unless you push back.</p>`})},
+  title:()=>{UI.screen='title';UI.modal=null;UI.queue=[]},
+  again:()=>{const n=S.slot;UI.draft={slot:n,name:S.name,hit:genHit()};UI.screen='setup'},
+  fire:d=>{const c=S.crew.splice(+d.i,1)[0];if(c){news('gut',`${S.name} cuts ties with ${c.n}`);toast(`${c.n} is off the payroll.`)}save()},
+  firemgr:()=>{const m=MGRS[S.mgr].n;S.mgr=null;news('biz',`${S.name} parts ways with manager ${m}`);toast(`You fired ${m}.`);save()},
+  buy:d=>{const it=ITEMS.find(x=>x.id===d.id);if(!it||own(it.id)||S.cash<it.cost)return;S.cash-=it.cost;S.mExp.other+=it.cost;S.owned.push(it.id);const r=eff(it.fx);if(it.cost>=50000)news('gut',`${S.name} splashes out on a ${it.id==='tiger'?'tiger':it.n.toLowerCase()}`);openModal({kick:'Purchased',title:it.n+(it.id==='tiger'?S.tiger:''),body:r||'<p>Done.</p>'});save()},
+  sell:d=>{const it=ITEMS.find(x=>x.id===d.id);if(!it||!own(it.id))return;S.owned=S.owned.filter(x=>x!==it.id);const back=Math.round(it.cost*.4);S.cash+=back;S.mInc.other+=back;toast(it.cost?`Sold for ${cash(back)}.`:'Cancelled.');save()}
+};
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+  const f=ACT[b.dataset.a];if(!f)return;
+  f(b.dataset,b);render();
+});
+document.addEventListener('input',e=>{if(e.target.id==='f-name'&&UI.draft)UI.draft.name=e.target.value});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='f-name'){e.target.blur()}});
+
+/* ---- auto-update: reload when a newer version is published ---- */
+const APP_VER='202610240600';
+function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER&&!UI.modal){save();location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
+setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else checkUpdate()});
+window.addEventListener('pagehide',save);
+
+/* ---- boot: resume last slot straight into the game ---- */
+(function boot(){let n=1;try{n=+localStorage.getItem(LAST_KEY)||0}catch(e){}const s=n?readSlot(n):null;if(s&&!s.ending){S=s;S.slot=n;UI.screen='game'}render()})();
+</script>
+</body>
+</html>

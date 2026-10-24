@@ -6,10 +6,24 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/
 
 To install on iPhone: open the link in Safari, tap Share, then Add to Home Screen.
 
+## One-Hit Wonder
+
+A second game in this repo, and the reverse of Headliner: you start with a huge viral hit that came out of nowhere. Your relevance drains every month. Labels, managers and hangers-on all want something different from you. Try to avoid becoming a pub-quiz answer and prove you're not a one-hit wonder. Every run gives you a new random hit song, and there are four endings to find.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/one-hit-wonder/
+
+## Debut Dream (K-pop idol simulator)
+
+Another game lives in `kpop/`: create your idol, survive trainee evaluations, debut with a group, chase your first music show win and steer a career all the way to contract renewal and beyond. All agencies, idols and groups are fictional.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/kpop/
+
+Features 3D idols and a dancing group stage (drag to spin), a Dream board of goals, coach-picked weekly plans, a skip-ahead button, a photocard binder and a fan chat.
+
 ## Decades
 
-A second game: start a band in 1965 and play one year per turn all the way to the present. Manage egos, lineup changes, breakups and reunions while the industry shifts from vinyl to cassettes, music videos, CDs, file-sharing, streaming and viral clips. Your band appears as 3D characters whose clothes and hair follow each decade, a rival band fights you for the charts, and you can replay your whole career as a documentary.
+Start a band in 1965 and play one year per turn all the way to the present. Manage egos, lineup changes, breakups and reunions while the industry shifts from vinyl to cassettes, music videos, CDs, file-sharing, streaming and viral clips. Your band appears as 3D characters whose clothes and hair follow each decade, a rival band fights you for the charts, and you can replay your whole career as a documentary.
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/decades/
 
-It installs on iPhone the same way (Safari, Share, Add to Home Screen).
+The other games install on iPhone the same way: open the link in Safari, tap Share, then Add to Home Screen.
