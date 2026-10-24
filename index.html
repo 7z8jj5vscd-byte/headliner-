@@ -766,6 +766,7 @@ input[type=text]:focus,select:focus,textarea:focus{border-color:rgba(139,92,246,
 .psched{display:flex;flex-direction:column;gap:6px;margin-top:4px}.psw{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .psd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.psd span{display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0;border-radius:8px;font-size:16px}.psd small{font-size:9px;color:var(--muted)}
 .psd .r{background:rgba(236,72,153,.14)}.psd .f{background:rgba(74,222,128,.1)}.psd .done{opacity:.4}.psw.dep{flex-direction:row;justify-content:space-between;align-items:center;border-color:rgba(245,185,66,.5);background:rgba(245,185,66,.08)}
+.delbtn{color:#f87171!important;border-color:rgba(248,113,113,.4)!important}.btn.delgo{background:linear-gradient(135deg,#ef4444,#be123c);box-shadow:0 6px 18px rgba(239,68,68,.3)}
 </style>
 </head>
 <body>
@@ -2522,7 +2523,7 @@ function goalsWeek(r){
 function goalsCard(){if(S.goals.length<3)goalsWeek(null);return `<div class="card"><div class="between"><h2>Challenges</h2><small class="muted">Rewards pay out at week's end</small></div><div class="stack">${S.goals.map(g=>{const T=GOALT[g.type],p=Math.max(0,T.m()-g.base);return reqRow(`${T.t(g.n)} · ${Math.max(0,g.end-S.t)} wk left`,p,g.n,p>=g.n)}).join('')}</div></div>`}
 const slotKey=n=>n===1?SAVE_KEY:SAVE_KEY+'_s'+n;
 function readSlot(n){try{const r=localStorage.getItem(slotKey(n));return r?JSON.parse(r):null}catch(e){return null}}
-function slotsCard(){const cur=S.slot||1;return `<div class="card"><h2>Save slots</h2><div class="list">${[1,2,3].map(n=>{const d=n===cur?S:readSlot(n);return `<div class="between"><span><b>Slot ${n}</b> ${d?`<small class="muted">${esc(d.stage)} · Lv ${(d.level||0)+1} · Year ${Math.floor((d.t-1)/52)+1}${n===cur?' · playing now':''}${d.retired?' · retired':''}</small>`:'<small class="muted">Empty</small>'}</span><span class="row" style="gap:6px">${n!==cur&&d?`<button class="btn sm ghost" data-a="slotLoad" data-v="${n}">Load</button>`:''}${n!==cur?`<button class="btn sm ghost" data-a="slotNew" data-v="${n}">New career</button>`:''}</span></div>`}).join('')}</div><div class="row"><button class="btn sm ghost" data-a="sfxToggle">Sound effects: ${S.settings.sfx===false?'Off':'On'}</button></div><small class="muted">Each career saves to its slot on this device every week.</small></div>`}
+function slotsCard(){const cur=S.slot||1;return `<div class="card"><h2>Save slots</h2><div class="list">${[1,2,3].map(n=>{const d=n===cur?S:readSlot(n);return `<div class="between"><span><b>Slot ${n}</b> ${d?`<small class="muted">${esc(d.stage)} · Lv ${(d.level||0)+1} · Year ${Math.floor((d.t-1)/52)+1}${n===cur?' · playing now':''}${d.retired?' · retired':''}</small>`:'<small class="muted">Empty</small>'}</span><span class="row" style="gap:6px">${n!==cur&&d?`<button class="btn sm ghost" data-a="slotLoad" data-v="${n}">Load</button>`:''}${n!==cur?`<button class="btn sm ghost" data-a="slotNew" data-v="${n}">New career</button>`:''}${d?`<button class="btn sm ghost delbtn" data-a="slotDel" data-v="${n}">Delete</button>`:''}</span></div>`}).join('')}</div><div class="row"><button class="btn sm ghost" data-a="sfxToggle">Sound effects: ${S.settings.sfx===false?'Off':'On'}</button></div><small class="muted">Each career saves to its slot on this device every week.</small></div>`}
 function retireCareer(){
   S.retired=S.t;S.hof=S.level>=6||S.stats.awards.length>=3;
   const rec={stage:S.stage,genre:S.genre,level:S.level+1,fans:Math.round(S.fans),awards:S.stats.awards.length,ones:S.stats.ones,hof:S.hof};
@@ -3892,7 +3893,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610240229';
+const APP_VER='202610240230';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
@@ -4824,6 +4825,12 @@ document.addEventListener('pointerup',mgRelease);document.addEventListener('poin
 document.addEventListener('keydown',e=>{if(!MG||MG.done)return;const m={ArrowLeft:'L',ArrowDown:'D',ArrowUp:'U',ArrowRight:'R'}[e.key];if(m&&MG.press){e.preventDefault();MG.press(m)}if(e.key===' '&&MG.type==='vocals'){e.preventDefault();MG.hold=true}});
 document.addEventListener('keyup',e=>{if(e.key===' ')mgRelease()});
 
+
+/* ---- delete saves ---- */
+Object.assign(A,{
+  slotDel:d=>{const n=+d.v,cur=S&&(S.slot||1)===n,x=cur?S:readSlot(n);if(!x)return;openModal('Delete this save?',`<p>This permanently deletes <b>${esc(x.stage)}</b> (Slot ${n}, Level ${(x.level||0)+1}, Year ${Math.floor((x.t-1)/52)+1}) from this device. It cannot be undone.</p>${cur?'<p class="muted">This is the career you are playing now. You will go back to the start screen to create a new one.</p>':''}${ghTok()?'<p class="muted">A copy may still exist in your cloud save. Disconnect cloud save first if you want it gone everywhere.</p>':''}<div class="row"><button class="btn delgo" data-a="slotDelGo" data-v="${n}">Delete forever</button><button class="btn ghost" data-a="closeModal">Keep it</button></div>`)},
+  slotDelGo:d=>{const n=+d.v,cur=S&&(S.slot||1)===n;try{localStorage.removeItem(slotKey(n));const others=[1,2,3].filter(k=>k!==n&&readSlot(k));if(others.length)localStorage.setItem('headliner_last',String(others[0]));else localStorage.removeItem('headliner_last')}catch(e){}
+    UI.modal=null;UI.queue=[];if(cur){UI.live.on=false;UI.live.day=0;S=null;UI.app=null;UI.scene=null;UI.tab='home';UI.pendingSlot=n;UI.draft=freshDraft();window.scrollTo(0,0)}toast(`Slot ${n} deleted.`)}});
 function render(){
   const app=$('#app');
   if(!S){app.innerHTML=setupView()+modalHTML()+setupTipHTML();return}
