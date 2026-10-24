@@ -388,6 +388,26 @@ main.wrap{padding-top:14px;padding-bottom:calc(var(--tabh) + 92px + env(safe-are
 .compact .echop{font-size:13px}
 .compact .marks{max-height:240px}.compact .mark{min-height:52px}
 .compact .lungs{width:150px;height:150px}
+.seg3{grid-template-columns:repeat(3,1fr)}.seg3 button{font-size:13px;padding:10px 4px}
+.chart{display:flex;flex-direction:column;gap:3px;font-size:12.5px}
+.chr{display:grid;grid-template-columns:44px repeat(3,1fr);gap:4px;align-items:center}
+.chr span{font-weight:900;color:var(--ink2);font-size:11.5px}
+.chr b{background:rgba(255,255,255,.75);border-radius:8px;padding:4px 6px;font-variant-numeric:tabular-nums;display:flex;justify-content:space-between;gap:4px}
+.chr b i{font-style:normal;font-size:10.5px}.chr b.one{background:var(--candy);color:#fff}.chr b.one i{color:#fff}
+.chr.head b{background:none;font-size:11px;color:var(--violet);justify-content:center}.chr.fin b{box-shadow:0 0 0 2px var(--violet) inset}
+.pak{background:linear-gradient(135deg,#ffe27a,#ffb020);color:#5a3a00;font-weight:900;text-align:center;border-radius:14px;padding:10px}
+.lines{display:flex;flex-direction:column;gap:5px}
+.lrow{display:grid;grid-template-columns:72px 1fr 40px;gap:8px;align-items:center;font-size:13px}
+.lrow span{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lrow b{text-align:right;font-variant-numeric:tabular-nums}
+.lrow.me span{color:var(--pink)}.lrow .bar i{background:linear-gradient(90deg,#b98bff,#7fd4ff)}.lrow.me .bar i{background:var(--candy)}
+.rpstage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.rpcard{background:#fff;color:var(--ink);border-radius:22px;padding:16px 20px;min-width:240px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.rpcard.spin .rpdisc{animation:spin 1.2s linear infinite}.rpcard.right{box-shadow:0 0 0 4px #2fe0b8,0 0 26px #2fe0b8}.rpcard.wrong{box-shadow:0 0 0 4px #ff6b8b;animation:shake .3s}
+.rpdisc{font-size:48px;line-height:1}.rpt{font-family:var(--display);font-size:20px}.rpg{color:var(--ink2);font-weight:800}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rpbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rpbtn{height:84px;background:linear-gradient(135deg,#ff5fae,#a45cff);font-size:18px;font-weight:900}.rpbtn.alt{background:rgba(255,255,255,.92)!important;color:var(--ink)}
+.compact .rpbtn{height:70px}
 </style>
 </head>
 <body>
@@ -796,10 +816,15 @@ function doRelease(game,res){
   pay(s.sales*13000*.22/(s.kind==='group'?g.size:s.kind==='unit'?2:1));
   const P=PRODUCERS.find(r=>r.id===s.producer);if(P&&P.self){S.fame+=s.q>=70?8:-2}
   S.promo={song:s.id,wk:0,len:s.kind==='group'?4:2};
+  const ch=releaseChart(s.q*.4+g.pop*.3+fanScore(g.fans)*.3+(game-50)*.2);s.peak=Math.min(s.peak,ch.best);
+  if(ch.pak){S.flags.paks=(S.flags.paks||0)+1;g.pop+=6;addCard('👑 Perfect All-Kill',`"${s.title}" · ${dateStr()}`,'holo','#ffcf3f');log(`PERFECT ALL-KILL! "${s.title}" hit #1 on every chart.`)}
+  let lines=null;if(s.kind==='group'&&g.members.length){ensureGroupLife();lines=lineDistribution();const mine=lines.find(x=>x.id==='me');const fair=190/lines.length;
+    if(mine.sec<fair*.6){S.stress+=6;log(`Line distribution: only ${mine.sec}s for you in "${s.title}". Fans are furious on your behalf.`)}
+    const low=lines.filter(x=>x.id!=='me').pop();if(low&&low.sec<fair*.6){const m=npcById(low.id);if(m)m.rel-=3}}
   const fit=Math.round(conceptFit(s.concept,teamStats(s.kind,s.partner)));
   fanSay('release',{s:s.title});if(!first)addCard(`"${s.title}"`,`${conceptName(s.concept,S.idol.gender)} · ${dateStr()}`,s.q>=78?'holo':s.q>=65?'rare':'common',CN(s.concept).col);
   log(`${first?'DEBUT! ':''}"${s.title}" released. Quality ${s.q}, ${fmt(s.sales)} copies.`);
-  S.tasks[0]={type:'releaseRes',song:s.id,first,game:Math.round(game),gain:g.fans-before,fit,live};
+  S.tasks[0]={type:'releaseRes',song:s.id,first,game:Math.round(game),gain:g.fans-before,fit,live,chart:ch,lines};
   save();render();
 }
 function pickRivals(n){return shuffle(S.rivals).slice(0,n).map(r=>({n:r.n,p:r.p+rnd(-8,8)}))}
@@ -853,8 +878,8 @@ function careerWeek(){
   S.stress-=2;if(S.cooldown>0)S.cooldown--;
   if(g.rep<60)g.rep+=.3;
   if(S.prep)prepWeek();
-  else if(S.promo)pushTask({type:'show',song:S.promo.song,show:SHOWS[S.promo.wk%SHOWS.length]});
-  if(S.tour)tourWeek();
+  else if(S.promo){pushTask({type:'show',song:S.promo.song,show:SHOWS[S.promo.wk%SHOWS.length]});if(S.promo.wk===2&&!S.promo.fs&&!S.hiatus){S.promo.fs=1;pushTask({type:'fansign',song:S.promo.song})}}
+  if(S.tour)tourWeek();groupLifeWeek();
   const since=S.week-g.debutW;
   if(S.week%48===47)pushTask({type:'awards'});
   if(since===3*48&&g.fans<30000)pushTask({type:'agencyDisband'});
@@ -867,6 +892,7 @@ function careerWeek(){
   else if(free&&!S.flags.solo&&since>=96&&S.fame>=40&&Math.random()<.06){S.flags.solo=true;pushTask({type:'soloOffer'})}
   if(g.harmony<20&&g.members.length>2&&Math.random()<.05){const m=g.members.slice().sort((a,b)=>a.rel-b.rel)[0];g.members=g.members.filter(x=>x!==m);g.size--;g.pop-=8;g.fans*=.9;assignPositions();if(S.bond===m.id)S.bond=g.members[0].id;
     info('Breaking news',`${m.name} leaves ${g.name}`,`<p>After months of tension, ${esc(m.name)} announces their departure. ${esc(g.name)} continues as ${g.size}.</p>`);log(`${m.name} left the group.`)}
+  if(!S.tasks.length&&!S.hiatus&&S.week-(S.flags.varietyW??-99)>=14&&Math.random()<.12){S.flags.varietyW=S.week;pushTask({type:'varietyShow'})}
   if(!S.tasks.length&&Math.random()<.32)randomEvent('career');
 }
 function tourWeek(){
@@ -967,8 +993,8 @@ const EVENTS=[
     {t:'Practice instead',f:()=>{S.agRel+=2;S.stress+=6;S.st.dance+=1;return 'Your teacher is not impressed. Dance +1.'}}]},
   // career
   {id:'dating',act:'career',text:()=>`Tabloid "Flash News" publishes blurry photos of you on a late-night date.`,ch:[
-    {t:'Deny it: "just a friend"',f:()=>Math.random()<.7?(S.group.rep-=2,fansPct(-.01),'It blows over. Rep −2.'):(S.group.rep-=12,fansPct(-.05),'A second photo drops. Rep −12, fans −5%.')},
-    {t:'Confirm the relationship',f:()=>{fansPct(-.06);S.group.rep+=4;S.stress+=8;return 'Some fans leave, others respect your honesty. Fans −6%, rep +4.'}},
+    {t:'Deny it: "just a friend"',f:()=>Math.random()<.7?(S.group.rep-=2,fansPct(-.01),'It blows over. Rep −2.'):(S.group.rep-=12,fansPct(-.05),'A second photo drops. Rep −12, fans −5%.'+banPenalty())},
+    {t:'Confirm the relationship',f:()=>{fansPct(-.06);S.group.rep+=4;S.stress+=8;return 'Some fans leave, others respect your honesty. Fans −6%, rep +4.'+banPenalty()}},
     {t:'Stay silent',f:()=>{fansPct(-.03);S.group.pop-=4;return 'The silence is deafening. Fans −3%, buzz −4.'}}]},
   {id:'bully',act:'career',text:()=>`An anonymous post claims you were a school bully. It isn't true, but it's trending.`,ch:[
     {t:'Take legal action',f:()=>{S.group.rep+=6;S.stress+=6;S.money=Math.max(0,S.money-5e6);return 'Classmates come forward to defend you. Cleared! Rep +6.'}},
@@ -1020,11 +1046,31 @@ const EVENTS=[
   {id:'letter',act:'career',text:()=>`A fan letter says your song got them through their hardest year.`,ch:[
     {t:'Reply on the fan app',f:()=>{S.stress-=12;fansPct(.01);return 'Stress −12.'}},
     {t:'Keep it in your wallet',f:()=>{S.stress-=15;return 'Stress −15.'}}]},
+  {id:'snore',act:'career',need:'roomie',text:n=>`Your roommate ${n.name} snores like a jet engine. You haven't slept properly in a week.`,ch:[
+    {t:'Buy earplugs',f:()=>{S.stress-=3;S.stamina+=8;return 'Peace at last. Stamina +8.'}},
+    {t:'Ask to swap rooms',f:n=>{n.rel-=6;const o=S.group.members.filter(m=>m.id!==n.id);if(o.length)S.group.roomie=pick(o).id;return `You move in with ${npcById(S.group.roomie).name}. ${n.name} is a little hurt.`}},
+    {t:'Film it for the group vlog',f:n=>n.trait==='cheerful'?(n.rel+=5,S.group.pop+=4,`${n.name} laughs it off. The clip is a hit. Buzz +4.`):(n.rel-=10,S.group.pop+=3,`${n.name} is NOT amused. Buzz +3, bond −10.`)}]},
+  {id:'ramen',act:'career',cond:()=>S.group&&S.group.members.length>0,text:()=>`It's 2 a.m. and someone is boiling ramen in the dorm kitchen.`,ch:[
+    {t:'Join the ramen party',f:()=>{S.stamina-=5;S.group.harmony+=5;S.group.members.forEach(m=>m.rel+=2);return 'Best night of the month. Harmony +5.'}},
+    {t:'Go back to sleep',f:()=>{S.stamina+=8;return 'Stamina +8. You hear laughing through the wall.'}}]},
+  {id:'dishes',act:'career',cond:()=>S.group&&S.group.members.length>0,text:()=>`Nobody has done the dishes in three days. The dorm smells.`,ch:[
+    {t:'Do them yourself',f:()=>{S.group.harmony+=3;S.stress+=3;return 'Sparkling sink. Harmony +3, stress +3.'}},
+    {t:'Call a dorm meeting',f:()=>{const L=myPos().includes('Leader');S.group.harmony+=L?6:2;return L?'As leader, you set a chore chart everyone sticks to. Harmony +6.':'It gets heated, but a chore chart appears. Harmony +2.'}},
+    {t:'Leave it',f:()=>{S.group.harmony-=4;return 'The mold wins. Harmony −4.'}}]},
+  {id:'confide',act:'career',need:'roomie',text:n=>`Late at night, ${n.name} whispers that they're thinking about quitting.`,ch:[
+    {t:'Talk them through it',f:n=>{n.rel+=15;S.group.harmony+=3;S.stamina-=5;return `You talk until sunrise. ${n.name} decides to stay. Bond +15.`}},
+    {t:'Tell the manager',f:n=>{S.agRel+=3;n.rel-=12;return `The manager steps in. ${n.name} feels betrayed. Bond −12.`}}]},
+  {id:'pairfight',act:'career',need:'pairLow',cond:()=>{const p=S.group&&pairWorst();return !!(p&&p.v<0)},text:()=>{const p=pairWorst();return `${npcById(p.a).name} and ${npcById(p.b).name} are fighting in the practice room again.`},ch:[
+    {t:'Mediate',f:()=>{const p=pairWorst();p.v+=25;S.group.harmony+=5;S.stress+=4;return 'You get them to shake hands. Harmony +5, stress +4.'}},
+    {t:'Take a side',f:()=>{const p=pairWorst();npcById(p.a).rel+=10;npcById(p.b).rel-=12;p.v-=5;return `${npcById(p.a).name} appreciates it. ${npcById(p.b).name} does not.`}},
+    {t:'Stay out of it',f:()=>{const p=pairWorst();p.v-=10;S.group.harmony-=4;return 'The tension simmers. Harmony −4.'}}]},
   {id:'leaksong',act:'career',cond:()=>!!S.prep,text:()=>`A snippet of your unreleased song leaks online.`,ch:[
     {t:'Drop a teaser early',f:()=>{S.group.pop+=6;return 'Hype hijacked! Buzz +6.'}},
     {t:'Rework the song',f:()=>{S.prep.left+=1;S.prep.prepQ+=3;return 'One more week of prep, better song.'}}]}
 ];
 function evNPC(need){
+  if(need==='roomie'){ensureGroupLife();return S.group&&S.group.roomie?npcById(S.group.roomie):null}
+  if(need==='pairLow'){if(!S.group)return null;ensureGroupLife();const p=pairWorst();return p?npcById(p.a):null}
   const L=S.act==='trainee'?S.trainees:(S.group?.members||[]);if(!L.length)return null;
   if(need==='friend')return L.slice().sort((a,b)=>b.rel-a.rel)[0];
   if(need==='rival'||need==='memberLow')return L.slice().sort((a,b)=>a.rel-b.rel)[0];
@@ -1051,7 +1097,7 @@ function statRows(st){return SK.map(k=>`<div class="stat"><span title="${SKL[k]}
 function memberName(id){return id==='me'?me():(npcById(id)?.name||'?')}
 function rankRows(rows,limit){return `<div class="list">${rows.slice(0,limit||rows.length).map((r,i)=>{const n=r.id==='me'?null:npcById(r.id);return `<div class="li ${r.id==='me'?'me':''}"><span class="rk">${i+1}</span>${av(r.id==='me'?S.idol.look:n?.look)}<div class="grow"><b>${esc(r.id==='me'?me()+' (you)':n?.name||r.name||'?')}</b>${n&&n.rel!=null?'<br>'+relPill(n.rel):''}</div><b>${r.s??''}</b></div>`}).join('')}</div>`}
 function memberCards(){const g=S.group;const all=[{id:'me',name:me()+' (you)',look:S.idol.look,st:S.st,pop:S.fame+30},...g.members];
-  return `<div class="list">${all.map(m=>`<div class="li ${m.id==='me'?'me':''}">${av(m.look)}<div class="grow"><b>${esc(m.name)}</b> <small class="muted">${m.id==='me'?age():npcAge(m)} y/o</small><div class="row" style="gap:4px;margin-top:3px">${(g.pos[m.id]||[]).map(p=>`<span class="pill ${p==='Center'||p==='Leader'?'hot':p==='Maknae'?'lemon':'sky'}">${p}</span>`).join('')}</div></div>${m.id!=='me'?relPill(m.rel):''}</div>`).join('')}</div>`}
+  return `<div class="list">${all.map(m=>`<div class="li ${m.id==='me'?'me':''}">${av(m.look)}<div class="grow"><b>${esc(m.name)}</b> <small class="muted">${m.id==='me'?age():npcAge(m)} y/o${m.trait?' · '+TRAITS[m.trait]:''}${m.solo?' · 🎬 '+esc(m.solo):''}</small><div class="row" style="gap:4px;margin-top:3px">${(g.pos[m.id]||[]).map(p=>`<span class="pill ${p==='Center'||p==='Leader'?'hot':p==='Maknae'?'lemon':'sky'}">${p}</span>`).join('')}</div></div>${m.id!=='me'?relPill(m.rel):''}</div>`).join('')}</div>`}
 function bestConcept(list){return CONCEPTS.slice().sort((a,b)=>conceptFit(b.id,list)-conceptFit(a.id,list))[0].id}
 
 /* ============ task sheets ============ */
@@ -1083,7 +1129,7 @@ const TR={
   release:t=>{const s=songById(t.song);const first=!S.group.debutW&&s.kind==='group';return {kick:first?'Debut day':s.kind==='solo'?'Solo debut':s.kind==='unit'?'Sub-unit release':'Comeback day',title:`"${s.title}"`,html:`<p>${first?'The debut showcase: reporters, cameras and a hall full of curious fans.':'Release-day showcase. The new song hits every chart at 6 p.m.'}</p><p class="muted">${CN(s.concept).e} ${conceptName(s.concept,S.idol.gender)} · ${RELEASES.find(r=>r.id===s.type)?.n||''}</p>${prepChips(t,true)}`,
     btns:[B('🎬 Perform the showcase','mgRelease',null,'block'),B('Quick sim','autoRelease',null,'ghost block')]}},
   releaseRes:t=>{const s=songById(t.song);const g=S.group;return {kick:t.first?'Debut results':'Release results',title:t.first?`${g.name} has debuted!`:`"${s.title}" is out`,html:`${t.live?liveHTML(t.live,true):''}<div class="kpis"><div class="kpi"><b>${s.q}</b><small>Song quality</small></div><div class="kpi"><b>${fmt(s.sales)}</b><small>First-week sales</small></div><div class="kpi"><b>+${fmt(t.gain)}</b><small>Fans</small></div></div>
-    <p>${t.first?`Headlines call ${esc(g.name)} "the rookie to watch". `:''}Concept fit: ${stars(t.fit)}. Showcase stage: ${t.game}/100.</p><p class="muted">Now: ${S.promo.len} weeks of music shows. Chase that win!</p>`,btns:[B('Continue','done',null,'block')]}},
+    <p>${t.first?`Headlines call ${esc(g.name)} "the rookie to watch". `:''}Concept fit: ${stars(t.fit)}. Showcase stage: ${t.game}/100.</p>${t.chart?chartHTML(t.chart):''}${t.lines?linesHTML(t.lines):''}<p class="muted">Now: ${S.promo.len} weeks of music shows. Chase that win!</p>`,btns:[B('Continue','done',null,'block')]}},
   show:t=>{const s=songById(t.song);return {kick:`Promotion week ${S.promo.wk+1} of ${S.promo.len}`,title:t.show,html:`<p>Live stage of "${esc(s.title)}". Points come from digital charts, album sales, broadcast and the live vote. Your stage sways the vote.</p>${S.hiatus?'<p class="bad">You are on a break. The others perform without you.</p>':prepChips(t,true)}`,
     btns:S.hiatus?[B('Watch from home','autoShow',null,'block')]:[B('🎬 Perform','mgShow',null,'block'),B('Quick sim','autoShow',null,'ghost block')]}},
   showRes:t=>{const s=songById(t.song);return {kick:t.show,title:t.win?(t.first?'FIRST WIN!! 🏆':'1st place! 🏆'):'No trophy this week',html:`${t.live?liveHTML(t.live,true):''}${t.first?'<p>The MC reads your name. Members collapse into a group hug. The encore stage is mostly crying, and fans say it was perfect.</p>':''}<div class="list">${t.rows.map((r,i)=>`<div class="li ${r.us?'me':''}"><span class="rk">${i+1}</span><div class="grow"><b>${esc(r.n)}</b></div><b>${r.p.toLocaleString()}</b></div>`).join('')}</div><p class="muted">Melody100 peak so far: <b>#${s.peak}</b>${t.auto?'':' · Stage '+t.game+'/100'}</p>`,btns:[B('Continue','afterShow',null,'block')]}},
@@ -1099,6 +1145,8 @@ const TR={
     <p class="label">Color</p><div class="swatches">${[base,...STYLE_COLS.filter(x=>x!==base)].map(col=>`<button class="sw ${c.col===col?'on':''}" style="background:${col}" data-a="formSet" data-v="ccol|${col}" aria-label="color ${col}"></button>`).join('')}</div>
     <div class="kpis"><div class="kpi"><b>${c.fit}</b><small>Concept fit</small></div><div class="kpi"><b>${c.comfort}</b><small>Comfort</small></div><div class="kpi"><b>${c.wow}</b><small>Wow</small></div></div>
     <small class="muted">Bars on each set: pink = concept fit, teal = comfort, gold = wow. Fit raises song quality, comfort makes live stages safer, wow grabs buzz.</small>`,btns:[B('Lock in the look ✂️','fitGo',null,'block')]}},
+  fansign:t=>{const s=songById(t.song);return {kick:'Fansign event',title:`Fansign for "${s?s.title:'the album'}"`,html:`<p>A hundred lucky fans line up with albums in hand. Each gets about forty seconds with each member. Make every one count.</p><p class="muted"><small>Uses your Variety skill (${Math.round(S.st.variety)}).</small></p>`,btns:[B('✍️ Meet the fans','fansignGo',null,'block'),B('Quick sim','fansignAuto',null,'ghost block')]}},
+  varietyShow:t=>({kick:'Invitation',title:'📺 Idol Playground',html:`<p>The hit variety show wants ${esc(S.group.name)} this week: Random Play Dance, MC games and the aegyo close-up corner.</p><p class="muted"><small>A great episode means buzz, fame and new fans. A flop becomes a meme.</small></p>`,btns:[B('🎬 Go on the show','varietyGo',null,'block'),B('Quick sim','varietyAuto',null,'ghost block'),B('Decline','varietyNo',null,'ghost block')]}),
   plan:t=>{const f=UI.form;const list=teamStats('group');f.type??='mini';f.concept??=bestConcept(list);f.producer??='inhouse';f.title??=pick(SUGGEST.song);const g=S.group;
     return {kick:'Comeback planning',title:'Next era',html:`<label class="field"><span>Title track</span><input type="text" maxlength="28" data-f="title" value="${esc(f.title)}"></label>
     <p class="label">Release</p><div class="opts">${RELEASES.map(r=>`<button class="opt ${f.type===r.id?'on':''}" data-a="formSet" data-v="type|${r.id}"><b>${r.n}</b><small>${r.weeks} weeks prep${r.q?` · quality +${r.q}`:''}</small></button>`).join('')}</div>
@@ -1187,16 +1235,17 @@ function sceneKey(mode){
 }
 function build3D(mode){
   const T=THREE;if(G3.scene)disposeTree(G3.scene);
-  const sc=new T.Scene();G3.scene=sc;G3.rigs=[];G3.crowd=null;G3.mode=mode;
+  const sc=new T.Scene();G3.scene=sc;G3.rigs=[];G3.crowd=null;G3.fx=[];G3.mode=mode;
   sc.add(new T.HemisphereLight('#fff4fb','#b9a4ff',.5));const key=new T.DirectionalLight('#ffffff',.6);key.position.set(2,4,5);sc.add(key);const rim=new T.DirectionalLight('#7fd4ff',.5);rim.position.set(-3,2,-4);sc.add(rim);
   const root=new T.Group();sc.add(root);G3.root=root;
   if(mode==='group'){
     const L=groupOrder();const n=L.length;
     const floor=new T.Mesh(new T.CylinderGeometry(n*.75+1.2,n*.75+1.3,.2,48),new T.MeshPhongMaterial({color:'#3b1d6e',shininess:90,specular:'#ff9ad5'}));floor.position.y=-.1;root.add(floor);
     const ring=new T.Mesh(new T.TorusGeometry(n*.75+1.22,.04,8,64),new T.MeshBasicMaterial({color:'#ff7ac6'}));ring.rotation.x=Math.PI/2;root.add(ring);
-    L.forEach((m,i)=>{const off=i-(n-1)/2;const r=idol3D(m.look,S.idol.gender,.85);r.position.set(off*1.05,0,.9-Math.abs(off)*.45);root.add(r);G3.rigs.push(r);
-      const cone=new T.Mesh(new T.ConeGeometry(.55,4,24,1,true),new T.MeshBasicMaterial({color:m.id==='me'?'#ff7ac6':'#b98bff',transparent:true,opacity:.13,blending:T.AdditiveBlending,depthWrite:false,side:T.DoubleSide}));cone.position.set(r.position.x,2,r.position.z);root.add(cone);
-      if(m.id==='me'){const h=new T.Mesh(new T.TorusGeometry(.42,.035,8,32),new T.MeshBasicMaterial({color:'#ffcf3f'}));h.rotation.x=Math.PI/2;h.position.set(r.position.x,.02,r.position.z);root.add(h)}});
+    G3.meIdx=Math.max(0,L.findIndex(m=>m.id==='me'));
+    L.forEach((m,i)=>{const [fx,fz]=formPos(n,i,G3.cue.form,G3.meIdx);const r=idol3D(m.look,S.idol.gender,.85);r.position.set(fx,0,fz);root.add(r);G3.rigs.push(r);
+      const cone=new T.Mesh(new T.ConeGeometry(.55,4,24,1,true),new T.MeshBasicMaterial({color:m.id==='me'?'#ff7ac6':'#b98bff',transparent:true,opacity:.13,blending:T.AdditiveBlending,depthWrite:false,side:T.DoubleSide}));cone.position.set(0,2/.85,0);r.add(cone);
+      if(m.id==='me'){const h=new T.Mesh(new T.TorusGeometry(.42,.035,8,32),new T.MeshBasicMaterial({color:'#ffcf3f'}));h.rotation.x=Math.PI/2;h.position.set(0,.02,0);r.add(h)}});
     const R=n*.75+1.3,cnt=420,pos=new Float32Array(cnt*3);for(let i=0;i<cnt;i++){const a=rnd(-1.1,1.1),d=R+rnd(.4,3.5);pos[i*3]=Math.sin(a)*d*1.3;pos[i*3+1]=rnd(-.5,.1);pos[i*3+2]=Math.cos(a)*d}
     const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));
     G3.crowd=new T.Points(geo,new T.PointsMaterial({color:S.fandom?S.fandom.color:'#ffffff',size:.16,map:dotTex(),transparent:true,depthWrite:false,blending:T.AdditiveBlending}));G3.crowd.userData.base=pos.slice();root.add(G3.crowd);
@@ -1226,24 +1275,179 @@ function mount3D(){
   if(!el.querySelector('.hint3d'))el.insertAdjacentHTML('beforeend','<span class="hint3d">drag to spin</span>');
   if(!G3.on){G3.on=true;G3.t0=performance.now();requestAnimationFrame(loop3D)}
 }
+
+/* ============ music: synthesized backing tracks, crowd and fanchants ============ */
+const MUSIC={on:false,iv:null,next:0,step:0,energy:.6,cfg:null,master:null,noise:null};
+const SCALES={maj:[0,2,4,5,7,9,11],min:[0,2,3,5,7,8,10]};
+const CMUSIC={crush:{bpm:126,root:45,sc:'min',prog:[0,5,2,6],kick:'four',lead:'sawtooth'},cute:{bpm:132,root:53,sc:'maj',prog:[0,4,5,3],kick:'four',lead:'square'},
+  dark:{bpm:100,root:43,sc:'min',prog:[0,5,3,4],kick:'half',lead:'sawtooth'},retro:{bpm:116,root:48,sc:'maj',prog:[3,4,2,5],kick:'four',lead:'square'},
+  dreamy:{bpm:90,root:50,sc:'maj',prog:[0,4,5,3],kick:'half',lead:'triangle'},hiphop:{bpm:92,root:41,sc:'min',prog:[0,0,5,4],kick:'trap',lead:'square'},
+  elegant:{bpm:98,root:46,sc:'maj',prog:[0,5,3,4],kick:'half',lead:'triangle'}};
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+const soundOn=()=>!(S&&S.sound===false)&&audio();
+function noiseBuf(){if(MUSIC.noise)return MUSIC.noise;const b=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;MUSIC.noise=b;return b}
+function musicStart(concept){
+  if(!soundOn())return;musicStop(true);
+  try{MUSIC.cfg=CMUSIC[concept]||CMUSIC.cute;const comp=AC.createDynamicsCompressor();const m=AC.createGain();m.gain.setValueAtTime(.0001,AC.currentTime);m.gain.exponentialRampToValueAtTime(.3,AC.currentTime+1.2);
+    m.connect(comp).connect(AC.destination);MUSIC.master=m;MUSIC.next=AC.currentTime+.1;MUSIC.step=0;MUSIC.energy=.4;MUSIC.on=true;MUSIC.iv=setInterval(musicTick,25)}catch(e){MUSIC.on=false}
+}
+function musicStop(now){
+  if(!MUSIC.on)return;MUSIC.on=false;clearInterval(MUSIC.iv);const m=MUSIC.master;
+  if(m&&AC){try{m.gain.cancelScheduledValues(AC.currentTime);m.gain.setValueAtTime(Math.max(m.gain.value,.0002),AC.currentTime);m.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+(now?.05:.8));setTimeout(()=>{try{m.disconnect()}catch(e){}},1000)}catch(e){}}
+}
+function musicTick(){if(!MUSIC.on||!AC)return;const spb=60/MUSIC.cfg.bpm/4;while(MUSIC.next<AC.currentTime+.12){try{playStep(MUSIC.step,MUSIC.next,spb)}catch(e){}MUSIC.next+=spb;MUSIC.step++}}
+function playStep(st,t,spb){
+  const c=MUSIC.cfg,e=MUSIC.energy,s=st%16,bar=Math.floor(st/16)%4;const deg=c.prog[bar],sc=SCALES[c.sc];
+  const note=k=>{const d=deg+k;return c.root+sc[((d%7)+7)%7]+12*Math.floor(d/7)};
+  const kick=c.kick==='four'?s%4===0:c.kick==='half'?(s===0||s===8||(e>.7&&s===10)):(s===0||s===6||s===10);
+  if(kick&&e>.15)drum('kick',t);if((s===4||s===12)&&e>.3)drum('snare',t);if(e>.45&&(s%2===0||e>.8))drum('hat',t,s%4===2?.5:.3);
+  if(e>.25&&[0,3,6,8,11,14].includes(s))tone(mtof(note(0)-12),t,spb*1.6,'sawtooth',.1,600);
+  if(s===0)[0,2,4].forEach(k=>tone(mtof(note(k)+12),t,spb*15,'triangle',.03,1800,.3));
+  if(e>.55&&s%2===0&&Math.random()<.75)tone(mtof(note(pick([0,2,4,7]))+24),t,spb*1.2,c.lead,.04,3200);
+}
+function tone(f,t,d,type,v,cut,att){const o=AC.createOscillator(),g=AC.createGain(),fl=AC.createBiquadFilter();o.type=type;o.frequency.value=f;fl.type='lowpass';fl.frequency.value=cut||2000;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+(att||.01));g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(fl).connect(g).connect(MUSIC.master);o.start(t);o.stop(t+d+.05)}
+function drum(k,t,v){
+  if(k==='kick'){const o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.0001,t+.25);o.connect(g).connect(MUSIC.master);o.start(t);o.stop(t+.3);return}
+  const n=AC.createBufferSource();n.buffer=noiseBuf();const f=AC.createBiquadFilter(),g=AC.createGain();
+  if(k==='snare'){f.type='bandpass';f.frequency.value=1800;g.gain.setValueAtTime(.22,t);g.gain.exponentialRampToValueAtTime(.0001,t+.18)}else{f.type='highpass';f.frequency.value=7000;g.gain.setValueAtTime(.07*(v||.3)/.3,t);g.gain.exponentialRampToValueAtTime(.0001,t+.05)}
+  n.connect(f).connect(g).connect(MUSIC.master);n.start(t);n.stop(t+.2);
+}
+function crowd(intensity){if(!soundOn())return;try{const t=AC.currentTime;[900,1600,2600].forEach((fr,i)=>{const n=AC.createBufferSource();n.buffer=noiseBuf();n.loop=true;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=fr*rnd(.9,1.1);f.Q.value=.8;const g=AC.createGain();
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,.06*intensity*(i===1?1:.6)),t+.25);g.gain.exponentialRampToValueAtTime(.0001,t+1.2+intensity*1.2);n.connect(f).connect(g).connect(AC.destination);n.start(t);n.stop(t+2.6)})}catch(e){}}
+function fanchantSFX(){if(!soundOn())return;try{const spb=60/((MUSIC.cfg||CMUSIC.cute).bpm);const t0=AC.currentTime+.05;for(let i=0;i<8;i++){if(i===3||i===7)continue;const t=t0+i*spb/2;
+  [700,1150].forEach(fr=>{const n=AC.createBufferSource();n.buffer=noiseBuf();const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=fr*(i%2?1.1:1);f.Q.value=5;const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.12,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.16);n.connect(f).connect(g).connect(AC.destination);n.start(t);n.stop(t+.2)})}}catch(e){}}
+
+/* ============ stage direction: choreography, formations, camera cuts, confetti ============ */
+G3.cue={move:'break',form:0,cam:'wide'};G3.cueT=0;G3.fx=[];
+const SEG_CUE={intro:{move:'hit',form:0,cam:'wide',e:.5},verse:{move:'sway',form:1,cam:'side',e:.55},rap:{move:'hit',form:1,cam:'side',e:.75},killing:{move:'hit',form:3,cam:'close',e:.85},
+  dance:{move:'break',form:2,cam:'wide',e:1},fairy:{move:'freeze',form:3,cam:'close',e:.2},photo:{move:'freeze',form:1,cam:'wide',e:.3},press:{move:'idle',form:1,cam:'wide',e:.2},
+  opener:{move:'break',form:0,cam:'wide',e:1},ballad:{move:'sway',form:1,cam:'close',e:.35},ment:{move:'idle',form:1,cam:'wide',e:.2},encore:{move:'break',form:2,cam:'wide',e:.9},
+  mishap:{move:'sway',form:1,cam:'side',e:.4},rp:{move:'break',form:2,cam:'wide',e:.9},mc:{move:'idle',form:1,cam:'side',e:.3},aegyo:{move:'freeze',form:3,cam:'close',e:.3}};
+function stageCue(c){Object.assign(G3.cue,c);G3.cueT=performance.now()}
+function formPos(n,i,form,meIdx){const off=i-(n-1)/2;if(form===1)return [off*1.1,.3];if(form===2)return [off*1.0,i%2?-.35:.9];if(form===3)return i===meIdx?[0,1.7]:[off*1.15,-.25];return [off*1.05,.9-Math.abs(off)*.45]}
+function stageBurst(){if(!G3.scene||!window.THREE)return;const T=THREE,n=240,pos=new Float32Array(n*3),col=new Float32Array(n*3),vel=[];const cs=['#ff4fa3','#ffcf3f','#3fb6ff','#22c9a6','#ffffff','#9b5cff'].map(c=>new T.Color(c));
+  for(let i=0;i<n;i++){pos[i*3]=rnd(-3,3);pos[i*3+1]=rnd(3.2,4.2);pos[i*3+2]=rnd(-1,2);vel.push([rnd(-.4,.4),rnd(-.2,.6),rnd(-.4,.4)]);const c=pick(cs);col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b}
+  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));geo.setAttribute('color',new T.BufferAttribute(col,3));
+  const pts=new T.Points(geo,new T.PointsMaterial({size:.09,vertexColors:true,map:dotTex(),transparent:true,depthWrite:false}));G3.root.add(pts);G3.fx.push({pts,vel,t0:performance.now()})}
+function stepRig(u,move,beat,t,ph){
+  const s=Math.sin(beat*Math.PI);u.arms[0].rotation.x=0;u.arms[1].rotation.x=0;u.body.rotation.z=0;
+  if(move==='break'){const m=Math.floor(beat/8)%3;u.body.position.y=Math.abs(s)*.08;
+    if(m===0){u.arms[0].rotation.z=-.3-Math.max(0,s)*2.2;u.arms[1].rotation.z=.3+Math.max(0,-s)*2.2;u.body.rotation.y=s*.25}
+    else if(m===1){u.arms[0].rotation.z=-2.6+Math.abs(s)*.4;u.arms[1].rotation.z=2.6-Math.abs(s)*.4;u.body.rotation.y=0;u.body.rotation.z=s*.08}
+    else{u.arms[0].rotation.x=-s*1.2;u.arms[1].rotation.x=s*1.2;u.arms[0].rotation.z=-.15;u.arms[1].rotation.z=.15;u.body.rotation.y=Math.sin(beat*Math.PI/2)*.5}
+    u.head.rotation.z=Math.sin(beat*Math.PI/2)*.08}
+  else if(move==='hit'){const up=Math.abs(s)>.75;u.body.position.y=Math.abs(s)*.05;u.arms[0].rotation.z=up?-2.5:-.35;u.arms[1].rotation.z=up?2.5:.35;u.body.rotation.y=up?0:Math.sin(beat*Math.PI/2)*.3;u.head.rotation.z=0}
+  else if(move==='sway'){u.body.position.y=0;u.body.rotation.z=Math.sin(beat*Math.PI/2)*.1;u.body.rotation.y=Math.sin(beat*Math.PI/4)*.2;u.arms[0].rotation.z=-.3-Math.max(0,Math.sin(beat*Math.PI/2))*.6;u.arms[1].rotation.z=.3+Math.max(0,-Math.sin(beat*Math.PI/2))*.6;u.head.rotation.z=Math.sin(beat*Math.PI/2)*.1}
+  else if(move==='freeze'){u.body.position.y=0;u.body.rotation.y=0;u.arms[0].rotation.z=-2.3;u.arms[1].rotation.z=2.3;u.arms[0].rotation.x=-.4;u.arms[1].rotation.x=-.4;u.head.rotation.z=.12}
+  else{u.body.position.y=Math.sin(t*2+ph)*.03;u.arms[0].rotation.z=-.15-Math.sin(t*2+ph)*.12;u.arms[1].rotation.z=.15+Math.sin(t*2.4+ph)*.12;u.head.rotation.z=Math.sin(t*1.1+ph)*.07;u.body.rotation.y=0}
+}
 function loop3D(){
   if(!G3.on||!G3.r)return;const c=G3.r.domElement;if(!c.isConnected){G3.on=false;return}
   requestAnimationFrame(loop3D);if(document.hidden||(MG&&!c.closest('#mg')))return;
-  const t=(performance.now()-G3.t0)/1000;const grp=G3.mode==='group';const beat=t*2.2;
-  if(!G3.drag)G3.rotY*=.97;
-  G3.root.rotation.y=grp?clamp(G3.rotY,-.7,.7)+Math.sin(t*.3)*.08:G3.rotY+(G3.mode==='end'?t*.6:Math.sin(t*.6)*.35);
-  G3.rigs.forEach((r,i)=>{const u=r.userData;const ph=grp?0:u.ph;
-    if(grp){const move=Math.floor(beat/8)%3;const s=Math.sin(beat*Math.PI);
-      u.body.position.y=Math.abs(s)*.08;
-      if(move===0){u.arms[0].rotation.z=-.3-Math.max(0,s)*2.2;u.arms[1].rotation.z=.3+Math.max(0,-s)*2.2;u.body.rotation.y=s*.25}
-      else if(move===1){u.arms[0].rotation.z=-2.6+Math.abs(s)*.4;u.arms[1].rotation.z=2.6-Math.abs(s)*.4;u.body.rotation.y=0;u.body.rotation.z=s*.08}
-      else{u.arms[0].rotation.x=-s*1.2;u.arms[1].rotation.x=s*1.2;u.arms[0].rotation.z=-.15;u.arms[1].rotation.z=.15;u.body.rotation.y=Math.sin(beat*Math.PI/2)*.5;u.body.rotation.z=0}
-      if(move!==2){u.arms[0].rotation.x=0;u.arms[1].rotation.x=0}
-      u.head.rotation.z=Math.sin(beat*Math.PI/2)*.08}
-    else{u.body.position.y=Math.sin(t*2+ph)*.03;u.arms[0].rotation.z=-.15-Math.sin(t*2+ph)*.12;u.arms[1].rotation.z=.15+Math.sin(t*2.4+ph)*.12;u.head.rotation.z=Math.sin(t*1.1+ph)*.07;u.head.rotation.y=Math.sin(t*.7+ph)*.15}});
-  if(G3.crowd){const p=G3.crowd.geometry.attributes.position,b=G3.crowd.userData.base;for(let i=0;i<p.count;i++)p.array[i*3+1]=b[i*3+1]+Math.sin(t*(grp?4.4:1.2)+i)*(grp?.07:.08);p.needsUpdate=true}
+  const now=performance.now(),t=(now-G3.t0)/1000;const grp=G3.mode==='group',live=G3.mode==='live';const bpm=(MUSIC.on&&MUSIC.cfg)?MUSIC.cfg.bpm:132;const beat=t*bpm/60;
+  const dt=Math.min(.05,(now-(G3.last||now))/1000);G3.last=now;
+  if(!G3.drag)G3.rotY*=.97;const cue=G3.cue;
+  if(grp){
+    G3.root.rotation.y=cue.cam==='wide'?clamp(G3.rotY,-.7,.7)+Math.sin(t*.3)*.08:clamp(G3.rotY,-.4,.4);
+    const n=G3.rigs.length;G3.rigs.forEach((r,i)=>{const u=r.userData;const [x,z]=formPos(n,i,cue.form,G3.meIdx);r.position.x+=(x-r.position.x)*Math.min(1,dt*4);r.position.z+=(z-r.position.z)*Math.min(1,dt*4);
+      stepRig(u,cue.move==='freeze'&&i!==G3.meIdx?'sway':cue.move==='idle'?'idle':cue.move,beat,t,u.ph)});
+    const me=G3.rigs[G3.meIdx]||G3.rigs[0];let tp,lk;
+    if(cue.cam==='close'&&me){const [mx,mz]=formPos(n,G3.meIdx,cue.form,G3.meIdx);tp=[mx+.35,1.45,mz+2.7];lk=[mx,1.25,mz]}
+    else if(cue.cam==='side'){tp=[n*.55+1.6,1.9,n*.45+3.6];lk=[0,1,.4]}
+    else{tp=[0,2.4,5+n*.75];lk=[0,1,0]}
+    if(G3.cueSeen!==G3.cueT){G3.cueSeen=G3.cueT;G3.cam.position.set(...tp)}else{const p=G3.cam.position;p.x+=(tp[0]-p.x)*dt*.8;p.y+=(tp[1]-p.y)*dt*.8;p.z+=(tp[2]-p.z-(cue.cam==='close'?.3:0))*dt*.25}
+    G3.cam.lookAt(...lk);
+  }else{
+    G3.root.rotation.y=G3.rotY+(G3.mode==='end'?t*.6:live?0:Math.sin(t*.6)*.35);
+    G3.rigs.forEach(r=>stepRig(r.userData,live?cue.move:'idle',beat,t,r.userData.ph));
+  }
+  if(G3.crowd){const p=G3.crowd.geometry.attributes.position,b=G3.crowd.userData.base;for(let i=0;i<p.count;i++){p.array[i*3+1]=b[i*3+1]+Math.sin(t*(grp?4.4:1.2)+i)*(grp?.07:.08);if(grp)p.array[i*3]=b[i*3]+Math.sin(beat*Math.PI/2+b[i*3+2]*.6)*.08}p.needsUpdate=true}
+  G3.fx=G3.fx.filter(f=>{const age=(now-f.t0)/1000;const p=f.pts.geometry.attributes.position;for(let i=0;i<f.vel.length;i++){f.vel[i][1]-=.9*dt;p.array[i*3]+=f.vel[i][0]*dt;p.array[i*3+1]+=f.vel[i][1]*dt;p.array[i*3+2]+=f.vel[i][2]*dt}p.needsUpdate=true;
+    if(age>3.2){G3.root.remove(f.pts);f.pts.geometry.dispose();f.pts.material.dispose();return false}return true});
   G3.r.render(G3.scene,G3.cam);
 }
+
+/* ============ variety: Random Play Dance ============ */
+function subRandomPlay(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||8;const win=clamp(2700-diff*600+stat*8,1700,3300);
+  const mine=S.songs.filter(s=>s.kind==='group').map(s=>s.title);if(!mine.length)mine.push('Our debut song');const gn=S.group?S.group.name:me();
+  let deck=Array.from({length:N},(_,k)=>k%3===1?{t:pick(mine),g:gn,mine:1}:{t:pick(SUGGEST.song),g:pick(RIVALS),mine:0});deck=shuffle(deck);
+  host.innerHTML=`<div class="rpstage"><div class="poselabel"></div><div class="rpcard"><div class="rpdisc">💿</div><b class="rpt"></b><small class="rpg"></small></div><div class="bar tbar"><i style="width:100%"></i></div><div class="posemsg"></div></div><div class="rpbtns"><button class="pad rpbtn" data-pad="jump">💃 JUMP IN!</button><button class="pad rpbtn alt" data-pad="pass">🙅 Not ours</button></div>`;
+  const RR=host.querySelector('.poselabel'),RT=host.querySelector('.rpt'),RG=host.querySelector('.rpg'),CARD=host.querySelector('.rpcard'),T=host.querySelector('.tbar i'),MM=host.querySelector('.posemsg');
+  let i=0,pts=0,hits=0,phase='wait',t0=0;MG.keys={j:'jump',Enter:'jump',n:'pass',p:'pass',ArrowLeft:'jump',ArrowRight:'pass'};setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${hits} of ${N} songs called right`);return}const c=deck[i];MG.answer=c.mine?'jump':'pass';
+    RR.textContent=`SONG ${i+1} OF ${N}`;RT.textContent=`"${c.t}"`;RG.textContent=c.g;CARD.className='rpcard spin';MM.textContent='';beep(c.mine?660:440,.12,.05);phase='pick';t0=performance.now();tick()};
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=win-(performance.now()-t0);T.style.width=clamp(left/win*100,0,100)+'%';if(left<=0){resolve('pass',true);return}requestAnimationFrame(tick)};
+  const resolve=(k,timeout)=>{phase='wait';const c=deck[i];const ok=(k==='jump')===!!c.mine;
+    if(ok){const sp=timeout?.5:clamp(1-(performance.now()-t0)/win,0,1);pts+=.7+.3*sp;hits++;MM.textContent=c.mine?'You nail your own choreo! 🔥':'Good call, that\'s not yours.';CARD.className='rpcard right';beep(760,.1,.06)}
+    else{MM.textContent=c.mine?'That was YOUR song! The MCs gasp.':'Wrong song! You freestyle awkwardly…';CARD.className='rpcard wrong';beep(160,.15,.05,'square')}
+    setScore(`${hits}/${N}`);i++;setTimeout(next,ok?600:900)};
+  MG.press=k=>{if(phase==='pick'&&(k==='jump'||k==='pass'))resolve(k)};
+  setTimeout(next,500);
+}
+
+/* ============ charts, trends and fan cafe ============ */
+const CHARTS=['Melody100','WaveChart','Bloom'];
+function releaseChart(power){
+  const hours=['6PM','7PM','8PM','9PM','10PM','11PM','12AM'];const fin=clamp(Math.round(102-power*1.05+rnd(-4,4)),1,100);
+  const rows=CHARTS.map((c,ci)=>{let r=clamp(Math.round(fin+rnd(15,45)),1,100);return hours.map((h,hi)=>{const tgt=clamp(fin+rnd(-3,3)+(ci===2?rnd(-1,4):0),1,100);r=hi===hours.length-1?Math.round(tgt):clamp(Math.round(r+(tgt-r)*rnd(.35,.6)),1,100);return r})});
+  return {hours,rows,pak:rows.every(r=>r[r.length-1]===1),best:Math.min(...rows.map(r=>Math.min(...r)))};
+}
+function chartHTML(ch){
+  return `<p class="label">Release day · hourly charts</p><div class="chart"><div class="chr head"><span></span>${CHARTS.map(c=>`<b>${c}</b>`).join('')}</div>
+  ${ch.hours.map((h,hi)=>`<div class="chr${hi===ch.hours.length-1?' fin':''}"><span>${h}</span>${ch.rows.map(r=>{const d=hi?r[hi-1]-r[hi]:0;return `<b class="${r[hi]===1?'one':''}">#${r[hi]}<i class="${d>0?'good':d<0?'bad':'dim'}">${d>0?'▲'+d:d<0?'▼'+(-d):hi?'–':'NEW'}</i></b>`}).join('')}</div>`).join('')}</div>
+  ${ch.pak?'<p class="pak">👑 PERFECT ALL-KILL! #1 on every chart.</p>':''}`;
+}
+const tagify=s=>String(s).replace(/[^A-Za-z0-9가-힣]/g,'');
+function makeTrends(title,sc,x){
+  const g=S.group;const gn=tagify(g&&g.name||me())||'Idol',mn=tagify(me())||'Idol';const base=Math.max(g?g.fans:2000,3000)*rnd(.05,.2)*(sc/60+.2);
+  const tags=[`#${gn}`,`#${mn}`];if(x&&x.mishap&&x.mishap.saved)tags.push(`#${mn}_LegendarySave`);if(sc>=75)tags.push(`#${gn}_ATE`);if(x&&x.fairy)tags.push(`#EndingFairy_${mn}`);
+  tags.push(sc>=60?pick(['#LiveVocals','#PerfectSync','#StageOfTheYear','#EncorePlease']):`#${gn}Fighting`);if(x&&x.extra)tags.push(x.extra);
+  S.trends=tags.slice(0,5).map((t,i)=>({t,n:Math.round(base*(1-i*.14)*rnd(.8,1.2)),w:S.week}));
+  const posts=[`[REVIEW] ${title}: ${sc>=72?'legendary stage, bring tissues':sc>=48?'a solid stage, my thoughts inside':'they looked so tired, let them rest'}`,`[FANCAM] ${me()} focus cam · ${title}`,`[PHOTO] ${sc>=60?'HD previews from today':'Blurry previews from today'} (${ri(20,80)} pics)`,`[TRANS] what ${me()} said after ${title}`,`[DISCUSS] ${sc>=60?'who had the best part today?':'was the sound mixing off today?'}`];
+  S.cafe=[...shuffle(posts).slice(0,2).map(p=>({t:p,v:Math.round(base*rnd(.2,.6)),c:ri(10,400),w:S.week})),...(S.cafe||[])].slice(0,30);
+}
+function trendsHTML(){const T=S.trends||[];if(!T.length)return '';return `<section class="card"><div class="between"><h2>🔥 Trending now</h2><small class="muted">${dateStr(T[0].w)}</small></div><div class="list">${T.map((x,i)=>`<div class="li"><span class="rk">${i+1}</span><div class="grow"><b>${esc(x.t)}</b></div><small class="muted">${fmt(x.n)} posts</small></div>`).join('')}</div></section>`}
+function cafeHTML(){const C=S.cafe||[];return trendsHTML()+`<section class="card"><h2>☕ Fan cafe</h2>${C.length?`<div class="list">${C.map(p=>`<div class="li"><div class="grow"><b>${esc(p.t)}</b><br><small class="muted">${dateStr(p.w)} · 👀 ${fmt(p.v)} · 💬 ${p.c}</small></div></div>`).join('')}</div>`:'<p class="muted">The fan cafe fills up once you start performing.</p>'}</section>`}
+
+/* ============ contract, group life, dorm ============ */
+function ensureGroupLife(){
+  const g=S.group;if(!g||!g.members)return;
+  if(!S.contract&&g.debutW!=null)S.contract={signed:g.debutW,banUntil:g.debutW+3*48,split:'7:3'};
+  if(!g.pairs){g.pairs=[];for(let a=0;a<g.members.length;a++)for(let b=a+1;b<g.members.length;b++){const A=g.members[a],Bm=g.members[b];let v=rnd(-30,60);if(A.trait==='cold'||Bm.trait==='cold')v-=15;if(A.trait==='cheerful'||Bm.trait==='cheerful')v+=10;g.pairs.push({a:A.id,b:Bm.id,v:Math.round(v)})}}
+  g.pairs=g.pairs.filter(p=>npcById(p.a)&&npcById(p.b));
+  if(!g.roomie||!npcById(g.roomie))g.roomie=g.members.slice().sort((x,y)=>y.rel-x.rel)[0]?.id||null;
+}
+const pairBest=()=>(S.group.pairs||[]).slice().sort((x,y)=>y.v-x.v)[0];
+const pairWorst=()=>(S.group.pairs||[]).slice().sort((x,y)=>x.v-y.v)[0];
+const SOLO_GIGS=['cast in a web drama','the new MC of Music Pulse','singing an OST','a solo CF model','a variety show regular','hosting a radio show','walking in Seoul Fashion Week'];
+function groupLifeWeek(){
+  const g=S.group;ensureGroupLife();(g.pairs||[]).forEach(p=>{p.v=clamp(p.v+rnd(-2,2)+(g.harmony-50)*.02,-100,100)});
+  const free=g.members.filter(m=>!m.solo);if(free.length&&Math.random()<.035){const m=pick(free);m.solo=pick(SOLO_GIGS);m.pop+=8;log(`${m.name} is ${m.solo}!`);fanSay('chat')}
+  g.members.forEach(m=>{if(m.solo&&Math.random()<.025){log(`${m.name} wrapped up being ${m.solo}.`);m.solo=null}});
+}
+function lineDistribution(){
+  const g=S.group;const P=g.pos||{};const w=id=>{const p=P[id]||[];let x=1;if(p.includes('Main Vocal'))x+=.8;if(p.includes('Lead Vocal'))x+=.45;if(p.includes('Main Rapper'))x+=.5;if(p.includes('Center'))x+=.4;if(p.includes('Main Dancer'))x+=.15;return Math.min(x,2.3)};
+  const all=[{id:'me',name:me(),pop:S.fame+30},...g.members.map(m=>({id:m.id,name:m.name,pop:m.pop}))].map(m=>Object.assign(m,{v:w(m.id)*(m.pop/120+.8)*rnd(.85,1.15)}));const tot=sum(all.map(m=>m.v));
+  return all.map(m=>({id:m.id,name:m.name,sec:Math.round(m.v/tot*190)})).sort((a,b)=>b.sec-a.sec);
+}
+function linesHTML(L){const mx=Math.max(...L.map(x=>x.sec));return `<p class="label">Line distribution · 3:10</p><div class="lines">${L.map(x=>`<div class="lrow ${x.id==='me'?'me':''}"><span>${esc(x.name)}</span><div class="bar"><i style="width:${x.sec/mx*100}%"></i></div><b>${Math.floor(x.sec/60)}:${String(x.sec%60).padStart(2,'0')}</b></div>`).join('')}</div>`}
+function contractCard(){const c=S.contract;if(!c)return '';const since=S.week-c.signed,ban=S.week<c.banUntil;
+  return `<section class="card"><h2>📜 Contract</h2><div class="list">
+  <div class="li"><span class="rk">💍</span><div class="grow"><b>Dating ban</b><br><small class="muted">${ban?`Active until ${dateStr(c.banUntil)}. Breaking it means a fine and angry executives.`:'Lifted. Your private life is your own (officially).'}</small></div><span class="pill ${ban?'red':'mint'}">${ban?'Active':'Lifted'}</span></div>
+  <div class="li"><span class="rk">📱</span><div class="grow"><b>Phone</b><br><small class="muted">${since<48?'Managers hold your phone on weekdays during the rookie year.':'You keep your own phone now.'}</small></div></div>
+  <div class="li"><span class="rk">💰</span><div class="grow"><b>Settlement</b><br><small class="muted">${S.flags.betterShare?'6:4 (agency : group), renegotiated':'7:3 (agency : group)'}${S.debt>0?` · trainee debt ${won(S.debt)} comes out first`:''}</small></div></div>
+  <div class="li"><span class="rk">📅</span><div class="grow"><b>Term</b><br><small class="muted">7 years. Renewal talks in ${dateStr(c.signed+7*48)}.</small></div></div></div></section>`}
+function groupLifeCard(){const g=S.group;ensureGroupLife();if(!g.members.length)return '';const rm=npcById(g.roomie);const bp=pairBest(),wp=pairWorst();const chore=g.members[Math.floor(S.week/1)%g.members.length];const solos=g.members.filter(m=>m.solo);
+  return `<section class="card"><h2>🏠 Group life</h2><div class="list">
+  ${rm?`<div class="li">${av(rm.look)}<div class="grow"><b>Roommate: ${esc(rm.name)}</b><br><small class="muted">${TRAITS[rm.trait]} · shares the top bunk with you</small></div>${relPill(rm.rel)}</div>`:''}
+  <div class="li"><span class="rk">🧽</span><div class="grow"><b>Chore rotation</b><br><small class="muted">${esc(chore.name)} is on dish duty this week. Dorm mood: ${g.harmony>=65?'cozy':g.harmony>=40?'okay':'tense'}.</small></div></div>
+  ${bp&&bp.v>20?`<div class="li"><span class="rk">💞</span><div class="grow"><b>Best friends</b><br><small class="muted">${esc(npcById(bp.a).name)} & ${esc(npcById(bp.b).name)} are inseparable.</small></div></div>`:''}
+  ${wp&&wp.v<0?`<div class="li"><span class="rk">⚡</span><div class="grow"><b>Rivalry</b><br><small class="muted">${esc(npcById(wp.a).name)} and ${esc(npcById(wp.b).name)} barely talk.</small></div></div>`:''}
+  ${solos.map(m=>`<div class="li"><span class="rk">🎬</span><div class="grow"><b>${esc(m.name)}</b><br><small class="muted">Currently ${esc(m.solo)}</small></div></div>`).join('')}</div></section>`}
+function banPenalty(){if(S.contract&&S.week<S.contract.banUntil){S.agRel-=10;S.money=Math.max(0,S.money-3e6);return ' You broke the dating-ban clause: agency favor −10 and a ₩3M fine.'}return ''}
+
 window.addEventListener('resize',()=>{if(G3.on)mount3D()});
 
 /* ============ guidance: milestones, coach, presets ============ */
@@ -1298,6 +1502,8 @@ function pcHTML(c,i){return `<button class="pc ${c.rar}" data-a="pcView" data-v=
 function binderCard(){const C=S.cards||[];return `<section class="card"><div class="between"><h2>Photocard binder</h2><small class="muted">${C.length} collected</small></div>${C.length?`<div class="pcs">${C.slice().reverse().map((c)=>pcHTML(c,C.indexOf(c))).join('')}</div>`:'<p class="muted">Photocards drop at milestones, releases and award nights.</p>'}</section>`}
 const HANDLES=['moonlit_stan','dancebreak_daily','fancam_queen','biasWrecked','lightstick_luv','sunbae_watcher','encore_please','bubbletea_fan','idolnerd99','stageQueenStan','heartbeat_04','ultbias_forever'];
 const FANLINES={
+  fansign:['{me} remembered my name from last time 😭','the fansign clips are so precious','{me} did aegyo for me I can die happy'],
+  variety:['{me} on Idol Playground was the funniest thing I\'ve seen all year','the random play dance part 😂','give {me} their own variety show'],
   costume:['the teaser outfits are SO pretty','whoever styled this era deserves a raise','{me} in that outfit... I\'m on the floor'],
   eval:['A trainee leak says {me} ranked #{r} this month 👀','{me} is going to debut, I can feel it','I would sell my soul for one {me} fancam'],
   debut:['{me} DEBUTED!!! I have been waiting for this my whole life','debut stage was insane, {g} is the rookie of the year','streaming {g} until my phone dies'],
@@ -1411,6 +1617,7 @@ function liveStage(game,t,kind,title,concept,res){
   if(cos)L.push([ts(),'👗',`Outfit check: ${cos.n} ${wow>=80?'is trending on its own.':'looks great under the lights.'}`]);
   L.push([ts(),'💬',`chat: ${pick(LIVECHAT[tier])}`]);
   if(F)L.push([ts(),F.e,`Ending fairy: ${F.n.toLowerCase()}. ${ft[0].toUpperCase()+ft.slice(1)}.`]);
+  makeTrends(title,sc,{mishap,fairy:!!F});
   const live={title,kind,sc,lines:L,viewers,views,mishap,segs:segs.map(x=>({e:x.e,s:x.s,label:x.label})),w:S.week,solo:kind==='solo'};S.lastLive=live;return live;
 }
 function liveHTML(L,with3D){
@@ -1472,7 +1679,7 @@ function idolTab(){
   const pos=myPos();
   UI.newCard=false;return `<section class="card center">${v3d('solo',280)}<h2>${esc(me())}</h2><p class="muted">${esc(S.idol.name)} · ${age()} y/o · ${S.idol.gender==='girl'?'Girl group':'Boy group'}</p>${pos.length?`<div class="row" style="justify-content:center">${pos.map(p=>`<span class="pill hot">${p}</span>`).join('')}</div>`:''}${B('Edit look','lookEdit',null,'ghost sm')}</section>
   <section class="card"><h2>Skills</h2><div class="stack">${statRows(S.st)}</div><small class="muted">Overall ${Math.round(myOverall())}</small></section>
-  <section class="card"><h2>Wallet</h2><div class="kpis"><div class="kpi"><b>${won(S.money)}</b><small>Money</small></div><div class="kpi"><b>${won(S.debt)}</b><small>Trainee debt</small></div><div class="kpi"><b>${Math.round(S.act==='trainee'?S.buzz:S.fame)}</b><small>${S.act==='trainee'?'Buzz':'Fame'}</small></div></div></section>${binderCard()}`;
+  <section class="card"><h2>Wallet</h2><div class="kpis"><div class="kpi"><b>${won(S.money)}</b><small>Money</small></div><div class="kpi"><b>${won(S.debt)}</b><small>Trainee debt</small></div><div class="kpi"><b>${Math.round(S.act==='trainee'?S.buzz:S.fame)}</b><small>${S.act==='trainee'?'Buzz':'Fame'}</small></div></div></section>${contractCard()}${binderCard()}`;
 }
 function teamTab(){
   if(S.act==='trainee'&&S.surv){const s=S.surv;const rows=[...s.cast.filter(n=>!n.out).map(n=>({id:n.id,v:n.votes})),{id:'me',v:s.myVotes}].sort((a,b)=>b.v-a.v).map(x=>({id:x.id,s:fmt(x.v)}));
@@ -1481,19 +1688,21 @@ function teamTab(){
     return `<section class="card"><h2>Trainees</h2><p class="muted"><small>Ordered by last evaluation. Friends vouch for you when lineups are picked; rivals do the opposite. Tap a heart to bond with someone.</small></p><div class="list">${rows.map((r,i)=>{const n=r.id==='me'?null:npcById(r.id);return `<div class="li ${r.id==='me'?'me':''}"><span class="rk">${i+1}</span>${av(n?n.look:S.idol.look)}<div class="grow"><b>${esc(n?n.name:me()+' (you)')}</b>${n?`<br><small class="muted">${TRAITS[n.trait]} · ${npcAge(n)} y/o · ovr ${Math.round(overall(n.st))}</small><br>${relPill(n.rel)}`:''}</div>${n?`<button class="btn ${S.bond===n.id?'':'ghost'} sm" data-a="bondSet" data-v="${n.id}" aria-label="bond with ${esc(n.name)}">💞</button>`:''}</div>`}).join('')}</div></section>`}
   const g=S.group;const popRank=[{id:'me',p:S.fame+30},...g.members.map(m=>({id:m.id,p:m.pop}))].sort((a,b)=>b.p-a.p);
   return `<section class="card"><h2>${esc(g.name||'Your group')}</h2>${v3d('group',250)}<div class="names">${groupOrder().map(m=>`<span class="pill ${m.id==='me'?'hot':''}">${esc(m.name)}</span>`).join('')}</div>${memberCards()}<p class="label">Member popularity</p><p>${popRank.map((x,i)=>`${i+1}. ${x.id==='me'?'<b>'+esc(me())+'</b>':esc(memberName(x.id))}`).join(' · ')}</p></section>
+  ${g.debutW!=null?groupLifeCard():''}
   ${S.fandom?`<section class="card center"><span class="label">Fandom</span><h2 style="color:${S.fandom.color}">${esc(S.fandom.name)}</h2>${S.fandom.stick?`<div class="stick">${stickSVG(S.fandom.stick,S.fandom.color)}</div><small class="muted">Official lightstick · ${STICK_SHAPES[S.fandom.stick]}</small>`:'<small class="muted">Lightstick unlocks at 250K fans.</small>'}</section>`:''}
   <section class="card"><h2>Discography</h2>${S.songs.length?`<div class="list">${S.songs.slice().reverse().map(s=>`<div class="li"><span class="rk">${CN(s.concept).e}</span><div class="grow"><b>${esc(s.title)}</b><br><small class="muted">${s.kind==='solo'?'Solo · ':s.kind==='unit'?'Sub-unit · ':''}${RELEASES.find(r=>r.id===s.type)?.n} · Y${yr(s.w)} · Q${s.q}</small></div><small><b>${s.peak<=100?'#'+s.peak:'–'}</b> · ${s.wins}🏆</small></div>`).join('')}</div>`:'<p class="muted">Nothing released yet.</p>'}</section>
   <section class="card"><h2>Awards</h2>${S.awards.length?`<div class="list">${S.awards.map(a=>`<div class="li"><span class="rk">🏆</span><div class="grow"><b>${esc(a.n)}</b></div><small>Year ${a.y}</small></div>`).join('')}</div>`:'<p class="muted">The trophy shelf is waiting.</p>'}</section>`;
 }
-function newsTab(){const chat=UI.newsView==='chat';if(chat)S.flags.chatSeen=(S.chat||[]).length;
-  const seg=`<div class="seg"><button class="${chat?'':'on'}" data-a="newsView" data-v="news">📰 News</button><button class="${chat?'on':''}" data-a="newsView" data-v="chat">💬 Fan chat</button></div>`;
-  if(chat)return seg+chatHTML();
-  return seg+`<section class="card"><h2>News feed</h2><div class="news">${S.log.map(l=>`<div><small>${dateStr(l.w)}</small>${esc(l.t)}</div>`).join('')}</div></section>`}
+function newsTab(){const v=UI.newsView||'news',chat=v==='chat';if(chat)S.flags.chatSeen=(S.chat||[]).length;
+  const seg=`<div class="seg seg3">${[['news','📰 News'],['chat','💬 Fan chat'],['cafe','☕ Fan cafe']].map(([k,l])=>`<button class="${v===k?'on':''}" data-a="newsView" data-v="${k}">${l}</button>`).join('')}</div>`;
+  if(chat)return seg+chatHTML();if(v==='cafe')return seg+cafeHTML();
+  const tr=(S.trends||[]).length?`<div class="chips wrapc">${S.trends.slice(0,3).map(x=>`<span class="pill">🔥 ${esc(x.t)}</span>`).join('')}</div>`:'';
+  return seg+tr+`<section class="card"><h2>News feed</h2><div class="news">${S.log.map(l=>`<div><small>${dateStr(l.w)}</small>${esc(l.t)}</div>`).join('')}</div></section>`}
 function menuTab(){
   return `<section class="card"><h2>Game</h2><p class="muted">Slot ${S.slot} · saved automatically every week.</p><div class="stack">${B(S.sound?'🔊 Sound on':'🔈 Sound off','sound',null,'ghost block')}${window.THREE?B(can3D()?'🧊 3D avatars on':'🖼️ 3D avatars off (2D)','toggle3d',null,'ghost block'):''}${B('How to play','howto',null,'ghost block')}${B('Back to title','toTitle',null,'ghost block')}</div></section>
   <section class="card"><h2>About</h2><p class="muted">Debut Dream is a fan-made idol career simulator. Every agency, idol, group, show and award in it is fictional.</p><p class="dim"><small>Version ${APP_VER}. Updates install automatically when you reopen the app.</small></p></section>`;
 }
-const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm game or the Pose Match dance game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p><b>Stage life.</b> Every release starts with a fitting day: pick and tailor the era's costumes (fit, comfort, wow). Before each live stage, choose how to rehearse and plan your ending fairy, then watch the stage play out as a live broadcast, mishaps and all.</p><p class="muted"><small>Trainee tests: Rhythm Lanes, Pose Match, Hit the High Note, Echo the Coach and Rhyme Flow. Each rehearsal method is its own game too (Hit Your Marks, Mirror Mirror, Sound Check, Deep Breaths, Find Your Spot, Quick Change), and the Practice room lets you play any game once a week. On stage: Camera Catch and Press Q&amp;A. Showcases, music shows, concerts and the survival finale are Live Stages that chain these games section by section, with live mishaps you decide on the spot. Every stage also has a Quick sim option.</small></p>`;
+const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm game or the Pose Match dance game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p><b>Stage life.</b> Every release starts with a fitting day: pick and tailor the era's costumes (fit, comfort, wow). Before each live stage, choose how to rehearse and plan your ending fairy, then watch the stage play out as a live broadcast, mishaps and all.</p><p class="muted"><small>Trainee tests: Rhythm Lanes, Pose Match, Hit the High Note, Echo the Coach and Rhyme Flow. Variety shows bring Random Play Dance, and each rehearsal method is its own game too (Hit Your Marks, Mirror Mirror, Sound Check, Deep Breaths, Find Your Spot, Quick Change), and the Practice room lets you play any game once a week. On stage: Camera Catch and Press Q&amp;A. Showcases, music shows, concerts and the survival finale are Live Stages that chain these games section by section, with live mishaps you decide on the spot. Every stage also has a Quick sim option.</small></p><p class="muted"><small>Live stages now have music, crowd cheers and camera cuts. Promotions bring a fansign, variety shows invite you on for Random Play Dance, and the News tab has a Fan cafe with trending hashtags. Check the Group tab for dorm life and the Idol tab for your contract (yes, there is a dating ban).</small></p>`;
 function lookEditor(L,prefix){
   const sw=(arr,key)=>`<div class="swatches">${arr.map((c,i)=>`<button class="sw ${L[key]===i?'on':''}" style="background:${c}" data-a="${prefix}" data-v="${key}|${i}" aria-label="${key} ${i+1}"></button>`).join('')}</div>`;
   const op=(arr,key)=>`<div class="opts">${arr.map((n,i)=>`<button class="opt ${L[key]===i?'on':''}" data-a="${prefix}" data-v="${key}|${i}"><b>${n}</b></button>`).join('')}</div>`;
@@ -1589,12 +1798,13 @@ const GAMES={
   rhyme:{n:'Rhyme Flow',e:'🎧',how:'A beat plays and a bar of lyrics appears. Finish the second line with the word that rhymes before the beat runs out.'},
   camera:{n:'Camera Catch',e:'📸',how:'The camera with the red LIVE light is on air. Tap it fast to give it your best look. Orange cameras are on standby: don\'t fall for them.'},
   qa:{n:'Press Q&A',e:'🎙️',how:'Questions come fast. Pick the answer that charms the room before time runs out.'},
+  randomplay:{n:'Random Play Dance',e:'💿',how:'Songs play at random. JUMP IN when it is your group\'s song, stay out when it is someone else\'s. Classic variety show chaos.'},
   live:{n:'Live Stage',e:'📺',how:'The real performance, broadcast live. The song plays section by section and each section is a quick challenge. How you do is exactly what viewers see.'}
 };
 GAMES.choreo=GAMES.poses;GAMES.pitch=GAMES.highnote;
 const KIND_KEYS={rhythm:{d:'0',f:'1',j:'2',k:'3',ArrowLeft:'0',ArrowDown:'1',ArrowUp:'2',ArrowRight:'3'},pick3:{'1':'0','2':'1','3':'2',ArrowLeft:'0',ArrowDown:'1',ArrowRight:'2'},camera:{'1':'0','2':'1','3':'2','4':'3','5':'4','6':'5'},mishap:{'1':'0','2':'1'}};
 function startMG(kind,o,cb){MG={kind,o,cb,phase:'intro',alive:true,iv:[],seg:0};drawMG()}
-function closeMG(){if(MG){MG.alive=false;MG.iv.forEach(clearInterval)}MG=null;const el=$('#mg');if(el)el.remove()}
+function closeMG(){musicStop();if(MG){MG.alive=false;MG.iv.forEach(clearInterval)}MG=null;const el=$('#mg');if(el)el.remove()}
 function mgShell(inner){let el=$('#mg');if(!el){el=document.createElement('div');el.id='mg';el.className='mg';document.body.appendChild(el)}el.innerHTML=inner;return el}
 const mgTop=(o,score)=>`<div class="top"><b>${esc(o.title)}</b>${score?'<span class="score" id="mgs"></span>':'<span></span>'}<button class="x" data-mga="quit">✕</button></div>`;
 const setScore=t=>{const e=$('#mgs');if(e)e.textContent=t};
@@ -1611,7 +1821,7 @@ function drawMG(){
 }
 function finishMG(score,extra){if(!MG)return;MG.alive=false;MG.iv.forEach(clearInterval);MG.score=clamp(Math.round(score),0,100);if(extra)MG.extra=extra;MG.phase='done';beep(MG.score>=55?880:330,.25,.1);drawMG()}
 function runGame(kind,host,o,done){MG.press=null;MG.release=null;MG.keys=null;const my=++MG.seg;const on=()=>MG&&MG.alive&&MG.seg===my;
-  ({rhythm:subRhythm,poses:subPoses,choreo:subPoses,pitch:subHighNote,highnote:subHighNote,echo:subEcho,rhyme:subRhyme,camera:subCamera,qa:subQA,mishap:subMishap,marks:subMarks,mirror:subMirror,mixer:subMixer,breath:subBreath,formation:subFormation,change:subChange})[kind](host,o,on,done)}
+  ({rhythm:subRhythm,poses:subPoses,choreo:subPoses,pitch:subHighNote,highnote:subHighNote,echo:subEcho,rhyme:subRhyme,camera:subCamera,qa:subQA,mishap:subMishap,marks:subMarks,mirror:subMirror,mixer:subMixer,breath:subBreath,formation:subFormation,change:subChange,randomplay:subRandomPlay})[kind](host,o,on,done)}
 function playMG(){
   audio();MG.phase='play';const o=MG.o;
   if(MG.kind==='live'){runLive(o);return}
@@ -1897,7 +2107,22 @@ function subCamera(host,o,on,done){
 }
 
 /* --- Press Q&A / concert ment (variety) --- */
-const QA={press:[
+const QA={fansign:[
+  ['A fan asks: "Can you do aegyo for me?"',[['*bbuing bbuing* with full commitment',1],['A shy little wave',.5],['"Maybe next time…"',0]]],
+  ['"Please sign it \'To Minji, stay healthy!\'"',[['Write it exactly, plus a little heart',1],['Just sign your name',.4],['Misspell her name',0]]],
+  ['"I flew all the way from Brazil to see you!"',[['"Obrigado! Thank you for coming so far!"',1],['"Wow, cool."',.5],['*nods*',.2]]],
+  ['A fan is shaking: "I don\'t know what to say…"',[['"Take your time. Let\'s just talk!"',1],['Smile politely',.5],['"Next fan, please."',0]]],
+  ['A fan gives you a handmade doll of you.',[['Hold it up for the cameras, delighted',1],['"Thanks."',.4],['Put it under the table',0]]],
+  ['"Can you sing one line of the B-side, just for me?"',[['Sing it softly, just for them',1],['Hum a bit',.6],['"No singing at fansigns."',0]]],
+  ['A fan asks you to wear their bunny headband.',[['Wear it and pose for every camera',1],['Wear it for one second',.5],['"My stylist would kill me."',.2]]]],
+ variety:[
+  ['MC: "Show us your best aegyo!"',[['Go all in, no shame',1],['A tiny peace sign',.5],['Refuse, totally embarrassed',.1]]],
+  ['MC: "Who is the messiest member in the dorm?"',[['Expose them with a hilarious story',1],['"Me, honestly."',.6],['"We\'re all very clean!"',.3]]],
+  ['MC: "Now do your choreo at 2x speed!"',[['Go full speed, chaos ensues',1],['Do it carefully at half speed',.5],['"My knee hurts…"',.1]]],
+  ['MC: "Impersonate your leader!"',[['A spot-on impression, the studio dies',1],['A polite half-try',.5],['"They\'ll be mad at me!"',.3]]],
+  ['MC: "What\'s your secret dorm ramen recipe?"',[['Explain your weird cheese-egg-cola combo',1],['"Just regular ramen."',.4],['"Our manager won\'t let us eat ramen."',.5]]],
+  ['MC: "Pick a member to call a random senior idol!"',[['Grab the phone yourself and charm them',1],['Pick the maknae, sorry maknae',.6],['"Please no…"',.1]]]],
+ press:[
   ['How does it feel to finally be here?',[['Like a dream. We\'ll repay every fan with our stages.',1],['Honestly? Exhausting.',.2],['We always knew we would make it.',.4]]],
   ['Which member is the funniest?',[['*points at the maknae* They never stop!',1],['Me, obviously.',.5],['We\'re all pretty serious.',.2]]],
   ['This concept is bold. Any worries?',[['We practiced until it felt like us.',1],['The company picked it.',.2],['No comment.',0]]],
@@ -1946,17 +2171,18 @@ function subMishap(host,o,on,done){
 }
 
 /* --- Live Stage: the actual performance --- */
-const SEG_STAT={rhythm:'dance',poses:'dance',highnote:'vocal',echo:'vocal',rhyme:'rap',camera:'visual',qa:'variety',marks:'visual',mirror:'dance',mixer:'vocal',breath:'vocal',formation:'dance',change:'visual'};
+const SEG_STAT={rhythm:'dance',poses:'dance',highnote:'vocal',echo:'vocal',rhyme:'rap',camera:'visual',qa:'variety',marks:'visual',mirror:'dance',mixer:'vocal',breath:'vocal',formation:'dance',change:'visual',randomplay:'dance'};
 function livePlan(type,t){
   const R=REHEARSALS.find(x=>x.id===t.reh)||REHEARSALS[0];const comfort=S.costume?S.costume.comfort:60;const rapper=myPos().includes('Main Rapper');
   const seg=(id,kind,e,label,o)=>({id,kind,e,label,o:o||{}});let segs;
   if(type==='showcase')segs=[seg('photo','camera','📸','Photo wall: find the flashing camera',{n:4,cue:'Reporters are shooting. Find the live camera!'}),seg('intro','poses','🎬','Showcase stage: opening poses',{n:3}),seg(rapper?'rap':'verse',rapper?'rhyme':'highnote',rapper?'🎧':'🎤',rapper?'Your rap verse':'Your solo line: hit the high note',rapper?{n:2}:{n:3}),seg('dance','rhythm','💃','Dance break',{len:6500}),seg('press','qa','🎙️','Press Q&A',{n:2,set:'press'})];
   else if(type==='concert')segs=[seg('opener','rhythm','🎆','Opening number',{len:7500}),seg('ballad','echo','🎤','Ballad: sing with the band',{n:2}),seg('ment','qa','🗣️','Ment: talk to the crowd',{n:2,set:'ment'}),seg('dance','poses','💃','Dance medley',{n:3}),seg('encore','camera','🎥','Encore: play to every camera',{n:3,cue:'Encore! Wave to the live camera!'})];
   else if(type==='finale')segs=[seg('verse','echo','🎤','Your verse',{n:2}),seg('dance','poses','💃','Choreography',{n:3}),seg('rap','rhyme','🎧','Rap bridge',{n:2}),seg('killing','camera','📸','Killing part',{n:2})];
+  else if(type==='variety')segs=[seg('rp','randomplay','💿','Random Play Dance',{n:8}),seg('mc','qa','🎙️','MC games',{n:3,set:'variety'}),seg('aegyo','camera','😆','Aegyo close-up',{n:2,cue:'Close-up corner! Find the camera for your aegyo!'})];
   else segs=[seg('intro','poses','🎬','Opening pose',{n:2}),seg(rapper?'rap':'verse',rapper?'rhyme':'highnote',rapper?'🎧':'🎤',rapper?'Your rap verse':'Your line: hit the high note',rapper?{n:2}:{n:3}),seg('killing','camera','📸','Killing part: find the camera',{n:3,cue:'Your killing part! Find the live camera!'}),seg('dance','rhythm','💃','Dance break',{len:6500}),seg('fairy','camera','😉','Ending fairy: hold the close-up',{n:1,cue:'Ending fairy! Which camera has your close-up?'})];
   segs.forEach(s=>{s.o.stat=S.st[SEG_STAT[s.kind]]});
   const pm=clamp(.22+(S.stamina<30?.1:0)-(R.mis||0)*rehFactor(t)-(comfort-60)/300,.03,.45);
-  if(!S.hiatus&&Math.random()<pm){const m=pick(MISHAPS.filter(x=>!x.w||!R.dress));segs.splice(2,0,seg('mishap','mishap','⚠️','Live mishap!',{m}))}
+  if(type!=='variety'&&!S.hiatus&&Math.random()<pm){const m=pick(MISHAPS.filter(x=>!x.w||!R.dress));segs.splice(2,0,seg('mishap','mishap','⚠️','Live mishap!',{m}))}
   return {type,segs};
 }
 function autoRes(plan,game){
@@ -1967,16 +2193,17 @@ function autoRes(plan,game){
 function runLive(o){
   const plan=o.plan;const solo=o.solo||!S.group;
   mgShell(`${mgTop(o,1)}<div class="mglive">${v3d(solo?'live':'group',150)}<div class="ticker"><span class="pill red">● LIVE</span><span class="vw">👀 0</span><span class="tk">The broadcast is starting…</span></div></div><div class="seghead"><span class="se"></span><b class="sl"></b><small class="sp"></small></div><div class="mghost compact" id="mgh0"></div>`);
-  mount3D();
+  mount3D();musicStart(o.concept||(S.group&&S.group.concept)||'cute');stageCue({move:'idle',form:1,cam:'wide'});setTimeout(()=>{if(MG&&MG.alive){fanchantSFX();crowd(.6)}},700);
   const H=$('#mgh0'),SE=$('.seghead .se'),SL=$('.seghead .sl'),SP=$('.seghead .sp'),VW=$('.ticker .vw'),TK=$('.ticker .tk');
   let viewers=Math.round(o.viewers||5000),run=60;const res=[];let i=0;
   MG.iv.push(setInterval(()=>{viewers=Math.round(viewers*rnd(1.01,1.05)+rnd(20,200));VW.textContent='👀 '+fmt(viewers);const tier=run>=72?'hi':run>=48?'mid':'lo';TK.textContent=pick(LIVECHAT[tier]);TK.classList.remove('pop');void TK.offsetWidth;TK.classList.add('pop')},1700));
   const next=()=>{if(!MG||!MG.alive)return;
     if(i>=plan.segs.length){const w=res.map(r=>r.id==='mishap'?.5:1);const sc=sum(res.map((r,k)=>r.s*w[k]))/sum(w);
+      musicStop();crowd(sc>=72?1.2:sc>=48?.7:.3);if(sc>=72)stageBurst();stageCue({move:'break',form:0,cam:'wide'});
       finishMG(sc,{segs:res.filter(r=>r.id!=='mishap'),mishap:MG.mishapRes||null,mg:true,viewers});return}
-    const sg=plan.segs[i];SE.textContent=sg.e;SL.textContent=sg.label;SP.textContent=`${i+1}/${plan.segs.length}`;
+    const sg=plan.segs[i];const cue=SEG_CUE[sg.id]||SEG_CUE.verse;stageCue(cue);MUSIC.energy=cue.e;SE.textContent=sg.e;SL.textContent=sg.label;SP.textContent=`${i+1}/${plan.segs.length}`;
     H.innerHTML=`<div class="segcard"><div class="big">${sg.e}</div><b>${esc(sg.label)}</b><small>${sg.kind==='mishap'?'Something went wrong!':GAMES[sg.kind].n}</small></div>`;
-    setTimeout(()=>{if(!MG||!MG.alive)return;runGame(sg.kind,H,Object.assign({diff:o.diff},sg.o),(s,d)=>{s=Math.round(clamp(s,0,100));res.push({id:sg.id,e:sg.e,label:sg.label,s});run=avg(res.map(r=>r.s));
+    setTimeout(()=>{if(!MG||!MG.alive)return;runGame(sg.kind,H,Object.assign({diff:o.diff},sg.o),(s,d)=>{s=Math.round(clamp(s,0,100));res.push({id:sg.id,e:sg.e,label:sg.label,s});run=avg(res.map(r=>r.s));crowd(s>=72?1:s>=48?.5:.15);if(s>=72&&['killing','encore','fairy','dance','opener'].includes(sg.id))stageBurst();
       H.innerHTML=`<div class="segcard"><div class="big">${s>=75?'🌟':s>=50?'✨':'😬'}</div><b>${esc(sg.label)}: ${s}</b><small>${esc(d||'')}</small></div>`;i++;setTimeout(next,900)})},sg.kind==='mishap'?400:1100)};
   next();
 }
@@ -1995,7 +2222,7 @@ document.addEventListener('keyup',e=>{if(e.key===' '&&MG&&MG.release)MG.release(
 const evalDiff=()=>clamp(.3+S.months*.025,.3,.8);
 function mgFor(kind,title,stat,diff,cb,sub){startMG(kind,{title,stat,diff,sub},cb)}
 function goLive(type,title,solo,cb){const t=curTask();const plan=livePlan(type,t);const g=S.group;
-  startMG('live',{title,plan,solo,diff:.55,stat:avg([S.st.vocal,S.st.dance,S.st.visual]),viewers:Math.max(g?g.fans:0,AG(S.agency).fame*.6)*.4+2000,sub:`${plan.segs.length} sections · rehearsal: ${(REHEARSALS.find(r=>r.id===t.reh)||REHEARSALS[0]).n}`},cb)}
+  startMG('live',{title,plan,solo,concept:(songById(t.song||'')||{}).concept||(S.group&&S.group.concept),diff:.55,stat:avg([S.st.vocal,S.st.dance,S.st.visual]),viewers:Math.max(g?g.fans:0,AG(S.agency).fame*.6)*.4+2000,sub:`${plan.segs.length} sections · rehearsal: ${(REHEARSALS.find(r=>r.id===t.reh)||REHEARSALS[0]).n}`},cb)}
 function auditionResult(id,game){
   const a=AG(id);const sc=auditionScore(game,UI.piece||'vocal');
   if(sc>=a.diff||a.id==='comet'){joinAgency(id);UI.tab='week'}
@@ -2004,6 +2231,10 @@ function auditionResult(id,game){
 }
 function concertDone(g,res){const t=curTask();const city=S.tour.cities[0];const live=liveStage(g,t,'group',`${S.tour.n} · opening night in ${city}`,S.group.concept,res);S.tour.perf=live.sc;S.tasks.shift();
   info('Opening night',live.sc>=60?'The crowd roars':'A shaky start',`${liveHTML(live,true)}<p class="muted">The tour runs for ${S.tour.weeks} weeks.</p>`)}
+function fansignDone(sc){const g=S.group;S.tasks.shift();const d=addFans(g.fans*(.004+sc/8000)+300);S.fame+=sc/50;S.stress+=sc>=60?-4:3;fanSay('fansign');makeTrends('fansign',sc,{extra:`#${tagify(me())}_fansign`});
+  log(`Fansign: ${sc>=70?'fans left in tears of joy':sc>=45?'a sweet afternoon':'a few awkward moments went viral'}.`);info('Fansign wrap-up',sc>=70?'They will never forget today 💌':sc>=45?'A lovely fansign':'A little awkward…',`<p>Score ${sc}/100 · +${fmt(d)} fans. ${sc>=70?'Fan accounts are posting your interactions all night.':sc<45?'One clip of you looking bored is going around.':''}</p>`)}
+function varietyDone(sc){const g=S.group;S.tasks.shift();g.pop+=(sc-45)/5;S.fame+=sc/25;const d=addFans(g.fans*sc/6000+500);S.st.variety=clamp(S.st.variety+1,0,100);fanSay('variety');makeTrends('Idol Playground',sc,{extra:sc>=70?`#${tagify(me())}_IdolPlayground`:'#IdolPlayground'});
+  log(`Idol Playground episode aired: ${sc>=70?'it was hilarious':sc>=45?'decent ratings':'a flop that became a meme'}.`);info('Episode aired','📺 Idol Playground',`<p>Score ${sc}/100 · buzz ${sign((sc-45)/5)} · +${fmt(d)} fans.</p><p class="muted">${sc>=70?'Clips of you are everywhere. Viewers want you as a regular.':sc>=45?'A fun episode. A few clips go around.':'Your Random Play mistakes are now a meme.'}</p>`)}
 function renewGroup(){
   const g=S.group;S.flags.renewed=true;let left=[];
   if(!(g.harmony>=40&&S.agRel>=30)){left=g.members.filter(m=>m.rel<15);if(left.length>=g.members.length)left=left.slice(0,g.members.length-1);g.members=g.members.filter(m=>!left.includes(m));g.size=g.members.length+1;assignPositions();if(!g.members.find(m=>m.id===S.bond))S.bond=g.members[0].id}
@@ -2057,6 +2288,11 @@ const ACT={
   tourGo:()=>{if(!UI.form.tour)return;S.tasks.shift();startTour(UI.form.tour);UI.form={}},
   mgConcert:()=>goLive('concert',`${S.tour.n}: opening night in ${S.tour.cities[0]}`,false,(g,x)=>{concertDone(g,x);save();render()}),
   autoConcert:()=>{const g=autoScore(avg([S.st.dance,S.st.vocal]));concertDone(g,autoRes(livePlan('concert',curTask()),g))},
+  fansignGo:()=>startMG('qa',{title:'Fansign',set:'fansign',n:4,stat:S.st.variety,diff:.4,sub:'Fans come up one by one. Make each of them feel special.'},g=>{fansignDone(g);save();render()}),
+  fansignAuto:()=>fansignDone(autoScore(S.st.variety)),
+  varietyGo:()=>{const plan=livePlan('variety',curTask());startMG('live',{title:'Idol Playground',plan,concept:S.group.concept,diff:.5,stat:avg([S.st.variety,S.st.dance]),viewers:Math.max(S.group.fans,20000)*.6,sub:'Live studio taping'},g=>{varietyDone(g);save();render()})},
+  varietyAuto:()=>varietyDone(autoScore(avg([S.st.variety,S.st.dance]))),
+  varietyNo:()=>{S.tasks.shift();S.stamina+=5},
   tset:v=>{const t=curTask();if(!t)return;const i=v.indexOf('|');const k=v.slice(0,i);if(k==='reh'&&t.rehScore!=null)return;t[k]=v.slice(i+1);UI.keepScroll=true;save()},
   rehPlay:()=>{const t=curTask();if(!t||t.rehScore!=null)return;const R=REHEARSALS.find(r=>r.id===t.reh)||REHEARSALS[0];const k=REH_GAME[R.id];
     mgFor(k,`Rehearsal: ${R.n}`,S.st[SEG_STAT[k]],.45,g=>{t.rehScore=g;log(`Rehearsal (${R.n}): ${g}/100.`);UI.keepScroll=true;save();render()},R.d)},
@@ -2101,7 +2337,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='
 
 // Live updates (same approach as Headliner): when the app opens or returns to the foreground, fetch the
 // latest page and reload into it if its version is newer. Never interrupts a mini-game in progress.
-const APP_VER='202610241913';
+const APP_VER='202610242018';
 function checkUpdate(){if(!/^https?:/.test(location.protocol)||MG)return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER&&!MG){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 function boot(){
