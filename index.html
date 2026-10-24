@@ -1380,7 +1380,7 @@ const A={
   // core
   next:()=>{UI.scene=null;nextWeek()},
   // studio
-  write:()=>{if(!spend(25))return;const s=writeSong();toast(`Wrote "${s.title}" (${grade(s.q)} demo).`);log(`Wrote a new song: "${s.title}".`)},
+  write:()=>{if(!spend(12))return;const s=writeSong();toast(`Wrote "${s.title}" (${grade(s.q)} demo).`);log(`Wrote a new song: "${s.title}".`)},
   retreat:()=>{if(S.energy<30){toast('You need at least 30 energy to go on a writing retreat.');return}if(!spend(0,250))return;S.energy=0;const a=writeSong(5),b=writeSong(5);b.title===a.title&&(b.title=songTitle());S.skills.songwriting=Math.min(100,S.skills.songwriting+1.5);log(`Songwriting retreat: wrote "${a.title}" and "${b.title}".`,'good');nextWeek(true);openModal('Back from the retreat',`<p>A week in a cabin with no wifi. You came back with two new songs:</p><div class="list">${[a,b].map(s=>`<div class="between"><b>${esc(s.title)}</b><span class="pill">${grade(s.q)} · Q${s.q}</span></div>`).join('')}</div><p class="muted">A week has passed. Your weekly income was paid out as usual.</p><button class="btn" data-a="closeModal">Into the studio</button>`)},
   record:d=>{const s=S.songs.find(x=>x.id==d.id);const st=STUDIOS.find(x=>x.id===UI.studio);if(S.level<LVL_STUDIO[st.id]){toast(lockTxt(LVL_STUDIO[st.id]));return}if(!spend(15,st.cost))return;const old=s.q;recordSong(s,st);toast(`Recorded "${s.title}" at the ${st.name.toLowerCase()}: Q${old} → Q${s.q}.`)},
   scrap:d=>{S.songs=S.songs.filter(x=>x.id!=d.id)},
@@ -1619,11 +1619,11 @@ function studioView(){
   const npcs=S.npcs.slice().sort((a,b)=>a.power-b.power);
   const cn=S.npcs.find(n=>n.name===UI.collab);
   return `<div class="section"><h2>Studio</h2><div class="grid">
-    <div class="card"><h3>Write a song</h3><p class="muted">25 energy. Each release is judged against what people expect at your level, so it lands as a Smash, Hit, Solid or Flop. Releasing twice in two weeks hurts reception. Quality comes from ${GENRES[S.genre].map(k=>SKILLS[k]).join(', ')} and Songwriting.</p>
+    <div class="card"><h3>Write a song</h3><p class="muted">12 energy. Each release is judged against what people expect at your level, so it lands as a Smash, Hit, Solid or Flop. Releasing twice in two weeks hurts reception. Quality comes from ${GENRES[S.genre].map(k=>SKILLS[k]).join(', ')} and Songwriting.</p>
       <label class="field"><span class="label">Title</span><input type="text" id="song-title" placeholder="Leave blank for a random title" maxlength="40"></label>
       <label class="field"><span class="label">Theme</span><select id="song-theme">${THEMES.filter(t=>t!=='Family'||S.kids).map(t=>`<option>${t}</option>`).join('')}</select></label>
       <div class="row"><label class="field"><span class="label">Tempo</span><select id="song-tempo">${TEMPOS.map(t=>`<option ${(GFIT[S.genre]||[])[0]===t?'selected':''}>${t}</option>`).join('')}</select></label><label class="field"><span class="label">Lead instrument</span><select id="song-inst">${INSTS.map(t=>`<option ${(GFIT[S.genre]||[])[1]===t?'selected':''}>${t}</option>`).join('')}</select></label></div><small class="muted">${esc(S.genre)} fans like ${(GFIT[S.genre]||[]).join(' and ').toLowerCase()} songs (+3 each).${S.breakupBoost?' Your heartbreak will make the next song +8.':''}</small>
-      <div class="row"><button class="btn" data-a="write">Write song · 25E</button><button class="btn ghost" data-a="writeCamp">Writing week: 2 songs · 45E</button></div><small class="muted">A writing week gives you two songs at once, each with a small quality bonus.</small></div>
+      <div class="row"><button class="btn" data-a="write">Write song · 12E</button><button class="btn ghost" data-a="writeCamp">Writing week: 2 songs · 20E</button></div><small class="muted">A writing week gives you two songs at once, each with a small quality bonus.</small></div>
     <div class="card"><h3>Songwriting retreat</h3><p class="muted">Spend the whole week in a cabin and come back with <b>2 new songs</b>, each with +5 quality. Costs $250 and needs 30 energy. Ends the week.</p><div><button class="btn" data-a="retreat">Go on retreat</button></div></div>
     <div class="card"><h3>Collaborate</h3>${S.level<3?`<span class="lock">${lockTxt(3)}</span>`:''}<p class="muted">Pitch a feature to a charting artist. Their fans stream the song too. 25 energy plus their fee (refunded if they pass).</p>
       <select data-ui="collab" id="collab-sel"><option value="">Choose an artist</option>${npcs.map(n=>`<option value="${esc(n.name)}" ${UI.collab===n.name?'selected':''}>${esc(n.name)} · ${cash(collabFee(n))} · ${Math.round(collabChance(n)*100)}% chance</option>`).join('')}</select>
@@ -3621,7 +3621,7 @@ function venueOk(v){return S.level>=LVL_VENUE[v.id]&&ready()>=v.songs}
 function planActs(){
   const be=has('car')?10:15;const tt=trainTiers()[+UI.train||0];
   const L=[
-    {g:'Make music',a:'write',ic:'✍',l:'Write a song',e:25,d:'One new song.'},{g:'Make music',a:'writeCamp',ic:'📝',l:'Writing week (2 songs)',e:45,d:'Two new songs with a small bonus.'},
+    {g:'Make music',a:'write',ic:'✍',l:'Write a song',e:12,d:'One new song.'},{g:'Make music',a:'writeCamp',ic:'📝',l:'Writing week (2 songs)',e:20,d:'Two new songs with a small bonus.'},
     {g:'Perform',a:'busk',ic:'🎸',l:'Busk: '+BUSK[+UI.busk||0].n,e:be,d:'Tips and new fans. Change the spot in Live.'},
     ...VENUES.filter(venueOk).map(v=>({g:'Perform',a:'gig',v:v.id,ic:'🎤',l:v.name,e:v.id==='openmic'&&has('car')?10:v.e,d:v.desc})),
     ...Object.entries(PLAT).map(([k,p])=>({g:'Social',a:'post',v:k,ic:'📱',l:'Post on '+p.name,e:8,d:'A quick post for followers and hype.'})),
@@ -3769,7 +3769,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610240026';
+const APP_VER='202610240027';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
@@ -4138,7 +4138,7 @@ SUB_ICONS.unshift([/legend/i,'👑'],[/season|calendar/i,'📆'],[/side job/i,'�
 
 /* ============ v14: manager, quick actions, debuts, awards night, trophies, daily rewards ============ */
 {const _mig=migrate;migrate=function(s){_mig(s);s.daily??={last:'',streak:0};return s}}
-A.writeCamp=()=>{if(!spend(45))return;const a=writeSong(2),b=writeSong(2);toast(`Writing week done: "${a.title}" (${grade(a.q)}) and "${b.title}" (${grade(b.q)}).`);log(`Writing week: wrote "${a.title}" and "${b.title}".`)};
+A.writeCamp=()=>{if(!spend(20))return;const a=writeSong(2),b=writeSong(2);toast(`Writing week done: "${a.title}" (${grade(a.q)}) and "${b.title}" (${grade(b.q)}).`);log(`Writing week: wrote "${a.title}" and "${b.title}".`)};
 SCENE_ON.writeCamp=()=>({k:'studio',cap:'Writing week',pose:'studio'});
 A.wsStart=()=>{A.write();render()};
 
@@ -4148,7 +4148,7 @@ function advice(){const L=[],rel=S.songs.filter(s=>s.status==='released'),demos=
   if(S.inbox.some(o=>o.kind==='label'))L.push({ic:'📝',t:'A record label wants to sign you',d:'Read the offer before it expires.',a:'tab',v:'business'});
   if(recs.length)L.push(S.t-S.lastRelease<2?{ic:'⏳',t:`"${recs[0].title}" is ready`,d:'Wait a week between releases so they land better. Promote it in the meantime.',a:'openApp',v:'tok'}:{ic:'🚀',t:`Release "${recs[0].title}"`,d:`Quality ${recs[0].q}. Fans are waiting.`,a:'release',id:recs[0].id,e:10});
   if(demos.length)L.push({ic:'🎙',t:`Record "${demos[0].title}"`,d:'Recording raises quality before you release it.',a:'record',id:demos[0].id,e:15});
-  if(demos.length+recs.length===0)L.push({ic:'✍',t:'Write a new song',d:'You have nothing ready to release.',a:'write',e:25});
+  if(demos.length+recs.length===0)L.push({ic:'✍',t:'Write a new song',d:'You have nothing ready to release.',a:'write',e:12});
   if(rel.length>=7&&(!S.albums.length||S.t-S.albums[S.albums.length-1].rel>20))L.push({ic:'💿',t:'Put out an album',d:`You have ${rel.length} songs. Albums sell big and count for levels.`,a:'goSub',v:'studio|Make an album or EP'});
   if((S.stress||0)>70||S.health<40)L.push({ic:'🛋',t:'You need a break',d:'Stress and health are hurting your shows and songs.',a:'goSub',v:'personal|Life and wellbeing'});
   if(S.money<150)L.push({ic:'☕',t:'Money is tight',d:'Pick up a side job shift.',a:'job',v:'barista',e:20});
@@ -4156,7 +4156,7 @@ function advice(){const L=[],rel=S.songs.filter(s=>s.status==='released'),demos=
   if(S.energy>=15&&L.length<4){const v=VENUES.filter(venueOk).filter(x=>x.cap>0).pop();L.push(v?{ic:'🎤',t:`Play the ${v.name}`,d:'Shows build fans and pay well.',a:'gig',v:v.id,e:v.e}:{ic:'🎸',t:'Go busking',d:'Easy tips and new fans.',a:'busk',e:has('car')?10:15})}
   return L.slice(0,4)}
 function managerCard(){const L=advice();
-  const QA=[['✍','Write','write','',25],['📝','Write 2','writeCamp','',45],['🎙','Record','goSub','studio|Song library'],['🚀','Release','goSub','studio|Song library'],['🎸','Busk','busk','',has('car')?10:15],['🎤','Gig','goSub','live|Venues'],['📱','Post','openApp','insta'],['⏭','Next week','next','']];
+  const QA=[['✍','Write','write','',12],['📝','Write 2','writeCamp','',20],['🎙','Record','goSub','studio|Song library'],['🚀','Release','goSub','studio|Song library'],['🎸','Busk','busk','',has('car')?10:15],['🎤','Gig','goSub','live|Venues'],['📱','Post','openApp','insta'],['⏭','Next week','next','']];
   return `<div class="section" data-title="Manager"><div class="mgr"><div class="mgr-av">🧑‍💼</div><div class="mgr-b"><span class="label">Your manager</span><b>${L.length&&L[0].a?esc(L[0].t)+'.':'Looking good. Keep the momentum going!'}</b></div></div>
   <div class="qa">${QA.map(([ic,l,a,v,e])=>`<button class="qab" data-a="${a}" ${v?`data-v="${v}"`:''}><i>${ic}</i><span>${l}</span>${e?`<small>${e}E</small>`:''}</button>`).join('')}</div>
   <div class="advice">${L.map(x=>`<div class="adv"><i>${x.ic}</i><div><b>${esc(x.t)}</b><small class="muted">${esc(x.d)}</small>${x.prog!=null?meter(x.prog*100,100):''}</div>${x.a?`<button class="btn sm" data-a="${x.a}" ${x.v?`data-v="${esc(x.v)}"`:''} ${x.id?`data-id="${x.id}"`:''}>${x.e?'Do it · '+x.e+'E':'Go'}</button>`:''}</div>`).join('')}</div></div>`}
