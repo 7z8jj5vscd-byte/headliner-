@@ -321,18 +321,8 @@ main.wrap{padding-top:14px;padding-bottom:calc(var(--tabh) + 92px + env(safe-are
 .compact .posestage{gap:4px}
 .compact .pads{height:74px}
 .compact .holdpad{height:80px}
-.compact .pitchfield{min-height:110px}
 .compact .camgrid{min-height:160px}
 .compact .rhymeopt{height:58px}
-.pitchwrap{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
-.pitchlyric{text-align:center;font-family:var(--display);font-size:20px;color:rgba(255,255,255,.45)}
-.pitchlyric span{transition:color .2s}.pitchlyric span.sung{color:#fff36b;text-shadow:0 0 12px rgba(255,243,107,.6)}
-.pitchfield{position:relative;flex:1;min-height:150px;border-radius:20px;background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 25%),rgba(255,255,255,.06);overflow:hidden}
-.pband{position:absolute;left:0;right:0;background:linear-gradient(90deg,rgba(127,212,255,.22),rgba(255,122,198,.34));border-top:2px solid #7fd4ff;border-bottom:2px solid #ff7ac6;display:flex;align-items:center;justify-content:flex-end;padding-right:14px;font-size:20px}
-.pdot{position:absolute;left:36%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:#fff;box-shadow:0 0 16px #fff}
-.pdot.ok{background:#fff36b;box-shadow:0 0 24px #fff36b,0 0 50px #ff7ac6}
-.pitchmeter{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-weight:900;font-size:13px}
-.pitchmeter .bar{background:rgba(255,255,255,.15)}
 .holdpad{height:96px;background:linear-gradient(135deg,#ff5fae,#a45cff);font-size:20px;font-weight:900}
 .holdpad.hit{transform:scale(.96);filter:brightness(1.3)}
 .rhymestage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
@@ -361,6 +351,43 @@ main.wrap{padding-top:14px;padding-bottom:calc(var(--tabh) + 92px + env(safe-are
 .mishap .big{font-size:52px;line-height:1}.mishap b{font-family:var(--display);font-size:20px}
 .mopts{display:flex;flex-direction:column;gap:8px;width:100%}
 .mbtn{min-height:56px;font-size:15px;font-weight:900;background:rgba(255,255,255,.95)!important;color:var(--ink)}
+.hnstage,.echostage,.breathstage,.mixstage,.markstage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;min-height:0}
+.hnword{font-family:var(--display);font-size:34px;font-weight:700;color:#fff;text-shadow:0 0 18px rgba(255,122,198,.6)}.hnword.ok{color:#fff36b}
+.gauge{position:relative;width:100%;height:58px;border-radius:999px;background:linear-gradient(90deg,#3d1d6e,#5b2a8f 50%,#3d1d6e);box-shadow:inset 0 0 0 2px rgba(255,255,255,.18);overflow:hidden}
+.gzone{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,rgba(47,224,184,.25),rgba(47,224,184,.6),rgba(47,224,184,.25));border-left:2px solid #2fe0b8;border-right:2px solid #2fe0b8}
+.gzone span{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#fff36b}
+.gneedle{position:absolute;top:-4px;bottom:-4px;width:6px;margin-left:-3px;border-radius:3px;background:#fff;box-shadow:0 0 14px #fff}
+.hndots{display:flex;gap:8px}.hndots i{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.18)}.hndots i.hit{background:#2fe0b8}.hndots i.miss{background:#ff6b8b}
+.coach{font-size:58px;line-height:1}
+.echoseq{display:flex;gap:8px;min-height:20px}.echoseq i{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.2)}.echoseq i.no{background:#ff6b8b}
+.echopads{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.echop{height:84px;border-radius:50%!important;aspect-ratio:1;height:auto;font-size:15px;font-weight:900}
+.echop.lit{transform:scale(1.12);filter:brightness(1.5);box-shadow:0 0 26px #fff}
+.director{background:#fff;color:var(--ink);border-radius:18px;padding:10px 14px;font-weight:900;font-size:17px;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.marks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;flex:1;max-height:340px}
+.mark{background:rgba(255,255,255,.08)!important;border:2px dashed rgba(255,255,255,.3)!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:62px}
+.mark b{font-size:24px;color:#ffcf3f}.mark small{font-size:11px;font-weight:900;color:#e6dcff}
+.fcell b{color:#fff}.fcell b.dim{opacity:.35}
+.cloth{border-style:solid!important;border-color:var(--cc)!important;background:color-mix(in srgb,var(--cc) 30%,transparent)!important;box-shadow:inset 0 0 0 3px var(--cc)}
+.cloth b{font-size:30px}
+.eradot{display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:-3px;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.2)}
+.mfig{display:block;width:100%;height:100%;min-height:0}.mfig svg{width:100%;height:100%}.mfig.flip svg{transform:scaleX(-1)}
+.posecard .mfig{flex:1}
+.mixer{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;flex:1;max-height:360px}
+.fader{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.07);border-radius:16px;padding:8px 4px;border:2px solid transparent}
+.fader.ok{border-color:#2fe0b8;box-shadow:0 0 16px rgba(47,224,184,.5)}
+.fader small{font-weight:900;font-size:11.5px}
+.fbtn{width:100%;height:46px;background:rgba(255,255,255,.9)!important;color:var(--ink);font-size:18px}
+.ftrack{position:relative;flex:1;width:10px;border-radius:5px;background:rgba(255,255,255,.2);min-height:110px}
+.ftarget{position:absolute;left:-10px;right:-10px;height:4px;margin-bottom:-2px;background:#fff36b;border-radius:2px}
+.fknob{position:absolute;left:-12px;width:34px;height:16px;margin-bottom:-8px;border-radius:6px;background:#ff7ac6;box-shadow:0 0 10px #ff7ac6}
+.lungs{position:relative;width:200px;height:200px;display:grid;place-items:center}
+.bcircle{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#ffd6ef,#ff7ac6 60%,#a45cff);box-shadow:0 0 40px rgba(255,122,198,.6)}
+.btxt{position:relative;font-family:var(--display);font-size:20px;color:#2a1846}
+.rehdone{background:#d6fff4;color:#0d7e66;border-radius:14px;padding:10px 12px;font-weight:800;font-size:13.5px}
+.compact .echop{font-size:13px}
+.compact .marks{max-height:240px}.compact .mark{min-height:52px}
+.compact .lungs{width:150px;height:150px}
 </style>
 </head>
 <body>
@@ -608,7 +635,7 @@ function traineeWeek(){
   const a=AG(S.agency);S.debt+=420000;
   growNPCs(S.trainees,a.support);
   if(S.surv){pushTask({type:'survEp'});return}
-  if(S.week%4===0){S.months++;const kind=S.months%2?'vocal':'dance';pushTask({type:'eval',kind,mg:kind==='dance'?'poses':['pitch','rhythm','rhyme'][Math.floor(S.months/2)%3]});return}
+  if(S.week%4===0){S.months++;const kind=S.months%2?'vocal':'dance';pushTask({type:'eval',kind,mg:kind==='dance'?'poses':['highnote','echo','rhythm','rhyme'][Math.floor(S.months/2)%4]});return}
   if(Math.random()<.42)randomEvent('trainee');
 }
 
@@ -697,7 +724,7 @@ function startSurvival(){
   S.surv={ep:1,cast:[...mine,...others].map(n=>Object.assign(n,{votes:0,out:false})),myVotes:0,out:false,hist:[]};
   log(`Joined the survival show ${SURV}.`);
 }
-const SURVEP={1:{n:'Level Test',mg:'pitch',d:'Sing 16 bars in front of the judges. They grade you A to F.',k:'vocal',keep:20},
+const SURVEP={1:{n:'Level Test',mg:'highnote',d:'Sing 16 bars in front of the judges. They grade you A to F.',k:'vocal',keep:20},
   2:{n:'Group Battle',mg:'choreo',d:'Teams of five battle with the same song. The crowd votes.',k:'dance',keep:14},
   3:{n:'Position Battle',mg:'rhythm',d:'Pick your best position and prove it.',k:'pos',keep:10},
   4:{n:'Debut Finale',mg:'rhythm',d:'Live broadcast. Only the top 7 debut.',k:'vocal',keep:7}};
@@ -1332,13 +1359,17 @@ const REHEARSALS=[
   {id:'fancam',e:'📹',n:'Study your fancams',d:'Find your killing angles. More fancam views.',bonus:2,sta:-3,cam:1.4,mis:0},
   {id:'dress',e:'👗',n:'Full dress rehearsal',d:'Rehearse in costume. Wardrobe mishaps can\'t happen.',bonus:3,sta:-6,mis:.08,dress:1}
 ];
+const REH_GAME={camera:'marks',mirror:'mirror',inear:'mixer',warmup:'breath',members:'formation',fancam:'camera',dress:'change'};
+const rehFactor=t=>t.rehScore==null?1:.4+t.rehScore/100;
 const FAIRIES=[{id:'wink',e:'😉',n:'Wink',fit:['cute','retro','dreamy']},{id:'heart',e:'🫶',n:'Finger heart',fit:['cute','dreamy','elegant']},{id:'stare',e:'😤',n:'Fierce stare',fit:['crush','dark','hiphop']},{id:'smirk',e:'😏',n:'Smirk',fit:['crush','hiphop','elegant','retro']},{id:'funny',e:'🤪',n:'Funny face',fit:[]}];
 const MISHAPS=[{n:'Your in-ear monitor slips out mid-verse',k:'vocal'},{n:'Your mic cuts out for a whole line',k:'variety'},{n:'You slip on confetti in the dance break',k:'dance'},{n:'An earring flies off during a spin',k:'visual',w:1},{n:'A costume seam rips on the high kick',k:'dance',w:1},{n:'The backing track skips',k:'vocal'}];
 const FLAVOR={crush:'Red lasers, a bass drop and a fierce walk-in.',cute:'Confetti cannons and a bouncy intro.',dark:'Smoke, candlelight and a slow-motion cape reveal.',retro:'Neon grid backdrop, synth intro, the disco ball spins.',dreamy:'Soft lights and floating petals.',hiphop:'Graffiti LED wall, then the beat drops hard.',elegant:'A spotlit staircase and swelling strings.'};
 const LIVECHAT={hi:['THEY ATE 🔥','live vocals are insane','who is the center?? I need a name','this is a daesang stage','camera director deserves a raise','replaying this forever'],mid:['cute stage 💖','the outfits!!','that high note','fighting!!','fanchant was so loud'],lo:['are they nervous today?','sound mixing is so bad','still proud of them','let them rest please']};
 function prepChips(t,fairy){
   t.reh??='camera';if(fairy)t.fairy??='wink';const R=REHEARSALS.find(r=>r.id===t.reh)||REHEARSALS[0];
-  return `<p class="label">How will you rehearse?</p><div class="chips wrapc">${REHEARSALS.filter(r=>!r.dress||S.costume).map(r=>`<button class="chip ${t.reh===r.id?'on':''}" data-a="tset" data-v="reh|${r.id}">${r.e} ${r.n}</button>`).join('')}</div><small class="muted">${R.d}</small>
+  const G=GAMES[REH_GAME[R.id]];const done=t.rehScore!=null;
+  return `<p class="label">How will you rehearse?</p><div class="chips wrapc">${REHEARSALS.filter(r=>!r.dress||S.costume).map(r=>`<button class="chip ${t.reh===r.id?'on':''}" data-a="tset" data-v="reh|${r.id}"${done&&t.reh!==r.id?' disabled':''}>${r.e} ${r.n}</button>`).join('')}</div><small class="muted">${R.d}</small>
+  ${done?`<div class="rehdone">✅ Rehearsed: <b>${G.e} ${G.n}</b> · score ${t.rehScore} · bonus ×${rehFactor(t).toFixed(1)}</div>`:`<button class="btn sky block" data-a="rehPlay">🏋️ Rehearse now: ${G.e} ${G.n}</button><small class="muted">Optional. Your rehearsal score scales this rehearsal's bonus (×0.4 to ×1.4). Skip it and you get the normal bonus.</small>`}
   ${fairy?`<p class="label">Ending fairy (your close-up)</p><div class="chips wrapc">${FAIRIES.map(f=>`<button class="chip ${t.fairy===f.id?'on':''}" data-a="tset" data-v="fairy|${f.id}">${f.e} ${f.n}</button>`).join('')}</div>`:''}
   ${S.costume?`<small class="muted">Wearing: 👗 ${esc(S.costume.n)} · comfort ${S.costume.comfort}</small>`:''}`;
 }
@@ -1360,7 +1391,7 @@ function liveStage(game,t,kind,title,concept,res){
   const R=REHEARSALS.find(x=>x.id===t.reh)||REHEARSALS[0];const F=t.fairy?FAIRIES.find(x=>x.id===t.fairy):null;const g=S.group;const cos=S.costume;
   const comfort=cos?cos.comfort:60,wow=cos?cos.wow:55;res=res||{segs:[],mishap:null,mg:false};const segs=res.segs||[];
   S.stamina+=R.sta||0;S.stress+=R.str||0;if(R.harm&&g)g.harmony+=R.harm;
-  let sc=game+R.bonus+(comfort-65)/8-(S.hiatus?10:0);const mishap=res.mishap||null;
+  let sc=game+R.bonus*rehFactor(t)+(comfort-65)/8-(S.hiatus?10:0);const mishap=res.mishap||null;
   if(mishap&&!res.mg)sc+=mishap.saved?2:-6;if(mishap&&mishap.saved)S.fame+=1.5;
   sc=clamp(Math.round(sc),0,100);
   const sg=id=>(segs.find(x=>x.id===id)||{}).s;const fs=sg('fairy');const nailed=fs==null||fs>=60;
@@ -1434,7 +1465,9 @@ function actionsCard(){
   <div class="between"><span class="label">Treats</span><b>${won(S.money)}</b></div><div class="opts">${SHOP.map(x=>`<button class="opt" data-a="buy" data-v="${x.id}" ${S.money<x.c?'disabled':''}><b>${x.n}</b><small>${won(x.c)} · ${x.d}</small></button>`).join('')}</div>${S.debt>0?`<small class="muted">Earnings repay your trainee debt first (${won(S.debt)} left).</small>`:''}</section>`;
 }
 function recapCard(){const r=UI.recap;if(!r)return '';return `<section class="card"><span class="label">Last week</span><div class="recap">${r.map(x=>`<span class="pill ${x[1]}">${esc(x[0])}</span>`).join('')}</div></section>`}
-function weekTab(){return dreamCard()+statusCard()+liveCard()+recapCard()+actionsCard()+allocCard()}
+const PRACTICE=['rhythm','poses','highnote','echo','rhyme','camera','qa','marks','mirror','mixer','breath','formation','change'];
+function practiceCard(){const used=S.flags.pracW===S.week;return `<section class="card"><div class="between"><h2>🎮 Practice room</h2><small class="muted">${used?'Done this week':'Once a week'}</small></div><p class="muted"><small>Play any mini-game to sharpen the matching skill (up to +2.5) and blow off a little stress.</small></p><div class="chips wrapc">${PRACTICE.map(k=>`<button class="chip" data-a="prac" data-v="${k}"${used?' disabled':''}>${GAMES[k].e} ${GAMES[k].n} <small class="dim">${SKI[SEG_STAT[k]]}</small></button>`).join('')}</div></section>`}
+function weekTab(){return dreamCard()+statusCard()+liveCard()+recapCard()+actionsCard()+practiceCard()+allocCard()}
 function idolTab(){
   const pos=myPos();
   UI.newCard=false;return `<section class="card center">${v3d('solo',280)}<h2>${esc(me())}</h2><p class="muted">${esc(S.idol.name)} · ${age()} y/o · ${S.idol.gender==='girl'?'Girl group':'Boy group'}</p>${pos.length?`<div class="row" style="justify-content:center">${pos.map(p=>`<span class="pill hot">${p}</span>`).join('')}</div>`:''}${B('Edit look','lookEdit',null,'ghost sm')}</section>
@@ -1460,7 +1493,7 @@ function menuTab(){
   return `<section class="card"><h2>Game</h2><p class="muted">Slot ${S.slot} · saved automatically every week.</p><div class="stack">${B(S.sound?'🔊 Sound on':'🔈 Sound off','sound',null,'ghost block')}${window.THREE?B(can3D()?'🧊 3D avatars on':'🖼️ 3D avatars off (2D)','toggle3d',null,'ghost block'):''}${B('How to play','howto',null,'ghost block')}${B('Back to title','toTitle',null,'ghost block')}</div></section>
   <section class="card"><h2>About</h2><p class="muted">Debut Dream is a fan-made idol career simulator. Every agency, idol, group, show and award in it is fictional.</p></section>`;
 }
-const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm game or the Pose Match dance game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p><b>Stage life.</b> Every release starts with a fitting day: pick and tailor the era's costumes (fit, comfort, wow). Before each live stage, choose how to rehearse and plan your ending fairy, then watch the stage play out as a live broadcast, mishaps and all.</p><p class="muted"><small>Trainee tests: Rhythm Lanes, Pose Match, Pitch Hold (hold to sing higher) and Rhyme Flow (finish the bar). On stage: Camera Catch and Press Q&amp;A. Showcases, music shows, concerts and the survival finale are Live Stages that chain these games section by section, with live mishaps you decide on the spot. Every stage also has a Quick sim option.</small></p>`;
+const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm game or the Pose Match dance game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p><b>Stage life.</b> Every release starts with a fitting day: pick and tailor the era's costumes (fit, comfort, wow). Before each live stage, choose how to rehearse and plan your ending fairy, then watch the stage play out as a live broadcast, mishaps and all.</p><p class="muted"><small>Trainee tests: Rhythm Lanes, Pose Match, Hit the High Note, Echo the Coach and Rhyme Flow. Each rehearsal method is its own game too (Hit Your Marks, Mirror Mirror, Sound Check, Deep Breaths, Find Your Spot, Quick Change), and the Practice room lets you play any game once a week. On stage: Camera Catch and Press Q&amp;A. Showcases, music shows, concerts and the survival finale are Live Stages that chain these games section by section, with live mishaps you decide on the spot. Every stage also has a Quick sim option.</small></p>`;
 function lookEditor(L,prefix){
   const sw=(arr,key)=>`<div class="swatches">${arr.map((c,i)=>`<button class="sw ${L[key]===i?'on':''}" style="background:${c}" data-a="${prefix}" data-v="${key}|${i}" aria-label="${key} ${i+1}"></button>`).join('')}</div>`;
   const op=(arr,key)=>`<div class="opts">${arr.map((n,i)=>`<button class="opt ${L[key]===i?'on':''}" data-a="${prefix}" data-v="${key}|${i}"><b>${n}</b></button>`).join('')}</div>`;
@@ -1545,13 +1578,20 @@ const LANEF=[523,659,784,988];
 const GAMES={
   rhythm:{n:'Rhythm Lanes',e:'🎵',how:'Notes fall down four lanes. Tap the matching pad the moment a note crosses the glowing line. Perfect timing scores most.'},
   poses:{n:'Pose Match',e:'🕺',how:'The choreographer freezes in a pose. Tap the card that matches it before the timer runs out. Fast answers score more, and three in a row starts a fever streak.'},
-  pitch:{n:'Pitch Hold',e:'🎤',how:'Hold the button to push your voice higher and let go to bring it down. Keep the glowing note inside the moving pitch band for as long as you can.'},
+  highnote:{n:'Hit the High Note',e:'🎶',how:'A needle sweeps across the vocal gauge. Tap BELT IT! when it is inside the glowing sweet spot. Notes get higher, the zone gets tighter.'},
+  echo:{n:'Echo the Coach',e:'🧑‍🏫',how:'Your vocal coach sings a short melody on Do-Re-Mi-Fa-Sol. Watch the bubbles light up, then sing it back in the same order.'},
+  marks:{n:'Hit Your Marks',e:'🎥',how:'Camera rehearsal. The director calls a stage mark like "B2!". Tap that mark before the camera moves on.'},
+  mirror:{n:'Mirror Mirror',e:'🪞',how:'Mirror practice. Tap the card that is the exact mirror image of the pose. The unflipped pose is a trap!'},
+  mixer:{n:'Sound Check',e:'🎧',how:'In-ear and mic check. Tap ▲ and ▼ to set every fader to its target mark before time runs out.'},
+  breath:{n:'Deep Breaths',e:'🧘',how:'Warm-up. The circle fills as you inhale. Tap HOLD at the very top of each breath.'},
+  formation:{n:'Find Your Spot',e:'🤝',how:'Run-through with the members. Memorize where your star is in the formation, then tap your spot when the music starts.'},
+  change:{n:'Quick Change',e:'👗',how:'Dress rehearsal. Grab only the three pieces in this era\'s costume color, as fast as you can.'},
   rhyme:{n:'Rhyme Flow',e:'🎧',how:'A beat plays and a bar of lyrics appears. Finish the second line with the word that rhymes before the beat runs out.'},
   camera:{n:'Camera Catch',e:'📸',how:'The camera with the red LIVE light is on air. Tap it fast to give it your best look. Orange cameras are on standby: don\'t fall for them.'},
   qa:{n:'Press Q&A',e:'🎙️',how:'Questions come fast. Pick the answer that charms the room before time runs out.'},
   live:{n:'Live Stage',e:'📺',how:'The real performance, broadcast live. The song plays section by section and each section is a quick challenge. How you do is exactly what viewers see.'}
 };
-GAMES.choreo=GAMES.poses;
+GAMES.choreo=GAMES.poses;GAMES.pitch=GAMES.highnote;
 const KIND_KEYS={rhythm:{d:'0',f:'1',j:'2',k:'3',ArrowLeft:'0',ArrowDown:'1',ArrowUp:'2',ArrowRight:'3'},pick3:{'1':'0','2':'1','3':'2',ArrowLeft:'0',ArrowDown:'1',ArrowRight:'2'},camera:{'1':'0','2':'1','3':'2','4':'3','5':'4','6':'5'},mishap:{'1':'0','2':'1'}};
 function startMG(kind,o,cb){MG={kind,o,cb,phase:'intro',alive:true,iv:[],seg:0};drawMG()}
 function closeMG(){if(MG){MG.alive=false;MG.iv.forEach(clearInterval)}MG=null;const el=$('#mg');if(el)el.remove()}
@@ -1571,7 +1611,7 @@ function drawMG(){
 }
 function finishMG(score,extra){if(!MG)return;MG.alive=false;MG.iv.forEach(clearInterval);MG.score=clamp(Math.round(score),0,100);if(extra)MG.extra=extra;MG.phase='done';beep(MG.score>=55?880:330,.25,.1);drawMG()}
 function runGame(kind,host,o,done){MG.press=null;MG.release=null;MG.keys=null;const my=++MG.seg;const on=()=>MG&&MG.alive&&MG.seg===my;
-  ({rhythm:subRhythm,poses:subPoses,choreo:subPoses,pitch:subPitch,rhyme:subRhyme,camera:subCamera,qa:subQA,mishap:subMishap})[kind](host,o,on,done)}
+  ({rhythm:subRhythm,poses:subPoses,choreo:subPoses,pitch:subHighNote,highnote:subHighNote,echo:subEcho,rhyme:subRhyme,camera:subCamera,qa:subQA,mishap:subMishap,marks:subMarks,mirror:subMirror,mixer:subMixer,breath:subBreath,formation:subFormation,change:subChange})[kind](host,o,on,done)}
 function playMG(){
   audio();MG.phase='play';const o=MG.o;
   if(MG.kind==='live'){runLive(o);return}
@@ -1646,27 +1686,158 @@ function subPoses(host,o,on,done){
   setTimeout(next,700);
 }
 
-/* --- Pitch Hold (vocal) --- */
-const LYRICS=['Shine like the stars tonight','You are my only light','Hold on, don\'t let me go','Dancing in the after-glow','Every heartbeat sings your name','Nothing will ever be the same'];
-function subPitch(host,o,on,done){
-  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,len=o.len||11000;
-  const band=clamp(.2+stat*.0012-diff*.05,.14,.32);const words=pick(LYRICS).split(' ');
-  host.innerHTML=`<div class="pitchwrap"><div class="pitchlyric">${words.map(w=>`<span>${esc(w)}</span>`).join(' ')}</div>
-  <div class="pitchfield"><div class="pband"><span>♪</span></div><div class="pdot"></div></div>
-  <div class="pitchmeter"><span>On pitch</span><div class="bar"><i style="width:0%"></i></div><b>0%</b></div>
-  <button class="pad holdpad" data-pad="hold">🎤 HOLD to sing higher</button></div>`;
-  const Bd=host.querySelector('.pband'),D=host.querySelector('.pdot'),M=host.querySelector('.pitchmeter i'),MB=host.querySelector('.pitchmeter b'),W=host.querySelectorAll('.pitchlyric span'),HP=host.querySelector('.holdpad');
-  let y=.6,v=0,hold=false,inT=0,tot=0,last=performance.now();const t0=last+900,seed=rnd(0,6);
-  const target=t=>clamp(.5+.27*Math.sin(t*.00105*(1+diff*.6)+seed)+.12*Math.sin(t*.0026*(1+diff)+seed*2),.14,.86);
-  MG.press=k=>{if(k==='hold'||k===' '){hold=true;HP.classList.add('hit')}};MG.release=()=>{hold=false;HP.classList.remove('hit')};MG.keys={' ':' '};setScore('0%');
-  const loop=now=>{if(!on())return;const dt=Math.min(50,now-last);last=now;const t=now-t0;
-    const tv=hold?-.00085:.00075;v+=(tv-v)*Math.min(1,dt/110);y+=v*dt;if(y<.05){y=.05;v=0}if(y>.95){y=.95;v=0}
-    const c=target(Math.max(0,t));Bd.style.top=((c-band/2)*100)+'%';Bd.style.height=(band*100)+'%';D.style.top=(y*100)+'%';
-    if(t>0){tot+=dt;const ok=Math.abs(y-c)<=band/2;if(ok)inT+=dt;D.classList.toggle('ok',ok);const pc=inT/tot*100;M.style.width=pc+'%';MB.textContent=Math.round(pc)+'%';setScore(Math.round(pc)+'%');
-      const wi=Math.floor(t/len*W.length);W.forEach((w,i)=>w.classList.toggle('sung',i<=wi))}
-    if(t>=len){MG.release&&MG.release();const pc=tot?inT/tot*100:0;done(clamp(pc*1.08,0,100),`${Math.round(pc)}% of the line on pitch`);return}
-    requestAnimationFrame(loop)};
-  requestAnimationFrame(loop);
+/* --- Hit the High Note (vocal): stop the sweeping needle in the sweet spot --- */
+const HN_WORDS=['Shine!','Forever!','Tonight!','Higher!','My love!','Fly!','Starlight!','Oh-oh!'];
+const HN_NOTES=['A4','C5','E5','G5','A5','C6','D6','E6'];
+function subHighNote(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||6;const zw=clamp(.18+stat*.0012-diff*.05,.1,.32);
+  host.innerHTML=`<div class="hnstage"><div class="poselabel"></div><div class="hnword"></div><div class="gauge"><div class="gzone"><span></span></div><div class="gneedle"></div></div><div class="posemsg"></div><div class="hndots">${'<i></i>'.repeat(N)}</div></div><button class="pad holdpad" data-pad="belt">🎤 BELT IT!</button>`;
+  const Z=host.querySelector('.gzone'),ND=host.querySelector('.gneedle'),RR=host.querySelector('.poselabel'),WD=host.querySelector('.hnword'),MM=host.querySelector('.posemsg'),DOTS=host.querySelectorAll('.hndots i');
+  let i=0,pts=0,hits=0,phase='wait',t0=0,zc=.5,P=1400,x=0;MG.keys={' ':'belt',Enter:'belt'};setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${hits} of ${N} high notes hit`);return}
+    zc=rnd(.15+zw/2,.85-zw/2);Z.style.left=((zc-zw/2)*100)+'%';Z.style.width=(zw*100)+'%';P=clamp(1500-diff*400-i*45+stat*4,650,1900);
+    RR.textContent=`NOTE ${i+1} OF ${N} · ${HN_NOTES[Math.min(i+Math.round(diff*2),HN_NOTES.length-1)]}`;WD.textContent=pick(HN_WORDS);MM.textContent='';phase='pick';t0=performance.now();MG.zone=zc;loop()};
+  const loop=()=>{if(!on()||phase!=='pick')return;const el=performance.now()-t0;const u=(el%P)/P;x=u<.5?u*2:2-u*2;ND.style.left=(x*100)+'%';MG.needle=x;
+    if(el>P*3){resolve(false);return}requestAnimationFrame(loop)};
+  const resolve=pressed=>{phase='wait';const dist=Math.abs(x-zc);const ok=pressed&&dist<=zw/2;
+    if(ok){const q=1-dist/(zw/2);pts+=.65+.35*q;hits++;MM.textContent=q>.7?'PERFECT HIGH NOTE! 🌟':'Nailed it!';DOTS[i].className='hit';beep(880+i*60,.25,.08)}
+    else{MM.textContent=pressed?(x<zc?'Too flat!':'Too sharp!'):'You ran out of breath…';DOTS[i].className='miss';beep(180,.2,.05,'square')}
+    WD.classList.toggle('ok',ok);setScore(`${hits}/${N}`);i++;setTimeout(next,ok?700:950)};
+  MG.press=k=>{if(phase==='pick'&&k==='belt')resolve(true)};
+  setTimeout(next,600);
+}
+
+/* --- Echo the Coach (vocal): sing back the melody --- */
+const ECHOC=['#ff5fae','#ffb020','#3fd6b5','#6fa8ff','#a45cff'],ECHOF=[523,587,659,698,784],SOLF=['Do','Re','Mi','Fa','Sol'];
+function subEcho(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40;const rounds=o.n?Array.from({length:o.n},(_,k)=>3+k):diff<.5?[3,4,5]:[3,4,5,6];const total=sum(rounds);
+  const onMs=Math.max(380,640-diff*160+stat*1.5),gap=200;
+  host.innerHTML=`<div class="echostage"><div class="poselabel"></div><div class="coach">🧑‍🏫</div><div class="echoseq"></div><div class="posemsg"></div></div><div class="echopads">${SOLF.map((n,k)=>`<button class="pad echop" data-pad="${k}" style="background:${ECHOC[k]}"><b>${n}</b></button>`).join('')}</div>`;
+  const RR=host.querySelector('.poselabel'),CO=host.querySelector('.coach'),Q=host.querySelector('.echoseq'),MM=host.querySelector('.posemsg'),pads=host.querySelectorAll('.echop');
+  let r=0,correct=0,seq=[],pos=0,phase='wait';MG.keys={'1':'0','2':'1','3':'2','4':'3','5':'4'};setScore(`0/${total}`);
+  const lit=(k,ms)=>{pads[k].classList.add('lit');setTimeout(()=>pads[k].classList.remove('lit'),ms)};
+  const next=()=>{if(!on())return;if(r>=rounds.length){done(correct/total*100,`${correct} of ${total} notes sung back`);return}
+    seq=Array.from({length:rounds[r]},()=>ri(0,4));pos=0;phase='show';RR.textContent=`MELODY ${r+1} OF ${rounds.length} · LISTEN`;CO.textContent='🧑‍🏫';MM.textContent='';
+    Q.innerHTML=seq.map(()=>'<i></i>').join('');let i=0;
+    const step=()=>{if(!on())return;if(i>=seq.length){phase='input';RR.textContent='YOUR TURN · SING IT BACK';CO.textContent='🎤';MG.answer=seq[0];return}
+      lit(seq[i],onMs);beep(ECHOF[seq[i]],onMs/1000,.08,'sine');i++;setTimeout(step,onMs+gap)};setTimeout(step,700)};
+  const endRound=msg=>{phase='wait';MM.textContent=msg;r++;setTimeout(next,1000)};
+  MG.press=k=>{if(phase!=='input')return;const j=+k;if(!(j>=0&&j<5))return;lit(j,180);beep(ECHOF[j],.18,.08,'sine');
+    if(j===seq[pos]){correct++;Q.children[pos].className='ok';Q.children[pos].style.background=ECHOC[j];pos++;MG.answer=seq[pos];setScore(`${correct}/${total}`);if(pos>=seq.length)endRound('Beautiful! 🎶')}
+    else{Q.children[pos].className='no';lit(seq[pos],600);endRound(`Off-key! It was ${SOLF[seq[pos]]}.`)}};
+  next();
+}
+
+/* --- rehearsal: Hit Your Marks (camera rehearsal) --- */
+function subMarks(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||7;const win=clamp(2300-diff*600+stat*8,1300,3000);const lab=k=>'ABC'[Math.floor(k/3)]+(k%3+1);
+  host.innerHTML=`<div class="markstage"><div class="director">🎬 <span>Places, everyone…</span></div><div class="marks">${Array.from({length:9},(_,k)=>`<button class="pad mark" data-pad="${k}"><b>✖</b><small>${lab(k)}</small></button>`).join('')}</div><div class="bar tbar"><i style="width:100%"></i></div><div class="posemsg"></div></div>`;
+  const D=host.querySelector('.director span'),cells=host.querySelectorAll('.mark'),T=host.querySelector('.tbar i'),MM=host.querySelector('.posemsg');
+  let i=0,pts=0,hits=0,phase='wait',t0=0,ans=-1,last=-1;MG.keys=Object.fromEntries(Array.from({length:9},(_,k)=>[String(k+1),String(k)]));setScore(`0/${N}`);
+  const next=()=>{if(!on())return;cells.forEach(c=>c.classList.remove('right','wrong'));if(i>=N){done(pts/N*100,`${hits} of ${N} marks hit`);return}
+    do{ans=ri(0,8)}while(ans===last);last=ans;MG.answer=ans;D.textContent=`"${pick(['Mark','Move to','Hit','Go to'])} ${lab(ans)}!"`;phase='pick';t0=performance.now();beep(600,.06,.05);tick()};
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=win-(performance.now()-t0);T.style.width=clamp(left/win*100,0,100)+'%';if(left<=0){resolve(-1);return}requestAnimationFrame(tick)};
+  const resolve=j=>{phase='wait';const ok=j===ans;if(ok){const sp=clamp(1-(performance.now()-t0)/win,0,1);pts+=.6+.4*sp;hits++;cells[j].classList.add('right');MM.textContent=sp>.5?'On your mark!':'Made it!';beep(820,.1,.06)}
+    else{if(j>=0)cells[j].classList.add('wrong');cells[ans].classList.add('right');MM.textContent=j<0?'Too slow, the camera passed you.':'Wrong mark! You\'re out of the shot.';beep(170,.15,.05,'square')}
+    setScore(`${hits}/${N}`);i++;setTimeout(next,ok?450:850)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j>=0&&j<9)resolve(j)};
+  setTimeout(next,600);
+}
+
+/* --- rehearsal: Mirror Mirror (mirror practice) --- */
+const MIRROR_POSES=[POSES[3],POSES[6],{n:'Salute',a:[[36,47,44,58],[60,30,52,22]]},{n:'Diagonal',a:[[36,46,26,58],[64,30,78,16]]},{n:'Hip pop',a:[[36,47,44,58],[64,40,76,50]],l:'R'}];
+function subMirror(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||6;const limit=clamp(3800-diff*900+stat*8,2300,4600);const {skin,hair,mine}=myColors();
+  const fig=(p,flip,col)=>`<span class="mfig${flip?' flip':''}">${poseSVG(p,col,skin,hair)}</span>`;
+  host.innerHTML=`<div class="posestage"><div class="spot"></div><div class="poselabel">The mirror is ready…</div><div class="posebig mirrorbig"></div><div class="posemsg"></div><div class="bar tbar"><i style="width:100%"></i></div></div><div class="posecards"></div>`;
+  const C=host.querySelector('.posebig'),K=host.querySelector('.posecards'),T=host.querySelector('.tbar i'),RR=host.querySelector('.poselabel'),MM=host.querySelector('.posemsg');
+  let i=0,pts=0,hits=0,phase='wait',t0=0,ans=0;MG.keys=KIND_KEYS.pick3;setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${hits} of ${N} mirrored correctly`);return}
+    const pi=ri(0,MIRROR_POSES.length-1);let oi;do{oi=ri(0,MIRROR_POSES.length-1)}while(oi===pi);
+    const opts=shuffle([{p:pi,f:1,ok:1},{p:pi,f:0},{p:oi,f:Math.random()<.5?1:0}]);ans=opts.findIndex(x=>x.ok);MG.answer=ans;
+    RR.textContent=`MOVE ${i+1} OF ${N} · MIRROR IT!`;C.innerHTML=fig(MIRROR_POSES[pi],0,'#ffffff');C.classList.remove('pop');void C.offsetWidth;C.classList.add('pop');
+    K.innerHTML=opts.map((x,j)=>`<button class="pad posecard" data-pad="${j}">${fig(MIRROR_POSES[x.p],x.f,mine)}<small>${'ABC'[j]}</small></button>`).join('');
+    phase='pick';t0=performance.now();tick()};
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){resolve(-1);return}requestAnimationFrame(tick)};
+  const resolve=j=>{phase='wait';const cards=K.querySelectorAll('.posecard');const ok=j===ans;
+    if(ok){const sp=clamp(1-(performance.now()-t0)/limit,0,1);pts+=.7+.3*sp;hits++;cards[j].classList.add('right');MM.textContent='Perfect mirror! 🪞';beep(740,.1,.06)}
+    else{if(j>=0)cards[j].classList.add('wrong');cards[ans].classList.add('right');MM.textContent=j<0?'Too slow!':'That\'s not flipped!';beep(160,.15,.05,'square')}
+    setScore(`${hits}/${N}`);i++;setTimeout(next,ok?550:1000)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j>=0&&j<3)resolve(j)};
+  setTimeout(next,600);
+}
+
+/* --- rehearsal: Sound Check (in-ear & mic check) --- */
+function subMixer(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40;const limit=clamp(9500-diff*2000+stat*30,6500,12500);
+  const ch=['Vocal','Track','Members','Crowd'].map(n=>{const tg=ri(2,9);let lv;do{lv=ri(0,10)}while(Math.abs(lv-tg)<2);return {n,tg,lv}});
+  host.innerHTML=`<div class="mixstage"><div class="poselabel">MATCH EVERY FADER TO ITS MARK</div><div class="mixer">${ch.map((c,k)=>`<div class="fader" data-k="${k}"><small>${c.n}</small><button class="pad fbtn" data-pad="${k}u">▲</button><div class="ftrack"><span class="ftarget" style="bottom:${c.tg*10}%"></span><span class="fknob"></span></div><button class="pad fbtn" data-pad="${k}d">▼</button></div>`).join('')}</div><div class="bar tbar"><i style="width:100%"></i></div><div class="posemsg"></div></div>`;
+  const F=host.querySelectorAll('.fader'),T=host.querySelector('.tbar i'),MM=host.querySelector('.posemsg');let phase='pick';const t0=performance.now();MG.mix=ch;
+  const draw=()=>{ch.forEach((c,k)=>{F[k].querySelector('.fknob').style.bottom=(c.lv*10)+'%';F[k].classList.toggle('ok',c.lv===c.tg)});const m=ch.filter(c=>c.lv===c.tg).length;setScore(`${m}/4`);return m};
+  const finish=()=>{phase='done';const m=ch.filter(c=>c.lv===c.tg).length;const off=sum(ch.map(c=>Math.abs(c.lv-c.tg)));const sp=clamp(1-(performance.now()-t0)/limit,0,1);
+    const s=m===4?75+25*sp:Math.max(0,m/4*70-off*3);MM.textContent=m===4?'Sound check complete! 🎧':'Time! The engineer finishes the mix.';done(s,m===4?'All four channels balanced':`${m} of 4 channels balanced`)};
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){finish();return}requestAnimationFrame(tick)};
+  MG.press=k=>{if(phase!=='pick')return;const c=ch[+k[0]];if(!c)return;c.lv=clamp(c.lv+(k[1]==='u'?1:-1),0,10);beep(300+c.lv*40,.05,.04);if(draw()===4)setTimeout(finish,300)};
+  draw();tick();
+}
+
+/* --- rehearsal: Deep Breaths (warm-up) --- */
+function subBreath(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||6;const P=clamp(2600-diff*500+stat*5,1800,3300),tol=clamp(.09+stat*.0006,.08,.16);
+  host.innerHTML=`<div class="breathstage"><div class="poselabel"></div><div class="lungs"><div class="bcircle"></div><span class="btxt"></span></div><div class="posemsg"></div><div class="hndots">${'<i></i>'.repeat(N)}</div></div><button class="pad holdpad" data-pad="b">🌬️ HOLD THE BREATH</button>`;
+  const BC=host.querySelector('.bcircle'),BT=host.querySelector('.btxt'),RR=host.querySelector('.poselabel'),MM=host.querySelector('.posemsg'),DOTS=host.querySelectorAll('.hndots i');
+  let i=0,pts=0,hits=0,phase='wait',t0=0,u=0;MG.keys={' ':'b',Enter:'b'};setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${hits} of ${N} breaths timed`);return}RR.textContent=`BREATH ${i+1} OF ${N}`;MM.textContent='';phase='pick';t0=performance.now();loop()};
+  const loop=()=>{if(!on()||phase!=='pick')return;u=(performance.now()-t0)/P;if(u>=1){resolve(false);return}
+    const s=Math.sin(Math.PI*u);BC.style.transform=`scale(${.35+.65*s})`;BC.style.opacity=.5+.5*s;BT.textContent=u<.5?'Inhale…':'Exhale…';MG.breath=u;requestAnimationFrame(loop)};
+  const resolve=pressed=>{phase='wait';const err=Math.abs(u-.5);const ok=pressed&&err<=tol;
+    if(ok){pts+=.65+.35*(1-err/tol);hits++;DOTS[i].className='hit';MM.textContent='Deep and steady 🧘';beep(520,.3,.05,'sine')}
+    else{DOTS[i].className='miss';MM.textContent=pressed?(u<.5?'Too early, breathe in fully.':'Too late, you ran out of air.'):'Missed that breath.';beep(180,.15,.04,'square')}
+    setScore(`${hits}/${N}`);i++;setTimeout(next,700)};
+  MG.press=k=>{if(phase==='pick'&&k==='b')resolve(true)};
+  setTimeout(next,500);
+}
+
+/* --- rehearsal: Find Your Spot (run-through with members) --- */
+const FORMATIONS=[[0,2,4,6,8],[1,3,4,5,7],[0,1,2,4,7],[3,4,5,6,8],[1,2,3,4,6],[0,4,6,7,8],[2,4,5,6,7],[0,1,3,5,8]];
+function subFormation(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||5;const showMs=clamp(1700+stat*10-diff*400,1100,2600),limit=clamp(3600-diff*700+stat*8,2300,4400);
+  const names=S&&S.group?groupOrder().filter(m=>m.id!=='me').map(m=>m.name):(S&&S.trainees||[]).slice(0,4).map(n=>n.name);
+  host.innerHTML=`<div class="markstage"><div class="director">🤝 <span></span></div><div class="marks formgrid">${Array.from({length:9},(_,k)=>`<button class="pad mark fcell" data-pad="${k}"></button>`).join('')}</div><div class="bar tbar"><i style="width:100%"></i></div><div class="posemsg"></div></div>`;
+  const D=host.querySelector('.director span'),cells=host.querySelectorAll('.fcell'),T=host.querySelector('.tbar i'),MM=host.querySelector('.posemsg');
+  let i=0,pts=0,hits=0,phase='wait',t0=0,ans=-1;MG.keys=Object.fromEntries(Array.from({length:9},(_,k)=>[String(k+1),String(k)]));setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${hits} of ${N} formations hit`);return}
+    const f=shuffle(pick(FORMATIONS));ans=f[0];MG.answer=ans;const others=f.slice(1);
+    cells.forEach((c,k)=>{c.className='pad mark fcell';c.innerHTML=k===ans?'<b>⭐</b><small>YOU</small>':others.includes(k)?`<b>●</b><small>${esc((names[others.indexOf(k)]||'?').slice(0,6))}</small>`:''});
+    D.textContent=`Formation ${i+1}: memorize your spot!`;phase='show';MM.textContent='';T.style.width='100%';
+    setTimeout(()=>{if(!on())return;cells.forEach((c,k)=>{c.innerHTML=others.includes(k)?'<b class="dim">●</b>':''});D.textContent='Music! Where do you stand?';phase='pick';t0=performance.now();tick()},showMs)};
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){resolve(-1);return}requestAnimationFrame(tick)};
+  const resolve=j=>{phase='wait';const ok=j===ans;cells[ans].classList.add('right');cells[ans].innerHTML='<b>⭐</b><small>YOU</small>';
+    if(ok){const sp=clamp(1-(performance.now()-t0)/limit,0,1);pts+=.7+.3*sp;hits++;MM.textContent='Right on your spot!';beep(760,.1,.06)}
+    else{if(j>=0)cells[j].classList.add('wrong');MM.textContent=j<0?'Too slow, the members bumped into you.':'Wrong spot! Formation collision.';beep(160,.15,.05,'square')}
+    setScore(`${hits}/${N}`);i++;setTimeout(next,1000)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j>=0&&j<9&&!cells[j].querySelector('.dim'))resolve(j)};
+  setTimeout(next,500);
+}
+
+/* --- rehearsal: Quick Change (dress rehearsal) --- */
+const colorDist=(a,b)=>{const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));const p=h(a),q=h(b);return Math.hypot(p[0]-q[0],p[1]-q[1],p[2]-q[2])};
+const RACK=['👕','👖','👟','🧥','👗','🎀','💍','🧢','🧦','👢','🧤','🕶️'];
+function subChange(host,o,on,done){
+  const diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=o.n||3;const limit=clamp(5200-diff*1200+stat*15,3400,6800);
+  const era=S&&S.costume?S.costume.col:'#ff5fae';const pal=['#ff4fa3','#9b5cff','#3fb6ff','#22c9a6','#ffcf3f','#ff7b3f','#1f1a2e','#ffffff','#e0365b'].filter(c=>colorDist(c,era)>120);
+  host.innerHTML=`<div class="markstage"><div class="director">👗 <span>Pick every piece in the era color <i class="eradot" style="background:${era}"></i></span></div><div class="marks rack"></div><div class="bar tbar"><i style="width:100%"></i></div><div class="posemsg"></div></div>`;
+  const R=host.querySelector('.rack'),T=host.querySelector('.tbar i'),MM=host.querySelector('.posemsg');
+  let i=0,pts=0,phase='wait',t0=0,items=[],got=0,bad=0;MG.keys=Object.fromEntries(Array.from({length:9},(_,k)=>[String(k+1),String(k)]));setScore(`0/${N}`);
+  const next=()=>{if(!on())return;if(i>=N){done(pts/N*100,`${N} quick changes`);return}
+    const em=shuffle(RACK).slice(0,9);items=em.map((e,k)=>({e,ok:k<3,col:k<3?era:pick(pal)}));items=shuffle(items);MG.answer=items.findIndex(x=>x.ok);got=0;bad=0;
+    R.innerHTML=items.map((x,k)=>`<button class="pad mark cloth" data-pad="${k}" style="--cc:${x.col}"><b>${x.e}</b></button>`).join('');MM.textContent=`Quick change ${i+1} of ${N}!`;phase='pick';t0=performance.now();tick()};
+  const tick=()=>{if(!on()||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){end();return}requestAnimationFrame(tick)};
+  const end=()=>{phase='wait';const sp=clamp(1-(performance.now()-t0)/limit,0,1);const sc=clamp(got/3*(.75+.25*(got===3?sp:0))-bad*.2,0,1);pts+=sc;
+    MM.textContent=got===3&&!bad?'Changed in record time! ✨':got===3?'Dressed, but a bit messy.':'Not quite ready…';R.querySelectorAll('.cloth').forEach((b,k)=>{if(items[k].ok)b.classList.add('right')});setScore(`${i+1}/${N}`);i++;setTimeout(next,1000)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;const it=items[j];if(!it||it.done)return;it.done=1;const b=R.children[j];
+    if(it.ok){got++;b.classList.add('right');beep(700+got*80,.08,.06);MG.answer=items.findIndex(x=>x.ok&&!x.done);if(got>=3)end()}else{bad++;b.classList.add('wrong');beep(160,.12,.05,'square')}};
+  setTimeout(next,500);
 }
 
 /* --- Rhyme Flow (rap) --- */
@@ -1775,16 +1946,16 @@ function subMishap(host,o,on,done){
 }
 
 /* --- Live Stage: the actual performance --- */
-const SEG_STAT={rhythm:'dance',poses:'dance',pitch:'vocal',rhyme:'rap',camera:'visual',qa:'variety'};
+const SEG_STAT={rhythm:'dance',poses:'dance',highnote:'vocal',echo:'vocal',rhyme:'rap',camera:'visual',qa:'variety',marks:'visual',mirror:'dance',mixer:'vocal',breath:'vocal',formation:'dance',change:'visual'};
 function livePlan(type,t){
   const R=REHEARSALS.find(x=>x.id===t.reh)||REHEARSALS[0];const comfort=S.costume?S.costume.comfort:60;const rapper=myPos().includes('Main Rapper');
   const seg=(id,kind,e,label,o)=>({id,kind,e,label,o:o||{}});let segs;
-  if(type==='showcase')segs=[seg('photo','camera','📸','Photo wall: find the flashing camera',{n:4,cue:'Reporters are shooting. Find the live camera!'}),seg('intro','poses','🎬','Showcase stage: opening poses',{n:3}),seg(rapper?'rap':'verse',rapper?'rhyme':'pitch',rapper?'🎧':'🎤',rapper?'Your rap verse':'Your solo line',rapper?{n:2}:{len:7000}),seg('dance','rhythm','💃','Dance break',{len:6500}),seg('press','qa','🎙️','Press Q&A',{n:2,set:'press'})];
-  else if(type==='concert')segs=[seg('opener','rhythm','🎆','Opening number',{len:7500}),seg('ballad','pitch','🎤','Ballad: hold the high note',{len:7000}),seg('ment','qa','🗣️','Ment: talk to the crowd',{n:2,set:'ment'}),seg('dance','poses','💃','Dance medley',{n:3}),seg('encore','camera','🎥','Encore: play to every camera',{n:3,cue:'Encore! Wave to the live camera!'})];
-  else if(type==='finale')segs=[seg('verse','pitch','🎤','Your verse',{len:7000}),seg('dance','poses','💃','Choreography',{n:3}),seg('rap','rhyme','🎧','Rap bridge',{n:2}),seg('killing','camera','📸','Killing part',{n:2})];
-  else segs=[seg('intro','poses','🎬','Opening pose',{n:2}),seg(rapper?'rap':'verse',rapper?'rhyme':'pitch',rapper?'🎧':'🎤',rapper?'Your rap verse':'Your line',rapper?{n:2}:{len:7000}),seg('killing','camera','📸','Killing part: find the camera',{n:3,cue:'Your killing part! Find the live camera!'}),seg('dance','rhythm','💃','Dance break',{len:6500}),seg('fairy','camera','😉','Ending fairy: hold the close-up',{n:1,cue:'Ending fairy! Which camera has your close-up?'})];
+  if(type==='showcase')segs=[seg('photo','camera','📸','Photo wall: find the flashing camera',{n:4,cue:'Reporters are shooting. Find the live camera!'}),seg('intro','poses','🎬','Showcase stage: opening poses',{n:3}),seg(rapper?'rap':'verse',rapper?'rhyme':'highnote',rapper?'🎧':'🎤',rapper?'Your rap verse':'Your solo line: hit the high note',rapper?{n:2}:{n:3}),seg('dance','rhythm','💃','Dance break',{len:6500}),seg('press','qa','🎙️','Press Q&A',{n:2,set:'press'})];
+  else if(type==='concert')segs=[seg('opener','rhythm','🎆','Opening number',{len:7500}),seg('ballad','echo','🎤','Ballad: sing with the band',{n:2}),seg('ment','qa','🗣️','Ment: talk to the crowd',{n:2,set:'ment'}),seg('dance','poses','💃','Dance medley',{n:3}),seg('encore','camera','🎥','Encore: play to every camera',{n:3,cue:'Encore! Wave to the live camera!'})];
+  else if(type==='finale')segs=[seg('verse','echo','🎤','Your verse',{n:2}),seg('dance','poses','💃','Choreography',{n:3}),seg('rap','rhyme','🎧','Rap bridge',{n:2}),seg('killing','camera','📸','Killing part',{n:2})];
+  else segs=[seg('intro','poses','🎬','Opening pose',{n:2}),seg(rapper?'rap':'verse',rapper?'rhyme':'highnote',rapper?'🎧':'🎤',rapper?'Your rap verse':'Your line: hit the high note',rapper?{n:2}:{n:3}),seg('killing','camera','📸','Killing part: find the camera',{n:3,cue:'Your killing part! Find the live camera!'}),seg('dance','rhythm','💃','Dance break',{len:6500}),seg('fairy','camera','😉','Ending fairy: hold the close-up',{n:1,cue:'Ending fairy! Which camera has your close-up?'})];
   segs.forEach(s=>{s.o.stat=S.st[SEG_STAT[s.kind]]});
-  const pm=clamp(.22+(S.stamina<30?.1:0)-(R.mis||0)-(comfort-60)/300,.03,.45);
+  const pm=clamp(.22+(S.stamina<30?.1:0)-(R.mis||0)*rehFactor(t)-(comfort-60)/300,.03,.45);
   if(!S.hiatus&&Math.random()<pm){const m=pick(MISHAPS.filter(x=>!x.w||!R.dress));segs.splice(2,0,seg('mishap','mishap','⚠️','Live mishap!',{m}))}
   return {type,segs};
 }
@@ -1865,7 +2036,7 @@ const ACT={
   autoLineup:()=>computeLineup(autoScore((myOverall()+S.st.vocal)/2)),
   survGo:v=>{const ep=S.surv.ep;const k=SKL[v]?v:ep===2?'dance':'vocal';
     if(ep>=4){const plan=livePlan('finale',curTask());startMG('live',{title:`${SURV}: live finale`,plan,solo:true,diff:.5,stat:avg([S.st.vocal,S.st.dance]),viewers:250000,sub:'Live broadcast. Votes are open.'},g=>survPerform(g,v));return}
-    mgFor(k==='dance'?'poses':k==='rap'?'rhyme':'pitch',`${SURV}: ${SURVEP[ep].n}`,S.st[k],.4+ep*.08,g=>survPerform(g,v))},
+    mgFor(k==='dance'?'poses':k==='rap'?'rhyme':ep===1?'highnote':'echo',`${SURV}: ${SURVEP[ep].n}`,S.st[k],.4+ep*.08,g=>survPerform(g,v))},
   survAuto:v=>{const ep=S.surv.ep;const k=SKL[v]?v:ep===2?'dance':'vocal';survPerform(autoScore(S.st[k]),v)},
   afterSurv:()=>afterSurv(),
   toSetup:()=>{S.tasks.shift();UI.form={};pushTask({type:'setup'},true)},
@@ -1886,7 +2057,11 @@ const ACT={
   tourGo:()=>{if(!UI.form.tour)return;S.tasks.shift();startTour(UI.form.tour);UI.form={}},
   mgConcert:()=>goLive('concert',`${S.tour.n}: opening night in ${S.tour.cities[0]}`,false,(g,x)=>{concertDone(g,x);save();render()}),
   autoConcert:()=>{const g=autoScore(avg([S.st.dance,S.st.vocal]));concertDone(g,autoRes(livePlan('concert',curTask()),g))},
-  tset:v=>{const t=curTask();if(!t)return;const i=v.indexOf('|');t[v.slice(0,i)]=v.slice(i+1);UI.keepScroll=true;save()},
+  tset:v=>{const t=curTask();if(!t)return;const i=v.indexOf('|');const k=v.slice(0,i);if(k==='reh'&&t.rehScore!=null)return;t[k]=v.slice(i+1);UI.keepScroll=true;save()},
+  rehPlay:()=>{const t=curTask();if(!t||t.rehScore!=null)return;const R=REHEARSALS.find(r=>r.id===t.reh)||REHEARSALS[0];const k=REH_GAME[R.id];
+    mgFor(k,`Rehearsal: ${R.n}`,S.st[SEG_STAT[k]],.45,g=>{t.rehScore=g;log(`Rehearsal (${R.n}): ${g}/100.`);UI.keepScroll=true;save();render()},R.d)},
+  prac:v=>{if(S.flags.pracW===S.week||!GAMES[v])return;const k=SEG_STAT[v]||'vocal';
+    mgFor(v,`Practice room: ${GAMES[v].n}`,S.st[k],S.act==='trainee'?evalDiff():.5,g=>{S.flags.pracW=S.week;const gain=Math.round(g/40*10)/10;S.st[k]=clamp(S.st[k]+gain,0,100);S.stress-=2;clampAll();log(`Practice room: ${GAMES[v].n} ${g}/100. ${SKL[k]} +${gain}.`);toast(`${SKL[k]} +${gain} from practice`);save();render()})},
   fitGo:()=>{const c=formCostume();const cid=fitConcept();S.costume=Object.assign(c,{concept:cid,w:S.week});S.tasks.shift();UI.form={};addCard(`👗 ${c.n}`,`${conceptName(cid,S.idol.gender)} · ${dateStr()}`,c.wow>=85?'rare':'common',c.col);fanSay('costume');log(`Fitting day: the group will wear ${c.n}.`);toast(`Look locked: ${c.n}`)},
   replay:()=>{const L=S.lastLive;if(L)UI.modal={kick:'Replay',title:'📺 Last live stage',html:liveHTML(L,true),btns:[B('Close','closeModal',null,'block')]}},
   unitGo:v=>{S.tasks.shift();const p=npcById(v);startPrep({kind:'unit',type:'single',concept:bestConcept([S.st,p.st]),producer:'inhouse',title:pick(SUGGEST.song),partner:v});S.prep.left=2;info('Sub-unit','A new duo',`<p>You and ${esc(p.name)} will release "${esc(S.prep.title)}" in 2 weeks.</p>`)},
@@ -1917,7 +2092,7 @@ const ACT={
   drand:()=>{UI.draft.look=lookFor(ri(1,99999),UI.draft.gender)},
   create:()=>{const d=UI.draft;if(!(d.stage||'').trim()&&!(d.name||'').trim()){toast('Give your idol a name first.');return}newGame(d,UI.slot||1);UI.scr='game';UI.tab='week';UI.form={};window.scrollTo(0,0)},
   piece:v=>{UI.piece=v;UI.keepScroll=true},
-  aud:v=>{const p=UI.piece||'vocal';mgFor(p==='dance'?'poses':p==='rap'?'rhyme':'pitch',`${AG(v).short} audition`,S.st[p],.3,g=>auditionResult(v,g),`Your piece: ${p==='vocal'?'a song':p==='dance'?'a dance':'a rap'}. The panel wants ${AG(v).diff}+ overall.`)}
+  aud:v=>{const p=UI.piece||'vocal';mgFor(p==='dance'?'poses':p==='rap'?'rhyme':'highnote',`${AG(v).short} audition`,S.st[p],.3,g=>auditionResult(v,g),`Your piece: ${p==='vocal'?'a song':p==='dance'?'a dance':'a rap'}. The panel wants ${AG(v).diff}+ overall.`)}
 };
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-a]');if(!b||b.disabled)return;const f=ACT[b.dataset.a];if(!f)return;e.preventDefault();audio();f(b.dataset.v);if(S)clampAll();if(S&&UI.scr!=='title')save();render()});
 document.addEventListener('input',e=>{const t=e.target;if(t.dataset.d&&UI.draft){UI.draft[t.dataset.d]=t.value;if(t.dataset.d==='stage'){const h=$('main .card.holo h2');if(h)h.textContent=t.value||'Your stage name'}}if(t.dataset.f){UI.form[t.dataset.f]=t.value}});
