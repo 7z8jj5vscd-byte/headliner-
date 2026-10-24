@@ -207,14 +207,21 @@ main.wrap{padding-top:14px;padding-bottom:calc(var(--tabh) + 92px + env(safe-are
 .pads{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;height:92px}
 .pad{border:0;border-radius:20px;font-size:26px;color:#fff;cursor:pointer;touch-action:none;box-shadow:inset 0 -5px 0 rgba(0,0,0,.2),inset 0 3px 0 rgba(255,255,255,.35);transition:transform .05s,filter .05s}
 .pad.hit{transform:scale(.94);filter:brightness(1.35)}
-.pad.cue{transform:scale(1.06);filter:brightness(1.45);box-shadow:0 0 24px rgba(255,255,255,.85),inset 0 -5px 0 rgba(0,0,0,.2)}
-.pad.hint{animation:hint .35s ease-in-out 2;box-shadow:0 0 26px #fff36b,inset 0 -5px 0 rgba(0,0,0,.2)}
-@keyframes hint{50%{transform:scale(1.1);filter:brightness(1.6)}}
-.cue{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
-.cue .big{font-size:96px;line-height:1;height:110px;font-family:var(--display);transition:transform .12s}
-.cue .seq{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:34px;font-size:24px}
-.cpads{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cpads .pad{height:72px}
+.posestage{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
+.spot{position:absolute;left:50%;top:4%;width:min(70vw,300px);height:80%;transform:translateX(-50%);background:radial-gradient(50% 60% at 50% 55%,rgba(255,255,255,.22),rgba(255,122,198,.08) 60%,transparent 75%);pointer-events:none}
+.poselabel{font-weight:900;letter-spacing:.1em;position:relative}
+.posebig{position:relative;width:min(52vw,230px);height:min(52vw,230px);filter:drop-shadow(0 0 18px rgba(255,255,255,.55))}
+.posebig svg,.posecard svg{width:100%;height:100%;display:block}
+.posebig.pop{animation:posepop .28s cubic-bezier(.2,1.4,.4,1)}
+@keyframes posepop{from{transform:scale(.6) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+.posemsg{min-height:24px;font-family:var(--display);font-size:20px;color:#fff36b;position:relative}
+.posecards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.posecard{height:auto;aspect-ratio:3/4;background:rgba(255,255,255,.95)!important;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;font-size:12px}
+.posecard svg{flex:1;min-height:0}
+.posecard small{font-weight:900;font-size:11.5px;line-height:1.1}
+.posecard.right{background:#d6fff4!important;box-shadow:0 0 0 4px #2fe0b8,0 0 24px #2fe0b8}
+.posecard.wrong{background:#ffe1e6!important;animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .mgintro{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;text-align:center}
 .mgintro h2{font-size:28px}
 .mgintro p{color:#f2e6ff}
@@ -940,7 +947,7 @@ function bestConcept(list){return CONCEPTS.slice().sort((a,b)=>conceptFit(b.id,l
 /* ============ task sheets ============ */
 const TR={
   info:t=>({kick:t.kick,title:t.title,html:t.html,btns:[B('OK','done',null,'block')]}),
-  eval:t=>{const E=EVALK[t.kind];return {kick:`Monthly evaluation · Month ${S.months}`,title:E.n,html:`<p>The directors line up behind a long table. Cameras roll. ${t.kind==='vocal'?'Hit every note in time.':'Watch the choreo, then repeat it exactly.'}</p><div class="stack">${E.k.map(k=>`<div class="stat"><span>${SKI[k]}</span><div><b>${SKL[k]}</b>${bar(S.st[k])}</div><span class="v">${Math.round(S.st[k])}</span></div>`).join('')}</div><p class="muted"><small>Your score = 50% stage + 50% skill. Bottom two twice in a row risks getting cut.</small></p>`,
+  eval:t=>{const E=EVALK[t.kind];return {kick:`Monthly evaluation · Month ${S.months}`,title:E.n,html:`<p>The directors line up behind a long table. Cameras roll. ${t.kind==='vocal'?'Hit every note in time.':'Copy every pose the choreographer strikes.'}</p><div class="stack">${E.k.map(k=>`<div class="stat"><span>${SKI[k]}</span><div><b>${SKL[k]}</b>${bar(S.st[k])}</div><span class="v">${Math.round(S.st[k])}</span></div>`).join('')}</div><p class="muted"><small>Your score = 50% stage + 50% skill. Bottom two twice in a row risks getting cut.</small></p>`,
     btns:[B('🎬 Perform','mgEval',null,'block'),B('Quick sim','autoEval',null,'ghost block')]}},
   evalRes:t=>{const d=t.prev?t.prev-t.rank:0;return {kick:'Evaluation results',title:`Rank #${t.rank} of ${t.rows.length}`,html:`<div class="kpis"><div class="kpi"><b>${t.game}</b><small>Stage</small></div><div class="kpi"><b>${t.my}</b><small>Final score</small></div><div class="kpi"><b class="${d>0?'good':d<0?'bad':''}">${t.prev?(d>0?'▲'+d:d<0?'▼'+(-d):'–'):'new'}</b><small>Change</small></div></div>${t.fx?`<p><b>${esc(t.fx)}</b></p>`:''}${rankRows(t.rows)}`,btns:[B('Continue','afterEval',null,'block')]}},
   cut:t=>({kick:'Bad news',title:'You have been cut',html:`<p>After two months in the bottom two, ${esc(AG(S.agency).short)} ends your trainee contract. You pack your things in silence.</p><p class="muted">Your skills come with you. Another agency might see what they missed.</p>`,btns:[B('Audition somewhere else','cutAudition',null,'block'),B('Give up the dream','end','cut','ghost block')]}),
@@ -1266,7 +1273,7 @@ function menuTab(){
   return `<section class="card"><h2>Game</h2><p class="muted">Slot ${S.slot} · saved automatically every week.</p><div class="stack">${B(S.sound?'🔊 Sound on':'🔈 Sound off','sound',null,'ghost block')}${window.THREE?B(can3D()?'🧊 3D avatars on':'🖼️ 3D avatars off (2D)','toggle3d',null,'ghost block'):''}${B('How to play','howto',null,'ghost block')}${B('Back to title','toTitle',null,'ghost block')}</div></section>
   <section class="card"><h2>About</h2><p class="muted">Debut Dream is a fan-made idol career simulator. Every agency, idol, group, show and award in it is fictional.</p></section>`;
 }
-const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm or choreo mini-game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p class="muted"><small>Mini-games: tap the lanes as notes hit the line, or watch the move sequence and repeat it. Every stage also has a Quick sim option.</small></p>`;
+const HOWTO=`<p><b>Act I: Trainee.</b> Spend 8 blocks a week on lessons, rest and bonding. Every 4 weeks a monthly evaluation (a rhythm game or the Pose Match dance game) sets your rank. Two bottom-two finishes in a row can get you cut. Friends vouch for you when the debut lineup is picked.</p><p><b>Act II: Debut.</b> Your position follows from your stats. Name the group, pick a concept and chase your first music show win.</p><p><b>Act III: Career.</b> Plan comebacks, grow and name your fandom, design a lightstick, tour the world and handle scandals. Watch stress: three weeks at 90+ means burnout. Contract renewal arrives in year 7.</p><p><b>Shortcuts.</b> 🪄 Coach pick fills your week for you, and ⏩ skips ahead until something needs you (or you need rest). The Dream board shows your next goal. Milestones, releases and awards drop collectible photocards, and the Fan chat lets you message fans once a week. Drag any 3D idol to spin it; 3D can be turned off in Menu.</p><p class="muted"><small>Mini-games: tap the lanes as notes hit the line, or watch the move sequence and repeat it. Every stage also has a Quick sim option.</small></p>`;
 function lookEditor(L,prefix){
   const sw=(arr,key)=>`<div class="swatches">${arr.map((c,i)=>`<button class="sw ${L[key]===i?'on':''}" style="background:${c}" data-a="${prefix}" data-v="${key}|${i}" aria-label="${key} ${i+1}"></button>`).join('')}</div>`;
   const op=(arr,key)=>`<div class="opts">${arr.map((n,i)=>`<button class="opt ${L[key]===i?'on':''}" data-a="${prefix}" data-v="${key}|${i}"><b>${n}</b></button>`).join('')}</div>`;
@@ -1352,8 +1359,8 @@ function mgShell(inner){let el=$('#mg');if(!el){el=document.createElement('div')
 function drawMG(){
   if(!MG)return;const o=MG.o;
   if(MG.phase==='intro'){
-    const how=MG.kind==='rhythm'?'Notes fall down four lanes. Tap the matching pad the moment a note crosses the glowing line. Perfect timing scores most.':'Watch the moves (the matching pad lights up), then tap them back in the same order. Slip up and the right pad glows so you can keep going.';
-    mgShell(`<div class="top"><b>${esc(o.title)}</b><button class="x" data-mga="quit">✕</button></div><div class="mgintro"><div style="font-size:64px">${MG.kind==='rhythm'?'🎵':'💃'}</div><h2>${esc(o.title)}</h2>${o.sub?`<p>${esc(o.sub)}</p>`:''}<p>${how}</p><p><small>Your skill (${Math.round(o.stat||0)}) widens the timing window and slows the cues.</small></p><button class="btn big" data-mga="go">Start ✨</button><button class="btn ghost big" data-mga="auto">Quick sim</button></div>`);
+    const how=MG.kind==='rhythm'?'Notes fall down four lanes. Tap the matching pad the moment a note crosses the glowing line. Perfect timing scores most.':'The choreographer freezes in a pose. Tap the card that matches it before the timer runs out. Fast answers score more, and three in a row starts a fever streak.';
+    mgShell(`<div class="top"><b>${esc(o.title)}</b><button class="x" data-mga="quit">✕</button></div><div class="mgintro"><div style="font-size:64px">${MG.kind==='rhythm'?'🎵':'🕺'}</div><h2>${esc(o.title)}</h2>${o.sub?`<p>${esc(o.sub)}</p>`:''}<p>${how}</p><p><small>Your skill (${Math.round(o.stat||0)}) widens the timing window and slows the cues.</small></p><button class="btn big" data-mga="go">Start ✨</button><button class="btn ghost big" data-mga="auto">Quick sim</button></div>`);
     return;
   }
   if(MG.phase==='done'){const s=MG.score;const r=s>=90?'PERFECT STAGE!':s>=75?'Amazing!':s>=55?'Nice!':s>=35?'Shaky...':'Rough night';
@@ -1386,26 +1393,47 @@ function mgRhythm(){
   requestAnimationFrame(loop);
 }
 const MOVES=[{k:'L',i:'⬅️'},{k:'U',i:'⬆️'},{k:'R',i:'➡️'},{k:'D',i:'⬇️'},{k:'C',i:'👏'},{k:'S',i:'✨'}];
+// Pose Match: the choreographer freezes in a pose, you tap the matching pose card before the timer runs out
+const POSES=[
+  {n:'V up',a:[[38,26,30,12],[62,26,70,12]]},
+  {n:'T arms',a:[[36,38,22,38],[64,38,78,38]]},
+  {n:'Hands on hips',a:[[36,47,44,58],[64,47,56,58]]},
+  {n:'Point left',a:[[36,33,20,27],[64,47,56,58]],l:'L'},
+  {n:'Point right',a:[[36,47,44,58],[64,33,80,27]],l:'R'},
+  {n:'Finger heart',a:[[36,20,48,4],[64,20,52,4]]},
+  {n:'Wave',a:[[42,50,40,63],[62,26,66,10]]},
+  {n:'Clap',a:[[40,47,50,42],[60,47,50,42]]}
+];
+function poseSVG(p,col,skin,hair){
+  const legs=p.l==='L'?'M50 62 L37 75 L29 90 M50 62 L59 76 L61 90':p.l==='R'?'M50 62 L63 75 L71 90 M50 62 L41 76 L39 90':'M50 62 L43 76 L41 90 M50 62 L57 76 L59 90';
+  const arm=x=>`M${x===0?44:56} 37 L${p.a[x][0]} ${p.a[x][1]} L${p.a[x][2]} ${p.a[x][3]}`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${legs}" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M50 34 L50 62" stroke="${col}" stroke-width="13" stroke-linecap="round"/>
+  <path d="${arm(0)} ${arm(1)}" stroke="${col}" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>${[0,1].map(x=>`<circle cx="${p.a[x][2]}" cy="${p.a[x][3]}" r="3.6" fill="${skin}"/>`).join('')}
+  <circle cx="50" cy="21" r="10.5" fill="${skin}"/><path d="M39.5 21 Q39 9 50 9 Q61 9 60.5 21 Q57 14 50 15 Q43 14 39.5 21Z" fill="${hair}"/></svg>`;
+}
 function mgChoreo(){
-  const o=MG.o,diff=clamp(o.diff??.4,0,1),stat=o.stat||40;
-  // Kept gentle: short sequences, slow cues, the matching pad lights up while you watch, and a wrong tap only costs a little
-  const rounds=diff<.5?[3,3,4,4]:[3,4,4,5];const total=sum(rounds);const on=Math.max(450,820-diff*200+stat*1.5),gap=260;
-  mgShell(`<div class="top"><b>${esc(o.title)}</b><span class="score" id="mgs">0/${total}</span><button class="x" data-mga="quit">✕</button></div>
-  <div class="cue"><div id="mgr" style="font-weight:900;letter-spacing:.1em"></div><div class="big" id="mgc">🎬</div><div class="seq" id="mgq"></div><div id="mgm" style="min-height:20px;font-weight:800;font-size:14px"></div><div class="bar" style="width:70%;background:rgba(255,255,255,.15)"><i id="mgt" style="width:100%"></i></div></div>
-  <div class="cpads">${MOVES.map((m,i)=>`<button class="pad" data-pad="${m.k}" style="background:${['#ff5fae','#a45cff','#3fb6ff','#22c9a6','#ffb020','#ff7b3f'][i]}">${m.i}</button>`).join('')}</div>`);
-  let r=0,correct=0,miss=0,seq=[],pos=0,phase='show',deadline=0,limit=0,rm=0;const C=$('#mgc'),Q=$('#mgq'),RR=$('#mgr'),T=$('#mgt'),MM=$('#mgm');
-  const glow=(k,cls,ms)=>{const p=document.querySelector(`[data-pad="${k}"]`);if(!p)return;p.classList.add(cls);setTimeout(()=>p.classList.remove(cls),ms)};
-  const score=()=>Math.max(0,(correct-miss*.25)/total*100);
-  const nextRound=()=>{if(!MG||!MG.alive)return;if(r>=rounds.length){MG.detail=`${correct} of ${total} moves hit${miss?` · ${miss} slip${miss>1?'s':''}`:''}`;finishMG(score());return}
-    const pool=r<2?MOVES.slice(0,4):MOVES;seq=Array.from({length:rounds[r]},()=>pick(pool));MG.seq=seq;pos=0;rm=0;phase='show';RR.textContent=`ROUND ${r+1} OF ${rounds.length} · WATCH`;Q.innerHTML=seq.map(()=>'<span style="opacity:.35">●</span>').join('');MM.textContent='';C.textContent='👀';
-    let i=0;const step=()=>{if(!MG||!MG.alive)return;if(i>=seq.length){phase='input';RR.textContent='YOUR TURN!';C.textContent='💃';limit=seq.length*1700+3000;deadline=performance.now()+limit;tick();return}
-      C.textContent=seq[i].i;C.style.transform='scale(1.2)';glow(seq[i].k,'cue',on);beep(400+i*60,.1,.06);setTimeout(()=>{if(C){C.style.transform='';C.textContent='·'}},on);i++;setTimeout(step,on+gap)};setTimeout(step,800)};
-  const endRound=msg=>{phase='wait';RR.textContent=msg;r++;setTimeout(nextRound,900)};
-  const tick=()=>{if(!MG||!MG.alive||phase!=='input')return;const left=deadline-performance.now();T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){endRound('TIME!');return}requestAnimationFrame(tick)};
-  MG.press=k=>{if(phase!=='input')return;glow(k,'hit',90);
-    if(seq[pos].k===k){correct++;Q.children[pos].outerHTML=`<span>${seq[pos].i}</span>`;pos++;MM.textContent='';beep(600+pos*50,.08,.07);$('#mgs').textContent=`${correct}/${total}`;if(pos>=seq.length){C.textContent='🌟';endRound(rm?'NICE SAVE!':'CLEAN!')}}
-    else{miss++;rm++;beep(140,.15,.06,'square');glow(seq[pos].k,'hint',700);if(rm>=3){C.textContent='😵';endRound('NEXT ROUND!')}else MM.textContent='Oops! The glowing pad is next.'}};
-  nextRound();
+  const o=MG.o,diff=clamp(o.diff??.4,0,1),stat=o.stat||40,N=10;
+  const limit=clamp(3300-diff*900+stat*8,1900,4200);
+  const L=(S&&S.idol&&S.idol.look)||(UI.draft&&UI.draft.look)||defaultLook();
+  const skin=SKINS[L.skin]||SKINS[1],hair=HAIRC[L.hairC]||HAIRC[0],mine=OUTFITC[L.outfit]||'#ff5fae';
+  mgShell(`<div class="top"><b>${esc(o.title)}</b><span class="score" id="mgs">0/${N}</span><button class="x" data-mga="quit">✕</button></div>
+  <div class="posestage"><div class="spot"></div><div id="mgr" class="poselabel">Get ready…</div><div class="posebig" id="mgc"></div><div id="mgm" class="posemsg"></div><div class="bar" style="width:70%;background:rgba(255,255,255,.15)"><i id="mgt" style="width:100%"></i></div></div>
+  <div class="posecards" id="mgk"></div>`);
+  const C=$('#mgc'),K=$('#mgk'),T=$('#mgt'),RR=$('#mgr'),MM=$('#mgm');
+  let i=0,pts=0,hits=0,combo=0,best=0,phase='wait',t0=0,ans=0,last=-1;
+  const next=()=>{if(!MG||!MG.alive)return;if(i>=N){MG.detail=`${hits} of ${N} poses matched · best streak ${best}`;finishMG(pts/N*100);return}
+    let pi;do{pi=ri(0,POSES.length-1)}while(pi===last);last=pi;
+    const opts=shuffle([pi,...shuffle(POSES.map((_,k)=>k).filter(k=>k!==pi)).slice(0,2)]);ans=opts.indexOf(pi);MG.answer=ans;
+    RR.textContent=`POSE ${i+1} OF ${N} · COPY IT!`;C.innerHTML=poseSVG(POSES[pi],'#ffffff',skin,hair);C.classList.remove('pop');void C.offsetWidth;C.classList.add('pop');
+    K.innerHTML=opts.map((k,j)=>`<button class="pad posecard" data-pad="${j}">${poseSVG(POSES[k],mine,skin,hair)}<small>${POSES[k].n}</small></button>`).join('');
+    beep(500,.08,.05);phase='pick';t0=performance.now();tick()};
+  const tick=()=>{if(!MG||!MG.alive||phase!=='pick')return;const left=limit-(performance.now()-t0);T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){resolve(-1);return}requestAnimationFrame(tick)};
+  const resolve=j=>{phase='wait';const cards=K.querySelectorAll('.posecard');const ok=j===ans;
+    if(ok){const sp=clamp(1-(performance.now()-t0)/limit,0,1);pts+=.75+.25*sp;hits++;combo++;best=Math.max(best,combo);cards[j].classList.add('right');MM.textContent=combo>=3?`FEVER ×${combo} ✨`:sp>.6?'Sharp!':'Nice!';beep(700+combo*40,.12,.07)}
+    else{combo=0;if(j>=0)cards[j].classList.add('wrong');cards[ans].classList.add('right');MM.textContent=j<0?'Too slow!':'Close! That one was it.';beep(160,.15,.05,'square')}
+    $('#mgs').textContent=`${hits}/${N}`;i++;setTimeout(next,ok?520:950)};
+  MG.press=k=>{if(phase!=='pick')return;const j=+k;if(j>=0&&j<3)resolve(j)};
+  setTimeout(next,900);
 }
 document.addEventListener('pointerdown',e=>{const p=e.target.closest&&e.target.closest('[data-pad]');if(!p||!MG||!MG.press)return;e.preventDefault();const v=p.dataset.pad;MG.press(MG.kind==='rhythm'?+v:v)});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-mga]');if(!b||!MG)return;const a=b.dataset.mga;
@@ -1413,7 +1441,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   if(a==='go'){audio();MG.phase='play';if(MG.kind==='rhythm')mgRhythm();else mgChoreo();return}
   if(a==='auto'){MG.detail='Simulated from your skills.';finishMG(autoScore(MG.o.stat||40));return}
   if(a==='ok'){const cb=MG.cb,s=MG.score;closeMG();cb(s)}});
-document.addEventListener('keydown',e=>{if(!MG||!MG.press)return;const m=MG.kind==='rhythm'?{d:0,f:1,j:2,k:3,ArrowLeft:0,ArrowDown:1,ArrowUp:2,ArrowRight:3}:{ArrowLeft:'L',ArrowUp:'U',ArrowRight:'R',ArrowDown:'D',c:'C',s:'S'};if(e.key in m){e.preventDefault();MG.press(m[e.key])}});
+document.addEventListener('keydown',e=>{if(!MG||!MG.press)return;const m=MG.kind==='rhythm'?{d:0,f:1,j:2,k:3,ArrowLeft:0,ArrowDown:1,ArrowUp:2,ArrowRight:3}:{'1':'0','2':'1','3':'2',ArrowLeft:'0',ArrowDown:'1',ArrowRight:'2'};if(e.key in m){e.preventDefault();MG.press(m[e.key])}});
 
 /* ============ actions ============ */
 const evalDiff=()=>clamp(.3+S.months*.025,.3,.8);
