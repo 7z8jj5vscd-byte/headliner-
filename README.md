@@ -18,7 +18,7 @@ Another game lives in `kpop/`: create your idol, survive trainee evaluations, de
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/kpop/
 
-Features 3D idols and a dancing group stage (drag to spin), a Dream board of goals, coach-picked weekly plans, a skip-ahead button, a photocard binder and a fan chat.
+Features 3D idols and a dancing group stage (drag to spin), a Dream board of goals, coach-picked weekly plans, a skip-ahead button, a photocard binder and a fan chat. Every release starts with a costume fitting, and each live stage lets you pick a rehearsal method and an ending fairy pose, then plays out as a live broadcast feed with fanchants, chat, mishaps and fancam views.
 
 ## Decades
 
