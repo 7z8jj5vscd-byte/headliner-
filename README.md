@@ -26,6 +26,18 @@ Start a band in 1965 and play one year per turn all the way to the present. Mana
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/decades/
 
+## A&R: The Talent Scout
+
+You are not the artist. You are the label scout who decides which artists get signed. Every unsigned act has six hidden numbers: talent, work ethic, ego, durability, genre fit and sellability. You never see them, only your read: a range that narrows each time you go to an open mic or a showcase, dig through the Clipstream and Soundpost feeds, listen to their demos (each one plays a short clip), check references, run the streaming data or book a test session. Feeds flatter, and some acts buy their streams. Three rival scouts read the same acts and bid against you. When you make an offer you set the advance, royalty points, recording fund, marketing commitment, 360 share and options, and the game shows the recoupment maths: how many streams before the label breaks even and before the artist sees a royalty. Then the act records, releases and tours, and the truth comes out as gold markers against your read. Hits and flops feed your reputation, your boss's quarterly grades and the climb from Scout to President of A&R, or getting fired. Acts play on a 3D stage, your office fills with plaques (drag to spin), and there is a weekly Pulse 40 chart, trade news, a social feed and an inbox. All artists, labels and scouts are fictional.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/ar/
+
+## Manager: 360 Deal
+
+Run an artist-management company with up to six artists, each with a personality, two career goals, health, morale, trust and jealousy. You get ten blocks of attention a week and a calendar with one lane per artist: book writing weeks, the studio, promo runs, rest and tours, pitch labels, publishers, brands, sync and summer festivals, and decide what to do about burnout, scandals, label delays and drops, band members quitting, commission disputes, rival managers circling and artists feuding with each other. Tours show the real money per show: box office, venue costs, the promoter deal, merch after the venue cut, crew and travel, the agent's 10%, your 15 to 20%, and what the artist actually keeps. Record and publishing deals recoup, majors take a 360, and contracts end with a renewal fight or a sunset clause that keeps paying you for a while. Hire a tour manager, publicist, lawyer, business manager and day-to-day manager, and grow the company's value over five years. Artists perform on a 3D stage sized to the rooms they play, and the office shows your staff and roster (drag to spin). All artists, labels, brands and festivals are fictional.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/manager/
+
 The other games install on iPhone the same way: open the link in Safari, tap Share, then Add to Home Screen.
 
 ## Updates go live automatically
