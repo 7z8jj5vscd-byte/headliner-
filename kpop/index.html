@@ -207,6 +207,9 @@ main.wrap{padding-top:14px;padding-bottom:calc(var(--tabh) + 92px + env(safe-are
 .pads{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;height:92px}
 .pad{border:0;border-radius:20px;font-size:26px;color:#fff;cursor:pointer;touch-action:none;box-shadow:inset 0 -5px 0 rgba(0,0,0,.2),inset 0 3px 0 rgba(255,255,255,.35);transition:transform .05s,filter .05s}
 .pad.hit{transform:scale(.94);filter:brightness(1.35)}
+.pad.cue{transform:scale(1.06);filter:brightness(1.45);box-shadow:0 0 24px rgba(255,255,255,.85),inset 0 -5px 0 rgba(0,0,0,.2)}
+.pad.hint{animation:hint .35s ease-in-out 2;box-shadow:0 0 26px #fff36b,inset 0 -5px 0 rgba(0,0,0,.2)}
+@keyframes hint{50%{transform:scale(1.1);filter:brightness(1.6)}}
 .cue{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
 .cue .big{font-size:96px;line-height:1;height:110px;font-family:var(--display);transition:transform .12s}
 .cue .seq{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:34px;font-size:24px}
@@ -1349,7 +1352,7 @@ function mgShell(inner){let el=$('#mg');if(!el){el=document.createElement('div')
 function drawMG(){
   if(!MG)return;const o=MG.o;
   if(MG.phase==='intro'){
-    const how=MG.kind==='rhythm'?'Notes fall down four lanes. Tap the matching pad the moment a note crosses the glowing line. Perfect timing scores most.':'Watch the move sequence, then repeat it on the pads in the same order. Sequences get longer each round.';
+    const how=MG.kind==='rhythm'?'Notes fall down four lanes. Tap the matching pad the moment a note crosses the glowing line. Perfect timing scores most.':'Watch the moves (the matching pad lights up), then tap them back in the same order. Slip up and the right pad glows so you can keep going.';
     mgShell(`<div class="top"><b>${esc(o.title)}</b><button class="x" data-mga="quit">✕</button></div><div class="mgintro"><div style="font-size:64px">${MG.kind==='rhythm'?'🎵':'💃'}</div><h2>${esc(o.title)}</h2>${o.sub?`<p>${esc(o.sub)}</p>`:''}<p>${how}</p><p><small>Your skill (${Math.round(o.stat||0)}) widens the timing window and slows the cues.</small></p><button class="btn big" data-mga="go">Start ✨</button><button class="btn ghost big" data-mga="auto">Quick sim</button></div>`);
     return;
   }
@@ -1385,20 +1388,23 @@ function mgRhythm(){
 const MOVES=[{k:'L',i:'⬅️'},{k:'U',i:'⬆️'},{k:'R',i:'➡️'},{k:'D',i:'⬇️'},{k:'C',i:'👏'},{k:'S',i:'✨'}];
 function mgChoreo(){
   const o=MG.o,diff=clamp(o.diff??.4,0,1),stat=o.stat||40;
-  const rounds=diff<.45?[3,4,5,6]:[4,5,6,7];const total=sum(rounds);const on=Math.max(300,600-diff*220+stat*1.4),gap=170;
+  // Kept gentle: short sequences, slow cues, the matching pad lights up while you watch, and a wrong tap only costs a little
+  const rounds=diff<.5?[3,3,4,4]:[3,4,4,5];const total=sum(rounds);const on=Math.max(450,820-diff*200+stat*1.5),gap=260;
   mgShell(`<div class="top"><b>${esc(o.title)}</b><span class="score" id="mgs">0/${total}</span><button class="x" data-mga="quit">✕</button></div>
-  <div class="cue"><div id="mgr" style="font-weight:900;letter-spacing:.1em"></div><div class="big" id="mgc">🎬</div><div class="seq" id="mgq"></div><div class="bar" style="width:70%;background:rgba(255,255,255,.15)"><i id="mgt" style="width:100%"></i></div></div>
+  <div class="cue"><div id="mgr" style="font-weight:900;letter-spacing:.1em"></div><div class="big" id="mgc">🎬</div><div class="seq" id="mgq"></div><div id="mgm" style="min-height:20px;font-weight:800;font-size:14px"></div><div class="bar" style="width:70%;background:rgba(255,255,255,.15)"><i id="mgt" style="width:100%"></i></div></div>
   <div class="cpads">${MOVES.map((m,i)=>`<button class="pad" data-pad="${m.k}" style="background:${['#ff5fae','#a45cff','#3fb6ff','#22c9a6','#ffb020','#ff7b3f'][i]}">${m.i}</button>`).join('')}</div>`);
-  let r=0,correct=0,seq=[],pos=0,phase='show',deadline=0;const C=$('#mgc'),Q=$('#mgq'),RR=$('#mgr'),T=$('#mgt');
-  const nextRound=()=>{if(!MG||!MG.alive)return;if(r>=rounds.length){MG.detail=`${correct} of ${total} moves hit`;finishMG(correct/total*100);return}
-    seq=Array.from({length:rounds[r]},()=>pick(MOVES));MG.seq=seq;pos=0;phase='show';RR.textContent=`ROUND ${r+1} · WATCH`;Q.innerHTML='';C.textContent='👀';
-    let i=0;const step=()=>{if(!MG||!MG.alive)return;if(i>=seq.length){phase='input';RR.textContent='YOUR TURN!';C.textContent='💃';deadline=performance.now()+seq.length*1100+1500;tick();return}
-      C.textContent=seq[i].i;C.style.transform='scale(1.2)';beep(400+i*60,.1,.06);setTimeout(()=>{if(C){C.style.transform='';C.textContent='·'}},on);i++;setTimeout(step,on+gap)};setTimeout(step,700)};
-  const endRound=msg=>{phase='wait';RR.textContent=msg;r++;setTimeout(nextRound,800)};
-  const tick=()=>{if(!MG||!MG.alive||phase!=='input')return;const left=deadline-performance.now();T.style.width=clamp(left/(seq.length*1100+1500)*100,0,100)+'%';if(left<=0){endRound('TIME!');return}requestAnimationFrame(tick)};
-  MG.press=k=>{if(phase!=='input')return;const pad=document.querySelector(`[data-pad="${k}"]`);if(pad){pad.classList.add('hit');setTimeout(()=>pad.classList.remove('hit'),90)}
-    if(seq[pos].k===k){correct++;Q.innerHTML+=`<span>${seq[pos].i}</span>`;pos++;beep(600+pos*50,.08,.07);$('#mgs').textContent=`${correct}/${total}`;if(pos>=seq.length){C.textContent='🌟';endRound('CLEAN!')}}
-    else{beep(140,.15,.06,'square');C.textContent='❌';endRound('MISSED!')}};
+  let r=0,correct=0,miss=0,seq=[],pos=0,phase='show',deadline=0,limit=0,rm=0;const C=$('#mgc'),Q=$('#mgq'),RR=$('#mgr'),T=$('#mgt'),MM=$('#mgm');
+  const glow=(k,cls,ms)=>{const p=document.querySelector(`[data-pad="${k}"]`);if(!p)return;p.classList.add(cls);setTimeout(()=>p.classList.remove(cls),ms)};
+  const score=()=>Math.max(0,(correct-miss*.25)/total*100);
+  const nextRound=()=>{if(!MG||!MG.alive)return;if(r>=rounds.length){MG.detail=`${correct} of ${total} moves hit${miss?` · ${miss} slip${miss>1?'s':''}`:''}`;finishMG(score());return}
+    const pool=r<2?MOVES.slice(0,4):MOVES;seq=Array.from({length:rounds[r]},()=>pick(pool));MG.seq=seq;pos=0;rm=0;phase='show';RR.textContent=`ROUND ${r+1} OF ${rounds.length} · WATCH`;Q.innerHTML=seq.map(()=>'<span style="opacity:.35">●</span>').join('');MM.textContent='';C.textContent='👀';
+    let i=0;const step=()=>{if(!MG||!MG.alive)return;if(i>=seq.length){phase='input';RR.textContent='YOUR TURN!';C.textContent='💃';limit=seq.length*1700+3000;deadline=performance.now()+limit;tick();return}
+      C.textContent=seq[i].i;C.style.transform='scale(1.2)';glow(seq[i].k,'cue',on);beep(400+i*60,.1,.06);setTimeout(()=>{if(C){C.style.transform='';C.textContent='·'}},on);i++;setTimeout(step,on+gap)};setTimeout(step,800)};
+  const endRound=msg=>{phase='wait';RR.textContent=msg;r++;setTimeout(nextRound,900)};
+  const tick=()=>{if(!MG||!MG.alive||phase!=='input')return;const left=deadline-performance.now();T.style.width=clamp(left/limit*100,0,100)+'%';if(left<=0){endRound('TIME!');return}requestAnimationFrame(tick)};
+  MG.press=k=>{if(phase!=='input')return;glow(k,'hit',90);
+    if(seq[pos].k===k){correct++;Q.children[pos].outerHTML=`<span>${seq[pos].i}</span>`;pos++;MM.textContent='';beep(600+pos*50,.08,.07);$('#mgs').textContent=`${correct}/${total}`;if(pos>=seq.length){C.textContent='🌟';endRound(rm?'NICE SAVE!':'CLEAN!')}}
+    else{miss++;rm++;beep(140,.15,.06,'square');glow(seq[pos].k,'hint',700);if(rm>=3){C.textContent='😵';endRound('NEXT ROUND!')}else MM.textContent='Oops! The glowing pad is next.'}};
   nextRound();
 }
 document.addEventListener('pointerdown',e=>{const p=e.target.closest&&e.target.closest('[data-pad]');if(!p||!MG||!MG.press)return;e.preventDefault();const v=p.dataset.pad;MG.press(MG.kind==='rhythm'?+v:v)});
