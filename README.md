@@ -27,3 +27,7 @@ Start a band in 1965 and play one year per turn all the way to the present. Mana
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/decades/
 
 The other games install on iPhone the same way: open the link in Safari, tap Share, then Add to Home Screen.
+
+## Updates go live automatically
+
+Any push to a `claude/...` branch is merged into `main` by `.github/workflows/auto-publish.yml`, and GitHub Pages publishes `main`. No pull request is needed. If an automatic merge ever conflicts, GitHub emails the repo owner and that branch can be merged with a normal pull request instead.
