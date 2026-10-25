@@ -1035,7 +1035,7 @@ function defaultFandom(stage){const w=(stage||'Fans').replace(/[^A-Za-z ]/g,'').
 const year=()=>Math.floor((S.t-1)/52)+1;
 const wkOfYear=()=>((S.t-1)%52)+1;
 const house=()=>HOUSES.find(h=>h.id===S.house);
-const maxEnergy=()=>Math.round(house().energy*(.55+S.health/220)*(easy()?1.2:1));
+const maxEnergy=()=>Math.round(house().energy*(.55+S.health/220)*DIFF().en);
 const tier=()=>{let n=TIERS[0][1];TIERS.forEach(([f,l])=>{if(S.fans>=f)n=l});return n};
 const labelOf=c=>c?LABELS.find(l=>l.id===c.id):null;
 const share=()=>S.contract?S.contract.share:.9;
@@ -1127,13 +1127,13 @@ function clipChance(p,src){
   if(Math.random()<p*(1+(S.skills.performance+S.skills.charisma)/150)){const rel=S.songs.filter(x=>x.status==='released');breakout(src,rel.length&&Math.random()<.7?pick(rel):null)}
 }
 function releaseOutcome(q,kind,title){
-  const ex=30+S.level*7.5-(easy()?7:0);
+  const ex=30+S.level*7.5+DIFF().ex;
   let sc=q+S.hype/10+rnd(-14,14)+(eraFx().recv||0)+(S.contract?(S.contract.promo-1)*3:0);
   if(S.t-S.lastRelease<2)sc-=8;
   const d=sc-ex,k=d>=20?'smash':d>=6?'hit':d>=-10?'solid':'flop';
   const R=RECV[k],mult=kind==='album'?1.5:1;
   let g;
-  if(k==='flop'){g=-S.fans*(easy()?.012:.03);S.fans+=g;S.happy=clamp(S.happy-8,0,100)}
+  if(k==='flop'){g=-S.fans*DIFF().flop;S.fans+=g;S.happy=clamp(S.happy-8,0,100)}
   else g=addFans((S.fans*R.f*mult+R.flat*(1+S.level)*mult)*(q/100+.5));
   if(k==='hit'||k==='smash'){S.stats.hits++;S.hype=clamp(S.hype+(k==='smash'?25:12),0,100)}
   S.relN++;S.rel.push({n:S.relN,t:S.t,k,kind,title});S.rel=S.rel.slice(-20);
@@ -1142,7 +1142,7 @@ function releaseOutcome(q,kind,title){
   eraCheck(true);
   return {k,g};
 }
-function fanMult(){return (S.origin==='rich'?.9:1)*(easy()?1.3:1)}
+function fanMult(){return (S.origin==='rich'?.9:1)*DIFF().fans}
 function addFans(n){if(n>0)n*=fanMult()*Math.max(0,1-S.fans/4e8)*(eraFx().fans||1);S.fans=Math.max(0,S.fans+n);return n}
 function songQuality(bonus=0){
   const k=GENRES[S.genre],sk=S.skills;
@@ -1254,12 +1254,12 @@ function nextWeek(silent=false,fromLive=false){
   add(r.exp,'Living costs',60+Math.min(4000,S.fans*.0005));
   if(S.lux.length)add(r.exp,'Vehicle & toy upkeep',sum(S.lux,id=>LUX.find(l=>l.id===id).price*.0008));
   // apply money
-  if(easy())for(const k in r.inc)r.inc[k]*=1.2;
+  {const D=DIFF();if(D.inc!==1)for(const k in r.inc)r.inc[k]*=D.inc;if(D.exp!==1)for(const k in r.exp)r.exp[k]*=D.exp}
   const incT=sum(Object.values(r.inc),x=>x),expT=sum(Object.values(r.exp),x=>x);
   S.money+=incT-expT;S.stats.earned+=incT;
   // fans & social
   addFans(fg);
-  {const ch=(eraFx().churn||0)*(easy()?.5:1);if(ch){const l=S.fans*ch;S.fans-=l;if(l>=1)r.ev.push(`${ERAS[S.era.id].n}: lost ${fmt(l)} fans`)}}
+  {const ch=(eraFx().churn||0)*DIFF().churn;if(ch){const l=S.fans*ch;S.fans-=l;if(l>=1)r.ev.push(`${ERAS[S.era.id].n}: lost ${fmt(l)} fans`)}}
   Object.entries(S.social).forEach(([k,a])=>{const target=S.fans*PLAT[k].ratio;if(target>a.f)a.f=Math.round(a.f+(target-a.f)*.06+ri(0,5))});
   // npc feed
   for(let i=0;i<3;i++){const n=pick(S.npcs);S.feed.unshift({id:S.nextId++,who:n.name,plat:pick(Object.keys(PLAT)),text:pick(NPC_POSTS).replace('{song}',n.single),likes:Math.round(n.power*rnd(.002,.01)),liked:false,t:S.t})}
@@ -3683,7 +3683,7 @@ Object.assign(A,{
 });
 
 /* ============ v11: easy mode, compartments, planner, writing sessions, emotes ============ */
-const easy=()=>!S||!S.settings||S.settings.easy!==false;
+const easy=()=>!!(S&&S.settings&&S.settings.diff==='easy');
 {const _mig=migrate;migrate=function(s){_mig(s);s.plan??=[null,null,null,null,null,null,null];s.planDone??=[];s.opps??=[];s.settings??={};return s}}
 
 /* ---- confetti ---- */
@@ -3741,7 +3741,7 @@ const OPPS=[
   {k:'jam',ic:'🎷',l:'Late-night jam session',d:'Play for fun. Stage presence and happiness up.',e:10,sc:{k:'bar',pose:'busk',fill:.4},f:()=>{S.skills.performance=Math.min(100,S.skills.performance+1.5);S.happy=clamp(S.happy+5,0,100);return 'Jam session: Stage Presence +1.5, happiness +5.'}},
   {k:'popup',ic:'🎤',l:'Pop-up street show',d:'A surprise show. Fans and tips.',e:15,sc:{k:'street',pose:'perform'},f:()=>{const g=addFans(S.fans*.012+ri(30,120));const m=Math.round(ri(80,300)*(1+S.level));S.money+=m;return `Pop-up show: +${fmt(g)} fans, ${cash(m)} in tips.`}},
 ];
-function genOpps(){const L=OPPS.slice().sort(()=>Math.random()-.5).slice(0,easy()?4:3);S.opps=L.map(o=>({k:o.k,id:S.nextId++}))}
+function genOpps(){const L=OPPS.slice().sort(()=>Math.random()-.5).slice(0,DIFF().opps);S.opps=L.map(o=>({k:o.k,id:S.nextId++}))}
 function venueOk(v){return S.level>=LVL_VENUE[v.id]&&ready()>=v.songs}
 function planActs(){
   const be=has('car')?10:15;const tt=trainTiers()[+UI.train||0];
@@ -3894,7 +3894,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610240252';
+const APP_VER='202610251900';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
@@ -4832,6 +4832,81 @@ Object.assign(A,{
   slotDel:d=>{const n=+d.v,cur=S&&(S.slot||1)===n,x=cur?S:readSlot(n);if(!x)return;openModal('Delete this save?',`<p>This permanently deletes <b>${esc(x.stage)}</b> (Slot ${n}, Level ${(x.level||0)+1}, Year ${Math.floor((x.t-1)/52)+1}) from this device. It cannot be undone.</p>${cur?'<p class="muted">This is the career you are playing now. You will go back to the start screen to create a new one.</p>':''}${ghTok()?'<p class="muted">A copy may still exist in your cloud save. Disconnect cloud save first if you want it gone everywhere.</p>':''}<div class="row"><button class="btn delgo" data-a="slotDelGo" data-v="${n}">Delete forever</button><button class="btn ghost" data-a="closeModal">Keep it</button></div>`)},
   slotDelGo:d=>{const n=+d.v,cur=S&&(S.slot||1)===n;try{localStorage.removeItem(slotKey(n));const others=[1,2,3].filter(k=>k!==n&&readSlot(k));if(others.length)localStorage.setItem('headliner_last',String(others[0]));else localStorage.removeItem('headliner_last')}catch(e){}
     UI.modal=null;UI.queue=[];if(cur){UI.live.on=false;UI.live.day=0;S=null;UI.app=null;UI.scene=null;UI.tab='home';UI.pendingSlot=n;UI.draft=freshDraft();window.scrollTo(0,0)}toast(`Slot ${n} deleted.`)}});
+/* ============ v18: difficulty modes, slower progression, radio, gear, vocal health, artist ranking ============ */
+const DIFFS={
+  easy:{n:'Easy',fans:1.3,inc:1.2,en:1.2,ex:-7,flop:.012,churn:.5,opps:4,lvF:1,lvW:0,exp:.9,extra:0,d:'Fast and forgiving. Fans pour in, critics are kind and levels need fewer fans and no years in the industry.'},
+  normal:{n:'Normal',fans:.8,inc:1,en:1,ex:3,flop:.03,churn:1,opps:3,lvF:2.5,lvW:1,exp:1,extra:1,d:'A real career. Fans grow steadily, critics expect more as you rise, and the top levels need years of work, albums and tours. Superstar takes about 5–6 in-game years.'},
+  hard:{n:'Hard',fans:.55,inc:.85,en:.92,ex:8,flop:.045,churn:1.4,opps:2,lvF:3,lvW:1.5,exp:1.25,extra:1,d:'The grind. Fans are hard to win and easy to lose, money is tight, critics are brutal and the top takes a decade.'}};
+const DIFF=()=>DIFFS[(S&&S.settings&&S.settings.diff)||'normal']||DIFFS.normal;
+{const _mig=migrate;migrate=function(s){_mig(s);s.settings.diff??=(s.settings.easy===false?'normal':'normal');s.gear??={mic:0,inst:0,monitors:0,inears:0};s.voice??=0;s.radio??=[];s.rank??=null;s.rankBest??=null;return s}}
+{const _ng2=newGame;newGame=function(d){const r=_ng2(d);S.settings.diff=(d&&d.diff)||'normal';return r}}
+
+/* ---- level requirements by difficulty ---- */
+const LV_BASE=LEVELS.map(L=>L.reqs.map(r=>r.slice())),LV_WEEKS=[0,0,0,16,40,78,130,208,312];
+const LV_EXTRA=[[],[],[],[],[],[['released','Release 12 songs',12]],[['albums','Release 2 full albums',2]],[['albums','Release 3 full albums',3],['tours','Finish 5 tours',5]],[['albums','Release 5 full albums',5],['tours','Finish 8 tours',8]]];
+const yrsTxt=w=>w>=52?`${+(w/52).toFixed(1)} year${w===52?'':'s'}`:`${w} weeks`;
+let _lvKey='';function applyLevelReqs(){if(!S)return;const key=S.settings.diff||'normal';if(key===_lvKey)return;_lvKey=key;const D=DIFF();
+  LEVELS.forEach((L,i)=>{L.reqs=LV_BASE[i].map(r=>r[0]==='fans'?['fans',`Reach ${fmt(Math.round(r[2]*D.lvF))} fans`,Math.round(r[2]*D.lvF)]:r.slice());
+    if(D.extra)L.reqs.push(...LV_EXTRA[i].map(r=>r.slice()));const w=Math.round(LV_WEEKS[i]*D.lvW);if(w)L.reqs.push(['weeks',`Spend ${yrsTxt(w)} in the industry`,w])})}
+{const _mt=metric;metric=function(k){if(k==='weeks')return S.t-1;return _mt(k)}}
+{const _lc=levelCheck;levelCheck=function(silent){applyLevelReqs();return _lc(silent)}}
+{const _rd=render;render=function(){if(S)applyLevelReqs();return _rd()}}
+A.setDiff=d=>{S.settings.diff=d.v;_lvKey='';applyLevelReqs();save();toast(`${DIFFS[d.v].n} mode. ${d.v==='easy'?'Have fun!':'Levels you already reached stay unlocked.'}`)};
+A.setEasy=d=>A.setDiff({v:d.v==='1'?'easy':'normal'});
+diffCard=function(){const cur=S.settings.diff||'normal';return `<div class="card" style="margin-bottom:16px"><div class="between"><h3>Difficulty</h3><div class="row">${Object.entries(DIFFS).map(([k,v])=>`<button class="chip ${cur===k?'on':''}" data-a="setDiff" data-v="${k}">${v.n}</button>`).join('')}</div></div><small class="muted">${esc(DIFFS[cur].d)}</small></div>
+  <div class="card" style="margin-bottom:16px"><div class="between"><h3>Music</h3><button class="chip ${S.settings.bgm?'on':''}" data-a="bgm">${S.settings.bgm?'Background music on':'Background music off'}</button></div><small class="muted">A soft soundtrack while you play. Song previews have drums, bass and chords in your genre's style, and big shows have crowd noise.</small></div>`};
+{const _sv3=setupView;setupView=function(){const d=UI.draft,cur=d.diff||'normal';return _sv3().replace('<section class="card"><h2>Career mode</h2>',`<section class="card"><h2>Difficulty</h2><div class="choices">${Object.entries(DIFFS).map(([k,v])=>`<button class="choice ${cur===k?'on':''}" data-a="pickDiff" data-v="${k}"><b>${v.n}</b><small>${esc(v.d)}</small></button>`).join('')}</div></section><section class="card"><h2>Career mode</h2>`)}}
+A.pickDiff=d=>{UI.draft.diff=d.v;UI.draft.name=$('#f-name')?.value??UI.draft.name;UI.draft.stage=$('#f-stage')?.value??UI.draft.stage;UI.draft.fandom=$('#f-fandom')?.value??UI.draft.fandom};
+
+/* ---- vocal health ---- */
+function voiceAdd(v){S.voice=clamp((S.voice||0)+v,0,100)}
+{const _g=A.gig;A.gig=function(d){const e=S.energy;const r=_g(d);if(S.energy<e)voiceAdd(d.v==='openmic'?3:7);return r}}
+{const _b=A.busk;A.busk=function(d){const e=S.energy;const r=_b(d);if(S.energy<e)voiceAdd(4);return r}}
+{const _rt2=runTour;runTour=function(T){const t0=S.stats.tours;const r=_rt2(T);if(S.stats.tours>t0&&T&&T.id!=='busk')voiceAdd(T.weeks*6);return r}}
+{const _sq=songQuality;songQuality=function(b=0){const G=S.gear||{};let q=_sq(b+(G.mic||0)*1.5+(G.inst||0)*1.5);if((S.voice||0)>70)q-=4;return clamp(q,1,100)}}
+{const _rs2=recordSong;recordSong=function(s,st){_rs2(s,st);const m=(S.gear&&S.gear.monitors)||0;if(m)s.q=clamp(s.q+m*2,1,100);voiceAdd(2)}}
+{const _ss=showScore;showScore=function(){let sc=_ss()+((S.gear&&S.gear.inears)||0)*2;if((S.voice||0)>70)sc-=8;return clamp(sc,1,100)}}
+Object.assign(DRAMA,{vstrain:{t:'Vocal strain',b:()=>`Your voice is cracking and your throat hurts. A doctor says you are close to real damage.`,opts:[
+  {l:'Vocal rest for 2 weeks',cls:'pink',f:()=>{S.voice=10;S.vrest=S.t+2;bump('loyalty',1);return 'You canceled a few things and rested your voice. Fans sent tea and honey.'}},
+  {l:'Push through',f:()=>{if(Math.random()<.5){S.skills.vocals=Math.max(0,S.skills.vocals-4);imgAdj(-4);S.fans-=S.fans*.01;log('Your voice cracked on stage and the clip went around.','bad');return 'Your voice cracked mid-show. Vocals -4 and the clip went viral for the wrong reasons.'}voiceAdd(-10);return 'You got through it, barely. Please rest soon.'}}]}});
+function voiceWeek(){if(S.voice>=90&&!(S.vrest&&S.t<S.vrest)){choice('vstrain');return}let rec=15;if(S.vrest&&S.t<S.vrest){rec=40;S.energy=Math.round(S.energy*.6)}if((S.plan||[]).some(p=>p&&p.a==='rest'))rec+=10;voiceAdd(-rec)}
+A.voiceCare=d=>{if(d.v==='tea'){if(!spend(5))return;voiceAdd(-10);toast('Tea, honey and silence. Voice strain -10.')}else{const c=400+S.level*500;if(S.money<c){toast(`You need ${cash(c)}.`);return}S.money-=c;voiceAdd(-30);S.skills.vocals=Math.min(100,S.skills.vocals+.5);toast('Your vocal coach fixed your technique. Strain -30.')}};
+
+/* ---- gear ---- */
+const GEAR=[['mic','🎙','Microphone',['Basic mic','Condenser mic','Studio vintage mic'],'+1.5 song quality per tier'],['inst','🎹','Instrument',['Starter instrument','Pro instrument','Custom handmade'],'+1.5 song quality per tier'],['monitors','🔊','Studio monitors',['Desktop speakers','Pro monitors','Reference monitors'],'+2 quality when recording per tier'],['inears','🎧','In-ear monitors',['Generic in-ears','Custom molds','Tour-grade wireless'],'+2 show score per tier']];
+const GEARP=[800,7500,60000];
+function gearCard(){const G=S.gear;return `<div class="section"><h2>Gear</h2><p class="muted">Better gear makes better songs and better shows. Each piece has 3 tiers.</p><div class="grid">${GEAR.map(([k,ic,n,tiers,eff])=>{const t=G[k]||0;return `<div class="card"><div class="between"><h3>${ic} ${n}</h3><span class="pill ${t?'gold':''}">${t?tiers[t-1]:'None'}</span></div><small class="muted">${eff}</small>${meter(t,3,'good')}${t<3?`<button class="btn sm" data-a="gearBuy" data-v="${k}">Upgrade to ${tiers[t]} · ${cash(GEARP[t])}</button>`:'<small class="good">Top of the line</small>'}</div>`}).join('')}</div></div>`}
+A.gearBuy=d=>{const t=S.gear[d.v]||0;if(t>=3)return;const c=GEARP[t];if(S.money<c){toast(`You need ${cash(c)}.`);return}S.money-=c;S.gear[d.v]=t+1;toast(`New gear: ${GEAR.find(g=>g[0]===d.v)[3][t]}.`)};
+
+/* ---- radio ---- */
+const RADIO=[{id:'local',n:'Local stations',c:2000,sp:400,lv:0},{id:'national',n:'National radio',c:25000,sp:3500,lv:3},{id:'global',n:'Global push',c:250000,sp:20000,lv:5}];
+function radioCard(){const rel=S.songs.filter(s=>s.status==='released'&&S.t-s.rel<=16);const act=S.radio.filter(r=>r.left>0);
+  return `<div class="section"><h2>Radio</h2><p class="muted">Pay promoters to get a recent single (out 16 weeks or less) on the radio for 6 weeks. Airplay brings streams and new fans, and you can climb the Airplay chart in Charts.</p>
+  ${act.length?`<div class="card"><h3>On air now</h3>${act.map(r=>{const s=S.songs.find(x=>x.id===r.id);return s?`<div class="between"><span><b>${esc(s.title)}</b><br><small class="muted">${esc(RADIO.find(x=>x.id===r.tier).n)} · ${r.left} wk left</small></span><span class="num">${fmt(r.spins)} spins/wk</span></div>`:''}).join('')}</div>`:''}
+  ${rel.length?`<div class="card"><label class="field"><span class="label">Song</span><select id="radio-song">${rel.map(s=>`<option value="${s.id}">${esc(s.title)} (Q${s.q})</option>`).join('')}</select></label><div class="row">${RADIO.map(t=>`<button class="btn sm ${t.id==='local'?'ghost':''}" data-a="radioGo" data-v="${t.id}" ${S.level<t.lv?'disabled':''}>${S.level<t.lv?lockTxt(t.lv):`${t.n} · ${cash(t.c)}`}</button>`).join('')}</div></div>`:'<div class="empty">Release a single to pitch it to radio.</div>'}</div>`}
+A.radioGo=d=>{const T=RADIO.find(x=>x.id===d.v),sel=$('#radio-song');const s=sel&&S.songs.find(x=>x.id==sel.value);if(!s||S.level<T.lv)return;if(S.radio.some(r=>r.id===s.id&&r.left>0)){toast('That song is already on the radio.');return}if(S.money<T.c){toast(`You need ${cash(T.c)}.`);return}S.money-=T.c;S.radio.push({id:s.id,tier:T.id,left:6,spins:0});toast(`"${s.title}" goes to ${T.n.toLowerCase()} next week.`)};
+function radioSpins(r,s){const T=RADIO.find(x=>x.id===r.tier);return Math.round(T.sp*Math.pow(s.q/70,2)*(1+S.hype/120)*(1-((6-r.left)*.08))*rnd(.85,1.15))}
+{const _pls=plStreams;plStreams=function(s){let n=_pls(s);const r=S.radio&&S.radio.find(x=>x.id===s.id&&x.left>0);if(r){r.spins=radioSpins(r,s);n+=r.spins*40}return n}}
+function radioWeek(r){let g=0;S.radio.forEach(x=>{if(x.left>0){g+=x.spins*.6;x.left--}});S.radio=S.radio.filter(x=>x.left>0||S.t-(x.at||S.t)<2);if(g>=1){const a=addFans(g);if(a>=50)r.ev.push(`Radio airplay: +${fmt(a)} fans`)}}
+function airplayChart(){const mine=S.radio.filter(x=>x.spins).map(x=>{const s=S.songs.find(y=>y.id===x.id);return s?{t:s.title,a:S.stage,v:x.spins,me:1}:null}).filter(Boolean);
+  const npc=S.npcs.slice(0,18).map(n=>({t:n.single,a:n.name,v:Math.round(n.power*.0009*(1+(phash(n.name+S.t)%40)/100))}));return [...mine,...npc].sort((a,b)=>b.v-a.v).slice(0,15)}
+
+/* ---- world artist ranking ---- */
+function artistRanking(){const me={n:S.stage,v:Math.round(S.fans+(S.report?S.report.wk||0:0)*.4),me:1};const L=[me,...S.npcs.map(n=>({n:n.name,v:Math.round(n.power*.55+(n.week||0)*.4)})),...S.rivals.map(r=>({n:r.name,v:Math.round(r.fans+(r.week||0)*.4)}))].sort((a,b)=>b.v-a.v);return {L,pos:L.findIndex(x=>x.me)+1}}
+function rankWeek(r){const {pos}=artistRanking();const prev=S.rank;S.rank=pos;if(S.rankBest==null||pos<S.rankBest){S.rankBest=pos;if(prev&&pos<prev&&pos<=10){log(`You are now the #${pos} artist in the world!`,'big');r.ev.push(`World artist ranking: #${pos}`);if(pos===1)confetti(160)}}
+  if(wkOfYear()===52)log(`You finished Year ${year()} as the #${pos} artist in the world.`,'good')}
+{const _cv=chartsView;chartsView=function(){const R=artistRanking(),ap=airplayChart();return _cv()+`<div class="section"><h2>World artist ranking</h2><div class="card"><div class="between"><span>Your position</span><b class="num">#${R.pos}${S.rankBest?` <small class="muted">(best #${S.rankBest})</small>`:''}</b></div><div class="list">${R.L.slice(0,10).map((x,i)=>`<div class="between ${x.me?'goldc':''}"><span><b>${i+1}.</b> ${esc(x.n)}</span><small class="num">${fmt(x.v)}</small></div>`).join('')}${R.pos>10?`<div class="between goldc"><span><b>${R.pos}.</b> ${esc(S.stage)}</span><small class="num">${fmt(R.L[R.pos-1].v)}</small></div>`:''}</div></div></div>
+  <div class="section"><h2>Airplay chart</h2><div class="card"><div class="list">${ap.map((e,i)=>`<div class="between ${e.me?'goldc':''}"><span><b>${i+1}.</b> ${esc(e.t)} <small class="muted">${esc(e.a)}</small></span><small class="num">${fmt(e.v)} spins</small></div>`).join('')}</div></div></div>`}}
+{const _adv2=advice;advice=function(){const L=_adv2();if((S.voice||0)>=75)L.unshift({ic:'🗣',t:'Your voice needs rest',d:`Vocal strain ${Math.round(S.voice)}%. Shows and songs suffer above 70%.`,a:'goSub',v:'personal|Vocal health'});return L.slice(0,4)}}
+function voiceCard(){const v=Math.round(S.voice||0);return `<div class="section"><div class="between"><h2>Vocal health</h2><span class="${v>=70?'bad':v>=40?'goldc':'good'}">Strain ${v}%</span></div><div class="card">${meter(v,100,v>=70?'pink':'good')}<small class="muted">Gigs, busking, tours and recording strain your voice. It recovers a bit every week, faster with days off. Above 70% your shows and songs get worse, and at 90% you risk real damage.${S.vrest&&S.t<S.vrest?' <b>On vocal rest.</b>':''}</small><div class="row"><button class="btn sm ghost" data-a="voiceCare" data-v="tea">Tea & silence · 5E</button><button class="btn sm" data-a="voiceCare" data-v="coach">Vocal coach · ${cash(400+S.level*500)}</button></div></div></div>`}
+
+/* ---- hooks ---- */
+{const _xw=extraWeek;extraWeek=function(r){_xw(r);try{voiceWeek();radioWeek(r);rankWeek(r)}catch(e){console.error(e)}}}
+{const _se3=studioExtras;studioExtras=function(){return _se3()+gearCard()}}
+{const _be3=bizExtras;bizExtras=function(){return radioCard()+_be3()}}
+{const _pe3=personalExtras;personalExtras=function(){return voiceCard()+_pe3()}}
+SUB_ICONS.unshift([/^gear/i,'🎛'],[/^radio/i,'📻'],[/vocal health/i,'🗣'],[/artist ranking/i,'🌍'],[/airplay/i,'📻']);
+
 function render(){
   const app=$('#app');
   if(!S){app.innerHTML=setupView()+modalHTML()+setupTipHTML();return}
