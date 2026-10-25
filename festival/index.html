@@ -311,8 +311,8 @@ const B={
     d:'Club tent for DJs. Low-end carries further than anything else on site.'},
   small:{n:'Bandstand',cat:'stage',w:2,h:1,cost:11000,spl:91,cone:3,max:2,col:'#e2b04a',stage:true,ht:1.4,
     d:'Small open stage for new acts and acoustic sets.'},
-  camp:{n:'Campsite',cat:'camp',w:4,h:4,cost:7200,campers:900,col:'#7fa35a',ht:.3,
-    d:'Marked pitches for 900 campers with stewards and fire points. Keep 20 m between campsites for fire breaks.'},
+  camp:{n:'Campsite',cat:'camp',w:4,h:4,cost:7200,campers:1100,col:'#7fa35a',ht:.3,
+    d:'Marked pitches for 1,100 campers with stewards and fire points. Keep 20 m between campsites for fire breaks.'},
   glamp:{n:'Boutique camping',cat:'camp',w:3,h:2,cost:36000,glamp:60,col:'#f0e6d2',ht:.6,
     d:'60 pre-pitched bell tents, sold as a £420 add-on.'},
   vans:{n:'Campervan field',cat:'camp',w:3,h:3,cost:9000,vans:140,col:'#9cb2b8',ht:.5,
@@ -362,16 +362,16 @@ const SITES={
   farm:{n:'Hollow Farm',area:'Wexley Vale',kind:'Working farm',rent:45000,cap:9000,curfew:[23,23,22.5],noise:65,camping:true,scenic:2,demand:1,
     council:'Wexley District Council',
     d:'Cheap and quiet, with a village to the east and a wet meadow in the south-west. The classic first festival.',
-    rec:[{n:'Wexley village',x:40,y:12,homes:420},{n:'Hollow Lane cottages',x:6,y:-7,homes:14},{n:'Mill End',x:14,y:44,homes:60}],
+    rec:[{n:'Wexley village',x:46,y:12,homes:420},{n:'Hollow Lane cottages',x:6,y:-14,homes:14},{n:'Mill End',x:14,y:52,homes:60}],
     gen(g){for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(x<1&&y>4)g[y][x]='water';else if(x<9&&y>21)g[y][x]='low';else if(x>19&&y<6)g[y][x]='tree';else if(y>=3&&y<=9&&x>=7&&x<=16)g[y][x]='slope'}
       g[14][20]=g[15][21]=g[14][21]='tree';g[27][17]=g[26][17]='tree'}},
-  estate:{n:'Ashcombe Park',area:'Ashcombe',kind:'Country estate',rent:140000,cap:15000,curfew:[23,23,22.5],noise:65,camping:true,scenic:7,demand:1.12,
+  estate:{n:'Ashcombe Park',area:'Ashcombe',kind:'Country estate',rent:140000,cap:12000,costMul:1.1,curfew:[23,23,22.5],noise:65,camping:true,scenic:7,demand:1.12,
     council:'Ashcombe & Fenn Council',
     d:'Rolling parkland with a lake and protected oaks. Pricier, prettier, with the hall and its owners right next door.',
     rec:[{n:'Ashcombe Hall',x:28,y:-4,homes:3},{n:'Ashcombe village',x:10,y:-14,homes:520},{n:'Fenn Cross',x:-14,y:26,homes:180}],
     gen(g){const r=mulberry(77);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const dx=x-5,dy=y-14;if(dx*dx/9+dy*dy/22<1)g[y][x]='water';else if(r()<.035&&!(x>8&&x<20&&y>8&&y<26))g[y][x]='tree';else if(y>=16&&y<=24&&x>=11&&x<=20)g[y][x]='slope'}
       for(let x=0;x<W;x++)if(r()<.5)g[0][x]='tree'}},
-  city:{n:'Millbrook Park',area:'Millbrook',kind:'City park',rent:210000,cap:20000,curfew:[22.5,22.5,22.5],noise:75,camping:false,scenic:3,demand:1.35,
+  city:{n:'Millbrook Park',area:'Millbrook',kind:'City park',rent:480000,cap:20000,costMul:1.6,curfew:[22.5,22.5,22.5],noise:75,camping:false,scenic:3,demand:1.12,
     council:'Millbrook City Council',
     d:'A big urban park. No camping, so it runs as day tickets, with homes on every side and a strict 22:30 curfew. Huge local demand.',
     rec:[{n:'Park Road flats',x:12,y:-5,homes:900},{n:'Canal Street',x:30,y:16,homes:640},{n:'Millbrook Rise',x:-6,y:20,homes:480},{n:'Station Quarter',x:12,y:37,homes:700}],
@@ -467,12 +467,12 @@ function defaultTix(cap,camping){return {
   named:false,resale:false,mkt:60000,pint:6.5,pricesLocked:false}}
 function defaultOps(){return {sec:0,stew:0,med:'standard',prod:'standard',barStaff:1,clean:1,ins:{pl:true,cancel:false,nonapp:false},contingency:50000,community:0,green:0,shuttle:false}}
 function starterSite(s){ // a sensible but imperfect starting layout so new players see a working site
-  const put=(t,x,y,r=0)=>{if(canPlace(s,t,x,y,r))return;const p={id:uid(),t,x,y,r};if(t==='art')p.k=0;s.pl.push(p)};
+  const put=(t,x,y,r=0)=>{if(canPlace(s,t,x,y,r))return false;const p={id:uid(),t,x,y,r};if(t==='art')p.k=0;s.pl.push(p);return true};
   if(s.site==='farm'){put('main',10,2,0);put('entrance',11,31,0);put('entrance',4,31,0);put('control',15,13,0);put('medical',17,10,0);
     put('camp',11,19,0);put('camp',16,19,0);put('camp',11,24,0);put('camp',16,24,0);put('camp',19,6,0);
     put('loos',15,18);put('loos',15,23);put('loos',20,16);put('water',15,22);put('water',8,9);put('bar',6,11,0);put('food',8,14,0);put('loos',5,13);}
-  if(s.site==='estate'){put('main',12,26,2);put('entrance',13,31,0);put('entrance',20,31,0);put('control',20,15,0);put('medical',20,12,0);
-    put('camp',9,2,0);put('camp',14,2,0);put('camp',19,2,0);put('camp',9,7,0);put('camp',14,7,0);put('camp',19,7,0);put('camp',1,25,0);put('camp',1,2,0);put('camp',2,20,0);
+  if(s.site==='estate'){put('main',12,26,2);let ne=0;for(const x of [13,20,16,9,4])if(ne<2&&put('entrance',x,31,0))ne++;put('control',20,15,0);put('medical',20,12,0);
+    put('camp',9,2,0);put('camp',14,2,0);put('camp',19,2,0);put('camp',9,7,0);put('camp',14,7,0);put('camp',19,7,0);put('camp',1,25,0);put('camp',1,2,0);put('camp',2,20,0);put('camp',20,24,0);put('camp',6,27,0);put('camp',20,19,0);
     put('loos',13,5);put('loos',18,10);put('loos',8,12);put('water',13,6);put('water',14,17);put('bar',16,17,0);put('food',11,17,0);put('loos',19,18);put('loos',10,19)}
   if(s.site==='city'){put('main',8,2,0);put('entrance',11,31,0);put('entrance',20,31,0);put('entrance',1,31,0);put('control',20,24,0);put('medical',20,20,0);
     put('loos',4,14);put('loos',5,14);put('loos',18,14);put('loos',19,14);put('water',12,14);put('bar',3,17,0);put('bar',16,17,0);put('food',9,18,0);put('food',12,18,0)}
@@ -748,7 +748,7 @@ function pools(s,announced){
   const site=SITES[s.site],{m}=demandMods(s);const L=announced?lineupStrength(s):lineupStrength(s)*.25;
   const repBase=380*s.rep+3000;
   const pool=(repBase+.33*L)*m;const P=refPrice(s);
-  const days=[0,1,2].map(d=>((repBase*.35)+.3*(announced?lineupStrength(s,d):0))*m*(site.camping?.6:1.5));
+  const days=[0,1,2].map(d=>((repBase*.35)+.3*(announced?lineupStrength(s,d):0))*m*(site.camping?.6:.9));
   return {pool,P,days}}
 const willWk=(s,pl,p)=>pl.pool*Math.pow(pl.P/p,2.2);
 const willDay=(s,pl,d,p)=>pl.days[d]*Math.pow(pl.P*.47/p,2);
@@ -792,7 +792,7 @@ function opsAuto(s){if(!s.ops.sec)s.ops.sec=needSec(s);if(!s.ops.stew)s.ops.stew
 function attendancePlan(s){const sl=s.sales;if(sl&&sl.wkSold)return{wk:sl.wkSold+sl.vipSold,day:sl.daySold.slice(),peak:sl.wkSold+sl.vipSold+Math.max(...sl.daySold)};const c=s.lic.cap;const day=Math.round(s.tix.day.a*.8);const wk=Math.round(capWeekend(s)*.85);return{wk,day:[day,day,day],peak:wk+day}}
 function costLines(s,act0){
   const A=analyse(s),att=attendancePlan(s),N=att.peak,y=s.year,infl=Math.pow(1.03,y-1);
-  const L=[];const add=(g,k,v,n)=>L.push({g,k,v:Math.round(v),n});
+  const L=[];const cm=SITES[s.site].costMul||1;const add=(g,k,v,n)=>L.push({g,k,v:Math.round(['Site','Staff','Licensing'].includes(g)&&k!=='Land rent'?v*cm:v),n});
   const fees=signed(s).reduce((a,b)=>a+b.fee,0);
   add('Talent','Artist fees',fees,signed(s).length+' acts');
   if(!act0&&(s.phase==='booking'||s.phase==='onsale')){let est=0,n=0;for(const p of stagesOf(s))for(let d=0;d<3;d++)SLOTS[p.t].forEach((sd,i)=>{if(!slotAt(s,p.id,d,i)){est+=feeOf({fame:(sd[3][0]+sd[3][1])/2-4,genre:'indie',home:'UK'},s);n++}});if(n)add('Talent','Open slots (estimate)',est,n+' slots still to book')}
@@ -822,7 +822,7 @@ function costLines(s,act0){
   if(s.scout)add('Overheads','A&R scout',25000);
   add('Overheads','Office & year-round team',(65000+N*5+(s.year-1)*15000)*infl);
   if(s.ops.community)add('Overheads','Community fund',s.ops.community);
-  if(s.ops.contingency)add('Overheads','Contingency (unspent returns)',act0?Math.min(s.ops.contingency,act0.contUsed||0):s.ops.contingency);
+  if(s.ops.contingency&&!act0)add('Overheads','Contingency reserve',s.ops.contingency,'Only spent if something goes wrong');
   const interest=s.debt*s.loanRate+Math.max(0,-s.money)*.14;add('Finance','Interest',interest);
   if(act0){for(const [k,v] of Object.entries(act0.extra||{}))add('Weekend',k,v)}
   return L}
@@ -919,7 +919,7 @@ function runToBuild(s){while(s.phase==='onsale')saleWeek(s)}
 function startBuild(s){s.phase='build';opsAuto(s);
   s.forecast=makeForecast(s);
   addNews(s,'Build week. Trucks, trackway and 4 km of fencing arrive on site. The safety advisory group inspects on Thursday.','build');save()}
-const WX=[{k:'hot',n:'Heatwave',t:[29,34],rain:0,wind:[2,6],p:.17},{k:'sun',n:'Sunny',t:[22,27],rain:0,wind:[2,7],p:.3},{k:'mixed',n:'Sunny spells, showers',t:[18,23],rain:1.2,wind:[4,10],p:.26},{k:'wet',n:'Heavy rain',t:[14,18],rain:4.5,wind:[6,13],p:.17},{k:'storm',n:'Thunderstorms, gales',t:[17,22],rain:6,wind:[12,24],p:.1}];
+const WX=[{k:'hot',n:'Heatwave',t:[29,34],rain:0,wind:[2,6],p:.17},{k:'sun',n:'Sunny',t:[22,27],rain:0,wind:[2,7],p:.3},{k:'mixed',n:'Sunny spells, showers',t:[18,23],rain:1.2,wind:[4,10],p:.26},{k:'wet',n:'Heavy rain',t:[14,18],rain:4.5,wind:[6,13],p:.17},{k:'storm',n:'Thunderstorms, gales',t:[17,22],rain:6,wind:[7,13],p:.1}];
 function makeForecast(s){return [0,1,2].map(()=>{let r=Math.random(),w=WX[0];for(const x of WX){if(r<x.p){w=x;break}r-=x.p}const conf=ri(45,80);return{k:w.k,conf}})}
 function actualWeather(s){return s.forecast.map(f=>{if(chance(f.conf/100))return f.k;const i=WX.findIndex(w=>w.k===f.k);const j=clamp(i+(chance(.5)?1:-1),0,WX.length-1);return WX[j].k})}
 function sagChecks(s){
@@ -1136,6 +1136,7 @@ function liveStep(s){
   const target=58+A.vibe+PROD[s.ops.prod].vibe+wxm+L.perf*10-Math.max(0,bq-1)*10-Math.max(0,fq-1)*5-Math.max(0,loo-1)*9-L.mud*.14-Math.min(20,wait*6)-crowd*14-(A.campNearStage&&h<13?2:0)+(L.boost||0);
   L.mood=clamp(L.mood*.75+target*.25,0,100);L.moodSum+=L.mood;L.moodN++;L.moodAvg=L.moodSum/L.moodN;
   if(h===16&&d===1&&L.mood>75)L.moment=L.moment||'Saturday afternoon in the sun with '+fmtN(N)+' people';
+  for(const k in L.stopped){if(--L.stopped[k]<=0)delete L.stopped[k]}
   if(pend)ask(s,pend);else advance(s)}
 function windToward(from,r){const v={west:[1,0],'south-west':[.7,-.7],south:[0,-1],north:[0,1]}[from];const c=[r.x-W/2,r.y-H/2];return (v[0]*c[0]+v[1]*c[1])/Math.hypot(c[0],c[1])>.6}
 function overnight(s,A,d){const L=s.live;
@@ -1154,7 +1155,6 @@ function finishWeekend(s){const L=s.live;if(L.done)return;L.done=true;
   logL(s,'Monday: '+traffic,'sum');
   const tents=SITES[s.site].camping?Math.round(L.weekendIn*.93/2.3*(s.ops.green?.12:.24)):0;
   if(tents)logL(s,fmtN(tents)+' tents were left behind on the campsites.','warn');
-  L.inc['Contingency returned']=0;
   if(L.serious>=5&&!L.disaster){L.disaster=L.serious+' people critically ill over one weekend';s.flags.disasters=(s.flags.disasters||0)+1;s.flags.disaster=1}
   save()}
 
@@ -1175,7 +1175,7 @@ const DEC={
     {l:'Lower the screens and carry on',d:'Keeps the show going if the gusts ease.',log:'Screens lowered; the music carried on.',fn:s=>{if(wx.gust>=23&&chance(.45)){s.live.disaster='Part of the '+B.main.n.toLowerCase()+' roof came down in a gust';s.live.serious+=ri(2,6);s.flags.disasters=(s.flags.disasters||0)+1;s.flags.disaster=1;cashL(s,'Storm damage',ri(60,140)*1000);logL(s,'A gust tears a section of the stage roof loose. Several people are hurt.','bad')}}},
     {l:'Clear the tents only',d:'The open-air stages keep playing.',log:'Tents cleared; open-air stages continued.',fn:s=>{for(const p of s.pl)if(B[p.t].tentCap)s.live.stopped[p.id]=1;s.live.boost=(s.live.boost||0)-2}}]}},
   lightning(s){return{t:'Lightning within 10 km',x:'The Met Office has a yellow warning out. The safety officer wants an answer now.',opts:[
-    {l:'Evacuate the arenas',d:'Send everyone to campsites and cars. Safe, but the evening is lost.',log:'Arenas evacuated for the storm. The crowd sheltered for two hours.',k:'good',fn:s=>{for(const p of s.pl)if(B[p.t].stage)s.live.stopped[p.id]=1;s.live.boost=(s.live.boost||0)-7;s.safety=clamp(s.safety+3,0,100)}},
+    {l:'Evacuate the arenas',d:'Send everyone to campsites and cars. Safe, but the evening is lost.',log:'Arenas evacuated for the storm. The crowd sheltered for two hours.',k:'good',fn:s=>{for(const p of s.pl)if(B[p.t].stage)s.live.stopped[p.id]=2;s.live.boost=(s.live.boost||0)-7;s.safety=clamp(s.safety+3,0,100)}},
     {l:'Pause the music, shelter in place',d:'A compromise most festivals pick.',log:'Music paused for 45 minutes until the storm passed.',fn:s=>{s.live.boost=(s.live.boost||0)-4;if(chance(.08))s.live.serious++}},
     {l:'Carry on',d:'The crowd is having a great time.',log:'The music played on through the storm.',fn:s=>{if(chance(.22)){s.live.serious+=ri(1,4);s.live.disaster='Lightning strike near the crowd during a storm the organisers ignored';s.flags.disasters=(s.flags.disasters||0)+1;s.flags.disaster=1;logL(s,'Lightning strikes a lighting tower. People are hurt.','bad')}else s.live.boost=(s.live.boost||0)+2}}]}},
   heat(s,wx){return{t:wx.temp+'°C and climbing',x:'Medics are treating heat exhaustion at every stage. The water points have queues.',opts:[
@@ -1269,9 +1269,9 @@ function g3init(){
   G3.worldG=new T.Group();sc.add(G3.worldG);G3.structG=new T.Group();sc.add(G3.structG);G3.fxG=new T.Group();sc.add(G3.fxG);
   // crowd
   const cg=new T.BoxGeometry(.07,.16,.07);cg.translate(0,.08,0);
-  G3.crowd=new T.InstancedMesh(cg,new T.MeshLambertMaterial({color:0xffffff}),2600);G3.crowd.count=0;G3.crowd.instanceMatrix.setUsage(T.DynamicDrawUsage);sc.add(G3.crowd);
+  G3.crowd=new T.InstancedMesh(cg,new T.MeshLambertMaterial({color:0xffffff}),2600);G3.crowd.instanceMatrix.setUsage(T.DynamicDrawUsage);sc.add(G3.crowd);
   const pal=['#e84a5f','#f7d154','#3e8ed0','#ffffff','#111111','#f28c38','#7bd389','#ff8fc6','#9ad1d4','#c6f24e','#7a5c3e','#e6e6e6'];const col=new T.Color();
-  for(let i=0;i<2600;i++){col.set(pal[i%pal.length]);G3.crowd.setColorAt(i,col)}
+  for(let i=0;i<2600;i++){col.set(pal[i%pal.length]);G3.crowd.setColorAt(i,col)}G3.crowd.count=0;
   G3.dots=new Float32Array(2600*6);
   // rain
   const rg=new T.BufferGeometry();const rp=new Float32Array(1400*3);for(let i=0;i<1400;i++){rp[i*3]=(Math.random()-.5)*40;rp[i*3+1]=Math.random()*14;rp[i*3+2]=(Math.random()-.5)*40}
@@ -1388,7 +1388,8 @@ function buildMesh(p,wd,ghost){
   else box(w*.9,.3,h*.9,b.col,0,.15,0);
   // light beams for stages
   if(b.stage&&!ghost){const beamG=g3geo('beam',()=>new T.ConeGeometry(.35,5,10,1,true).translate(0,-2.5,0).rotateX(Math.PI));
-    const cols=['#c6f24e','#5ec4e8','#ff6fb1','#ffffff'];const n=p.t==='main'?4:2;for(let i=0;i<n;i++){const bm=new T.Mesh(beamG,g3mat(cols[(i+hash(p.id))%4],{basic:1,op:.16,add:1,ds:1}));bm.position.set((i-(n-1)/2)*(p.t==='main'?1:.6),p.t==='main'?1.7:.9,p.t==='main'?.6:.3);bm.visible=false;bm.userData.beam=1;g.add(bm);G3.beams.push(bm)}}
+    const cols=['#c6f24e','#5ec4e8','#ff6fb1','#ffffff'];const n=p.t==='main'?4:2;for(let i=0;i<n;i++){const bm=new T.Mesh(beamG,g3mat(cols[(i+hash(p.id))%4],{basic:1,op:.22,add:1,ds:1}));bm.position.set((i-(n-1)/2)*(p.t==='main'?1:.6),p.t==='main'?1.7:.9,p.t==='main'?.6:.3);bm.visible=false;bm.userData.beam=1;g.add(bm);G3.beams.push(bm)}
+    const pl=new T.PointLight(cols[hash(p.id)%4],0,p.t==='main'?9:5,1.5);pl.position.set(0,p.t==='main'?1.4:.8,p.t==='main'?1.6:1);pl.userData.nl=p.t==='main'?2.2:1.4;g.add(pl)}
   placeGroup(g,p);g.userData.pid=p.id;return g}
 function stripeTex(c){if(G3.stripe)return G3.stripe;const cv=document.createElement('canvas');cv.width=64;cv.height=8;const x=cv.getContext('2d');for(let i=0;i<8;i++){x.fillStyle=i%2?'#f4f1ea':c;x.fillRect(i*8,0,8,8)}const t=new G3.T.CanvasTexture(cv);t.wrapS=G3.T.RepeatWrapping;t.repeat.set(3,1);return G3.stripe=t}
 
@@ -1423,8 +1424,8 @@ function overlayPaint(kind,s,extra){
 /* ---------- day / night and weather ---------- */
 function setNight(v,force){if(!G3.ok)return;if(!force&&Math.abs(v-G3.night)<.01)return;G3.night=v;const T=G3.T;
   const day=new T.Color('#0b0f08'),dusk=new T.Color('#05070b');G3.scene.background.copy(day).lerp(dusk,v);G3.scene.fog.color.copy(G3.scene.background);
-  G3.hemi.intensity=lerp(.62,.2,v);G3.sun.intensity=lerp(.72,.12,v);G3.sun.color.set(v>.5?'#9fb3ff':'#fff3dc');
-  G3.structG.traverse(o=>{if(o.userData.beam)o.visible=v>.4;if(o.userData.glow&&o.material&&o.material.emissive){if(!o.material.userData.own){o.material=o.material.clone();o.material.userData.own=1}o.material.emissive.set(v>.4?o.userData.glow:'#000000')}
+  G3.hemi.intensity=lerp(.62,.3,v);G3.sun.intensity=lerp(.72,.16,v);G3.sun.color.set(v>.5?'#9fb3ff':'#fff3dc');
+  G3.structG.traverse(o=>{if(o.userData.beam)o.visible=v>.4;if(o.userData.nl)o.intensity=v>.4?o.userData.nl:0;if(o.userData.glow&&o.material&&o.material.emissive){if(!o.material.userData.own){o.material=o.material.clone();o.material.userData.own=1}o.material.emissive.set(v>.4?o.userData.glow:'#000000')}
     if(o.userData.screen&&o.material&&o.material.emissive){if(!o.material.userData.own){o.material=o.material.clone();o.material.userData.own=1}o.material.emissive.set(v>.3?'#5a6f2a':'#000000')}});G3.idle=0}
 function setRain(mmh){if(!G3.ok)return;G3.rain.visible=mmh>.4&&!G3.reduced;G3.rain.material.opacity=clamp(.25+mmh/8,.25,.75)}
 function setMud(s,level){if(!G3.ok)return;if(Math.abs(level-G3.mudShown)<6)return;G3.mudShown=level;const A=analyse(s);const m=new Float32Array(W*H);
@@ -1797,7 +1798,7 @@ function slotSheet(){const o=UI.slotSel;const b=slotAt(S,o.p.id,o.day,o.slot);if
 function oddsTxt(r){return r<.68?'They will refuse, and take it as an insult.':r<.88?'Expect a counter-offer.':r<.97?'Could go either way.':r<1.08?'Better than even.':'Very likely yes.'}
 function autofillPlan(){const out=[];const used=new Set(S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).map(b=>b.actId));
   for(const p of stagesOf(S))for(let d=0;d<3;d++)SLOTS[p.t].forEach((sd,i)=>{if(i===0&&(p.t==='main'||p.t==='tent'))return;if(slotAt(S,p.id,d,i))return;
-    const c=S.acts.filter(a=>!used.has(a.id)&&!unavailable(S,a)&&fitsSlot(a,p,i)&&a.fame<=sd[3][1]).sort((a,b)=>appeal(b)/feeOf(b,S)-appeal(a)/feeOf(a,S))[0];if(c){used.add(c.id);out.push({a:c,p,d,i,fee:askFor(S,c,{stage:p.id,slot:i}).fee})}});
+    const c=S.acts.filter(a=>!used.has(a.id)&&!unavailable(S,a)&&fitsSlot(a,p,i)&&a.fame<=(sd[3][0]+sd[3][1])/2).sort((a,b)=>appeal(b)/feeOf(b,S)-appeal(a)/feeOf(a,S))[0];if(c){used.add(c.id);out.push({a:c,p,d,i,fee:askFor(S,c,{stage:p.id,slot:i}).fee})}});
   return out}
 function autofillSheet(){const L=autofillPlan();UI.auto=L;const tot=L.reduce((a,x)=>a+x.fee,0);
   return '<h2>Plan the undercard</h2><p class="sub">'+L.length+' offers at asking price, '+fmt$(tot)+' in total ('+fmt$(tot/2)+' in deposits if all sign).</p><ul class="list">'+L.slice(0,40).map(x=>'<li>'+avatar(x.a)+'<div class="grow"><b>'+esc(x.a.name)+'</b><div class="meta">'+DAYS[x.d]+' · '+esc(stageName(S,x.p))+' · '+GENRES[x.a.genre].n+' · '+x.a.fame+'</div></div><span class="num">'+fmt$(x.fee)+'</span></li>').join('')+'</ul><button class="btn wide" style="margin-top:12px" data-a="autogo" '+(L.length?'':'disabled')+'>Send '+L.length+' offers</button>'}
@@ -1805,9 +1806,9 @@ function autofillSheet(){const L=autofillPlan();UI.auto=L;const tot=L.reduce((a,
 /* ---------- live ---------- */
 function renderLive(app){const L=S.live;const A=analyse(S);const st=STEPS[Math.min(L.i,STEPS.length-1)];const wx=L.cur||weatherAt(S,st.d,Math.min(st.h,23));
   const play=L.done?[]:playingAt(S,st.d,Math.min(st.h,23)).filter(x=>!L.stopped[x.p.id]);
-  const wxTxt=wx.temp+'°C · '+(wx.rain>3?'heavy rain':wx.rain>0?'showers':wx.k==='hot'?'blazing sun':wx.k==='sun'?'sunny':'cloudy')+' · gusts '+wx.gust+' m/s';
+  const wxTxt=wx.temp+'°C · '+(wx.rain>3?'heavy rain':wx.rain>0?'showers':st.h>=21?(wx.k==='hot'||wx.k==='sun'?'clear night':'cloudy night'):wx.k==='hot'?'blazing sun':wx.k==='sun'?'sunny':'cloudy')+' · gusts '+wx.gust+' m/s';
   const top='<header class="topbar">'+MARK+'<div class="tb-name"><b>'+esc(S.name)+' '+(START_YEAR+S.year-1)+'</b><span>Festival weekend · '+DAYL[st.d]+'</span></div><div class="tb-cash"><b class="num '+(S.money<0?'neg':'')+'">'+fmt$(S.money)+'</b><span>Cash</span></div></header>';
-  const hud='<div class="live-hud"><div class="clock"><div class="t">'+(L.done?'Mon':st.h>=24?'02:00':hhmm(st.h))+'</div><div class="d"><b>'+(L.done?'The weekend is over':play.length?play.map(x=>esc(x.a.name)).slice(0,2).join(' · '):st.h>=24?'Campsites asleep, mostly':'Between sets')+'</b>'+esc(wxTxt)+'</div></div>'+
+  const hud='<div class="live-hud"><div class="clock"><div class="t">'+(L.done?'Mon':st.h>=24?'02:00':hhmm(st.h))+'</div><div class="d"><b>'+(L.done?'The weekend is over':play.length?play.map(x=>esc(x.a.name)).slice(0,2).join(' · '):st.h>=24?'Campsites asleep, mostly':'Between sets')+'</b>'+(L.done?'Campsites close at noon':esc(wxTxt))+'</div></div>'+
     '<div class="mini-kpis"><div><label>On site</label><b>'+fmtK(L.onsite+L.fenceIn)+'</b></div><div><label>Mood</label><b class="'+(L.mood<45?'neg':L.mood>70?'pos':'')+'">'+Math.round(L.mood)+'</b></div><div><label>Bars</label><b>'+fmt$(L.bar)+'</b></div><div><label>Medical</label><b class="'+(L.serious?'neg':'')+'">'+L.pres+(L.serious?' · '+L.serious:'')+'</b></div></div></div>';
   let panel='<div class="live-panel" id="livepanel">';
   if(L.done){panel+='<div class="decision"><h3>That’s a wrap</h3><p>'+fmtN(L.arrived+L.fenceIn)+' came through the gates. Mood averaged '+Math.round(L.moodAvg)+'. '+L.pres+' medical cases'+(L.serious?', '+L.serious+' to hospital':'')+'. '+fmt$(L.bar)+' over the bars.</p><button class="btn wide" data-a="wrap">Read the reviews</button></div>'}
@@ -1816,7 +1817,7 @@ function renderLive(app){const L=S.live;const A=analyse(S);const st=STEPS[Math.m
   panel+='<ul class="list feed" aria-live="polite">'+L.log.slice(0,30).map(x=>'<li><time>'+esc(x.t)+'</time><div class="grow '+(x.k==='bad'?'neg':x.k==='good'?'pos':x.k==='warn'?'warn':'')+'">'+esc(x.x)+'</div></li>').join('')+'</ul></div>';
   app.innerHTML=top+hud+panel;
   const stg=$('#stage3d');stg.hidden=false;const ph=$('#livepanel');stg.style.bottom=(ph?ph.offsetHeight:300)+'px';
-  g3mount(stg,{mode:'live'}).then(()=>{if(!G3.world||G3.world.pl!==S.pl)g3setWorld({grid:S.grid,pl:S.pl,site:S.site});g3select(null);g3ghost(null);overlayPaint('none',S);
+  g3mount(stg,{mode:'live',cam:G3.lastMode!=='live'?{tx:0,tz:-5,d:48,az:0,el:.95}:null}).then(()=>{if(!G3.world||G3.world.pl!==S.pl)g3setWorld({grid:S.grid,pl:S.pl,site:S.site});g3select(null);g3ghost(null);overlayPaint('none',S);
     const h=st.h>=24?26:st.h;setNight(h>=21?1:h>=20?.6:h>=19?.3:0);setRain(wx.rain);setMud(S,L.mud);if(L.dist)g3crowd(S,L.dist);
     const lab=G3.labels;for(const l of lab)l.el.textContent=l.rec.n;}).catch(()=>{});
   renderSheet();liveTimer()}
@@ -1873,7 +1874,11 @@ const ACT={
   week(){const r=saleWeek(S);toast(S.phase==='build'?'On-sale over. Build week begins.':'Week '+S.week+': '+fmtN(r.soldW+r.vipN)+' weekend, '+fmtN(r.dayN)+' day tickets.');render()},
   open(){if(!canOpen(S)){toast('The safety advisory group hasn’t signed off.');return}openGates(S);UI.tab='plan';render()},
   wrap(){wrapYear(S);UI.tab='plan';$('#stage3d').hidden=true;G3.crowdN=0;if(G3.ok)G3.crowd.count=0;render();window.scrollTo(0,0)},
-  nextyear(){if(S.wrap&&S.money<-S.odLimit&&creditLimit(S)>0){toast('Borrow on the Money tab first, or you go into administration.')}nextYear(S);UI.tab='plan';render();window.scrollTo(0,0)},
+  nextyear(){if(S.money<-S.odLimit){const need=Math.ceil((-S.odLimit-S.money)/50000)*50000;const lim=creditLimit(S);
+      UI.sheet='<h2>The bank wants a word</h2><p class="sub">You are '+fmt$(need)+' past your overdraft. '+(lim>=need?'The bank will lend you '+fmt$(need)+' at '+(loanRateFor(S)*100+2).toFixed(1)+'% to keep going.':'The bank won’t lend you any more.')+'</p><div class="stack">'+(lim>=need?'<button class="btn wide" data-a="rescue" data-v="'+need+'">Borrow '+fmt$(need)+' and carry on</button>':'')+'<button class="btn '+(lim>=need?'ghost':'danger')+' wide" data-a="bust">Call in the administrators</button><button class="btn quiet wide" data-a="closesheet">Not yet</button></div>';renderSheet();return}
+    nextYear(S);UI.tab='plan';render();window.scrollTo(0,0)},
+  rescue(v){const n=+v;S.loanRate=(S.loanRate*S.debt+(loanRateFor(S)+.02)*n)/(S.debt+n);takeLoan(S,n);UI.sheet=null;nextYear(S);UI.tab='plan';render();window.scrollTo(0,0)},
+  bust(){UI.sheet=null;S.over={k:'bust',t:'Administration'};save();render()},
   sell(){S.money+=S.wrap.buyout;S.over={k:'sold',t:'Sold to '+S.rival.owner};save();render()},
   nosell(){S.wrap.buyout=null;S.cred=clamp(S.cred+4,0,100);toast('You turned them down. The fans approve.');save();render()},
   retire(){UI.sheet=null;S.over={k:'retire',t:'Retired'};save();render()},
