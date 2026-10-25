@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,6 +16,8 @@
 body{margin:0;font-size:14px;font-family:system-ui,-apple-system,sans-serif}
 img{max-width:100%}
 [hidden]{display:none!important}
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+input,select,textarea{font-size:16px!important}
 </style>
 <title>Headliner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3894,7 +3896,7 @@ function diffCard(){return `<div class="card" style="margin-bottom:16px"><div cl
 
 
 /* ---- auto-update: reload when a newer version is published ---- */
-const APP_VER='202610251900';
+const APP_VER='202610252000';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ============ v13: endgame, more apps, cloud, jobs, vices, seasons, market, stans, photo, collabs, label, reel, PR ============ */
@@ -4959,5 +4961,10 @@ window.claude?.hot?.snapshot?.(()=>({S,UI}));
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
 </script>
 
+<script>
+/* Block pinch zoom (iOS ignores user-scalable=no); double-tap zoom is off via touch-action */
+['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,ev=>ev.preventDefault(),{passive:false}));
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+</script>
 </body>
 </html>
