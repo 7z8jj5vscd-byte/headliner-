@@ -26,6 +26,14 @@ Start a band in 1965 and play one year per turn all the way to the present. Mana
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/decades/
 
+## Festival Tycoon
+
+Found and run your own music festival, one festival year per turn. Lease a site (a cheap farm, a pretty country estate or a city park with no camping), then work through booking season, ticket on-sale, build week, the weekend itself and the wrap-up. All acts, festivals, agencies and companies are fictional.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/festival/
+
+Lay out the grounds in a 3D overhead view you can drag, pinch and turn: stages, campsites, bars, food courts, toilets, water, medical, event control, entrances, VIP, boutique camping and art. Overlays show noise at the neighbours' homes, sightlines, crowd pinch points, toilet and water coverage and wet ground, and a safety advisory group checks it all against Purple Guide ratios before you can open. Book acts through their agents with fees that rise steeply with fame, radius clauses, next-year options, routing discounts, counter-offers and cancellations, while a rival festival bids for the same names. Price early birds, tiers, day tickets and VIP, and watch touts and resale prices if you get it wrong. The weekend then plays hour by hour with gate queues, bar takings, medical cases, heat, mud, gales and lightning, curfew overruns and crowd surges to decide on, ending in five reviews, a council debrief and a full P&L. Grow it into a legendary brand, sell out to a giant promoter, or end up as a documentary.
+
 The other games install on iPhone the same way: open the link in Safari, tap Share, then Add to Home Screen.
 
 ## Updates go live automatically

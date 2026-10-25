@@ -33,6 +33,7 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+html{color-scheme:dark}
 html,body{margin:0;background:var(--ground);color:var(--text);-webkit-text-size-adjust:100%;height:100%}
 body{font-family:var(--font);font-size:14px;line-height:1.45;-webkit-tap-highlight-color:transparent;overflow-x:hidden;overscroll-behavior-y:none}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;touch-action:manipulation}
@@ -256,6 +257,8 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
   .kpis{grid-template-columns:repeat(4,1fr)}
   .kpi:nth-child(odd){border-right:0}.kpi{border-left:1px solid var(--rule)}.kpi:first-child{border-left:0}.kpi:nth-child(n+3){border-top:0}
 }
+@media (hover:hover) and (pointer:fine){.btn:hover{opacity:.88}.btn.ghost:hover,.chip:hover,.seg button:hover,.tab:hover,.pal:hover,.opt:hover,.slotrow:hover,.tile:hover,.iconbtn:hover{background:var(--raised)}.chip[aria-pressed=true]:hover{background:#e6e6e6}}
+.toast button{margin-left:10px;font-weight:600;text-decoration:underline;color:#000}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -486,7 +489,7 @@ function readSlot(n){try{const r=localStorage.getItem(slotKey(n));return r?JSON.
 function delSlot(n){try{localStorage.removeItem(slotKey(n))}catch(e){}}
 function migrate(s){s.ops=Object.assign(defaultOps(),s.ops||{});s.flags=s.flags||{};s.trophies=s.trophies||{};s.events=s.events||[];return s}
 let toastT=0;
-function toast(t){let el=$('.toast');if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}el.textContent=t;clearTimeout(toastT);toastT=setTimeout(()=>el.remove(),2600)}
+function toast(t,a){let el=$('.toast');if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.appendChild(el)}el.textContent=t;if(a){const b=document.createElement('button');b.textContent=a.l;b.dataset.a=a.a;el.appendChild(b)}clearTimeout(toastT);toastT=setTimeout(()=>el.remove(),a?5000:2600)}
 /* ============================================================
    Site analysis: footprints, placement rules, sightlines, noise
    at the receptors, walking distances, crowd flow and the SAG list
@@ -1300,7 +1303,7 @@ function g3frame(dt,t){
   for(const w of G3.wheels)w.rotation.z+=dt*(G3.reduced?0:.25);
   if(G3.night>.01){G3.beams.forEach((b,i)=>{b.rotation.z=Math.sin(t*.7+i)*.5;b.rotation.x=Math.cos(t*.5+i*1.7)*.3})}
   // crowd tween
-  if(G3.crowdN){const k=Math.min(1,dt*2.2);const m=G3.mtx||(G3.mtx=new G3.T.Matrix4());const D=G3.dots;for(let i=0;i<G3.crowdN;i++){const o=i*6;D[o]+=(D[o+3]-D[o])*k;D[o+2]+=(D[o+5]-D[o+2])*k;const bob=G3.night>.3&&D[o+4]>0?Math.abs(Math.sin(t*6+i))*.05:0;m.makeTranslation(D[o],bob,D[o+2]);G3.crowd.setMatrixAt(i,m)}G3.crowd.instanceMatrix.needsUpdate=true}
+  if(G3.crowdN){const k=Math.min(1,dt*2.2);const m=G3.mtx||(G3.mtx=new G3.T.Matrix4());const D=G3.dots;for(let i=0;i<G3.crowdN;i++){const o=i*6;D[o]+=(D[o+3]-D[o])*k;D[o+2]+=(D[o+5]-D[o+2])*k;const bob=G3.night>.3&&D[o+4]>0&&!G3.reduced?Math.abs(Math.sin(t*6+i))*.05:0;m.makeTranslation(D[o],bob,D[o+2]);G3.crowd.setMatrixAt(i,m)}G3.crowd.instanceMatrix.needsUpdate=true}
   if(G3.rain.visible){const p=G3.rain.geometry.attributes.position;for(let i=0;i<p.count;i++){let y=p.getY(i)-dt*18;if(y<0)y+=14;p.setY(i,y)}p.needsUpdate=true;G3.rain.position.set(G3.cam0.tx,0,G3.cam0.tz)}
   G3.r.render(G3.scene,G3.cam);
   // labels
@@ -1551,7 +1554,7 @@ function viewSetup(){const u=UI.setup;
   const sites=Object.entries(SITES).map(([k,v])=>'<button class="tile" data-a="ssite" data-v="'+k+'" aria-pressed="'+(u.site===k)+'"><canvas class="mapthumb" data-thumb="'+k+'" width="56" height="74" aria-hidden="true"></canvas><span style="min-width:0;flex:1"><b>'+v.n+'</b><small>'+v.kind+' · '+fmtN(v.cap)+' licence · rent '+fmt$(v.rent)+'</small><small style="margin-top:6px">'+v.d+'</small></span></button>').join('');
   const F=[['promoter','Club promoter','£900k cash, £500k loan. Agents already know you.'],['backed','Investor-backed','£1.6m cash, £1.2m of debt. A bigger start, a bigger hole.'],['diy','DIY collective','£600k cash, £250k loan. Fans trust you; volunteers steward for less.']];
   return '<div class="title-screen" style="padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))"><div class="title-row"><h1>New festival</h1><button class="btn ghost sm" data-a="cancelsetup">Cancel</button></div><p class="sub">Slot '+u.slot+'. You can’t change the site later.</p>'+
-    '<label class="field"><span>Festival name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="fname" maxlength="28" value="'+esc(u.name)+'" autocomplete="off" spellcheck="false"><button class="btn quiet" data-a="rname" aria-label="Random name">Shuffle</button></div></label>'+
+    '<label class="field"><span>Festival name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="fname" name="festival-name" maxlength="28" value="'+esc(u.name)+'" autocomplete="off" spellcheck="false"><button class="btn quiet" data-a="rname" aria-label="Random name">Shuffle</button></div></label>'+
     '<div class="sec">Site</div><div class="sitepick">'+sites+'</div>'+
     '<div class="sec">Background</div><div class="stack">'+F.map(f=>'<button class="tile" data-a="sfound" data-v="'+f[0]+'" aria-pressed="'+(u.founder===f[0])+'"><b>'+f[1]+'</b><small>'+f[2]+'</small></button>').join('')+'</div>'+
     '<button class="btn wide" style="margin-top:20px" data-a="start">Sign the lease</button></div>'}
@@ -1726,7 +1729,7 @@ function overlayLegend(){const k=UI.overlay;if(k==='none')return '';const L={noi
   return '<div class="legend3d" style="top:calc(var(--top) + 104px)"><div>'+L[0]+'</div><div class="ramp" style="background:linear-gradient(90deg,'+L[1]+','+L[2]+')"></div><div style="display:flex;justify-content:space-between"><span>'+L[3]+'</span><span>'+L[4]+'</span></div></div>'}
 function paletteHtml(){if(siteLocked())return '';const items=Object.entries(B).filter(([k,b])=>b.cat===UI.cat&&!(b.cat==='camp'&&!SITES[S.site].camping));
   return '<div class="palette"><div class="pal-cats" role="group" aria-label="Categories">'+CATS.filter(c=>c[0]!=='camp'||SITES[S.site].camping).map(([k,n])=>'<button class="chip" data-a="cat" data-v="'+k+'" aria-pressed="'+(UI.cat===k)+'">'+n+'</button>').join('')+'</div>'+
-    '<div class="pal-items">'+items.map(([k,b])=>{const n=S.pl.filter(p=>p.t===k).length;return '<button class="pal" data-a="pal" data-v="'+k+'"><span class="sw" style="background:'+b.col+'"></span><b>'+b.n+'</b><small class="num">'+fmt$(Math.round(b.cost*Math.pow(1.03,S.year-1)))+(n?' · '+n+' placed':'')+'</small></button>'}).join('')+'</div></div>'}
+    '<div class="pal-items">'+items.map(([k,b])=>{const n=S.pl.filter(p=>p.t===k).length;const full=b.max&&n>=b.max;return '<button class="pal" data-a="pal" data-v="'+k+'" '+(full?'disabled style="opacity:.45"':'')+'><span class="sw" style="background:'+b.col+'"></span><b>'+b.n+'</b><small class="num">'+fmt$(Math.round(b.cost*Math.pow(1.03,S.year-1)))+(full?' · limit reached':n?' · '+n+' placed':'')+'</small></button>'}).join('')+'</div></div>'}
 function placePanel(){const g=UI.place,b=B[g.t];const why=g.x==null?'Tap the map where it should go.':canPlace(S,g.t,g.x,g.y,g.r,g.move);
   return '<div class="inspect" role="dialog" aria-label="Place '+b.n+'"><h3>'+(g.move?'Move ':'')+b.n+'</h3><p class="small muted">'+esc(b.d)+'</p><p class="warnline '+(why&&g.x!=null?'neg':'muted')+'">'+esc(why||'Drag it, rotate it, then place it.')+'</p><div class="row"><button class="btn ghost" data-a="prot" aria-label="Rotate">'+ICON.rot+'Rotate</button><button class="btn ghost" data-a="pcancel">Cancel</button><button class="btn" data-a="pok" '+(why?'disabled':'')+'>'+(g.move?'Move here':'Place · '+fmt$(Math.round(b.cost*Math.pow(1.03,S.year-1))))+'</button></div></div>'}
 function inspectPanel(){const p=S.pl.find(q=>q.id===UI.sel),b=B[p.t];const A=analyse(S);let info='';
@@ -1739,7 +1742,7 @@ function inspectPanel(){const p=S.pl.find(q=>q.id===UI.sel),b=B[p.t];const A=ana
 function mountSite(){const st=$('#stage3d');
   g3mount(st,{mode:'site'}).then(()=>{if(!G3.world||G3.world.site!==S.site||G3.world.pl!==S.pl||G3.world.grid!==S.grid)g3setWorld({grid:S.grid,pl:S.pl,site:S.site});
     G3.onTap=siteTap;G3.onGhostMove=(x,y)=>{if(!UI.place)return;UI.place.x=x;UI.place.y=y;refreshGhost();softRender()};
-    setNight(0);setRain(0);g3crowd(S,null);refreshGhost();g3select(UI.sel);overlayPaint(UI.overlay,S,ghostCone())}).catch(e=>console.error(e))}
+    if(G3.labelBox)G3.labelBox.style.display='';setNight(0);setRain(0);g3crowd(S,null);refreshGhost();g3select(UI.sel);overlayPaint(UI.overlay,S,ghostCone())}).catch(e=>console.error(e))}
 function ghostCone(){const g=UI.place;if(!g||g.x==null||!B[g.t].cone)return null;return{cone:coneCells({t:g.t,x:g.x,y:g.y,r:g.r},B[g.t].cone)}}
 function refreshGhost(){const g=UI.place;if(!g||g.x==null){g3ghost(null);return}g.ok=!canPlace(S,g.t,g.x,g.y,g.r,g.move);g3ghost(g);overlayPaint(UI.overlay,S,ghostCone())}
 function siteTap(c){if(siteLocked())return;
@@ -1819,7 +1822,7 @@ function renderLive(app){const L=S.live;const A=analyse(S);const st=STEPS[Math.m
   const stg=$('#stage3d');stg.hidden=false;const ph=$('#livepanel');stg.style.bottom=(ph?ph.offsetHeight:300)+'px';
   g3mount(stg,{mode:'live',cam:G3.lastMode!=='live'?{tx:0,tz:-5,d:48,az:0,el:.95}:null}).then(()=>{if(!G3.world||G3.world.pl!==S.pl)g3setWorld({grid:S.grid,pl:S.pl,site:S.site});g3select(null);g3ghost(null);overlayPaint('none',S);
     const h=st.h>=24?26:st.h;setNight(h>=21?1:h>=20?.6:h>=19?.3:0);setRain(wx.rain);setMud(S,L.mud);if(L.dist)g3crowd(S,L.dist);
-    const lab=G3.labels;for(const l of lab)l.el.textContent=l.rec.n;}).catch(()=>{});
+    if(G3.labelBox)G3.labelBox.style.display='none';}).catch(()=>{});
   renderSheet();liveTimer()}
 let LT=0;
 function liveTimer(){clearTimeout(LT);const L=S&&S.live;if(!L||L.done||L.dec||!L.speed||S.phase!=='live')return;LT=setTimeout(()=>{if(!S||!S.live||S.live.dec||S.live.done)return;liveStep(S);render()},L.speed===3?420:1300)}
@@ -1840,7 +1843,7 @@ function renderSheet(){const L=$('#layer');if(!UI.sheet){L.innerHTML='';return}l
   const sh=L.querySelector('.sheet');if(sh&&UI.keepScroll)sh.scrollTop=prevScroll;UI.keepScroll=false}
 function guideSheet(){const G=[
   ['The year','Each turn is one festival year: booking season (8 rounds), ticket on-sale (12 weeks), build week, the weekend itself and the wrap-up. Cash moves as it would in real life: artist deposits when you sign, ticket money as it sells, production and staff in build week, the rest in September.'],
-  ['The site','Each grid square is 20 m. Stages need an open field in front of them: anything in that field blocks sightlines. Sound falls off about 6 dB each time the distance doubles, and much faster behind a stage, so point stages away from homes. The crowd-flow view shows where people squeeze through at the headliner changeover.'],
+  ['The site','Each grid square is 20 m. Stages need an open field in front of them: anything in that field blocks sightlines. Sound falls off about 6 dB each time the distance doubles, and much faster behind a stage, so point stages away from homes. The crowd-flow view shows where people squeeze through at the headliner changeover. Drag to move the map, pinch to zoom, twist to turn it. With a keyboard: arrow keys move the map or the piece you are placing, R rotates, Enter places.'],
   ['Ratios that matter','Toilets: about 1 per 75–100 people (Purple Guide). Water: free, about 1 point per 2,500. Security: 1 SIA guard per 100, usually a licence condition. Bars: one 10 m bar per 1,500–2,000 people. Campsites need 20 m fire breaks.'],
   ['Booking','Fees rise steeply with fame. Big acts want headline billing and ask more from small festivals. Exclusivity (a radius clause) stops your rival booking them; the rival’s clauses lock acts out of your bill. Overseas acts on a European run are cheaper than fly-ins. Book rising acts early and take an option on next year.'],
   ['Tickets','Prices include 20% VAT, so £1 in every £6 goes to HMRC. Underprice and you sell out fast, but touts take the margin. Named tickets and a face-value resale platform fight touts. Day tickets eat into weekend capacity.'],
@@ -1897,7 +1900,8 @@ const ACT={
     g3ghost(null);refreshGhost();afterSiteChange()},
   smove(){const p=S.pl.find(q=>q.id===UI.sel);UI.place={t:p.t,r:p.r,x:p.x,y:p.y,move:p.id,k:p.k};UI.sel=null;g3select(null);refreshGhost();softRender()},
   srot(){const p=S.pl.find(q=>q.id===UI.sel);const nr=(p.r+1)%4;if(canPlace(S,p.t,p.x,p.y,nr,p.id)){toast('No room to rotate it here. Move it first.');return}p.r=nr;g3select(p.id);afterSiteChange()},
-  sdel(){const p=S.pl.find(q=>q.id===UI.sel);if(B[p.t].stage&&S.bk.some(b=>b.stage===p.id&&['signed','pending','counter'].includes(b.st))){toast('Acts are booked on this stage. Move them first.');return}S.pl=S.pl.filter(q=>q.id!==p.id);UI.sel=null;g3select(null);G3.world.pl=S.pl;afterSiteChange()},
+  sdel(){const p=S.pl.find(q=>q.id===UI.sel);if(B[p.t].stage&&S.bk.some(b=>b.stage===p.id&&['signed','pending','counter'].includes(b.st))){toast('Acts are booked on this stage. Move them first.');return}S.pl=S.pl.filter(q=>q.id!==p.id);UI.undo=p;UI.sel=null;g3select(null);G3.world.pl=S.pl;afterSiteChange();toast(B[p.t].n+' removed.',{l:'Undo',a:'undo'})},
+  undo(){const p=UI.undo;if(!p||canPlace(S,p.t,p.x,p.y,p.r)){toast('Can’t put it back there now.');return}S.pl.push(p);UI.undo=null;G3.world.pl=S.pl;$('.toast')?.remove();afterSiteChange()},
   sdone(){UI.sel=null;g3select(null);softRender()},
   // line-up
   day(v){UI.lineDay=+v;render()},
@@ -1948,9 +1952,17 @@ document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset
   if(k==='mkt'){S.tix.mkt=+e.target.value;const sm=e.target.closest('.card').querySelector('h2 small');if(sm)sm.textContent=fmt$(S.tix.mkt);save()}
   if(k==='ofee'){UI.offer.fee=+e.target.value;const card=e.target.closest('.card');const ask=askFor(S,act(UI.offer.actId),UI.offer).fee;card.querySelector('b').textContent=fmt$(UI.offer.fee,true);const r=UI.offer.fee/ask;card.querySelector('.row .small').textContent=pct(r)+' of asking';card.querySelector('p.small').textContent=oddsTxt(r)}});
 document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.in==='mkt')render()});
-document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(UI.sheet){closeSheet()}else if(UI.place){ACT.pcancel()}else if(UI.sel){ACT.sdone()}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){if(UI.sheet){closeSheet()}else if(UI.place){ACT.pcancel()}else if(UI.sel){ACT.sdone()}return}
+  // keyboard alternative to the touch gestures on the site map
+  if(!S||UI.tab!=='site'||UI.sheet||S.phase==='live'||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
+  const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
+  if(d){e.preventDefault();if(UI.place){const g=UI.place,b=B[g.t];const sw=g.r%2?b.h:b.w,sh=g.r%2?b.w:b.h;g.x=clamp((g.x==null?W/2:g.x)+d[0],0,W-sw);g.y=clamp((g.y==null?H/2:g.y)+d[1],0,H-sh);refreshGhost();softRender()}else{panBy(-d[0]*40,-d[1]*40)}return}
+  if(e.key==='r'||e.key==='R'){if(UI.place)ACT.prot();else if(UI.sel)ACT.srot()}
+  if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
+  if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){}
-const APP_VER='202610242300';
+const APP_VER='202610250240';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,liveStep,G3,sagChecks,projection,STEPS};
