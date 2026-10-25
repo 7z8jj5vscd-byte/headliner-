@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Manager">
+<meta name="theme-color" content="#f2f4f7">
+<meta name="description" content="Run an artist-management company: five careers, one calendar, and a commission on everything.">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>Manager: 360 Deal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Achromatic ledger: the chrome is ink on a blue-grey ledger ground. The one hue (#1d5fbf) marks booked time and money in;
+   artists carry pale identity tints; red and green only where a figure changed. */
+:root{
+  --ground:#f2f4f7;--surface:#ffffff;--raised:#eceef2;--border:#e3e6eb;--rule:#eef0f3;--control:#d4d7dd;
+  --text:#0a0a0a;--soft:#3d3d3d;--muted:#666a72;--accent:#141414;--hue:#1d5fbf;--hue-pale:#e6eefa;
+  --positive:#2e7d32;--negative:#c4242a;--warning:#92400e;
+  --pill-pos-bg:#dcfae5;--pill-pos:#04250e;--pill-neg-bg:#ffedea;--pill-neg:#831c1e;--pill-warn-bg:#fff4dc;--pill-warn:#7a3a0b;--pill-neu-bg:#eceef2;--pill-neu:#3d3d3d;
+  --rc:8px;--rk:6px;--sans:'Geist',Inter,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--ground);color:var(--text);-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);font-size:15px;line-height:1.45;min-height:100vh;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+input,select{font:inherit;color:inherit}
+h1,h2,h3{margin:0;line-height:1.15;font-weight:500;text-wrap:balance}
+h1{font-size:24px;letter-spacing:-.015em}h2{font-size:17px}h3{font-size:15px;font-weight:500}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+.money{font-weight:700;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}.soft{color:var(--soft)}.small{font-size:13px}.xs{font-size:12px}
+.pos{color:var(--positive)}.neg{color:var(--negative)}.warn{color:var(--warning)}.hue{color:var(--hue)}
+:focus-visible{outline:2px solid var(--hue);outline-offset:2px}
+
+/* shell */
+.top{position:sticky;top:0;z-index:20;background:var(--ground);border-bottom:1px solid var(--border);padding:calc(env(safe-area-inset-top,0px) + 6px) max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px))}
+.top .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px;min-height:44px}
+.mark{width:30px;height:30px;flex:none;display:block}
+.top .when{display:flex;flex-direction:column;min-width:0;flex:1}
+.top .when b{font-size:15px;font-weight:500}
+.top .when span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app{max-width:760px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
+.app.bare{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--border);padding:0 max(8px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-left,0px))}
+.tabs .in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;color:var(--muted);font-size:11.5px;font-weight:500;position:relative;min-height:54px}
+.tab svg{width:20px;height:20px}
+.tab.on{color:var(--text)}
+.tab.on::before{content:"";position:absolute;top:-1px;left:28%;right:28%;height:2px;background:var(--text)}
+.tab .badge{position:absolute;top:5px;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--negative);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.ico{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* surfaces */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rc);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.sec h2{font-size:16px;font-weight:500}
+.sec .aside{font-size:12.5px;color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}.row.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.stack{display:flex;flex-direction:column;gap:4px;min-width:0}
+.list{display:flex;flex-direction:column}
+.list>*{border-top:1px solid var(--rule)}
+.list>*:first-child{border-top:0}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);background:var(--surface);border:1px solid var(--border);border-radius:var(--rc)}
+.kpis>div{padding:12px 14px;min-width:0;border-top:1px solid var(--border)}
+.kpis>div:nth-child(-n+2){border-top:0}
+.kpis>div:nth-child(2n){border-left:1px solid var(--border)}
+.kpis>div.lead{grid-column:1/-1;border-left:0}
+.kpis>div.lead+div{border-left:0;border-top:1px solid var(--border)}
+.kpis>div.lead+div+div{border-left:1px solid var(--border);border-top:1px solid var(--border)}
+.kpis span{display:block;font-size:12.5px;color:var(--muted)}
+.kpis b{display:block;font-size:22px;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpis .lead b{font-size:32px;font-weight:700;letter-spacing:-.02em}
+.kpis small{font-size:12px;color:var(--muted)}
+@media (min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}.kpis>div{border-top:0!important;border-left:1px solid var(--border)!important}.kpis>div:first-child{border-left:0!important}.kpis>div.lead{grid-column:auto}}
+
+/* controls */
+.btn{border:0;border-radius:var(--rk);min-height:40px;padding:0 16px;font-weight:500;font-size:14.5px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:transform .08s,background .15s}
+.btn.sec2{background:#e5e5e5;color:var(--text)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--control)}
+.btn.sm{min-height:34px;padding:0 12px;font-size:13.5px}
+.btn.block{width:100%;min-height:46px}
+.btn.danger{background:transparent;color:var(--negative);border:1px solid #f0c9c6}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:not(:disabled):active,.opt:not(:disabled):active,.task:not(:disabled):active{transform:scale(.98)}
+.btn:not(:disabled):hover{filter:brightness(1.08)}
+.opt{background:var(--surface);border:1px solid var(--border);border-radius:var(--rc);padding:11px 13px;text-align:left;display:flex;flex-direction:column;gap:3px;width:100%;min-height:48px;transition:border-color .15s}
+.opt:not(:disabled):hover{border-color:var(--control)}
+.opt b{font-weight:500;font-size:14.5px}
+.opt small{color:var(--muted);font-size:12.5px;line-height:1.35}
+.opt:disabled{opacity:.42;cursor:not-allowed}
+.opt.on{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+.opt .cost{font-size:12px;color:var(--soft);font-variant-numeric:tabular-nums}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opts.one{grid-template-columns:1fr}
+.seg{display:flex;gap:18px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{background:none;border:0;padding:10px 0 9px;color:var(--muted);font-size:14px;font-weight:500;position:relative;white-space:nowrap}
+.seg button.on{color:var(--text)}
+.seg button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--text)}
+.pill{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:999px;font-size:11.5px;font-weight:500;background:var(--pill-neu-bg);color:var(--pill-neu);white-space:nowrap}
+.pill.pos{background:var(--pill-pos-bg);color:var(--pill-pos)}.pill.neg{background:var(--pill-neg-bg);color:var(--pill-neg)}.pill.warn{background:var(--pill-warn-bg);color:var(--pill-warn)}
+.pill.hue{background:var(--hue-pale);color:var(--hue)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>span{font-size:13px;color:var(--muted)}
+.field>span b{color:var(--text);font-weight:500}
+input[type=text]{width:100%;background:var(--surface);border:1px solid var(--control);border-radius:var(--rk);padding:11px 12px;min-height:46px;font-size:16px}
+input[type=range]{width:100%;accent-color:var(--text);height:30px}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.4}
+.iconbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--control);background:var(--surface);display:grid;place-items:center;flex:none}
+
+/* people */
+.face{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:500;font-size:15px}
+.face.sm{width:26px;height:26px;font-size:11px}
+.face.lg{width:56px;height:56px;font-size:19px}
+.artist{display:flex;gap:12px;align-items:flex-start;width:100%;background:none;border:0;text-align:left;padding:13px 0}
+.artist .who{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.artist .nm{display:flex;gap:8px;align-items:baseline;justify-content:space-between}
+.artist .nm b{font-size:15.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.artist .meta{font-size:12.5px;color:var(--muted)}
+.bars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.bars div{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--muted)}
+.meter{height:5px;background:var(--raised);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--text);border-radius:3px}
+.meter.low i{background:var(--negative)}
+.meter.hue i{background:var(--hue)}
+
+/* the week: five careers as lanes */
+.week{display:grid;grid-template-columns:96px repeat(7,1fr);gap:0;font-size:12px}
+.week .hd{padding:0 0 6px;text-align:center;color:var(--muted);font-size:11.5px}
+.week .hd.today{color:var(--text);font-weight:500}
+.week .lane{display:flex;align-items:center;gap:7px;min-width:0;padding:4px 6px 4px 0;height:44px;border-top:1px solid var(--rule);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+.week .lane b{font-weight:500;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.week .lane small{display:block;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.week .cell{height:44px;border-top:1px solid var(--rule);border-left:1px solid var(--rule);padding:10px 1px;position:relative}
+.week .cell.we{background:#f7f8fa}
+.bk{height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:500;overflow:hidden;white-space:nowrap}
+.bk.show{background:var(--hue);color:#fff}
+.bk.fest{background:#0a0a0a;color:#fff}
+.bk.studio{background:#d9dce2;color:#2a2a2a}
+.bk.write{background:#eceef2;color:#3d3d3d}
+.bk.promo{background:#fff;box-shadow:inset 0 0 0 1px #9aa0a8;color:#3d3d3d}
+.bk.brand{background:#fff;box-shadow:inset 0 0 0 1px var(--hue);color:var(--hue)}
+.bk.rest{background:repeating-linear-gradient(135deg,#eceef2 0 3px,#fff 3px 6px);color:#666} /* taste-skill-ignore: hatch is the calendar mark for rest */
+.bk.off{background:transparent;color:#b0b4bb}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.legend i{width:14px;height:10px;border-radius:2px;display:inline-block}
+.blocks{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.blk{height:34px;border-radius:6px;background:var(--raised);display:grid;place-items:center;font-size:11px;color:var(--muted);font-weight:500}
+.blk.used{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+
+/* tasks */
+.task{background:var(--surface);border:1px solid var(--border);border-radius:var(--rc);padding:11px 13px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;width:100%;min-height:52px}
+.task b{font-weight:500;font-size:14.5px}
+.task small{grid-column:1;color:var(--muted);font-size:12.5px;line-height:1.35}
+.task .c{grid-column:2;grid-row:1/3;font-size:12.5px;color:var(--soft);text-align:right;font-variant-numeric:tabular-nums}
+.task:not(:disabled):hover,.todo:hover,.artist:hover,.offer:hover{background:#fafbfc}
+.task:disabled{opacity:.42;cursor:not-allowed}
+.todo{display:flex;gap:10px;align-items:center;padding:11px 0;width:100%;background:none;border:0;text-align:left}
+.todo .dot{width:8px;height:8px;border-radius:50%;background:var(--negative);flex:none}
+.todo .dot.mid{background:#c9a227}.todo .dot.low{background:var(--control)}
+
+/* money tables */
+.dealrow{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:6px 0}
+.dealrow span{color:var(--muted)}
+.dealrow span{flex:1 1 auto;min-width:0}
+.dealrow b{font-weight:400;font-variant-numeric:tabular-nums;text-align:right;flex:0 1 auto;min-width:0;overflow-wrap:anywhere}
+.dealrow b.money{font-weight:700}
+.dealrow.total{border-top:1px solid var(--border);padding-top:9px;margin-top:2px}
+.dealrow.total span{color:var(--text)}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--sans);font-size:10.5px;fill:#6c6c6c}
+.chartrow{display:grid;grid-template-columns:28px 1fr 74px;gap:10px;align-items:center;padding:8px 0;font-size:14px}
+.chartrow .p{color:var(--muted);text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.chartrow .s{min-width:0}
+.chartrow .s b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chartrow .s span{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chartrow .n{font-size:12.5px;text-align:right;color:var(--soft);font-variant-numeric:tabular-nums}
+.chartrow.mine{box-shadow:inset 3px 0 0 var(--hue);padding-left:10px;margin-left:-10px}
+.chartrow.mine .s b{color:var(--hue)}
+
+/* feed */
+.post{display:flex;gap:10px;padding:12px 0}
+.post .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.post .h{font-size:13px;color:var(--muted)}
+.post .h b{color:var(--text);font-weight:500}
+.post .stats{font-size:12px;color:var(--muted)}
+.news{padding:12px 0;display:flex;flex-direction:column;gap:4px}
+.news .src{font-size:12px;color:var(--muted)}
+.news b{font-size:15.5px;font-weight:500;line-height:1.3}
+.news p{font-size:13.5px;color:var(--soft)}
+.offer{display:flex;flex-direction:column;gap:6px;padding:13px 0;width:100%;background:none;border:0;text-align:left}
+.offer .h{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted)}
+.offer b{font-size:15px;font-weight:500}
+.offer p{font-size:13.5px;color:var(--soft)}
+
+/* 3D */
+.stage{position:relative;height:240px;border-radius:var(--rc);overflow:hidden;background:#dfe3ea;border:1px solid var(--border);touch-action:pan-y}
+.stage.tall{height:290px}
+.stage canvas{display:block;width:100%!important;height:100%!important;cursor:grab}
+.stage .fb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:13px}
+.stage canvas~.fb{display:none}
+.stage .cap{position:absolute;left:10px;bottom:10px;right:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;font-size:12px}
+.stage .cap span{background:rgba(255,255,255,.88);padding:3px 9px;border-radius:999px;color:#111}
+
+/* sheets */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(10,12,16,.38);display:flex;align-items:flex-end;justify-content:center;animation:fade .15s ease-out}
+.sheet{background:var(--ground);width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:14px 14px 0 0;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;box-shadow:0 -10px 34px rgba(0,0,0,.18);animation:up .2s ease-out;overscroll-behavior:contain}
+.sheet>*{flex-shrink:0}
+.sheet .grab{width:38px;height:4px;border-radius:2px;background:var(--control);margin:-6px auto 0}
+.sheet .x{position:sticky;top:-16px;z-index:2;background:var(--ground);margin:-16px calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0;padding:14px max(16px,env(safe-area-inset-right,0px)) 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border)}
+.sheet .x h2{font-size:18px}
+@keyframes up{from{transform:translateY(24px);opacity:.4}}
+@keyframes fade{from{opacity:0}}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 62px);z-index:60;width:min(560px,calc(100vw - 32px));pointer-events:none}
+.toast{background:var(--text);color:#fff;padding:10px 14px;border-radius:8px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:up .2s ease-out}
+
+/* title */
+.hero{padding:calc(env(safe-area-inset-top,0px) + 28px) 0 4px;display:flex;flex-direction:column;gap:12px}
+.hero h1{font-size:44px;letter-spacing:-.035em;line-height:.95;font-weight:700}
+.hero p{font-size:16px;color:var(--soft);max-width:36ch}
+.slot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0}
+.grade{font-size:48px;line-height:1;font-weight:700}
+.empty{padding:22px 0;text-align:center;color:var(--muted);font-size:14px}
+.ledger{display:grid;grid-template-columns:1fr auto auto;gap:4px 14px;font-size:13.5px}
+.ledger span{color:var(--muted)}
+.ledger b{font-weight:400;text-align:right;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="top"></div>
+<main class="app" id="app"></main>
+<nav id="tabs"></nav>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div id="sheet"></div>
+<script>
+'use strict';
+const APP_VER='202610250100';
+const $=(s,r=document)=>r.querySelector(s);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const chance=p=>Math.random()<p;
+const sum=a=>a.reduce((s,x)=>s+x,0);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const N=(m,s)=>m+gauss()*s;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+function hsh(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function srand(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function fmtN(n){n=Math.round(n);const a=Math.abs(n);if(a>=1e9)return (n/1e9).toFixed(2)+'B';if(a>=1e6)return (n/1e6).toFixed(a>=1e8?0:a>=1e7?1:2)+'M';if(a>=1e4)return Math.round(n/1e3)+'K';if(a>=1e3)return (n/1e3).toFixed(1)+'K';return String(n)}
+const fmt$=n=>(n<0?'−$':'$')+fmtN(Math.abs(n));
+const full$=n=>(n<0?'−$':'$')+Math.round(Math.abs(n)).toLocaleString('en-US');
+const r1k=n=>Math.round(n/1000)*1000;
+const vb=(a,pl,sg)=>a.kind==='solo'?sg:pl;
+
+/* ---------- the numbers ---------- */
+const PER_STREAM=0.0034;   // blended master revenue per stream
+const PUB_STREAM=0.0009;   // blended publishing (mechanical + performance) per stream
+const AGENT=.10, BIZ=.05;
+const START_YEAR=2027;
+const yearOf=w=>START_YEAR+Math.floor((w-1)/52);
+const qOf=w=>Math.floor(((w-1)%52)/13)+1;
+const wOfY=w=>((w-1)%52)+1;
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function dateOf(w,d=0){const t=new Date(2027,0,4+7*(w-1)+d);return MON[t.getMonth()]+' '+t.getDate()}
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+/* ---------- world ---------- */
+const GENRES={pop:{n:'Pop',col:'#ff6fa8',role:'mic'},hiphop:{n:'Hip-hop',col:'#ffb547',role:'mic'},rnb:{n:'R&B',col:'#ff8f6b',role:'mic'},indie:{n:'Indie rock',col:'#7fd1ff',role:'guitar'},
+  country:{n:'Country',col:'#ffd27a',role:'guitar'},dance:{n:'Dance',col:'#4dffd2',role:'decks'},alt:{n:'Alt / emo',col:'#ff5a5a',role:'guitar'},afro:{n:'Afrobeats',col:'#9dff6a',role:'mic'},latin:{n:'Latin',col:'#ff8a3d',role:'mic'},folk:{n:'Singer-songwriter',col:'#ffe9b0',role:'acoustic'}};
+const GK=Object.keys(GENRES);
+const PERS={
+  perfectionist:{n:'Perfectionist',d:'Great records, late records.',jeal:.7,burn:.8,scan:.2,disp:.4},
+  party:{n:'Party animal',d:'The fans love it. Insurers do not.',jeal:.4,burn:.5,scan:1,disp:.3},
+  diva:{n:'Diva',d:'Wants the best of everything, first.',jeal:1.3,burn:.4,scan:.5,disp:1},
+  anxious:{n:'Anxious',d:'Needs reassurance and breaks if pushed.',jeal:1,burn:1.2,scan:.2,disp:.3},
+  workhorse:{n:'Workhorse',d:'Says yes to everything, including too much.',jeal:.3,burn:.7,scan:.2,disp:.2},
+  loyal:{n:'Loyal veteran',d:'Been with you since the start. Expects that to matter.',jeal:.6,burn:.4,scan:.2,disp:.3},
+  rebel:{n:'Rebel',d:'Hates brands, labels and being told what to do.',jeal:.5,burn:.5,scan:.7,disp:.8}};
+const GOALS={headline:'Headline a festival',gold:'Go gold: 75M streams on one release',arena:'Sell out an arena tour',masters:'Own their masters',award:'Win a Lumen Award',million:'Earn their first $1M',top10:'A top 10 single',indie:'Never sign to a major'};
+const STAGES=[[0,'Developing'],[80000,'Breaking'],[1500000,'Established'],[12000000,'Star']];
+const stageOf=a=>{let s=STAGES[0][1];for(const [m,n] of STAGES)if(a.ml>=m)s=n;return s};
+const stageIx=a=>STAGES.findIndex(x=>x[1]===stageOf(a));
+const LABELS=[{n:'Halcyon Music Group',kind:'major',p360:20},{n:'Northbound Records',kind:'major',p360:10},{n:'Ironclad Records',kind:'major',p360:25},
+  {n:'Low Tide Recordings',kind:'indie',p360:0},{n:'Paper Moon',kind:'indie',p360:0},{n:'Vantage Sound',kind:'indie',p360:0}];
+const DISTRO='Tunebridge';
+const PUBS=['Meridian Songs','Blue Door Publishing','Atlas Music Publishing'];
+const BRANDS=[['Volt Energy','energy drink',.9],['Stride','sneakers',1.1],['Nimbus','phones',1.3],['Bloom','cosmetics',1],['Coastline','denim',.8],['Arcadia','video game',1.2],['Ember','fast-food chain',.9]];
+const SHOWS=['Night Shift','The Long Summer','Harbour Lights','Kingmakers','Static','Second Chances'];
+const PROMOTERS=['Pinnacle Live','Southgate Presents'];
+const RIVALS=[{n:'Apex Talent',who:'Gwen Hollis'},{n:'Crown & Co. Management',who:'Marcus Crane'},{n:'Bright Lights Mgmt',who:'Tasha Bell'}];
+const FESTS=[{n:'Sunset Valley',wk:16,c:'California'},{n:'Northfield',wk:26,c:'England'},{n:'Glasshouse',wk:28,c:'Belgium'},{n:'Harbourfront',wk:31,c:'Toronto'},{n:'Riverbend',wk:33,c:'Tennessee'}];
+const TIERS=[
+  {k:'club',n:'Clubs',cap:400,price:25,cost:2500,prod:900,travel:1100,merch:7,d:'300 to 500 capacity. A van, a merch table, a sound engineer.'},
+  {k:'theatre',n:'Theatres',cap:2200,price:48,cost:21000,prod:7000,travel:3800,merch:14,d:'1,500 to 3,000 seats. A bus, a crew of eight, real lights.'},
+  {k:'arena',n:'Arenas',cap:13000,price:92,cost:165000,prod:52000,travel:14000,merch:28,d:'12,000 to 18,000. Trucks, a production designer, forty crew.'},
+  {k:'stadium',n:'Stadiums',cap:45000,price:135,cost:560000,prod:210000,travel:36000,merch:36,d:'40,000 and up. Steel stages that leapfrog each other across the country.'}];
+const REGIONS={home:{n:'Home market',tr:1,fans:1},abroad:{n:'UK and Europe',tr:1.25,fans:1.1},world:{n:'World tour',tr:1.6,fans:1.35}};
+const STAFF={
+  asst:{n:'Day-to-day manager',cost:1100,d:'Two extra attention blocks a week.'},
+  tm:{n:'Tour manager',cost:1500,d:'Tours cost 8% less and drain less health. One tour at a time.'},
+  pr:{n:'Publicist',cost:1200,d:'Halves scandal damage. Point them at one artist a week for extra hype.'},
+  law:{n:'Music lawyer',cost:900,d:'Counter-offers cost no attention and land better terms. Settles disputes.'},
+  bm:{n:'Business manager',cost:0,d:'Artists pay 5% of their income. No tax shocks; their morale and trust rise.'}};
+const FIRST=['Juno','Mara','Theo','Kai','Ines','Rory','Nadia','Eli','Sol','Tamsin','Remy','Ade','Lola','Cass','Wren','Femi','Ivy','Luca','Noor','Jesse','Dani','Odette','Milo','Zara','Kofi','Bea','Rafa','Sasha','Hollis','June','Maeve','Dex','Talia','Ezra','Ruby','Omar','Sky','Nico','Imani','Callum','Yara','Leni','Tobi','Marisol','Esme','Kenji','Amara','Felix','Paloma','Signe','Darius','Aoife','Tunde'];
+const LAST=['Vale','Okafor','Reyes','Marlowe','Quinn','Sato','Hale','Adeyemi','Brooks','Lindqvist','Moreau','Kane','Ashby','Fontaine','Mensah','Rivera','Holloway','Park','Doyle','Castell','Nakamura','Byrne','Osei','Delacroix','Wilder','Ferro','Sutton','Achebe','Vance','Hart','Beaumont','Calder','Serrano','Lowe'];
+const BADJ=['Velvet','Paper','Glass','Static','Midnight','Copper','Hollow','Neon','Wild','Quiet','Burning','Silver','Lucky','Golden','Lonesome','Electric','Feral','Soft','Northern','Tender','Sunday'];
+const BNOUN=['Lanterns','Tigers','Saints','Engines','Daughters','Ghosts','Harbour','Machines','Parade','Animals','Signals','Hours','Kings','Wolves','Satellites','Choir','Riot','Weather','Houses','Pilots'];
+const TW1=['Paper','Midnight','Sugar','Gasoline','Velvet','Neon','Cold','Golden','Slow','Hollow','Satellite','Summer','Heavy','Lucky','Glass','Wildfire','Blue','Static','Honey','Ghost','Cherry','Silver'];
+const TW2=['Heart','Drive','Hours','Season','Kiss','Machine','Love','Rain','Habit','City','Signal','Dreams','Bones','Fever','Lights','Tides','Weather','Prayer','Motel','Money','Radio','Sunday'];
+const TPH=['Call Me Later','Not Like Them','Back Seat','Run It Back','Over You','Two Hearts','No Sleep','Say Less','Bad Idea','Tell Me Twice','Slow Burn','Hold Still','Coming Down','Last Train','Open Late','Lights Out','Pull Up','Kitchen Floor','Good Grief','Different Now','Rearview','Sweet Nothing'];
+const songTitle=()=>chance(.45)?pick(TPH):pick(TW1)+' '+pick(TW2);
+const BGARTISTS=['Sable Lane','Kito Marsh','The Greyhounds','Ivy Calloway','DJ Orrin','Mavi','Coral Atlas','Benny Ruiz','Halo Theory','Saint Odell','Lyra Bloom','Northwave','Kase Mono','Delphine','Rook & Raye','Asa Grant','Tessellate','Big Fen','Marquee Moon','Elodie Park','Jax Fury','Paloma Real','Night Swimmers','Obi Lux','Static Bloom','Wyatt Crane','Zuri','Velour','Cosmo Reyes','Hana Sol'];
+const HANDLES=['nightbus_tapes','mixtapemaya','gigsbyleo','basementshows','lyricnerd','playlistpolice','frontrowfran','vinylvic','soundcheck_sam','charttalk','moshpitmo','aux_cord_queen','deepcutdavid','hookhunter','late_set_lou','tourbusdiaries','stan_account_9','merchlinemolly'];
+// identity tints for up to six artists, at least 60 degrees apart, never violet
+const HUES=[18,135,200,330,75,165];
+const tint=h=>`hsl(${h} 70% 92%)`, tintInk=h=>`hsl(${h} 55% 26%)`;
+</script>
+<script>
+'use strict';
+let S=null;
+const UI={scr:'title',tab:'week',sheet:null,feed:'news',ng:null,tour:null,co:'pl'};
+const art=id=>S.artists.find(a=>a.id===id);
+const roster=()=>S.artists.filter(a=>a.status==='active');
+const blocksMax=()=>10+(S.staff.asst?2:0);
+const blocksLeft=()=>blocksMax()-S.used.length;
+function useBlocks(n,aid,t){for(let i=0;i<n;i++)S.used.push({aid,t});const a=aid&&art(aid);if(a)a.att+=n}
+
+/* ---------- people ---------- */
+function actName(kind,genre){
+  if(kind==='band')return (chance(.55)?'The ':'')+pick(BADJ)+' '+pick(BNOUN);
+  if(kind==='duo')return chance(.5)?pick(FIRST)+' & '+pick(FIRST):pick(BADJ)+' '+pick(BNOUN).replace(/s$/,'');
+  const f=pick(FIRST),l=pick(LAST);if(genre==='hiphop'&&chance(.45))return pick(['Lil ','Yung ','Big '])+f;return chance(.25)?f:f+' '+l}
+const SKINS=['#f5d6c1','#eac0a0','#d9a07a','#b97a52','#8d5a3b','#5e3b26','#f1c9a5','#c68e65'];
+const HAIRC=['#1b1410','#3a2416','#6b4423','#a8742f','#d9b25f','#c23b22','#e8e2d0','#2f4f8f','#ff6fa8','#111111'];
+const TOPS=['#e94f37','#2e86ab','#f6c90e','#3bb273','#ff8c42','#111111','#f2f2f2','#c03e73','#1f6f78','#4a4e69'];
+function genLook(seed){const r=srand(seed);const p=a=>a[Math.floor(r()*a.length)];return {skin:p(SKINS),hair:p(HAIRC),top:p(TOPS),pants:p(['#1e1e24','#2b3a55','#3c2f2f','#555b6e','#14213d']),style:p(['short','long','buzz','afro','bun','mop','spiky','bald']),seed}}
+function genArtist(st,o={}){
+  const genre=o.genre||pick(GK);const r=Math.random();const kind=['indie','alt','country'].includes(genre)&&r<.6?'band':r<.12?'duo':'solo';const n=kind==='band'?ri(3,5):kind==='duo'?2:1;
+  const ml=Math.round([rnd(9e3,6e4),rnd(1.3e5,1.1e6),rnd(1.8e6,8e6),rnd(1.3e7,3e7)][st]);
+  const gk=Object.keys(GOALS);const g1=pick(gk);let g2=pick(gk.filter(x=>x!==g1&&!(g1==='indie'&&x==='masters')));
+  const a={id:uid(),name:actName(kind,genre),kind,n,genre,age:ri(19,23)+st*3,pers:o.pers||pick(Object.keys(PERS)),goals:[{k:g1,done:false},{k:g2,done:false}],hue:0,look:[],
+    ml,fans:Math.round(ml*rnd(.07,.12)),hype:ri(25,50)+st*6,tal:clamp(Math.round(N(64,13)),30,97),songs:ri(2,7),q:0,
+    health:ri(70,92),morale:ri(55,72),trust:ri(55,70),jeal:ri(0,12),att:0,attH:[],neglect:0,idle:0,
+    contract:{rate:st>=2?15:20,start:1,end:ri(40,150),sunset:2},label:null,pub:null,act:{k:'write',t:0,need:0},rels:[],tour:null,lastTier:st>=2?'theatre':'club',
+    cash:Math.round([4000,25000,180000,900000][st]*rnd(.6,1.3)),earn:{life:0,live:0,merch:0,rec:0,pub:0,brand:0,sync:0,adv:0},comm:0,commWk:[],streamsWk:[],status:'active',flags:{},feud:null,joined:1,best:999,gold:false,st0:st};
+  for(let i=0;i<n;i++)a.look.push(genLook(hsh(a.id+i)));
+  if(st===0)a.label={n:DISTRO,kind:'dist',share:90,bal:0,albums:0,mkt:0};
+  else if(st===1)a.label=chance(.5)?{n:pick(LABELS.filter(l=>l.kind==='indie')).n,kind:'indie',split:50,bal:-rnd(30000,120000),albums:2,mkt:60000,p360:0}:{n:DISTRO,kind:'dist',share:90,bal:0,albums:0,mkt:0};
+  else{const L=pick(LABELS.filter(l=>l.kind==='major'));a.label={n:L.n,kind:'major',pts:ri(16,20),bal:-rnd(150000,900000)*(st===3?.3:1),albums:ri(1,3),mkt:st===3?600000:250000,p360:L.p360}}
+  a.pub=st===0?{kind:'none',n:'Self-published',bal:0}:st===1?{kind:'admin',n:pick(PUBS),bal:0}:{kind:'copub',n:pick(PUBS),bal:-rnd(50000,400000)};
+  if(st>=1){const wk=-ri(8,50);a.rels.push({t:songTitle(),kind:'album',wk,peak:ml*.85*rnd(1.1,1.8),tot:0,q:ri(50,80)})}
+  return a}
+function stageNow(a){return stageIx(a)}
+function moodWord(a){const m=(a.morale+a.trust)/2;return m>75?'Thriving':m>58?'Good':m>42?'Uneasy':m>28?'Unhappy':'Ready to walk'}
+
+/* ---------- streams and money ---------- */
+function relCurve(t){if(t<0)return 0;if(t===0)return .6;if(t===1)return .9;if(t===2)return 1;return Math.max(.92**(t-2),.07*.995**t)}
+function weeklyStreams(a){let s=a.fans*1.1;for(const r of a.rels)s+=r.peak*relCurve(S.wk-r.wk)*(r.boost&&r.boostTo>=S.wk?r.boost:1);return s}
+function addIncome(a,type,amt,note){if(!amt||amt<=0)return 0;
+  const rate=a.status==='active'?a.contract.rate/100:0;const tourNet=type==='live'&&a.flags.netTour;
+  const base=tourNet?Math.max(0,amt*.55):amt;const comm=base*rate;const biz=S.staff.bm?amt*BIZ:0;
+  a.earn[type]=(a.earn[type]||0)+amt;a.earn.life+=amt;a.cash+=amt-comm-biz;a.comm+=comm;S.cash+=comm;S.wkL[type]=(S.wkL[type]||0)+comm;S.wkL.total+=comm;return comm}
+function payArtist(a,master,pub){const L=a.label;
+  // the master side
+  if(L.kind==='dist')addIncome(a,'rec',master*L.share/100);
+  else{const share=L.kind==='major'?L.pts/100:L.split/100;const before=Math.max(0,L.bal);L.bal+=master*share;const pay=Math.max(0,L.bal)-before;if(pay>0)addIncome(a,'rec',pay)}
+  // the writer's share always goes straight to the writer through their collection society
+  addIncome(a,'pub',pub*.5);const P=a.pub;const ps=pub*.5;
+  if(P.kind==='none')addIncome(a,'pub',ps*.6);
+  else if(P.kind==='admin')addIncome(a,'pub',ps*.85);
+  else{const before=Math.max(0,P.bal);P.bal+=ps*.5;const pay=Math.max(0,P.bal)-before;if(pay>0)addIncome(a,'pub',pay)}}
+
+/* ---------- touring ---------- */
+function demand(a,region='home'){return a.ml*.0012*(.75+a.hype/200)*(region==='world'?.85:region==='abroad'?.75:1)+a.fans*.004}
+function tourPlan(a,o){const T=TIERS.find(t=>t.k===o.tier);const R=REGIONS[o.region];const d=demand(a,o.region);
+  const pf=Math.pow(T.price/o.price,.6);const sold=Math.min(T.cap,d*pf);const gross=sold*o.price;
+  const fee=Math.max(o.guar,.85*(gross-T.cost));const merchG=sold*T.merch*(.7+a.hype/200);const merchNet=merchG*.45;
+  const costs=(T.prod+T.travel*R.tr)*(S.staff.tm?.92:1);const agent=fee*AGENT;const rate=a.contract.rate/100;const mgr=(a.flags.netTour?fee*.55:fee)*rate+merchNet*rate;const biz=S.staff.bm?(fee+merchNet)*BIZ:0;
+  const l360=a.label&&a.label.p360?Math.max(0,fee+merchNet-costs-agent)*a.label.p360/100:0;
+  const net=fee+merchNet-costs-agent-mgr-biz-l360;
+  return {T,sold,pct:sold/T.cap,gross,fee,merchNet,costs,agent,mgr,biz,l360,net,dates:o.dates,tot:{gross:gross*o.dates,fee:fee*o.dates,net:net*o.dates,mgr:mgr*o.dates}}}
+function guarantee(a,tier,region,price){const T=TIERS.find(t=>t.k===tier);const d=demand(a,region);const sold=Math.min(T.cap,d*Math.pow(T.price/price,.6));return Math.max(tier==='club'?250:0,Math.round(.85*(sold*price-T.cost)*.7/50)*50)}
+function bookTour(a,o){a.tour={...o,start:S.wk+1,done:0,gross:0,fee:0,merch:0,costs:0,agent:0,comm:0,net:0,sold:0,cap:0,shows:[]};a.act={k:'tour',t:0,need:Math.ceil(o.dates/4)};a.lastTier=o.tier;
+  const n=roster().filter(x=>x.tour&&x!==a&&x.tour.start+Math.ceil(x.tour.dates/4)>S.wk+1).length;if(S.staff.tm&&n&&!S.tmFor)S.dec.push({t:'evt',k:'tmclash',aid:a.id,aid2:roster().find(x=>x.tour&&x!==a).id})}
+function tourWeek(a,log){const t=a.tour;if(S.wk<t.start)return;const shows=Math.min(4,t.dates-t.done);if(shows<=0)return;
+  const T=TIERS.find(x=>x.k===t.tier);const R=REGIONS[t.region];const tmHere=S.staff.tm&&(!S.tmFor||S.tmFor===a.id);
+  for(let i=0;i<shows;i++){const d=demand(a,t.region)*rnd(.82,1.15);const sold=Math.round(Math.min(T.cap,d*Math.pow(T.price/t.price,.6)));const gross=sold*t.price;
+    const fee=Math.max(t.guar,.85*(gross-T.cost));const merchG=sold*T.merch*(.7+a.hype/200);const merchNet=merchG*.45;const costs=(T.prod+T.travel*R.tr)*(tmHere?.92:1);
+    const c1=addIncome(a,'live',fee);const c2=addIncome(a,'merch',merchNet);const agent=fee*AGENT;a.cash-=agent+costs;
+    const l360=a.label&&a.label.p360?Math.max(0,fee+merchNet-costs-agent)*a.label.p360/100:0;a.cash-=l360;
+    t.gross+=gross;t.fee+=fee;t.merch+=merchNet;t.costs+=costs;t.agent+=agent;t.comm+=c1+c2;t.net+=fee+merchNet-costs-agent-c1-c2-l360-(S.staff.bm?(fee+merchNet)*BIZ:0);t.sold+=sold;t.cap+=T.cap;t.done++;
+    a.fans+=Math.round(sold*.035*R.fans);a.hype=clamp(a.hype+(sold/T.cap>.9?.8:.2),0,100)}
+  a.health=clamp(a.health-shows*2.4*(tmHere?.65:1),0,100);
+  if(t.done>=t.dates){const pct=t.sold/t.cap;log.push(`${a.name} ${vb(a,'finish','finishes')} the ${TIERS.find(x=>x.k===t.tier).n.toLowerCase()} tour: ${Math.round(pct*100)}% sold, ${fmt$(t.net)} to the artist after costs.`);
+    news('Pollstar Weekly',`${a.name} ${vb(a,'close','closes')} out a ${t.dates}-date run`,`${fmtN(t.sold)} tickets, ${full$(t.gross)} at the box office.`,true);
+    if(t.tier==='arena'&&pct>=.95)goal(a,'arena');
+    if(t.net<0&&!a.flags.disputed&&chance(.5+PERS[a.pers].disp*.3)){a.flags.disputed=true;S.dec.push({t:'evt',k:'dispute',aid:a.id,amt:t.comm})}
+    a.tours=(a.tours||[]);a.tours.unshift({tier:t.tier,dates:t.dates,pct,gross:t.gross,net:t.net,comm:t.comm,wk:S.wk});a.tour=null;a.act={k:'rest',t:0,need:1}}}
+
+/* ---------- goals ---------- */
+function goal(a,k){const g=a.goals.find(x=>x.k===k&&!x.done);if(!g)return;g.done=true;a.morale=clamp(a.morale+20,0,100);a.trust=clamp(a.trust+15,0,100);S.rep=clamp(S.rep+3,0,100);
+  mail(a.name,`We did it`,`${GOALS[k]}. I don't think I say this enough: thank you.`,a.id);news('The Ledger',`${a.name}: ${GOALS[k].split(':')[0].toLowerCase()}, done`,`A career milestone for the ${GENRES[a.genre].n.toLowerCase()} ${a.kind==='solo'?'artist':a.kind} managed by ${S.co}.`,true)}
+
+/* ---------- feeds ---------- */
+function news(src,t,d,mine){S.news.unshift({w:S.wk,src,t,d,mine:!!mine});if(S.news.length>90)S.news.length=90}
+function mail(from,subj,body,aid,read){S.mail.unshift({id:uid(),w:S.wk,from,subj,body,aid:aid||null,read:!!read});if(S.mail.length>60)S.mail.length=60}
+function social(a,kind){const nm=a.name;const T={
+  good:[`${nm} live is a religious experience, I don't make the rules`,`${nm} just replied to my comment I'm shaking`,`the ${nm} merch line was two hours and worth it`,`${nm} new song on repeat since 6am`,`saw ${nm} in a 400-cap room, telling my grandkids`,`${nm} interview on the podcast today, so thoughtful`,`the way ${nm} talks about their fans. protect at all costs`,`${nm} bridge got me crying on the train again`,`${nm} outfit on stage last night needs its own fan account`,`${nm} sound guy deserves a raise, that mix was perfect`,`whoever manages ${nm}, keep doing what you're doing`],
+  bad:[`${nm} cancelled AGAIN?`,`is ${nm} ok? that interview was weird`,`${nm} played 40 minutes and left. 70 dollar ticket`],
+  scandal:[`${nm} trending for the wrong reasons`,`not ${nm} getting cancelled on a tuesday`,`the ${nm} statement is giving lawyer`],
+  brand:[`${nm} doing a ${'$'} ad was not on my bingo card`,`sellout era ${nm} still slaps tbh`],
+  hit:[`${nm} on the radio in the uber. we made it`,`${nm} top 10?? I was here first`,`every playlist is ${nm} now and I'm fine with it`],
+  feud:[`${nm} subtweeting their own labelmate is wild`,`pick a side: ${nm} edition`]};
+  S.social.unshift({w:S.wk,h:pick(HANDLES),t:pick(T[kind]||T.good),aid:a.id,likes:Math.round(Math.pow(10,rnd(1.3,3.4)+Math.log10(a.ml+10)/4))});if(S.social.length>70)S.social.length=70}
+
+/* ---------- the chart ---------- */
+function bgSong(age){return {t:songTitle(),ar:pick(BGARTISTS),peak:Math.pow(10,rnd(6.75,7.75)),wk:S.wk-age}}
+function bgStreams(b){const t=S.wk-b.wk;if(t<0)return 0;if(t===0)return b.peak*.7;return b.peak*Math.max(.955**t,.18)}
+function buildChart(){const rows=[];for(const b of S.bg)rows.push({t:b.t,ar:b.ar,s:bgStreams(b)});
+  for(const a of S.artists){const sg=a.rels.filter(r=>r.kind==='single'&&S.wk-r.wk<60);for(const r of sg){rows.push({t:r.t,ar:a.name,s:r.peak*relCurve(S.wk-r.wk)*(r.boost&&r.boostTo>=S.wk?r.boost:1)*.75,mine:a.status==='active',aid:a.id})}}
+  rows.sort((x,y)=>y.s-x.s);rows.forEach((r,i)=>r.pos=i+1);const prev=S.chart?Object.fromEntries(S.chart.map(r=>[r.ar+r.t,r.pos])):{};for(const r of rows)r.prev=prev[r.ar+r.t]||null;S.chart=rows.slice(0,100);
+  for(const r of S.chart){if(!r.mine)continue;const a=art(r.aid);if(r.pos<a.best){a.best=r.pos}
+    if(r.pos<=10&&!a.flags['t10'+r.t]){a.flags['t10'+r.t]=1;goal(a,'top10');S.rep=clamp(S.rep+4,0,100);social(a,'hit');news('Pulse Daily',`${a.name} ${vb(a,'go','goes')} top ten`,`“${r.t}” is #${r.pos} on the Pulse 40.`,true)}
+    else if(r.pos<=40&&!a.flags['t40'+r.t]){a.flags['t40'+r.t]=1;S.rep=clamp(S.rep+2,0,100);news('Pulse Daily',`${a.name} ${vb(a,'enter','enters')} the Pulse 40`,`“${r.t}” debuts at #${r.pos}.`,true)}}
+  S.bg=S.bg.filter(b=>bgStreams(b)>4.2e6||S.wk-b.wk<3);while(S.bg.length<92)S.bg.push(bgSong(-ri(0,1)))}
+
+/* ---------- new game ---------- */
+function newGame(o){
+  S={v:1,slot:o.slot,co:o.co||'North Star Management',you:o.you||'Alex',wk:1,cash:60000,rep:30,artists:[],prospects:[],staff:{asst:false,tm:false,pr:false,law:false,bm:false},prFor:null,tmFor:null,
+    used:[],offers:[],dec:[],news:[],social:[],mail:[],chart:null,bg:[],sunsets:[],hist:[],wkL:{total:0},ledger:[],bookings:[],over:false,sound:true,three:true,recap:null,debt:[],peakCash:60000};
+  for(let i=0;i<70;i++)S.bg.push(bgSong(ri(0,40)));
+  o.roster.forEach((a,i)=>{a.hue=HUES[i];a.joined=1;S.artists.push(a)});
+  S.prospects=[genArtist(0),genArtist(chance(.5)?1:0),genArtist(1)].map(p=>{p.status='prospect';return p});
+  buildChart();
+  mail('Your accountant','Opening balance',`${S.co} starts the year with ${full$(S.cash)} in the bank. Rent and your draw cost ${full$(2400)} a week. Commission is the only thing that comes in.`,null);
+  const big=S.artists.slice().sort((x,y)=>y.ml-x.ml)[0];mail(big.name,'Can we talk this week?',`New year. I want ${GOALS[big.goals[0].k].toLowerCase()}. Tell me you have a plan.`,big.id);
+  news('The Ledger',`${S.co} opens its doors`,`${S.you}'s new management company starts with ${S.artists.length} artists: ${S.artists.map(a=>a.name).join(', ')}.`,true)}
+function rollRoster(){return [genArtist(2,{pers:'diva'}),genArtist(1),genArtist(0)]}
+</script>
+<script>
+'use strict';
+/* ---------- offers ---------- */
+function offerFor(a,type,o={}){const ml=a.ml,st=stageNow(a),h=a.hype;const id=uid();let f={id,type,aid:a.id,exp:S.wk+ri(2,4),c:0};
+  if(type==='label'){const pool=LABELS.filter(l=>o.kind?l.kind===o.kind:st>=1||l.kind==='indie');const L=pick(pool);const major=L.kind==='major';
+    const adv=r1k(major?(120000+ml*.12)*(.7+h/100):(30000+ml*.04)*(.7+h/100));
+    f={...f,from:L.n,kind:L.kind,adv:Math.min(adv,major?6e6:1.2e6),rec:r1k(major?150000+st*80000:60000),pts:major?ri(16,19):0,split:major?0:50,p360:L.p360,albums:major?ri(2,4):2,mkt:major?r1k(200000+st*150000):r1k(50000+st*30000)}}
+  else if(type==='pub'){const cp=chance(.6)||st>=2;f={...f,from:pick(PUBS),kind:cp?'copub':'admin',adv:r1k(cp?clamp(ml*.06,25000,3e6):clamp(ml*.008,0,150000)),years:cp?4:3}}
+  else if(type==='brand'){const b=pick(BRANDS);f={...f,from:b[0],cat:b[1],fee:r1k(clamp(ml*.018*b[2]*(.6+h/80),8000,2.5e6)),days:ri(1,2),cred:b[0]==='Ember'||b[0]==='Volt Energy'?1:.5}}
+  else if(type==='sync'){const show=pick(SHOWS);const song=(a.rels.length?pick(a.rels).t:songTitle());f={...f,from:'Music supervisor, '+show,show,song,fee:r1k(clamp(15000+ml*.01*(a.tal/60),15000,300000))}}
+  else if(type==='fest'){const F=o.fest||pick(FESTS);const slot=o.slot||(ml>9e6&&h>55?'Headliner':ml>1e6?'Main stage':ml>1.5e5?'Second stage':'Opening slot');const mult={Headliner:3,'Main stage':1,'Second stage':.45,'Opening slot':.2}[slot];
+    f={...f,from:F.n+' Festival',fest:F.n,fwk:yearStart(S.wk)+F.wk-1,slot,fee:r1k(clamp(ml*.012*mult,3000,2.2e6)),exp:S.wk+ri(3,5)}}
+  else if(type==='tv'){f={...f,from:pick(['Late Night with Dana Price','The Friday Show','Morning Live']),wk2:S.wk+ri(1,3),exp:S.wk+2}}
+  S.offers.push(f);return f}
+const yearStart=w=>w-((w-1)%52);
+function opinion(a,f){const r=[];let s=0;const G=a.goals.filter(g=>!g.done).map(g=>g.k);const P=a.pers;
+  if(f.type==='label'){if(f.kind==='major'&&(G.includes('indie')||P==='rebel')){s-=40;r.push('They never wanted a major.')}
+    if(f.kind==='major'&&G.includes('masters')){s-=25;r.push('The label would own the masters.')}
+    if(f.p360){s-=f.p360;r.push(`The ${f.p360}% 360 bothers them.`)}
+    if(f.adv>a.ml*.1){s+=20;r.push('The advance is life-changing.')}else if(f.adv>30000){s+=8;r.push('The advance would help.')}
+    if(f.kind!=='major'&&G.includes('masters')){s+=15;r.push('They keep control.')}}
+  else if(f.type==='brand'){if(P==='rebel'){s-=45;r.push('A '+f.cat+' ad? They would rather quit.')}else if(f.cred>=1){s-=10;r.push('Fans may call it a sell-out.')}if(f.fee>a.cash*.5){s+=25;r.push('The money is real.')}else s+=8}
+  else if(f.type==='sync'){s+=20;r.push('They love the show.');if(P==='rebel'&&chance(.3)){s-=25;r.push('They hate the network.')}}
+  else if(f.type==='fest'){s+=f.slot==='Headliner'?50:25;r.push(f.slot==='Headliner'?'This is the dream.':'Good exposure.');if(a.health<40){s-=20;r.push('They are exhausted.')}}
+  else if(f.type==='pub'){s+=f.adv>50000?20:5;r.push(f.kind==='copub'?'Money now, the publisher keeps a quarter of the songs.':'They keep the songs; admin fee only.')}
+  else if(f.type==='tv'){s+=P==='anxious'?-10:25;r.push(P==='anxious'?'Live TV terrifies them.':'Huge exposure.')}
+  return {s,r,word:s>=30?'Loves it':s>=10?'Into it':s>=-10?'Unsure':s>=-30?'Against it':'Hates it'}}
+function commOn(a,f){const r=a.contract.rate/100;if(f.type==='label')return (f.adv)*r;if(f.type==='pub')return f.adv*r;if(f.type==='brand'||f.type==='fest')return f.fee*r;if(f.type==='sync')return f.fee*.5*.5*r+f.fee*.25*r;return 0}
+function acceptOffer(f){const a=art(f.aid);const op=opinion(a,f);S.offers=S.offers.filter(x=>x!==f);
+  if(op.s<-10){a.trust=clamp(a.trust+op.s/3,0,100);a.morale=clamp(a.morale+op.s/4,0,100)}else{a.trust=clamp(a.trust+3,0,100)}
+  if(f.type==='label'){if(f.kind==='major')a.goals.filter(g=>g.k==='indie').forEach(g=>g.failed=true);
+    a.label={n:f.from,kind:f.kind,pts:f.pts,split:f.split,bal:-(f.adv+f.rec),albums:f.albums,mkt:f.mkt,p360:f.p360,rec:f.rec};addIncome(a,'adv',f.adv);
+    if(f.kind!=='major')goal(a,'masters');news('Trackside',`${a.name} ${vb(a,'sign','signs')} with ${f.from}`,`A ${f.albums}-album deal, ${fmt$(f.adv)} advance${f.p360?', with a '+f.p360+'% 360':''}. Managed by ${S.co}.`,true)}
+  else if(f.type==='pub'){a.pub={kind:f.kind,n:f.from,bal:-f.adv};addIncome(a,'adv',f.adv);news('Trackside',`${a.name} ${vb(a,'sign','signs')} a publishing deal`,`${f.from} lands the ${a.kind==='solo'?'songwriter':'band'} in a ${f.kind==='copub'?'co-publishing':'admin'} deal.`,true)}
+  else if(f.type==='brand'){S.bookings.push({aid:a.id,wk:S.wk+1,day:2,kind:'brand',n:f.from,fee:f.fee,days:f.days});if(f.cred>=1&&chance(.4))social(a,'brand')}
+  else if(f.type==='sync'){const pubHalf=f.fee*.5,masHalf=f.fee*.5;if(a.label.kind==='dist')addIncome(a,'sync',masHalf);else{const b=Math.max(0,a.label.bal);a.label.bal+=masHalf*.5;const p=Math.max(0,a.label.bal)-b;if(p>0)addIncome(a,'sync',p)}
+    addIncome(a,'sync',pubHalf*.5+(a.pub.kind==='copub'?0:pubHalf*.5*(a.pub.kind==='admin'?.85:.6)));a.hype=clamp(a.hype+8,0,100);const r=a.rels.find(x=>x.t===f.song);if(r){r.boost=1.6;r.boostTo=S.wk+4}
+    news('Pulse Daily',`“${f.song}” lands in ${f.show}`,`The ${a.name} song soundtracks the episode everyone is talking about.`,true)}
+  else if(f.type==='fest'){S.bookings.push({aid:a.id,wk:f.fwk,day:5,kind:'fest',n:f.fest,fee:f.fee,slot:f.slot});news('Festival Watch',`${f.fest} adds ${a.name}`,`${f.slot} at ${f.fest} this summer.`,true)}
+  else if(f.type==='tv'){S.bookings.push({aid:a.id,wk:f.wk2,day:3,kind:'tv',n:f.from})}
+  return op}
+function counterOffer(f){const law=S.staff.law;if(!law)useBlocks(1,f.aid,'Counter: '+f.from);f.c++;const a=art(f.aid);
+  const p=(law?.75:.55)+a.hype/400-f.c*.12;if(chance(p)){const up=law?1.25:1.15;if(f.adv!=null)f.adv=r1k(f.adv*up);if(f.fee!=null)f.fee=r1k(f.fee*up);if(f.type==='label'&&f.p360)f.p360=Math.max(0,f.p360-5);else if(f.type==='label'&&f.pts)f.pts=Math.min(22,f.pts+1);return 'up'}
+  if(chance(law?.1:.25)){S.offers=S.offers.filter(x=>x!==f);return 'gone'}return 'same'}
+
+/* ---------- releases ---------- */
+function startRecording(a){const L=a.label;const kind=a.songs>=10?'album':'EP';const cost=kind==='album'?(L.kind==='dist'?35000:L.rec||120000):(L.kind==='dist'?12000:60000);
+  if(L.kind==='dist'){a.cash-=cost}else{L.bal-=cost}a.act={k:'studio',t:0,need:kind==='album'?ri(5,8):ri(3,4),kind,cost};}
+function releasePlan(a,lead){const p=a.ready;const L=a.label;const mkt=L.kind==='dist'?(a.flags.selfMkt||0):L.mkt;
+  const A=(.4*p.q+.16*a.hype+.16*Math.min(100,Math.log10(a.fans+10)*14)+.12*a.tal+(lead==='radio'?4:0))/100;const sd=lead==='weird'?.4:lead==='fan'?.25:.18;
+  const mm=1+.3*Math.log10(1+mkt/40000);const peak=Math.pow(10,3.7+3.5*A+N(0,sd))*mm*(lead==='fan'?(.8+a.hype/150):1);
+  const t=songTitle();a.rels.push({t,kind:'single',wk:S.wk+1,peak,tot:0,q:p.q});
+  a.rels.push({t:p.kind==='album'?pick(['Everything After','Night Shift','Open Late','Second Skin','All of It','Smaller Hours','Low Season','Back Roads','Wide Awake','Neon Prayer']):a.name+' EP',kind:p.kind==='album'?'album':'ep',wk:S.wk+7,peak:peak*(p.kind==='album'?1.4:.6),tot:0,q:p.q,albumOf:t});
+  if(L.kind!=='dist'){L.albums=Math.max(0,L.albums-(p.kind==='album'?1:0));L.bal-=Math.min(mkt*.2,60000)}else if(mkt){a.cash-=mkt}
+  a.hype=clamp(a.hype+10,0,100);a.ready=null;a.act={k:'promo',t:0,need:3};
+  news('Trackside',`${a.name} ${vb(a,'announce','announces')} “${t}”`,`The lead single from the new ${p.kind==='album'?'album':'EP'}, out through ${L.n}.`,true)}
+
+/* ---------- events ---------- */
+const EVT={
+  burnout:{t:a=>`${a.name}: running on empty`,b:a=>`${a.name}'s health is at ${Math.round(a.health)}. Their partner calls you at 2am. They can't keep going like this.`,
+    c:[{n:'Cancel the next two weeks',d:'Shows are refunded; the crew still gets paid. Health recovers.',f:a=>{if(a.tour){const lost=Math.min(8,a.tour.dates-a.tour.done);a.tour.dates-=lost;a.cash-=lost*TIERS.find(t=>t.k===a.tour.tier).prod*.5}a.act={k:'rest',t:0,need:2};a.health=clamp(a.health+10,0,100);a.trust=clamp(a.trust+8,0,100);social(a,'bad');return 'They sleep for two days straight, then call to say thank you.'}},
+       {n:'One week off, then back out',d:'Lose this week\'s dates.',f:a=>{if(a.tour)a.tour.dates=Math.max(a.tour.done,a.tour.dates-4);a.health=clamp(a.health+12,0,100);return 'A week at home. They are not fixed, but they are better.'}},
+       {n:'Push through',d:'Keep the money. Risky.',f:a=>{if(chance(.5)){a.health=0;a.act={k:'rest',t:0,need:5};if(a.tour)a.tour.dates=a.tour.done;a.trust=clamp(a.trust-25,0,100);S.rep=clamp(S.rep-4,0,100);news('Pulse Daily',`${a.name} ${vb(a,'collapse','collapses')} on stage`,'The rest of the tour is cancelled.',true);return 'They collapse mid-set in front of four thousand people. The tour is over, and they blame you.'}a.trust=clamp(a.trust-10,0,100);return 'They make it, barely. They will not forget who made them.'}}]},
+  scandal:{t:a=>`${a.name} ${vb(a,'are','is')} trending`,b:a=>pick([`A video from an after-party shows ${a.name} trashing a hotel suite. It has two million views.`,`Old posts from ${a.name}'s teenage account have resurfaced. Some of them are bad.`,`${a.name} insulted a festival crowd's city on stage. Local radio is furious.`]),
+    c:[{n:'Full apology, with the publicist',d:'Needs a publicist, or $15K for a crisis firm.',f:a=>{if(!S.staff.pr){S.cash-=15000}a.hype=clamp(a.hype-4,0,100);a.morale=clamp(a.morale-5,0,100);return 'A careful statement and a sit-down interview. It blows over in a week.'}},
+       {n:'Say nothing',d:'Let it pass.',f:a=>{const k=S.staff.pr?.5:1;a.hype=clamp(a.hype-10*k,0,100);a.fans=Math.round(a.fans*(1-.06*k));S.offers=S.offers.filter(o=>!(o.aid===a.id&&o.type==='brand'));return 'The silence reads as guilt. Brands quietly pull out.'}},
+       {n:'Lean into it',d:'Rebels and party animals might gain fans.',f:a=>{if(['rebel','party'].includes(a.pers)&&chance(.6)){a.hype=clamp(a.hype+12,0,100);a.fans=Math.round(a.fans*1.05);return 'The fans love it. The controversy becomes the brand.'}a.hype=clamp(a.hype-12,0,100);S.rep=clamp(S.rep-4,0,100);return 'It does not land. Two radio stations drop the single.'}}]},
+  dispute:{t:a=>`${a.name}'s lawyer wants a word`,b:(a,b,d)=>`The tour lost money for ${a.name}, but you took ${full$(d.amt)} in commission on the gross. Their lawyer says commission should come off the net.`,
+    c:[{n:'Refund this tour\'s commission',d:'Costs you the money. Buys real trust.',f:(a,b,d)=>{S.cash-=d.amt;a.cash+=d.amt;a.trust=clamp(a.trust+15,0,100);return 'They did not expect that. Neither did your accountant.'}},
+       {n:'Switch to net for future tours',d:'You commission 55% of tour fees from now on.',f:a=>{a.flags.netTour=true;a.trust=clamp(a.trust+6,0,100);return 'A sensible compromise. Your commission on the road shrinks.'}},
+       {n:'Stand firm: the contract says gross',d:'Legally right. With a lawyer, cheaper to defend.',f:a=>{a.trust=clamp(a.trust-(S.staff.law?8:18),0,100);if(!S.staff.law)S.cash-=8000;return S.staff.law?'Your lawyer sends a two-page letter. They drop it, unhappily.':'You win the argument and pay outside counsel $8K to do it.'}}]},
+  poach:{t:(a,b,d)=>`${d.riv} is circling ${a.name}`,b:(a,b,d)=>`${d.who} from ${d.riv} took ${a.name} to dinner and promised them "a real team, at ${a.contract.rate-2.5}%".`,
+    c:[{n:'Cut your rate',label:a=>`Cut your rate to ${a.contract.rate-2.5}%`,d:'For the rest of the term.',f:a=>{a.contract.rate-=2.5;a.trust=clamp(a.trust+15,0,100);return 'They stay. Your margin does not.'}},
+       {n:'Promise more time',d:'Two blocks next week go to them.',f:a=>{S.debt.push({aid:a.id,n:2,t:'Damage control'});a.trust=clamp(a.trust+10,0,100);return 'You clear your calendar. It helps.'}},
+       {n:'Let them decide',d:'If trust is low, they may leave.',f:a=>{if(a.trust<30&&chance(.6)){depart(a,'poached');return 'They sign with the other company. Your sunset clause kicks in.'}return 'They come back. For now.'}}]},
+  jealous:{t:(a,b)=>`${a.name} ${vb(a,'feel','feels')} ignored`,b:(a,b)=>`${a.name} saw where your time went: ${b.name} got ${b.attH.slice(-4).reduce((s,x)=>s+x,0)} blocks this month. ${a.name} got ${a.attH.slice(-4).reduce((s,x)=>s+x,0)}.`,
+    c:[{n:'Take them out, this week',d:'One block next week. Jealousy drops.',f:a=>{S.debt.push({aid:a.id,n:1,t:'Check-in'});a.jeal=clamp(a.jeal-35,0,100);a.trust=clamp(a.trust+5,0,100);return 'A long lunch. They feel seen.'}},
+       {n:'Promise them the next big thing',d:'Free now. Breaking it later hurts.',f:a=>{a.jeal=clamp(a.jeal-20,0,100);a.flags.promised=S.wk;return 'They hold you to it. They write it down.'}},
+       {n:'Tell them the truth',d:'Business is business.',f:(a,b)=>{a.jeal=clamp(a.jeal+10,0,100);a.trust=clamp(a.trust-8,0,100);if(chance(.4)){a.feud=b.id;b.feud=a.id;social(a,'feud')}return 'Honest, and it lands badly.'}}]},
+  feud:{t:(a,b)=>`${a.name} vs ${b.name}`,b:(a,b)=>`${a.name} ${vb(a,'say','says')} ${b.name} lifted their sound. ${b.name} ${vb(b,'reply','replies')} with a meme. Both camps are calling you.`,
+    c:[{n:'Mediate: get them in a room',d:'Two blocks next week. Might end in a collaboration.',f:(a,b)=>{S.debt.push({aid:a.id,n:1,t:'Mediation'});S.debt.push({aid:b.id,n:1,t:'Mediation'});a.feud=b.feud=null;if(chance(.35)){a.hype+=8;b.hype+=8;news('Pulse Daily',`${a.name} and ${b.name} bury it with a duet`,'Nobody saw that coming.',true);return 'They end the night writing a song together.'}return 'A tense hour, then a handshake.'}},
+       {n:'Back them',label:a=>`Back ${a.name}`,d:'The other side will resent it.',f:(a,b)=>{b.trust=clamp(b.trust-15,0,100);a.trust=clamp(a.trust+8,0,100);a.feud=b.feud=null;return 'One artist feels backed. The other feels betrayed.'}},
+       {n:'Stay out of it',d:'Let it burn out.',f:(a,b)=>{a.morale-=5;b.morale-=5;return 'It drags on for weeks.'}}]},
+  member:{t:a=>`A member wants out of ${a.name}`,b:a=>`Their ${pick(['drummer','bassist','guitarist','keyboard player'])} is tired of the van and the money. They are giving notice.`,
+    c:[{n:'Persuade them: a raise from the band pot',d:'$20K from the band. Usually works.',f:a=>{a.cash-=20000;return chance(.7)?'They stay, for now.':(a.n--,'They take the money and still leave.')}},
+       {n:'Hire a replacement',d:'Keeps the dates. Fans notice.',f:a=>{a.fans=Math.round(a.fans*.96);a.look[a.look.length-1]=genLook(hsh(uid()));return 'The new member is better on stage. The old fans post comparisons.'}},
+       {n:'Carry on as fewer',d:'A leaner band.',f:a=>{a.n=Math.max(2,a.n-1);a.look.pop();a.morale-=6;return 'They rearrange the songs. It hurts.'}}]},
+  shelve:{t:a=>`${a.label.n} delays ${a.name}'s record`,b:a=>`The label wants to push the release by six weeks: "the market is crowded". ${a.name} ${vb(a,'think','thinks')} the label has lost faith.`,
+    c:[{n:'Fight it',d:'Two blocks next week.',f:a=>{S.debt.push({aid:a.id,n:2,t:'Label fight'});if(chance(.55)){a.trust+=8;return 'You win. The single comes out on time.'}a.ready.wait=S.wk+6;return 'You lose. The record waits.'}},
+       {n:'Leak a song',d:'Fans get it now. The label will be furious.',f:a=>{a.hype=clamp(a.hype+12,0,100);a.label.angry=true;a.morale+=5;return 'The leak trends for a day. The label sends a very short email.'}},
+       {n:'Accept the delay',d:'Six weeks.',f:a=>{a.ready.wait=S.wk+6;a.morale-=8;return 'The record waits. So does the band.'}}]},
+  drop:{t:a=>`${a.label.n} drops ${a.name}`,b:a=>`After the last record underperformed, the label is not picking up the option. ${a.name} ${vb(a,'are','is')} a free agent, and still unrecouped by ${full$(-Math.min(0,a.label.bal))} that now disappears.`,
+    c:[{n:'Go independent through Tunebridge',d:'Keep 90% of master income from now on.',f:a=>{a.label={n:DISTRO,kind:'dist',share:90,bal:0,albums:0,mkt:0};a.morale-=6;goal(a,'masters');return 'They own whatever they make next.'}},
+       {n:'Shop a new deal',d:'Two blocks next week; offers follow.',f:a=>{a.label={n:DISTRO,kind:'dist',share:90,bal:0,albums:0,mkt:0};S.debt.push({aid:a.id,n:2,t:'Shopping a deal'});offerFor(a,'label');return 'Your phone starts ringing by Thursday.'}}]},
+  renew:{t:a=>`${a.name}'s contract is up`,b:a=>`Your management term with ${a.name} ends this week. ${stageNow(a)>=2?'They are big now, and other managers know it.':'They want to know what the next three years look like.'} They propose ${renewRate(a)}%.`,
+    c:[{n:'Accept their rate',label:a=>`Accept ${renewRate(a)}% for three years`,d:'Keeps them happy.',f:a=>{a.contract={...a.contract,rate:renewRate(a),start:S.wk,end:S.wk+156};a.trust+=8;return 'Signed. Three more years.'}},
+       {n:'Hold your rate',label:a=>`Hold at ${a.contract.rate}%`,d:'Depends on trust.',f:a=>{if(a.trust>62||chance(a.trust/150)){a.contract={...a.contract,start:S.wk,end:S.wk+156};return 'They grumble and sign.'}depart(a,'contract');return 'They walk. Your sunset clause starts now.'}},
+       {n:'Part ways',d:'The sunset clause pays you for a while.',f:a=>{depart(a,'contract');return 'A long handshake. It is over.'}}]},
+  leave:{t:a=>`${a.name} ${vb(a,'want','wants')} to fire you`,b:a=>`Trust is gone. ${a.name}'s lawyer writes to end the management agreement.`,
+    c:[{n:'Offer 10% for the next year',d:'Maybe.',f:a=>{if(chance(.45)){a.contract.rate=10;a.trust=30;return 'They give you one more year at 10%.'}depart(a,'fired');return 'Not enough. They are gone.'}},
+       {n:'Let them go',d:'The sunset clause applies.',f:a=>{depart(a,'fired');return 'You keep the commission the contract allows, and nothing else.'}}]},
+  tax:{t:a=>`${a.name} ${vb(a,'owe','owes')} the tax office`,b:a=>`Nobody set money aside. ${a.name} ${vb(a,'have','has')} a ${full$(Math.max(8000,a.earn.life*.06))} tax bill due this month.`,
+    c:[{n:'Hire a business manager for the roster',d:'Artists pay 5%; no more surprises.',f:a=>{S.staff.bm=true;a.cash-=Math.max(8000,a.earn.life*.06);a.morale-=4;return 'Paid, painfully. A business manager starts Monday.'}},
+       {n:'They pay it and move on',d:'Morale drops.',f:a=>{a.cash-=Math.max(8000,a.earn.life*.06);a.morale-=12;a.trust-=6;return 'They pay. They ask why nobody warned them.'}}]},
+  tmclash:{t:(a,b)=>`Two tours, one tour manager`,b:(a,b)=>`${a.name} and ${b.name} are on the road at the same time. Your tour manager can only be in one place.`,
+    c:[{n:'Send them with the first',label:(a,b)=>`Send them with ${b.name}`,d:'The other tour pays full costs and drains more.',f:(a,b)=>{S.tmFor=b.id;a.jeal=clamp(a.jeal+15,0,100);return `${a.name} notices.`}},
+       {n:'Send them with the new one',label:a=>`Send them with ${a.name}`,d:'The other tour pays full costs and drains more.',f:(a,b)=>{S.tmFor=a.id;b.jeal=clamp(b.jeal+15,0,100);return `${b.name} notices.`}}]},
+  family:{t:a=>`${a.name} ${vb(a,'need','needs')} to go home`,b:a=>`A family emergency. They need two weeks, starting now.`,
+    c:[{n:'Of course',d:'Cancel what has to be cancelled.',f:a=>{if(a.tour)a.tour.dates=Math.max(a.tour.done,a.tour.dates-8);a.act={k:'rest',t:0,need:2};a.trust+=12;return 'They will remember this.'}},
+       {n:'Ask them to finish this week first',d:'Keeps four dates.',f:a=>{a.trust-=15;a.act={k:'rest',t:0,need:2};return 'They finish the week, and they will remember that too.'}}]}};
+function renewRate(a){const st=stageNow(a);return st>=3?12.5:st>=2?15:a.contract.rate}
+function depart(a,why){if(a.status!=='active')return;a.status='left';a.leftWk=S.wk;const base=a.commWk.slice(-12).reduce((s,x)=>s+x,0)/12;
+  if(a.contract.sunset)S.sunsets.push({aid:a.id,name:a.name,start:S.wk,base,years:a.contract.sunset});S.rep=clamp(S.rep-(why==='contract'?1:4),0,100);
+  news('Trackside',`${a.name} ${vb(a,'leave','leaves')} ${S.co}`,why==='poached'?'They have signed with a rival management company.':why==='fired'?'The split is said to be acrimonious.':'Their management term has ended.',true);
+  S.offers=S.offers.filter(o=>o.aid!==a.id);S.bookings=S.bookings.filter(b=>b.aid!==a.id);for(const b of roster())if(b.feud===a.id)b.feud=null}
+function sunsetIncome(){let t=0;for(const s of S.sunsets){const y=Math.floor((S.wk-s.start)/52);const f=y<s.years?[1,.5,.25][Math.min(2,y)]*.6:0;const x=s.base*f*Math.pow(.99,S.wk-s.start);if(x>0){t+=x;s.paid=(s.paid||0)+x}}S.cash+=t;S.wkL.sunset=(S.wkL.sunset||0)+t;S.wkL.total+=t;return t}
+
+/* ---------- the week ---------- */
+function endWeek(){const log=[];S.wkL={total:0};const rs=roster();
+  // bookings that happen this week
+  for(const b of S.bookings.filter(b=>b.wk===S.wk)){const a=art(b.aid);if(!a||a.status!=='active')continue;
+    if(b.kind==='brand'){addIncome(a,'brand',b.fee);a.hype=clamp(a.hype+3,0,100);if(a.pers==='rebel')a.morale-=10;log.push(`${a.name} ${vb(a,'shoot','shoots')} the ${b.n} campaign: ${fmt$(b.fee)}.`)}
+    if(b.kind==='fest'){addIncome(a,'live',b.fee);a.cash-=b.fee*.18;const big=b.slot==='Headliner';a.hype=clamp(a.hype+(big?18:9),0,100);a.fans=Math.round(a.fans*(big?1.06:1.025)+1500);a.health-=4;if(big)goal(a,'headline');log.push(`${a.name} ${vb(a,'play','plays')} ${b.n} (${b.slot.toLowerCase()}): ${fmt$(b.fee)}.`);news('Festival Watch',`${a.name} at ${b.n}`,big?'A headline set people will talk about for years.':'A set that won new fans.',true)}
+    if(b.kind==='tv'){a.hype=clamp(a.hype+10,0,100);a.fans=Math.round(a.fans*1.03);if(a.pers==='anxious')a.health-=8;log.push(`${a.name} ${vb(a,'play','plays')} ${b.n}.`)}}
+  S.bookings=S.bookings.filter(b=>b.wk>S.wk);
+  const totAtt=sum(rs.map(a=>a.att));
+  for(const a of rs){
+    // activity
+    const k=a.act.k;a.act.t++;
+    if(k==='write'){a.songs=Math.min(16,a.songs+a.tal/60*rnd(.5,1.2)*(a.morale/70));a.health=clamp(a.health+3,0,100)}
+    else if(k==='studio'){a.health=clamp(a.health-1,0,100);if(a.act.t>=a.act.need+(a.pers==='perfectionist'&&chance(.3)?1:0)){const q=clamp(Math.round(a.tal*.7+a.morale*.15+(a.label.kind==='major'?10:a.label.kind==='indie'?6:2)+N(0,8)+(a.pers==='perfectionist'?6:0)),10,99);
+        a.ready={kind:a.act.kind,q};a.songs=Math.max(0,a.songs-(a.act.kind==='album'?11:4));a.act={k:'idle',t:0,need:0};
+        if(a.label.kind!=='dist'&&q<55&&chance(.3)&&!a.label.angry)S.dec.push({t:'evt',k:'shelve',aid:a.id});S.dec.push({t:'release',aid:a.id})}}
+    else if(k==='promo'){a.hype=clamp(a.hype+5,0,100);a.health=clamp(a.health-4,0,100);if(a.act.t>=a.act.need)a.act={k:'idle',t:0,need:0}}
+    else if(k==='rest'){a.health=clamp(a.health+16,0,100);a.morale=clamp(a.morale+3,0,100);if(a.act.t>=a.act.need)a.act={k:'idle',t:0,need:0}}
+    else if(k==='tour'&&a.tour){tourWeek(a,log)}
+    else if(k==='tour'&&!a.tour){a.act={k:'idle',t:0,need:0}}
+    if(a.act.k==='idle'){a.idle++;if(a.idle>3)a.morale=clamp(a.morale-1.5,0,100)}else a.idle=0;
+    // streams and money
+    const st=weeklyStreams(a);a.streamsWk.push(Math.round(st));if(a.streamsWk.length>156)a.streamsWk.shift();a.lastStreams=st;
+    for(const r of a.rels){const x=r.peak*relCurve(S.wk-r.wk)*(r.boost&&r.boostTo>=S.wk?r.boost:1);r.tot+=x;if(r.tot>75e6&&!r.gold){r.gold=true;a.gold=true;goal(a,'gold');news('Pulse Daily',`${a.name} ${vb(a,'go','goes')} gold`,`“${r.t}” passes 75 million streams.`,true)}}
+    payArtist(a,st*PER_STREAM,st*PUB_STREAM);
+    a.ml=Math.max(a.fans*1.6,a.ml+(st*4.3/3.2-a.ml)*.22);a.fans=Math.round(a.fans*.99+st*.0007);a.hype=clamp(a.hype+(22-a.hype)*.1,0,100);
+    if(S.prFor===a.id&&S.staff.pr)a.hype=clamp(a.hype+4,0,100);
+    // feelings
+    a.attH.push(a.att);if(a.attH.length>8)a.attH.shift();
+    if(a.att===0){a.neglect++;a.trust=a.trust-(1+a.neglect*.9)*(a.pers==='loyal'?.6:1)}else{a.neglect=0;a.trust=a.trust+Math.min(4,a.att*1.4)}a.trust-=stageNow(a)*.35;
+    const share=totAtt?a.att/totAtt:1/rs.length;if(totAtt>=4&&share<.5/rs.length)a.jeal=clamp(a.jeal+6*PERS[a.pers].jeal,0,100);else a.jeal=clamp(a.jeal-4,0,100);
+    a.morale=clamp(a.morale+(62-a.morale)*.06-(a.health<35?3:0)-(a.jeal>60?2:0)-(a.feud?2:0)+(S.staff.bm?.4:0),0,100);
+    if(a.cash<0&&!S.staff.bm){a.morale=clamp(a.morale-2,0,100)}
+    a.commWk.push(0);
+  }
+  for(const a of S.artists){a.trust=clamp(a.trust,0,100);a.morale=clamp(a.morale,0,100);a.health=clamp(a.health,0,100);a.jeal=clamp(a.jeal,0,100);a.hype=clamp(a.hype,0,100)}
+  // commission lines per artist this week
+  for(const a of S.artists){if(a.commWk.length&&a.status==='active'){a.commWk[a.commWk.length-1]=a.comm-(a._c||0);a._c=a.comm;if(a.commWk.length>156)a.commWk.shift()}}
+  sunsetIncome();
+  // overheads
+  const staffCost=sum(Object.entries(S.staff).filter(([k,v])=>v).map(([k])=>STAFF[k].cost));const over=2400;S.cash-=staffCost+over;
+  S.hist.push({w:S.wk,inc:S.wkL.total,cost:staffCost+over,cash:S.cash,L:{...S.wkL}});if(S.hist.length>260)S.hist.shift();
+  // events
+  for(const a of rs){if(a.status!=='active')continue;const P=PERS[a.pers];const r=Math.random();
+    if(a.health<28&&!S.dec.some(d=>d.aid===a.id&&d.k==='burnout')&&chance(.55*P.burn+.15))S.dec.push({t:'evt',k:'burnout',aid:a.id});
+    else if(r<.018*P.scan*(a.hype/50))S.dec.push({t:'evt',k:'scandal',aid:a.id});
+    else if(r<.03&&a.kind==='band'&&a.n>2)S.dec.push({t:'evt',k:'member',aid:a.id});
+    else if(r<.04&&a.jeal>62){const fav=rs.filter(b=>b!==a).sort((x,y)=>sum(y.attH)-sum(x.attH))[0];if(fav)S.dec.push({t:'evt',k:'jealous',aid:a.id,aid2:fav.id})}
+    else if(r<.05&&rs.length>2&&!a.feud&&a.jeal>40){const o=pick(rs.filter(b=>b!==a&&b.genre===a.genre)||[]);if(o)S.dec.push({t:'evt',k:'feud',aid:a.id,aid2:o.id})}
+    else if(r<.058)S.dec.push({t:'evt',k:'family',aid:a.id});
+    if(a.trust<38&&stageNow(a)>=1&&chance(.05)){const R=pick(RIVALS);S.dec.push({t:'evt',k:'poach',aid:a.id,riv:R.n,who:R.who})}
+    if(a.trust<=12&&!S.dec.some(d=>d.aid===a.id&&d.k==='leave'))S.dec.push({t:'evt',k:'leave',aid:a.id});
+    if(S.wk>=a.contract.end&&!S.dec.some(d=>d.aid===a.id&&d.k==='renew'))S.dec.push({t:'evt',k:'renew',aid:a.id});
+    if(!S.staff.bm&&wOfY(S.wk)===15&&a.earn.life>150000&&chance(.5))S.dec.push({t:'evt',k:'tax',aid:a.id});
+    // the label loses patience after a flop
+    const last=a.rels.filter(x=>x.kind!=='single').pop();if(a.label.kind!=='dist'&&last&&S.wk-last.wk===10&&last.tot<a.ml*1.2&&a.label.bal<-200000&&chance(.4))S.dec.push({t:'evt',k:'drop',aid:a.id});
+    // offers find you
+    const st=stageNow(a);if(chance(.03+a.hype/1500))offerFor(a,'brand');if(chance(.02+a.tal/4000)&&a.rels.length)offerFor(a,'sync');if(chance(.015+a.hype/2000))offerFor(a,'tv');
+    if(a.label.kind==='dist'&&chance(.02+a.hype/1200))offerFor(a,'label');if(a.pub.kind==='none'&&chance(.03))offerFor(a,'pub');
+    const wy=wOfY(S.wk);if(wy>=4&&wy<=14&&chance(.1+st*.04)&&!S.offers.some(o=>o.aid===a.id&&o.type==='fest'))offerFor(a,'fest');
+    a.att=0}
+  // Lumen Awards
+  const wy=wOfY(S.wk);if(wy===2){const noms=rs.filter(a=>a.best<=20||a.gold);S.noms=noms.map(a=>a.id);if(noms.length)news('Lumen Awards',`Nominations: ${noms.map(a=>a.name).join(', ')}`,`${S.co} has ${noms.length} nominee${noms.length>1?'s':''} this year.`,true)}
+  if(wy===6&&S.noms){for(const id of S.noms){const a=art(id);if(!a||a.status!=='active')continue;if(chance(.35+a.hype/400)){goal(a,'award');a.hype=clamp(a.hype+15,0,100);news('Lumen Awards',`${a.name} ${vb(a,'win','wins')} a Lumen`,'The speech thanks their manager by name.',true)}}S.noms=null}
+  S.offers=S.offers.filter(o=>o.exp>S.wk);
+  if(chance(.12))refreshProspect();
+  // feeds
+  for(const a of rs)if(chance(.25))social(a,a.hype>55?'good':a.health<35?'bad':'good');
+  S.wk++;buildChart();
+  for(const a of S.artists)if(a.ready&&a.ready.wait&&a.ready.wait===S.wk)S.dec.push({t:'release',aid:a.id});
+  for(const a of roster())for(const g of a.goals)if(g.k==='million'&&!g.done&&a.earn.life>=1e6)goal(a,'million');
+  // attention owed from last week's promises
+  S.used=[];for(const d of S.debt||[])useBlocks(Math.min(d.n,blocksMax()-S.used.length),d.aid,d.t);S.debt=[];
+  if(S.prFor&&!art(S.prFor))S.prFor=null;
+  S.recap={w:S.wk-1,log,inc:S.wkL.total,cost:S.hist[S.hist.length-1].cost};
+  if(S.cash<-100000)S.over='broke';else if(!roster().length)S.over='empty';else if(S.wk>260)S.over='done';
+  if(S.cash<0&&!S.warned){S.warned=true;mail('Your accountant','You are overdrawn',`The account is at ${full$(S.cash)}. Below ${full$(-100000)} the bank calls the loan and ${S.co} is finished.`)}
+  if(S.cash>S.peakCash)S.peakCash=S.cash}
+function refreshProspect(){if(S.prospects.length>=3)S.prospects.shift();const st=Math.min(3,ri(0,1)+(S.rep>55?1:0)+(S.rep>80?1:0));const p=genArtist(st);p.status='prospect';S.prospects.push(p)}
+function signChance(p,o){const st=stageNow(p);return clamp(.35+S.rep/220+(20-o.rate)*.06-(o.term-3)*.06-(o.sunset)*.04-st*.12-(roster().length>=5?.2:0)+(p.trust-60)/200,0.03,.95)}
+function valuation(){const run=sum(S.hist.slice(-13).map(h=>h.inc))*4;return Math.round(run*2.5+Math.max(0,S.cash))}
+</script>
+<script>
+'use strict';
+const IC={
+  week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  roster:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/>',
+  deals:'<path d="M4 7h16v13H4z"/><path d="M9 7V4h6v3M4 12h16"/>',
+  feed:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/>',
+  company:'<path d="M4 20V8l8-4 8 4v12"/><path d="M9 20v-6h6v6"/>',
+  close:'<path d="M6 6l12 12M18 6L6 18"/>',chev:'<path d="M9 6l6 6-6 6"/>'};
+const ico=k=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
+const markSVG=(s=30)=>`<svg class="mark" width="${s}" height="${s}" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#0a0a0a"/><circle cx="15" cy="15" r="8" fill="none" stroke="#fff" stroke-width="2"/><path d="M15 7a8 8 0 0 1 8 8" fill="none" stroke="#1d5fbf" stroke-width="2.6"/><circle cx="15" cy="15" r="2" fill="#fff"/></svg>`;
+function initials(n){const w=n.replace(/^(The|Lil|Yung|Big) /,'').split(/[\s&]+/).filter(Boolean);return ((w[0]||'?')[0]+(w[1]?w[1][0]:'')).toUpperCase()}
+const face=(a,c='')=>`<span class="face ${c}" style="background:${tint(a.hue)};color:${tintInk(a.hue)}" aria-hidden="true">${esc(initials(a.name))}</span>`;
+function toast(t){const box=$('#toasts');box.innerHTML='';const el=document.createElement('div');el.className='toast';el.textContent=t;box.appendChild(el);clearTimeout(toast.h);toast.h=setTimeout(()=>el.remove(),2800)}
+const when=w=>`Week ${wOfY(w)} · Q${qOf(w)} ${yearOf(w)}`;
+const meter=(v,lowBad=true)=>`<div class="meter ${lowBad&&v<30?'low':''}"><i style="width:${clamp(v,0,100)}%"></i></div>`;
+const actLabel={write:'Writing',studio:'In the studio',promo:'Promo run',rest:'Resting',tour:'On tour',idle:'Nothing booked'};
+function barChart(vals,{h=150,w=340,startWk,line}={}){if(!vals.length)return '<p class="empty">No data yet.</p>';
+  const max=Math.max(...vals,...(line||[]),1);const mag=Math.pow(10,Math.floor(Math.log10(max)));let step=mag;for(const m of [1,2,2.5,5,10]){if(max/(mag*m)<=4){step=mag*m;break}}const top=Math.ceil(max*1.05/step)*step;
+  const L0=44,B=h-20,T0=8,W=w-L0-6;const n=vals.length;const bw=W/n;const y=v=>B-(v/top)*(B-T0);let g='';
+  for(let v=0;v<=top+1e-9;v+=step)g+=`<line x1="${L0}" x2="${w-6}" y1="${y(v)}" y2="${y(v)}" stroke="${v===0?'#9aa0a8':'#e8eaee'}"/><text x="${L0-6}" y="${y(v)+3.5}" text-anchor="end">${fmtN(v)}</text>`;
+  vals.forEach((v,i)=>{g+=`<rect x="${(L0+i*bw+bw*.15).toFixed(1)}" y="${y(v).toFixed(1)}" width="${(bw*.7).toFixed(1)}" height="${(B-y(v)).toFixed(1)}" fill="#1d5fbf"/>`});
+  if(line){g+=`<polyline points="${line.map((v,i)=>`${(L0+i*bw+bw/2).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="#0a0a0a" stroke-width="1.5" stroke-dasharray="4 3"/>`}
+  const ticks=[0,Math.floor(n/3),Math.floor(2*n/3),n-1].filter((v,i,s)=>s.indexOf(v)===i);for(const i of ticks)g+=`<text x="${clamp(L0+i*bw+bw/2,L0+14,w-22)}" y="${h-4}" text-anchor="middle">${startWk?dateOf(startWk+i):i+1}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Chart, peak ${fmtN(max)}">${g}</svg>`}
+function lineChart(vals,{h=140,w=340,startWk}={}){if(vals.length<2)return '<p class="empty">Not enough weeks yet.</p>';const max=Math.max(...vals,1);const mag=Math.pow(10,Math.floor(Math.log10(max)));let step=mag;for(const m of [1,2,2.5,5,10]){if(max/(mag*m)<=4){step=mag*m;break}}const top=Math.ceil(max*1.05/step)*step;
+  const L0=44,B=h-20,T0=8,W=w-L0-6;const x=i=>L0+i/(vals.length-1)*W;const y=v=>B-(v/top)*(B-T0);let g='';
+  for(let v=0;v<=top+1e-9;v+=step)g+=`<line x1="${L0}" x2="${w-6}" y1="${y(v)}" y2="${y(v)}" stroke="${v===0?'#9aa0a8':'#e8eaee'}"/><text x="${L0-6}" y="${y(v)+3.5}" text-anchor="end">${fmtN(v)}</text>`;
+  const n=vals.length;for(const i of [0,Math.floor(n/3),Math.floor(2*n/3),n-1])g+=`<text x="${clamp(x(i),L0+14,w-22)}" y="${h-4}" text-anchor="middle">${dateOf(startWk+i)}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Weekly streams, peak ${fmtN(max)}">${g}<polyline points="${vals.map((v,i)=>x(i).toFixed(1)+','+y(v).toFixed(1)).join(' ')}" fill="none" stroke="#1d5fbf" stroke-width="2" stroke-linejoin="round"/></svg>`}
+
+/* ---------- the week as lanes ---------- */
+function dayPlan(a,w=S.wk){const d=Array(7).fill(null);const k=a.act.k;
+  if(k==='tour'&&a.tour&&w>=a.tour.start){const left=a.tour.dates-a.tour.done;[1,3,4,5].slice(0,Math.min(4,left)).forEach(i=>d[i]={k:'show',t:'Show'})}
+  else if(k==='tour'&&a.tour){[2,3,4].forEach(i=>d[i]={k:'studio',t:'Rehearse'})}
+  else if(k==='studio')[0,1,2,3,4].forEach(i=>d[i]={k:'studio',t:'Studio'});
+  else if(k==='write')[0,1,2,3].forEach(i=>d[i]={k:'write',t:'Write'});
+  else if(k==='promo')[0,2,4].forEach(i=>d[i]={k:'promo',t:'Promo'});
+  else if(k==='rest')[0,1,2,3,4,5,6].forEach(i=>d[i]={k:'rest',t:''});
+  for(const b of S.bookings)if(b.aid===a.id&&b.wk===w){d[b.day]={k:b.kind==='fest'?'fest':b.kind==='tv'?'promo':'brand',t:b.kind==='fest'?'Fest':b.kind==='tv'?'TV':'Shoot'};if(b.days>1)d[b.day+1]={k:'brand',t:'Shoot'}}
+  return d}
+function weekLanes(){const rs=roster();
+  return `<div class="week" role="group" aria-label="This week, by artist"><div></div>${DAYS.map((d,i)=>`<div class="hd">${d}<br><span class="num">${dateOf(S.wk,i).split(' ')[1]}</span></div>`).join('')}
+  ${rs.map(a=>{const d=dayPlan(a);return `<button class="lane" data-a="openart" data-v="${a.id}">${face(a,'sm')}<span style="min-width:0"><b>${esc(a.name)}</b><small>${actLabel[a.act.k]}</small></span></button>${d.map((x,i)=>`<div class="cell ${i>4?'we':''}">${x?`<div class="bk ${x.k}">${x.t}</div>`:''}</div>`).join('')}`}).join('')}</div>
+  <div class="legend"><span><i style="background:#1d5fbf"></i>Show</span><span><i style="background:#0a0a0a"></i>Festival</span><span><i style="background:#d9dce2"></i>Studio</span><span><i style="background:#eceef2"></i>Writing</span><span><i style="box-shadow:inset 0 0 0 1px #9aa0a8"></i>Promo, TV</span><span><i style="box-shadow:inset 0 0 0 1px #1d5fbf"></i>Brand</span><span><i class="bk rest" style="height:10px"></i>Rest</span></div>`}
+function blocksRow(){const m=blocksMax();const lab=['Mon am','Mon pm','Tue am','Tue pm','Wed am','Wed pm','Thu am','Thu pm','Fri am','Fri pm','Sat am','Sat pm'];
+  return `<div class="blocks">${Array.from({length:m},(_,i)=>{const u=S.used[i];const a=u&&u.aid&&art(u.aid);return `<div class="blk ${u?'used':''}" title="${u?esc(u.t):'Free'}">${a?`<span class="face sm" style="background:${tint(a.hue)};color:${tintInk(a.hue)}">${esc(initials(a.name))}</span>`:u?'Co':lab[i]}</div>`}).join('')}</div>`}
+function todos(){const t=[];const rs=roster();
+  for(const a of rs){if(a.health<35)t.push([0,`${a.name}: health ${Math.round(a.health)}`,'Book rest or cancel dates.',a.id]);
+    if(a.neglect>=2)t.push([0,`${a.name}: no time from you in ${a.neglect} weeks`,'Trust is falling every week.',a.id]);
+    if(a.jeal>55)t.push([1,`${a.name} ${vb(a,'are','is')} jealous`,'They are counting your hours.',a.id]);
+    if(a.act.k==='idle'&&!a.ready)t.push([1,`${a.name}: nothing booked`,a.songs>=4?'Enough songs to record.':'Write, tour or rest.',a.id]);
+    if(S.wk>=a.contract.end-4&&S.wk<a.contract.end)t.push([1,`${a.name}'s contract ends ${dateOf(a.contract.end)}`,'Renewal talks are coming.',a.id])}
+  for(const o of S.offers.filter(o=>o.exp<=S.wk+1)){const a=art(o.aid);t.push([0,`${o.from} offer for ${a.name} expires`,'Accept, counter or let it go.',null,o.id])}
+  return t.sort((x,y)=>x[0]-y[0])}
+
+/* ---------- screens ---------- */
+function render(){const app=$('#app'),top=$('#top'),tabs=$('#tabs');
+  if(UI.scr==='title'){top.innerHTML='';tabs.innerHTML='';app.className='app bare';app.innerHTML=titleScreen();renderSheet();return}
+  if(UI.scr==='new'){top.innerHTML='';tabs.innerHTML='';app.className='app bare';app.innerHTML=newScreen();renderSheet();return}
+  if(S.over&&!UI.sheet){if(!UI.overTop){UI.overTop=1;window.scrollTo(0,0)}top.innerHTML='';tabs.innerHTML='';app.className='app bare';app.innerHTML=overScreen();renderSheet();hydrate();return}
+  app.className='app';
+  top.innerHTML=`<header class="top"><div class="in">${markSVG()}<div class="when"><b>${esc(S.co)}</b><span>${when(S.wk)} · ${dateOf(S.wk)}</span></div><span class="small num muted" aria-label="Attention blocks left">${blocksLeft()} of ${blocksMax()}</span><button class="btn sm" data-a="endweek">End week</button></div></header>`;
+  const unread=S.mail.filter(m=>!m.read).length,offers=S.offers.length;
+  const T=[['week','Week'],['roster','Roster'],['deals','Deals'],['feed','Feed'],['company','Company']];
+  tabs.innerHTML=`<div class="tabs"><div class="in">${T.map(([k,n])=>`<button class="tab ${UI.tab===k?'on':''}" data-a="tab" data-v="${k}" aria-current="${UI.tab===k?'page':'false'}">${ico(k)}<span>${n}</span>${k==='deals'&&offers?`<span class="badge">${offers}</span>`:k==='feed'&&unread?`<span class="badge">${unread}</span>`:''}</button>`).join('')}</div></div>`;
+  app.innerHTML=({week:weekTab,roster:rosterTab,deals:dealsTab,feed:feedTab,company:companyTab}[UI.tab])();renderSheet();if(!UI.sheet)hydrate()}
+function titleScreen(){const slots=[1,2,3].map(n=>({n,s:readSlot(n)}));const ls=lastSlot()?readSlot(lastSlot()):null;
+  return `<section class="hero">${markSVG(56)}<h1>Manager: 360&nbsp;Deal</h1><p>Five careers, one calendar, and a commission on everything. Book the tours, cut the deals, keep everyone from walking.</p></section>
+  ${ls&&!ls.over?`<button class="btn block" data-a="cont">Continue: ${esc(ls.co)} · ${when(ls.wk)}</button>`:''}
+  <section class="card"><div class="sec"><h2>Companies</h2><span class="aside">Saved on this device</span></div><div class="list">${slots.map(({n,s})=>`<div class="slot"><div class="stack"><b style="font-weight:500">${s?esc(s.co):'Empty slot '+n}</b><span class="small muted">${s?`${when(s.wk)} · ${s.artists.filter(a=>a.status==='active').length} artists · ${fmt$(s.cash)}${s.over?' · ended':''}`:'Start a company here'}</span></div>
+    <div class="row">${s?`<button class="btn sm sec2" data-a="load" data-v="${n}">Open</button><button class="iconbtn" data-a="del" data-v="${n}" aria-label="Delete slot ${n}">${ico('close')}</button>`:`<button class="btn sm" data-a="newslot" data-v="${n}">New</button>`}</div></div>`).join('')}</div></section>
+  <button class="btn ghost block" data-a="how">How to play</button><p class="hint">All artists, labels, brands, festivals and companies in this game are fictional.</p>`}
+function newScreen(){const d=UI.ng;
+  return `<section class="hero" style="gap:8px"><h1 style="font-size:32px">Open your company</h1><p>You start with three artists at three different stages, ${full$(60000)} and an office lease.</p></section>
+  <label class="field"><span>Company name</span><input type="text" name="company" data-f="co" value="${esc(d.co)}" maxlength="28" autocomplete="off"></label>
+  <label class="field"><span>Your name</span><input type="text" name="manager" data-f="you" value="${esc(d.you)}" maxlength="20" autocomplete="off"></label>
+  <section class="card"><div class="sec"><h2>Your first roster</h2><button class="btn sm sec2" data-a="reroll">Different artists</button></div>
+  <div class="list">${d.roster.map((a,i)=>{a.hue=HUES[i];return `<div class="artist">${face(a)}<div class="who"><div class="nm"><b>${esc(a.name)}</b><span class="small muted">${stageOf(a)}</span></div><span class="meta">${GENRES[a.genre].n} · ${PERS[a.pers].n} · ${fmtN(a.ml)} monthly listeners</span><span class="small soft">Wants: ${a.goals.map(g=>GOALS[g.k].split(':')[0].toLowerCase()).join('; ')}</span><span class="small muted">${a.label.n} · you take ${a.contract.rate}%</span></div></div>`}).join('')}</div></section>
+  <button class="btn block" data-a="start">Open the doors</button><button class="btn ghost block" data-a="back">Back</button>`}
+
+function weekTab(){const last=S.hist[S.hist.length-1];const td=todos();
+  return `<div class="kpis"><div class="lead"><span>Cash in the bank</span><b class="${S.cash<0?'neg':''}">${full$(S.cash)}</b></div><div><span>Commission last week</span><b>${last?fmt$(last.inc):'–'}</b></div><div><span>Attention left</span><b>${blocksLeft()}<small> of ${blocksMax()} blocks</small></b></div></div>
+  <section class="card"><div class="sec"><h2>Needs you</h2><span class="aside">${td.length||'nothing'}</span></div>${td.length?`<div class="list">${td.slice(0,6).map(([p,t,d,aid,oid])=>`<button class="todo" data-a="${oid?'openoffer':'openart'}" data-v="${oid||aid}"><span class="dot ${p?'mid':''}"></span><span class="stack grow"><b style="font-weight:500">${esc(t)}</b><span class="small muted">${esc(d)}</span></span>${ico('chev')}</button>`).join('')}</div>`:'<p class="small muted">Everyone is fine. Enjoy it.</p>'}</section>
+  <section class="card"><div class="sec"><h2>This week</h2><span class="aside">${dateOf(S.wk)} to ${dateOf(S.wk,6)}</span></div>${weekLanes()}</section>
+  <section class="card"><div class="sec"><h2>Your time</h2><span class="aside">Tap an artist to spend it</span></div>${blocksRow()}<p class="hint">Every block you give one artist is a block another one notices you did not.</p></section>`}
+function artistRow(a){return `<button class="artist" data-a="openart" data-v="${a.id}">${face(a)}<div class="who"><div class="nm"><b>${esc(a.name)}</b><span class="small muted">${stageOf(a)}</span></div>
+  <span class="meta">${actLabel[a.act.k]} · ${fmtN(a.ml)} listeners · ${moodWord(a)}</span>
+  <div class="bars"><div>Health${meter(a.health)}</div><div>Morale${meter(a.morale)}</div><div>Trust${meter(a.trust)}</div><div>Jealousy${`<div class="meter ${a.jeal>55?'low':''}"><i style="width:${a.jeal}%"></i></div>`}</div></div></div></button>`}
+function rosterTab(){const rs=roster();const gone=S.artists.filter(a=>a.status==='left');
+  return `<div class="sec"><h1>Roster</h1><span class="aside">${rs.length} of 6</span></div>
+  <section class="card"><div class="list">${rs.map(artistRow).join('')||'<p class="empty">Nobody left. Sign someone.</p>'}</div></section>
+  <section class="card"><div class="sec"><h2>Looking for management</h2><span class="aside">your reputation ${Math.round(S.rep)}</span></div><div class="list">${S.prospects.map(p=>{p.hue=p.hue||HUES[(S.artists.length+S.prospects.indexOf(p))%6];return `<button class="artist" data-a="openpro" data-v="${p.id}">${face(p)}<div class="who"><div class="nm"><b>${esc(p.name)}</b><span class="small muted">${stageOf(p)}</span></div><span class="meta">${GENRES[p.genre].n} · ${PERS[p.pers].n} · ${fmtN(p.ml)} listeners</span><span class="small soft">Wants: ${p.goals.map(g=>GOALS[g.k].split(':')[0].toLowerCase()).join('; ')}</span></div></button>`}).join('')}</div></section>
+  ${gone.length?`<section class="card"><div class="sec"><h2>Former clients</h2><span class="aside">sunset income</span></div><div class="list">${gone.map(a=>{const s=S.sunsets.find(x=>x.aid===a.id);return `<div class="dealrow"><span>${esc(a.name)} · left ${dateOf(a.leftWk)} ${yearOf(a.leftWk)}</span><b>${s?fmt$(s.paid||0)+' paid':'no sunset'}</b></div>`}).join('')}</div></section>`:''}`}
+function artistSheet(a){const st=stageNow(a);const busy=a.act.k==='tour'||a.act.k==='studio';const L=a.label,P=a.pub;const bl=blocksLeft();const wy=wOfY(S.wk);
+  const task=(act,n,cost,d,ok=true)=>`<button class="task" data-a="${act}" data-v="${a.id}" ${ok&&bl>=cost?'':'disabled'}><b>${n}</b><small>${d}</small><span class="c">${cost?cost+' block'+(cost>1?'s':''):'free'}</span></button>`;
+  const lastT=(a.tours||[])[0];
+  return `<div class="x"><div class="row grow">${face(a,'lg')}<div class="stack"><h2>${esc(a.name)}</h2><span class="small muted">${stageOf(a)} · ${GENRES[a.genre].n} · ${PERS[a.pers].n}</span></div></div><button class="iconbtn" data-a="close" aria-label="Close">${ico('close')}</button></div>
+  <div class="stage" data-stage="art:${a.id}"><div class="fb">${face(a,'lg')}</div><div class="cap"><span>${a.tour?TIERS.find(t=>t.k===a.tour.tier).n+' tour':'Last played: '+TIERS.find(t=>t.k===a.lastTier).n.toLowerCase()}</span><span>Drag to spin</span></div></div>
+  <p class="small soft">${esc(PERS[a.pers].d)}</p>
+  <div class="kpis"><div><span>Monthly listeners</span><b>${fmtN(a.ml)}</b></div><div><span>Tickets per city</span><b>${fmtN(demand(a))}</b></div><div><span>Their cash</span><b class="${a.cash<0?'neg':''}">${fmt$(a.cash)}</b></div><div><span>Your commission</span><b class="money">${fmt$(a.comm)}</b></div></div>
+  <section class="card"><div class="sec"><h3>How they are</h3><span class="aside">${moodWord(a)}</span></div><div class="bars"><div>Health ${Math.round(a.health)}${meter(a.health)}</div><div>Morale ${Math.round(a.morale)}${meter(a.morale)}</div><div>Trust ${Math.round(a.trust)}${meter(a.trust)}</div><div>Jealousy ${Math.round(a.jeal)}<div class="meter ${a.jeal>55?'low':''}"><i style="width:${a.jeal}%"></i></div></div></div>
+    <div class="list">${a.goals.map(g=>`<div class="dealrow"><span>${esc(GOALS[g.k])}</span><b>${g.done?'<span class="pill pos">Done</span>':g.failed?'<span class="pill neg">Gone</span>':'<span class="pill">Open</span>'}</b></div>`).join('')}</div>
+    ${a.feud?`<p class="small neg">Feuding with ${esc(art(a.feud).name)}.</p>`:''}</section>
+  <section class="stack"><div class="sec"><h3>Spend time</h3><span class="aside">${bl} block${bl===1?'':'s'} left</span></div>
+    ${task('checkin','Check in',1,'Trust and morale up, jealousy down.')}
+    ${a.ready?task('releasenow','Plan the release',1,`The ${a.ready.kind} is finished: quality ${a.ready.q}.`,!a.ready.wait||a.ready.wait<=S.wk):''}
+    ${task('dowrite','Book writing weeks',1,`Songs banked: ${Math.floor(a.songs)} of 10 for an album.`,!busy&&a.act.k!=='write')}
+    ${task('dorecord','Book the studio',1,a.label.kind==='dist'?`Self-funded: about ${fmt$(a.songs>=10?35000:12000)} of their money.`:`Recording fund from ${a.label.n}, recoupable.`,!busy&&a.songs>=4&&!a.ready)}
+    ${task('dotour','Plan a tour',2,lastT?`Last: ${TIERS.find(t=>t.k===lastT.tier).n.toLowerCase()}, ${Math.round(lastT.pct*100)}% sold, ${fmt$(lastT.net)} to them.`:'Pick rooms, dates and price; the agent books it.',!busy)}
+    ${task('dopromo','Promo run',1,'Three weeks of radio, podcasts and interviews. Hype up, health down.',!busy)}
+    ${task('dorest','Book rest',1,'Two weeks off. Health back up.',a.act.k!=='rest'&&a.act.k!=='studio')}
+    ${task('pitch','Shop a label deal',2,L.kind==='dist'?'Labels will call with offers.':`Signed to ${L.n}, ${L.albums} album${L.albums===1?'':'s'} owed.`,L.kind==='dist'||L.albums===0)}
+    ${task('pitchpub','Pitch publishers',1,P.kind==='none'?'Unregistered songs leak money.':`With ${P.n}.`,P.kind==='none')}
+    ${task('pitchbrand','Pitch brands',1,'Brand money is real money. Rebels hate it.')}
+    ${task('pitchsync','Pitch sync',1,'TV, film, games and adverts.',a.rels.length>0)}
+    ${task('pitchfest','Pitch festivals',1,'Bookers plan summer between February and April.',wy>=3&&wy<=14)}
+    ${S.staff.pr?`<button class="task" data-a="prfor" data-v="${a.id}" ${S.prFor===a.id?'disabled':''}><b>${S.prFor===a.id?'Publicist is on them':'Point the publicist here'}</b><small>One artist a week gets the campaign.</small><span class="c">free</span></button>`:''}</section>
+  <section class="card"><div class="sec"><h3>Paperwork</h3></div>
+    <div class="dealrow"><span>Management</span><b>${a.contract.rate}%${a.flags.netTour?' (net on tours)':''} until ${dateOf(a.contract.end)} ${yearOf(a.contract.end)}</b></div>
+    <div class="dealrow"><span>Sunset clause</span><b>${a.contract.sunset?a.contract.sunset+' years, stepping down':'none'}</b></div>
+    <div class="dealrow"><span>Records</span><b>${esc(L.n)} · ${L.kind==='dist'?L.share+'% to artist':L.kind==='indie'?L.split+'/'+(100-L.split)+' split':L.pts+' points'}${L.p360?' · '+L.p360+'% 360':''}</b></div>
+    ${L.kind!=='dist'?`<div class="dealrow"><span>Label account</span><b class="${L.bal<0?'neg':'pos'}">${L.bal<0?'unrecouped '+full$(-L.bal):'recouped +'+full$(L.bal)}</b></div>`:''}
+    <div class="dealrow"><span>Publishing</span><b>${esc(P.n)}${P.kind==='copub'?' · co-pub':P.kind==='admin'?' · admin':''}${P.kind==='copub'?(P.bal<0?' · unrecouped '+fmt$(-P.bal):' · recouped'):''}</b></div></section>
+  <section class="card"><div class="sec"><h3>Where the money came from</h3><span class="aside">their gross, all time</span></div>
+    ${[['live','Live fees'],['merch','Merch, net'],['rec','Record royalties'],['pub','Publishing'],['brand','Brand deals'],['sync','Sync'],['adv','Advances']].map(([k,n])=>`<div class="dealrow"><span>${n}</span><b>${full$(a.earn[k]||0)}</b></div>`).join('')}
+    <div class="dealrow total"><span>Total</span><b class="money">${full$(a.earn.life)}</b></div><div class="dealrow"><span>Your ${a.contract.rate}%, collected</span><b class="money">${full$(a.comm)}</b></div></section>
+  <section class="card"><div class="sec"><h3>Streams</h3><span class="aside">weekly</span></div>${lineChart(a.streamsWk,{startWk:S.wk-a.streamsWk.length})}
+    ${a.rels.length?`<div class="list">${a.rels.slice().reverse().slice(0,6).map(r=>`<div class="dealrow"><span>${r.kind==='single'?'Single':r.kind==='ep'?'EP':'Album'} “${esc(r.t)}”${r.wk>S.wk?' · out '+dateOf(r.wk):''}</span><b>${fmtN(r.tot)}${r.gold?' · gold':''}</b></div>`).join('')}</div>`:''}</section>
+  ${(a.tours||[]).length?`<section class="card"><div class="sec"><h3>Tours</h3></div>${a.tours.slice(0,4).map(t=>`<div class="dealrow"><span>${TIERS.find(x=>x.k===t.tier).n}, ${t.dates} dates · ${Math.round(t.pct*100)}% sold</span><b>${fmt$(t.gross)} gross · <span class="${t.net<0?'neg':''}">${fmt$(t.net)}</span> net</b></div>`).join('')}</section>`:''}`}
+function tourSheet(){const o=UI.tour,a=art(o.aid);o.guar=guarantee(a,o.tier,o.region,o.price);const p=tourPlan(a,o);
+  const rng=(k,lab,min,max,st,f)=>`<label class="field"><span>${lab} <b data-out="${k}">${f(o[k])}</b></span><input type="range" data-t="${k}" min="${min}" max="${max}" step="${st}" value="${o[k]}"></label>`;
+  return `<div class="x"><h2>Tour: ${esc(a.name)}</h2><button class="iconbtn" data-a="close" aria-label="Close">${ico('close')}</button></div>
+  <p class="small soft">About <b class="num">${fmtN(demand(a,o.region))}</b> people per city would buy a ticket at today's hype. The agent takes 10% of the fee; you take ${a.contract.rate}%${a.flags.netTour?' of 55% (net terms)':''}.</p>
+  <div class="opts">${TIERS.map(t=>`<button class="opt ${o.tier===t.k?'on':''}" data-a="ttier" data-v="${t.k}"><b>${t.n}</b><small>${t.d}</small><span class="cost">${fmtN(t.cap)} cap · ${Math.round(Math.min(1,demand(a,o.region)/t.cap)*100)}% full</span></button>`).join('')}</div>
+  <div class="opts">${Object.entries(REGIONS).map(([k,r])=>`<button class="opt ${o.region===k?'on':''}" data-a="treg" data-v="${k}"><b>${r.n}</b><small>Travel ×${r.tr}</small></button>`).join('')}</div>
+  ${rng('dates','Dates',6,40,2,v=>v)}
+  ${rng('price','Ticket price',Math.round(TIERS.find(t=>t.k===o.tier).price*.5),Math.round(TIERS.find(t=>t.k===o.tier).price*1.8),1,v=>'$'+v)}
+  <section class="card" id="tproj">${tourProj(p,o)}</section>
+  <button class="btn block" data-a="booktour" ${blocksLeft()<2?'disabled':''}>Book it · 2 blocks</button>`}
+function tourProj(p,o){return `<div class="sec"><h3>Per show</h3><span class="aside">${Math.round(p.pct*100)}% sold</span></div>
+  <div class="dealrow"><span>Box office (${fmtN(p.sold)} × $${o.price})</span><b>${full$(p.gross)}</b></div>
+  <div class="dealrow"><span>Venue and promoter costs</span><b>${full$(-p.T.cost)}</b></div>
+  <div class="dealrow"><span>Artist fee (guarantee ${fmt$(o.guar)} vs 85% of net)</span><b>${full$(p.fee)}</b></div>
+  <div class="dealrow"><span>Merch, after venue cut and cost of goods</span><b>${full$(p.merchNet)}</b></div>
+  <div class="dealrow"><span>Production, crew, travel${S.staff.tm?' (tour manager −8%)':''}</span><b>${full$(-p.costs)}</b></div>
+  <div class="dealrow"><span>Agent, 10% of fee</span><b>${full$(-p.agent)}</b></div>
+  <div class="dealrow"><span>Your commission</span><b class="money hue">${full$(-p.mgr)}</b></div>
+  ${p.biz?`<div class="dealrow"><span>Business manager, 5%</span><b>${full$(-p.biz)}</b></div>`:''}${p.l360?`<div class="dealrow"><span>Label's 360 share</span><b>${full$(-p.l360)}</b></div>`:''}
+  <div class="dealrow total"><span>Artist keeps per show</span><b class="money ${p.net<0?'neg':''}">${full$(p.net)}</b></div>
+  <div class="dealrow"><span>Whole tour: artist / you</span><b><span class="${p.tot.net<0?'neg':''}">${fmt$(p.tot.net)}</span> / <span class="hue">${fmt$(p.tot.mgr)}</span></b></div>
+  ${p.net<0?'<p class="hint neg">You would make money on a tour that loses the artist money. Expect a commission dispute.</p>':''}`}
+function proSheet(p){UI.sign=UI.sign&&UI.sign.id===p.id?UI.sign:{id:p.id,rate:20,term:3,sunset:2};const o=UI.sign;const c=signChance(p,o);
+  const rng=(k,lab,min,max,st,f)=>`<label class="field"><span>${lab} <b data-out="${k}">${f(o[k])}</b></span><input type="range" data-s="${k}" min="${min}" max="${max}" step="${st}" value="${o[k]}"></label>`;
+  return `<div class="x"><div class="row grow">${face(p,'lg')}<div class="stack"><h2>${esc(p.name)}</h2><span class="small muted">${stageOf(p)} · ${GENRES[p.genre].n} · ${PERS[p.pers].n}</span></div></div><button class="iconbtn" data-a="close" aria-label="Close">${ico('close')}</button></div>
+  <div class="stage" data-stage="art:${p.id}"><div class="fb">${face(p,'lg')}</div><div class="cap"><span>Showcase set</span><span>Drag to spin</span></div></div>
+  <div class="kpis"><div><span>Monthly listeners</span><b>${fmtN(p.ml)}</b></div><div><span>Tickets per city</span><b>${fmtN(demand(p))}</b></div></div>
+  <p class="small soft">${esc(PERS[p.pers].d)} Wants: ${p.goals.map(g=>esc(GOALS[g.k].toLowerCase())).join('; ')}. Records: ${esc(p.label.n)}.</p>
+  ${rng('rate','Commission',10,20,2.5,v=>v+'%')}${rng('term','Term',2,5,1,v=>v+' years')}${rng('sunset','Sunset clause',0,3,1,v=>v?v+' years, stepping down':'none')}
+  <p class="small" id="chance">Chance they say yes: <b>${c>.7?'likely':c>.45?'coin flip':c>.2?'long shot':'very unlikely'}</b>${roster().length>=5?' · they worry you are stretched':''}</p>
+  <button class="btn block" data-a="signpro" ${blocksLeft()<2||roster().length>=6?'disabled':''}>Pitch them · 2 blocks</button>`}
+function dealsTab(){const by=t=>S.offers.filter(o=>o.type===t);const L=[['label','Record deals'],['pub','Publishing'],['fest','Festivals'],['brand','Brands'],['sync','Sync'],['tv','TV']];
+  return `<div class="sec"><h1>Deals</h1><span class="aside">${S.offers.length} open</span></div>
+  ${S.offers.length?L.filter(([t])=>by(t).length).map(([t,n])=>`<section class="card"><div class="sec"><h2>${n}</h2></div><div class="list">${by(t).map(o=>{const a=art(o.aid);const op=opinion(a,o);return `<button class="offer" data-a="openoffer" data-v="${o.id}"><div class="h"><span>${face(a,'sm')} ${esc(a.name)}</span><span>expires ${dateOf(o.exp)}</span></div><b>${esc(o.from)}</b><p>${offerLine(o)}</p><span class="small ${op.s<-10?'neg':op.s>=10?'pos':'muted'}">${op.word}</span></button>`}).join('')}</div></section>`).join(''):'<p class="empty">No offers on the table. Pitch your artists to labels, brands, publishers and festivals from their pages.</p>'}`}
+function offerLine(o){if(o.type==='label')return `${o.kind==='major'?'Major':'Indie'} deal · ${fmt$(o.adv)} advance · ${o.kind==='major'?o.pts+' points':o.split+'/50 split'}${o.p360?' · '+o.p360+'% 360':''} · ${o.albums} albums`;
+  if(o.type==='pub')return `${o.kind==='copub'?'Co-publishing':'Admin'} · ${fmt$(o.adv)} advance · ${o.years} years`;if(o.type==='brand')return `${o.cat} campaign · ${fmt$(o.fee)} · ${o.days} shoot day${o.days>1?'s':''}`;
+  if(o.type==='sync')return `“${o.song}” in ${o.show} · ${fmt$(o.fee)} all-in`;if(o.type==='fest')return `${o.slot} · ${fmt$(o.fee)} · ${dateOf(o.fwk,5)}`;if(o.type==='tv')return `Live performance · ${dateOf(o.wk2,3)}`;return ''}
+function offerSheet(o){const a=art(o.aid);const op=opinion(a,o);const cm=commOn(a,o);
+  return `<div class="x"><div class="row grow">${face(a)}<div class="stack"><h2>${esc(o.from)}</h2><span class="small muted">for ${esc(a.name)} · expires ${dateOf(o.exp)}</span></div></div><button class="iconbtn" data-a="close" aria-label="Close">${ico('close')}</button></div>
+  <section class="card">${offerRows(o)}<div class="dealrow total"><span>Your ${a.contract.rate}% of it</span><b class="money hue">${full$(cm)}</b></div></section>
+  <section class="card"><div class="sec"><h3>${esc(a.name)}: ${op.word.toLowerCase()}</h3></div>${op.r.map(t=>`<p class="small soft">${esc(t)}</p>`).join('')}${op.s<-10?'<p class="hint neg">They will sign if you push, and resent you for it.</p>':''}</section>
+  <div class="row"><button class="btn ghost" data-a="decline" data-v="${o.id}">Decline</button>${['label','pub','brand','fest','sync'].includes(o.type)?`<button class="btn sec2" data-a="counter" data-v="${o.id}" ${!S.staff.law&&blocksLeft()<1?'disabled':''}>Counter${S.staff.law?'':' · 1 block'}</button>`:''}<button class="btn grow" data-a="accept" data-v="${o.id}">Accept</button></div>`}
+function offerRows(o){const R=(k,v)=>`<div class="dealrow"><span>${k}</span><b>${v}</b></div>`;
+  if(o.type==='label')return R('Type',o.kind==='major'?'Major label, royalty deal':'Independent, 50/50 net profit split')+R('Advance (recoupable)',full$(o.adv))+R('Recording fund (recoupable)',full$(o.rec))+(o.kind==='major'?R('Royalty',o.pts+' points of master revenue'):R('Split','50% of net after costs'))+R('360 on live, merch, brand',o.p360?o.p360+'%':'none')+R('Albums',o.albums+' (label options)')+R('Marketing commitment',full$(o.mkt))+
+    `<p class="hint">At ${o.kind==='major'?o.pts+' points':'a 50% split'}, they recoup ${full$(o.adv+o.rec)} after about ${fmtN((o.adv+o.rec)/(PER_STREAM*(o.kind==='major'?o.pts/100:.5)))} streams. Until then, record royalties pay you nothing.</p>`;
+  if(o.type==='pub')return R('Deal',o.kind==='copub'?'Co-publishing: publisher keeps 50% of the publisher share':'Administration: 15% fee, artist keeps ownership')+R('Advance (recoupable)',full$(o.adv))+R('Term',o.years+' years');
+  if(o.type==='brand')return R('Brand',`${o.from}, ${o.cat}`)+R('Fee',full$(o.fee))+R('Shoot days',o.days)+R('Credibility risk',o.cred>=1?'high':'moderate');
+  if(o.type==='sync')return R('Placement',`“${esc(o.song)}” in ${o.show}`)+R('Total fee',full$(o.fee))+R('Master side (via label)',full$(o.fee/2))+R('Publishing side',full$(o.fee/2));
+  if(o.type==='fest')return R('Slot',o.slot)+R('Date',dateOf(o.fwk,5)+' '+yearOf(o.fwk))+R('Fee',full$(o.fee))+R('Travel and crew','about 18% of the fee');
+  if(o.type==='tv')return R('Show',o.from)+R('Date',dateOf(o.wk2,3));return ''}
+function feedTab(){const unread=S.mail.filter(m=>!m.read).length;const c=S.chart||[];
+  return `<div class="seg">${[['news','News'],['social','Social'],['chart','Pulse 40'],['inbox','Inbox'+(unread?' '+unread:'')]].map(([k,n])=>`<button class="${UI.feed===k?'on':''}" data-a="feed" data-v="${k}">${n}</button>`).join('')}</div>
+  ${UI.feed==='news'?`<section class="list">${S.news.map(n=>`<article class="news"><span class="src">${esc(n.src)} · ${dateOf(n.w)} ${yearOf(n.w)}${n.mine?' · <span class="hue">your roster</span>':''}</span><b>${esc(n.t)}</b><p>${esc(n.d)}</p></article>`).join('')}</section>`:
+   UI.feed==='social'?`<section class="list">${S.social.map(p=>{const a=art(p.aid);return `<article class="post">${a?face(a,'sm'):''}<div class="body"><span class="h"><b>@${esc(p.h)}</b> · ${dateOf(p.w)}</span><p>${esc(p.t)}</p><span class="stats">${fmtN(p.likes)} likes</span></div></article>`}).join('')||'<p class="empty">Quiet.</p>'}</section>`:
+   UI.feed==='chart'?`<p class="small muted">Weekly streams. Your artists are marked in blue.</p><section class="list">${c.slice(0,40).map(r=>`<div class="chartrow ${r.mine?'mine':''}"><span class="p">${r.pos}</span><div class="s"><b>${esc(r.t)}</b><span>${esc(r.ar)}</span></div><span class="n">${fmtN(r.s)}<br><small class="${r.prev==null?'':r.prev>r.pos?'pos':r.prev<r.pos?'neg':'muted'}">${r.prev==null?'new':r.prev>r.pos?'▲'+(r.prev-r.pos):r.prev<r.pos?'▼'+(r.pos-r.prev):'–'}</small></span></div>`).join('')}</section>${c.filter(r=>r.mine&&r.pos>40).map(r=>`<p class="small"><span class="hue">${esc(r.ar)}</span> “${esc(r.t)}” is at #${r.pos}.</p>`).join('')}`:
+   `<section class="list">${S.mail.map(m=>`<button class="offer" data-a="mail" data-v="${m.id}"><div class="h"><span>${esc(m.from)}</span><span>${dateOf(m.w)}</span></div><b>${m.read?'':'<span class="pill neg" style="margin-right:6px">New</span>'}${esc(m.subj)}</b><p>${esc(m.body.length>110?m.body.slice(0,108)+'…':m.body)}</p></button>`).join('')||'<p class="empty">Inbox zero.</p>'}</section>`}`}
+function companyTab(){const H=S.hist.slice(-26);const qs=S.hist.filter(h=>qOf(h.w)===qOf(S.wk)&&yearOf(h.w)===yearOf(S.wk));const by=k=>sum(qs.map(h=>h.L[k]||0));const inc=sum(qs.map(h=>h.inc)),cost=sum(qs.map(h=>h.cost));
+  const staffCost=sum(Object.entries(S.staff).filter(([,v])=>v).map(([k])=>STAFF[k].cost));
+  return `<div class="sec"><h1>${esc(S.co)}</h1><span class="aside">${esc(S.you)}, founder</span></div>
+  <div class="stage tall" data-stage="office"><div class="fb">Your office</div><div class="cap"><span>The office</span><span>Drag to spin</span></div></div>
+  <div class="kpis"><div class="lead"><span>What the company is worth</span><b>${full$(valuation())}</b><small>2.5 × a year of commission at the current run rate, plus cash</small></div><div><span>Weekly overheads</span><b>${fmt$(staffCost+2400)}</b></div><div><span>Reputation</span><b>${Math.round(S.rep)}</b></div></div>
+  <section class="card"><div class="sec"><h2>Commission in, by week</h2><span class="aside">dashed line: costs</span></div>${barChart(H.map(h=>h.inc),{startWk:H.length?H[0].w:S.wk,line:H.map(h=>h.cost)})}</section>
+  <section class="card"><div class="sec"><h2>Q${qOf(S.wk)} ledger</h2><span class="aside">to date</span></div>
+    ${[['live','Touring fees'],['merch','Merch'],['rec','Record royalties'],['pub','Publishing'],['brand','Brand deals'],['sync','Sync'],['adv','Advances'],['sunset','Sunset clauses']].map(([k,n])=>`<div class="dealrow"><span>${n}</span><b>${full$(by(k))}</b></div>`).join('')}
+    <div class="dealrow total"><span>Commission</span><b class="money">${full$(inc)}</b></div><div class="dealrow"><span>Rent, your draw, staff</span><b>${full$(-cost)}</b></div><div class="dealrow"><span>Profit</span><b class="money ${inc-cost<0?'neg':'pos'}">${full$(inc-cost)}</b></div></section>
+  <section class="card"><div class="sec"><h2>Staff</h2><span class="aside">hire and fire any week</span></div><div class="list">${Object.entries(STAFF).map(([k,s])=>`<div class="row" style="padding:10px 0"><div class="stack grow"><b style="font-weight:500">${s.n}</b><span class="small muted">${s.d}</span><span class="small num">${s.cost?full$(s.cost)+' a week':'paid by artists'}</span></div><button class="btn sm ${S.staff[k]?'ghost':''}" data-a="staff" data-v="${k}">${S.staff[k]?'Let go':'Hire'}</button></div>`).join('')}</div></section>
+  <div class="opts"><button class="opt" data-a="how"><b>How to play</b><small>Rules and the money</small></button><button class="opt" data-a="three"><b>3D ${S.three?'on':'off'}</b><small>Stages and office</small></button><button class="opt" data-a="quit"><b>Save and exit</b><small>Back to the title</small></button></div>`}
+function overScreen(){const why={broke:'The bank calls in the loan.',empty:'Nobody left to manage.',done:'Five years in.'}[S.over];
+  return `<section class="hero"><h1 style="font-size:36px">${why}</h1><p>${S.over==='done'?`${esc(S.co)} is worth ${full$(valuation())}. The calls keep coming.`:'The office furniture goes back to the leasing company.'}</p></section>
+  <div class="stage tall" data-stage="office"><div class="fb">Your office</div></div>
+  <div class="kpis"><div class="lead"><span>Company value</span><b>${full$(valuation())}</b></div><div><span>Reputation</span><b>${Math.round(S.rep)}</b></div><div><span>Goals reached</span><b>${sum(S.artists.map(a=>a.goals.filter(g=>g.done).length))}</b></div></div>
+  <section class="card"><div class="sec"><h2>Everyone you managed</h2></div><div class="list">${S.artists.map(a=>`<div class="dealrow"><span>${esc(a.name)}<br><small class="muted">${stageOf(a)} · ${a.status==='active'?'still with you':'left'}</small></span><b class="money">${fmt$(a.comm)}</b></div>`).join('')}</div></section>
+  <button class="btn block" data-a="totitle">Back to the title</button>`}
+</script>
+<script>
+'use strict';
+/* ---------- sheets ---------- */
+const sheetKey=sh=>sh.k+(sh.id||'');
+function renderSheet(){const el=$('#sheet');const sh=UI.sheet;if(!sh){el.innerHTML='';document.body.style.overflow='';return}
+  const prev=el.querySelector('.sheet');const st=prev&&prev.dataset.k===sheetKey(sh)?prev.scrollTop:0;let h='';
+  if(sh.k==='art'){const a=art(sh.id);if(!a){UI.sheet=null;return renderSheet()}h=artistSheet(a)}
+  else if(sh.k==='pro'){const p=S.prospects.find(x=>x.id===sh.id);if(!p){UI.sheet=null;return renderSheet()}h=proSheet(p)}
+  else if(sh.k==='tour')h=tourSheet();
+  else if(sh.k==='offer'){const o=S.offers.find(x=>x.id===sh.id);if(!o){UI.sheet=null;return renderSheet()}h=offerSheet(o)}
+  else if(sh.k==='mail'){const m=S.mail.find(x=>x.id===sh.id);const a=m.aid&&art(m.aid);h=`<div class="x"><h2>${esc(m.subj)}</h2><button class="iconbtn" data-a="close" aria-label="Close">${ico('close')}</button></div><p class="small muted">${esc(m.from)} · ${dateOf(m.w)} ${yearOf(m.w)}</p><p class="soft">${esc(m.body)}</p>${a&&a.status==='active'?`<button class="btn sec2 block" data-a="openart" data-v="${a.id}">Open ${esc(a.name)}</button>`:''}`}
+  else if(sh.k==='recap')h=recapSheet();
+  else if(sh.k==='dec')h=decSheet();
+  else if(sh.k==='how')h=howSheet();
+  const modal=['recap','dec'].includes(sh.k);
+  el.innerHTML=`<div class="scrim" ${modal?'':'data-a="scrim"'}><div class="sheet" data-k="${sheetKey(sh)}" role="dialog" aria-modal="true">${modal?'':'<div class="grab"></div>'}${h}</div></div>`;document.body.style.overflow='hidden';const ns=el.querySelector('.sheet');if(ns)ns.scrollTop=st;hydrate()}
+function recapSheet(){const r=S.recap;const top=S.news.filter(n=>n.w>=r.w).slice(0,3);
+  return `<div class="x"><h2>Week ${wOfY(r.w)} wrap</h2><span class="small muted">${dateOf(r.w)} to ${dateOf(r.w,6)}</span></div>
+  <div class="kpis"><div><span>Commission in</span><b class="money">${full$(r.inc)}</b></div><div><span>Overheads out</span><b>${full$(-r.cost)}</b></div></div>
+  ${r.log.length?`<div class="list">${r.log.map(t=>`<p class="small soft" style="padding:7px 0">${esc(t)}</p>`).join('')}</div>`:''}
+  ${top.length?`<section class="list">${top.map(n=>`<article class="news"><span class="src">${esc(n.src)}</span><b>${esc(n.t)}</b><p>${esc(n.d)}</p></article>`).join('')}</section>`:''}
+  <button class="btn block" data-a="recapok">${S.dec.length?`Next: ${S.dec.length} thing${S.dec.length>1?'s':''} to decide`:'On to the new week'}</button>`}
+function decSheet(){const d=S.dec[0];const a=art(d.aid);if(!a||a.status!=='active'||((d.t==='release'||d.k==='shelve')&&(!a.ready||(a.ready.wait&&a.ready.wait>S.wk)))){S.dec.shift();return S.dec.length?decSheet():(UI.sheet=null,'')}
+  if(d.t==='release'){UI.rel=UI.rel||{lead:'radio',mkt:0};const r=a.ready;const dist=a.label.kind==='dist';
+    return `<div class="x"><div class="row grow">${face(a)}<h2>${esc(a.name)}: the ${r.kind} is done</h2></div></div>
+    <p class="soft">Quality <b class="num">${r.q}</b> of 100. ${dist?'You are releasing it yourselves through Tunebridge.':`${esc(a.label.n)} has ${full$(a.label.mkt)} of marketing for it.`}</p>
+    <div class="sec"><h3>Lead single</h3></div><div class="opts one">${[['radio','The radio one','Safest; leans on quality.'],['fan','The fan favourite','Rides their current hype.'],['weird','The left-field one','High risk, high ceiling.']].map(([k,n,dd])=>`<button class="opt ${UI.rel.lead===k?'on':''}" data-a="rellead" data-v="${k}"><b>${n}</b><small>${dd}</small></button>`).join('')}</div>
+    ${dist?`<div class="sec"><h3>Marketing from their own pocket</h3><span class="aside">they have ${fmt$(a.cash)}</span></div><div class="opts">${[0,10000,30000,80000].map(m=>`<button class="opt ${UI.rel.mkt===m?'on':''}" data-a="relmkt" data-v="${m}" ${m>Math.max(0,a.cash)?'disabled':''}><b>${m?fmt$(m):'Nothing'}</b><small>${m?'Playlists pitch and ads':'Post it and pray'}</small></button>`).join('')}</div>`:''}
+    <button class="btn block" data-a="relok">Release the single next week</button>`}
+  const E=EVT[d.k];const b=d.aid2&&art(d.aid2);
+  if(UI.evtRes)return `<div class="x"><h2>${esc(E.t(a,b,d))}</h2></div><p class="soft">${esc(UI.evtRes)}</p><button class="btn block" data-a="evtok">Continue</button>`;
+  return `<div class="x"><div class="row grow">${face(a)}<h2>${esc(E.t(a,b,d))}</h2></div></div><p class="soft">${esc(E.b(a,b,d))}</p>
+  <div class="opts one">${E.c.map((c,i)=>`<button class="opt" data-a="evtpick" data-v="${i}"><b>${esc(c.label?c.label(a,b,d):c.n)}</b><small>${esc(c.d)}</small></button>`).join('')}</div>`}
+function howSheet(){return `<div class="x"><h2>How to play</h2><button class="iconbtn" data-a="close" aria-label="Close">${ico('close')}</button></div>
+  <p class="soft"><b>You are the manager.</b> You take ${'15–20%'} of what your artists earn: live fees, merch, royalties, publishing, brand deals, sync and advances. Your company pays rent, your draw and your staff out of that.</p>
+  <p class="soft"><b>Time is the game.</b> You get ten blocks of attention a week. Every block goes to one artist. Artists you ignore lose trust; artists who see you favour someone else get jealous. Trust at zero and they fire you.</p>
+  <p class="soft"><b>The calendar.</b> Each artist is writing, recording, promoting, resting or touring. Tours make the most money and burn the most health. Book rooms the artist can fill: an empty arena loses the artist money even when you still collect your commission on the gross.</p>
+  <p class="soft"><b>Deals.</b> Labels advance money that the artist pays back from royalties before seeing more. Majors take a 360 cut of touring and merch. Publishers advance against songwriting. Brands pay well and cost credibility. Festivals book in February to April for the summer. A lawyer counters for free.</p>
+  <p class="soft"><b>Contracts end.</b> Big artists ask for a lower rate. When someone leaves, the sunset clause keeps paying you a stepped-down share for a few years.</p>
+  <p class="soft"><b>Five years.</b> Grow the company's value. Go below ${full$(-100000)} and the bank closes you down.</p>`}
+
+/* ---------- actions ---------- */
+function setAct(a,k,need){a.act={k,t:0,need}}
+const ACT={
+  tab:v=>{UI.tab=v;window.scrollTo(0,0)},
+  cont:()=>{const s=readSlot(lastSlot());if(s){S=s;UI.scr='game';UI.tab='week'}},
+  load:v=>{const s=readSlot(+v);if(s){S=s;UI.scr='game';UI.tab='week';try{localStorage.setItem('mgr_last',v)}catch(e){}}},
+  del:v=>{if(confirm('Delete this company? This cannot be undone.'))delSlot(+v)},
+  newslot:v=>{UI.ng={slot:+v,co:'',you:'',roster:rollRoster()};UI.scr='new'},
+  reroll:()=>{UI.ng.roster=rollRoster()},back:()=>{UI.scr='title'},
+  start:()=>{const d=UI.ng;newGame({slot:d.slot,co:(d.co||'').trim()||'North Star Management',you:(d.you||'').trim()||'Alex',roster:d.roster});UI.scr='game';UI.tab='week';save();UI.sheet={k:'how'}},
+  how:()=>{UI.sheet={k:'how'}},close:()=>{UI.sheet=null},scrim:()=>{UI.sheet=null},
+  openart:v=>{if(art(v))UI.sheet={k:'art',id:v}},openpro:v=>{UI.sheet={k:'pro',id:v}},openoffer:v=>{UI.sheet={k:'offer',id:v}},
+  checkin:v=>{const a=art(v);useBlocks(1,v,'Check-in');a.trust=clamp(a.trust+2,0,100);a.morale=clamp(a.morale+3,0,100);a.jeal=clamp(a.jeal-10,0,100);
+    if(a.flags.promised&&S.wk-a.flags.promised>10){a.trust-=6;a.flags.promised=null;toast(`${a.name} remind${a.kind==='solo'?'s':''} you of the promise you made.`)}else toast(pick([`${a.name}: "Good to actually see you."`,`${a.name} play${a.kind==='solo'?'s':''} you three new demos.`,`${a.name} talk${a.kind==='solo'?'s':''} about ${GOALS[a.goals[0].k].split(':')[0].toLowerCase()}.`,`A long coffee with ${a.name}.`]))},
+  dowrite:v=>{const a=art(v);useBlocks(1,v,'Writing plan');setAct(a,'write',0);toast(`${a.name}: writing weeks booked.`)},
+  dorecord:v=>{const a=art(v);useBlocks(1,v,'Studio booking');startRecording(a);toast(`${a.name} ${vb(a,'go','goes')} into the studio for ${a.act.need} weeks.`)},
+  dopromo:v=>{const a=art(v);useBlocks(1,v,'Promo plan');setAct(a,'promo',3)},
+  dorest:v=>{const a=art(v);useBlocks(1,v,'Rest');setAct(a,'rest',2)},
+  dotour:v=>{const a=art(v);const d=demand(a);const tier=d>9000?'arena':d>900?'theatre':'club';const T=TIERS.find(t=>t.k===tier);UI.tour={aid:v,tier,region:'home',dates:tier==='arena'?16:20,price:T.price,guar:0};UI.sheet={k:'tour',id:v}},
+  ttier:v=>{UI.tour.tier=v;UI.tour.price=TIERS.find(t=>t.k===v).price},treg:v=>{UI.tour.region=v},
+  booktour:()=>{const o=UI.tour,a=art(o.aid);o.guar=guarantee(a,o.tier,o.region,o.price);useBlocks(2,a.id,'Tour booking');bookTour(a,{tier:o.tier,region:o.region,dates:o.dates,price:o.price,guar:o.guar});
+    news('Pollstar Weekly',`${a.name} ${vb(a,'announce','announces')} ${o.dates} dates`,`${TIERS.find(t=>t.k===o.tier).n}, ${REGIONS[o.region].n.toLowerCase()}, tickets from $${o.price}. Starts ${dateOf(S.wk+1)}.`,true);UI.sheet={k:'art',id:a.id};toast(`Tour booked. It starts next week.`)},
+  pitch:v=>{const a=art(v);useBlocks(2,v,'Label meetings');const n=1+(a.hype>50?1:0)+(stageNow(a)>=2?1:0);for(let i=0;i<n;i++)if(chance(.4+a.hype/200))offerFor(a,'label');toast(S.offers.some(o=>o.aid===v&&o.type==='label')?'Labels are calling. See Deals.':'Polite passes this week. Try again when the hype is up.')},
+  pitchpub:v=>{const a=art(v);useBlocks(1,v,'Publisher pitch');if(chance(.75))offerFor(a,'pub');toast(S.offers.some(o=>o.aid===v&&o.type==='pub')?'A publisher wants in. See Deals.':'No bites yet.')},
+  pitchbrand:v=>{const a=art(v);useBlocks(1,v,'Brand pitch');if(chance(.35+a.hype/200))offerFor(a,'brand');else toast('The brands want someone hotter this quarter.')},
+  pitchsync:v=>{const a=art(v);useBlocks(1,v,'Sync pitch');if(chance(.3+a.tal/300))offerFor(a,'sync');else toast('Music supervisors are listening. Nothing yet.')},
+  pitchfest:v=>{const a=art(v);useBlocks(1,v,'Festival pitch');if(chance(.55+a.hype/250))offerFor(a,'fest');else toast('The bookers have filled that tier.')},
+  prfor:v=>{S.prFor=v;toast('The publicist is on it this week.')},
+  signpro:()=>{const o=UI.sign;const p=S.prospects.find(x=>x.id===o.id);useBlocks(2,null,'Pitch: '+p.name);
+    if(chance(signChance(p,o))){S.prospects=S.prospects.filter(x=>x!==p);p.status='active';p.joined=S.wk;p.contract={rate:o.rate,start:S.wk,end:S.wk+52*o.term,sunset:o.sunset};const used=roster().map(a=>a.hue);p.hue=HUES.find(h=>!used.includes(h))??HUES[0];p.att=0;S.artists.push(p);
+      news('Trackside',`${p.name} ${vb(p,'sign','signs')} with ${S.co}`,`${o.rate}% over ${o.term} years.`,true);UI.sheet={k:'art',id:p.id};toast(`${p.name} ${vb(p,'are','is')} in.`)}
+    else{S.prospects=S.prospects.filter(x=>x!==p);UI.sheet=null;toast(`${p.name} went with someone else.`)}},
+  accept:v=>{const o=S.offers.find(x=>x.id===v);const a=art(o.aid);const op=acceptOffer(o);UI.sheet={k:'art',id:a.id};toast(op.s<-10?`${a.name} sign${a.kind==='solo'?'s':''}, unhappily.`:'Done. Signed.')},
+  counter:v=>{const o=S.offers.find(x=>x.id===v);const r=counterOffer(o);if(r==='gone'){UI.sheet=null;toast(`${o.from} walked away.`)}else toast(r==='up'?'They improved the offer.':'They will not move.')},
+  decline:v=>{S.offers=S.offers.filter(x=>x.id!==v);UI.sheet=null},
+  feed:v=>{UI.feed=v},mail:v=>{const m=S.mail.find(x=>x.id===v);m.read=true;UI.sheet={k:'mail',id:v}},
+  staff:v=>{S.staff[v]=!S.staff[v];if(!S.staff.pr)S.prFor=null;toast(S.staff[v]?`${STAFF[v].n} hired.`:`${STAFF[v].n} let go.`)},
+  endweek:()=>{if(blocksLeft()>0&&!UI.confirmEnd){UI.confirmEnd=true;toast(`${blocksLeft()} block${blocksLeft()>1?'s':''} unused. Tap End week again to skip them.`);setTimeout(()=>{UI.confirmEnd=false},3500);return}
+    UI.confirmEnd=false;endWeek();UI.sheet={k:'recap'}},
+  recapok:()=>{UI.sheet=S.dec.length?{k:'dec'}:null;if(!S.dec.length)window.scrollTo(0,0)},
+  rellead:v=>{UI.rel.lead=v},relmkt:v=>{UI.rel.mkt=+v},
+  relok:()=>{const d=S.dec.shift();const a=art(d.aid);a.flags.selfMkt=UI.rel.mkt;releasePlan(a,UI.rel.lead);UI.rel=null;UI.sheet=S.dec.length?{k:'dec'}:null},
+  releasenow:v=>{const a=art(v);useBlocks(1,v,'Release plan');S.dec.unshift({t:'release',aid:v});UI.sheet={k:'dec'}},
+  evtpick:v=>{const d=S.dec[0];const a=art(d.aid),b=d.aid2&&art(d.aid2);UI.evtRes=EVT[d.k].c[+v].f(a,b,d)},
+  evtok:()=>{UI.evtRes=null;S.dec.shift();UI.sheet=S.dec.length?{k:'dec'}:null},
+  three:()=>{S.three=!S.three;if(!S.three)stop3D()},
+  quit:()=>{save();S=null;UI.scr='title';UI.sheet=null;stop3D()},totitle:()=>{S=null;UI.scr='title';UI.sheet=null;UI.overTop=0;stop3D()}};
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-a]');if(!b||b.disabled)return;if(b.dataset.a==='scrim'&&e.target!==b)return;const f=ACT[b.dataset.a];if(!f)return;e.preventDefault();f(b.dataset.v);if(S&&S.artists)for(const x of S.artists){x.trust=clamp(x.trust,0,100);x.morale=clamp(x.morale,0,100);x.health=clamp(x.health,0,100);x.jeal=clamp(x.jeal,0,100);x.hype=clamp(x.hype,0,100)}if(S&&UI.scr==='game')save();render()});
+document.addEventListener('input',e=>{const t=e.target;
+  if(t.dataset.f&&UI.ng){UI.ng[t.dataset.f]=t.value;return}
+  if(t.dataset.t&&UI.tour){UI.tour[t.dataset.t]=+t.value;const out=document.querySelector(`[data-out="${t.dataset.t}"]`);if(out)out.textContent=t.dataset.t==='price'?'$'+t.value:t.value;const a=art(UI.tour.aid);UI.tour.guar=guarantee(a,UI.tour.tier,UI.tour.region,UI.tour.price);const pj=$('#tproj');if(pj)pj.innerHTML=tourProj(tourPlan(a,UI.tour),UI.tour)}
+  if(t.dataset.s&&UI.sign){UI.sign[t.dataset.s]=+t.value;const k=t.dataset.s;const out=document.querySelector(`[data-out="${k}"]`);const v=+t.value;if(out)out.textContent=k==='rate'?v+'%':k==='term'?v+' years':v?v+' years, stepping down':'none';const p=S.prospects.find(x=>x.id===UI.sign.id);const c=signChance(p,UI.sign);const ch=$('#chance b');if(ch)ch.textContent=c>.7?'likely':c>.45?'coin flip':c>.2?'long shot':'very unlikely'}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&UI.sheet&&!['recap','dec'].includes(UI.sheet.k)){UI.sheet=null;render()}});
+
+/* ---------- saving ---------- */
+const slotKey=n=>'mgr_slot_'+n;
+function save(){if(!S)return;try{localStorage.setItem(slotKey(S.slot),JSON.stringify(S));localStorage.setItem('mgr_last',String(S.slot))}catch(e){toast('Could not save on this device.')}}
+function readSlot(n){try{const r=localStorage.getItem(slotKey(n));return r?JSON.parse(r):null}catch(e){return null}}
+function delSlot(n){try{localStorage.removeItem(slotKey(n))}catch(e){}}
+function lastSlot(){try{return +localStorage.getItem('mgr_last')||0}catch(e){return 0}}
+
+/* ---------- 3D: the artist on stage, and your office ---------- */
+const THREE_URLS=['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js','https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'];
+const V3={loading:null,failed:false,r:null,sc:null,cam:null,root:null,key:'',raf:0,rotY:0,drag:null,anim:[],t0:0,still:!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches),grad:null,mats:{}};
+function loadThree(){if(window.THREE)return Promise.resolve(window.THREE);if(V3.failed)return Promise.reject(new Error('3D unavailable'));if(V3.loading)return V3.loading;
+  V3.loading=new Promise((res,rej)=>{let i=0;const next=()=>{if(i>=THREE_URLS.length){V3.failed=true;rej(new Error('3D unavailable'));return}const s=document.createElement('script');s.src=THREE_URLS[i++];s.onload=()=>window.THREE?res(window.THREE):next();s.onerror=()=>{s.remove();next()};document.head.appendChild(s)};next()});return V3.loading}
+function toon(T,c){const k='t'+c;if(V3.mats[k])return V3.mats[k];if(!V3.grad){const g=new T.DataTexture(new Uint8Array([110,110,110,255,190,190,190,255,255,255,255,255]),3,1,T.RGBAFormat);g.minFilter=g.magFilter=T.NearestFilter;g.needsUpdate=true;V3.grad=g}return V3.mats[k]=new T.MeshToonMaterial({color:new T.Color(c),gradientMap:V3.grad})}
+function mesh(T,geo,c,x,y,z,p){const m=new T.Mesh(geo,typeof c==='string'?toon(T,c):c);m.position.set(x,y,z);p.add(m);return m}
+function figure(T,L,role,scale=1){const g=new T.Group();
+  for(const s of [-1,1]){mesh(T,new T.CylinderGeometry(.14,.15,1.1,10),L.pants,.18*s,.58,0,g);mesh(T,new T.BoxGeometry(.24,.12,.36),'#161616',.18*s,.06,.07,g)}
+  mesh(T,new T.CylinderGeometry(.42,.34,1.0,14),L.top,0,1.62,0,g);const arms=[];
+  for(const s of [-1,1]){const p=new T.Group();p.position.set(.48*s,2.02,0);mesh(T,new T.CylinderGeometry(.095,.085,.82,8),L.top,0,-.4,0,p);mesh(T,new T.SphereGeometry(.1,8,6),L.skin,0,-.84,0,p);p.rotation.set(-.3,0,.12*s);g.add(p);arms.push(p)}
+  const head=new T.Group();head.position.y=2.15;g.add(head);mesh(T,new T.CylinderGeometry(.12,.13,.2,8),L.skin,0,.08,0,head);mesh(T,new T.SphereGeometry(.4,20,14),L.skin,0,.48,0,head);for(const s of [-1,1])mesh(T,new T.SphereGeometry(.042,8,6),'#111111',.13*s,.52,.37,head);
+  const hm=toon(T,L.hair);const cap=(r,th,tilt)=>{const m=new T.Mesh(new T.SphereGeometry(r,18,10,0,Math.PI*2,0,th),hm);m.position.y=.48;m.rotation.x=tilt;head.add(m)};
+  switch(L.style){case 'long':cap(.43,Math.PI*.5,-.35);mesh(T,new T.BoxGeometry(.8,.75,.28),hm,0,.25,-.22,head);break;case 'buzz':cap(.41,Math.PI*.46,-.35);break;case 'afro':mesh(T,new T.SphereGeometry(.56,14,10),hm,0,.66,-.26,head);break;
+    case 'bun':cap(.43,Math.PI*.5,-.35);mesh(T,new T.SphereGeometry(.16,10,8),hm,0,.86,-.26,head);break;case 'mop':cap(.44,Math.PI*.52,-.15);break;case 'spiky':cap(.42,Math.PI*.45,-.3);for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const c=mesh(T,new T.ConeGeometry(.08,.3,6),hm,Math.cos(a)*.2,.86,Math.sin(a)*.2-.04,head);c.rotation.set(Math.sin(a)*.7,0,-Math.cos(a)*.7)}break;case 'bald':break;default:cap(.43,Math.PI*.48,-.3)}
+  if(role==='mic'){mesh(T,new T.CylinderGeometry(.02,.02,2.2,6),'#2b2b2b',0,1.1,.62,g);mesh(T,new T.CylinderGeometry(.24,.24,.03,16),'#2b2b2b',0,.02,.62,g);mesh(T,new T.SphereGeometry(.07,10,8),'#3a3a3a',0,2.26,.56,g);arms[1].rotation.set(-1.25,0,-.45)}
+  else if(role==='guitar'||role==='bass'||role==='acoustic'){const ig=new T.Group();ig.position.set(.05,1.42,.46);ig.rotation.z=-1.05;g.add(ig);const b=mesh(T,new T.CylinderGeometry(.3,.34,.12,18),role==='acoustic'?'#c98b4a':'#b3261e',0,-.1,0,ig);b.rotation.x=Math.PI/2;mesh(T,new T.BoxGeometry(.075,role==='bass'?1.2:.92,.05),'#3b2416',0,role==='bass'?.7:.56,.03,ig);arms[0].rotation.set(-1,0,.55);arms[1].rotation.set(-1.15,0,.75)}
+  else if(role==='drums'){const k=new T.Group();k.position.set(0,0,.95);g.add(k);const bd=mesh(T,new T.CylinderGeometry(.42,.42,.36,20),'#1d5fbf',0,.45,0,k);bd.rotation.x=Math.PI/2;mesh(T,new T.CircleGeometry(.38,20),'#f2efe6',0,.45,.19,k);const cy=mesh(T,new T.CylinderGeometry(.36,.36,.015,20),'#d4af37',.78,1.9,-.1,k);cy.rotation.z=.25;for(const a of arms)a.rotation.set(-1.15,0,a.position.x<0?.25:-.25)}
+  else if(role==='keys'){const k=new T.Group();k.position.set(0,0,.8);g.add(k);mesh(T,new T.BoxGeometry(1.3,.1,.45),'#1d1d1d',0,1.32,0,k);mesh(T,new T.BoxGeometry(1.15,.04,.2),'#f4f4f4',0,1.38,.1,k);arms[0].rotation.set(-1.05,0,.3);arms[1].rotation.set(-1.05,0,-.3)}
+  else if(role==='decks'){const k=new T.Group();k.position.set(0,0,.85);g.add(k);mesh(T,new T.BoxGeometry(1.6,.95,.6),'#1b1b1f',0,.48,0,k);for(const s of [-1,1])mesh(T,new T.CylinderGeometry(.22,.22,.03,24),'#0c0c0c',.42*s,1.0,0,k);arms[0].rotation.set(-1.1,0,.2);arms[1].rotation.set(-1.1,0,-.2)}
+  else if(role==='desk'){arms[0].rotation.set(-1.1,0,.3);arms[1].rotation.set(-1.1,0,-.3)}
+  g.scale.setScalar(scale);g.userData={head,arms,armX:arms.map(a=>a.rotation.x),role,ph:(L.seed%628)/100};return g}
+function rolesFor(a){const r=GENRES[a.genre].role;if(a.kind==='solo')return [r==='decks'?'decks':r==='acoustic'?'acoustic':'mic'];if(a.kind==='duo')return r==='decks'?['decks','mic']:['mic','guitar'];return ['mic','guitar','bass','drums','keys'].slice(0,a.n)}
+function dotTex(T){if(V3.dot)return V3.dot;const c=document.createElement('canvas');c.width=c.height=32;const x=c.getContext('2d');const g=x.createRadialGradient(16,16,0,16,16,16);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,32,32);return V3.dot=new T.CanvasTexture(c)}
+function textTex(T,lines,w=512,h=128,bg='#ffffff',fg='#0a0a0a'){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,w,h);x.textAlign='center';x.textBaseline='middle';lines.forEach((l,i)=>{x.font=`${l.w||700} ${l.s}px Geist, Arial, sans-serif`;x.fillStyle=l.c||fg;x.fillText(l.t,w/2,h*(i+1)/(lines.length+1))});const t=new T.CanvasTexture(c);t.anisotropy=4;return t}
+function buildArt(T,a){const sc=new T.Scene();const tier=a.tour?a.tour.tier:a.lastTier||'club';const col=GENRES[a.genre].col;sc.background=new T.Color('#101014');sc.fog=new T.Fog('#101014',14,34);
+  sc.add(new T.HemisphereLight(0xffffff,0x303040,.6));const dl=new T.DirectionalLight(0xffffff,.55);dl.position.set(3,8,7);sc.add(dl);const pl=new T.PointLight(new T.Color(col),1,26);pl.position.set(0,6,3);sc.add(pl);
+  const root=new T.Group();sc.add(root);const big=tier==='arena'||tier==='stadium';const W=big?12:tier==='theatre'?10:8;
+  mesh(T,new T.BoxGeometry(W,.6,5.4),'#232228',0,-.3,-.6,root);mesh(T,new T.BoxGeometry(W+.2,.06,.1),new T.MeshBasicMaterial({color:new T.Color('#1d5fbf')}),0,.02,2.1,root);
+  if(big){const scr=new T.Mesh(new T.PlaneGeometry(W*.8,3.6),new T.MeshBasicMaterial({map:textTex(T,[{t:a.name.toUpperCase(),s:70,c:col}],1024,420,'#08080c')}));scr.position.set(0,4.4,-3.2);root.add(scr);for(const s of [-1,1])mesh(T,new T.BoxGeometry(.5,6.5,.5),'#2d2d33',W/2*s,3,-3,root)}
+  else{const bd=new T.Mesh(new T.PlaneGeometry(W*.75,1.8),new T.MeshBasicMaterial({map:textTex(T,[{t:a.name.toUpperCase(),s:56,c:col}],1024,240,'#141317')}));bd.position.set(0,3.4,-3);root.add(bd);mesh(T,new T.BoxGeometry(W*.9,.16,.16),'#3a3a40',0,4.8,-2.6,root)}
+  const cones=[];const nl=big?6:4;for(let i=0;i<nl;i++){const x=(i-(nl-1)/2)*(W/nl);const cn=new T.Mesh(new T.ConeGeometry(1,5,24,1,true),new T.MeshBasicMaterial({color:new T.Color(i%2?col:'#ffffff'),transparent:true,opacity:.09,blending:T.AdditiveBlending,depthWrite:false,side:T.DoubleSide}));cn.position.set(x,2.5,-1.4);cn.rotation.x=-.3;root.add(cn);cones.push(cn)}
+  const roles=rolesFor(a);const figs=[];const front=roles.map((r,i)=>[r,i]).filter(([r])=>r!=='drums');
+  front.forEach(([r,i],j)=>{const x=(j-(front.length-1)/2)*1.7;const f=figure(T,a.look[i]||a.look[0],r,.92);f.position.set(x,0,-.2+(r==='mic'?.4:0));root.add(f);figs.push(f)});
+  roles.forEach((r,i)=>{if(r!=='drums')return;mesh(T,new T.BoxGeometry(2.4,.4,1.8),'#2b2b30',0,.2,-2.1,root);const f=figure(T,a.look[i]||a.look[0],'drums',.92);f.position.set(0,.4,-2.4);f.userData.baseY=.4;root.add(f);figs.push(f)});
+  const cnt=Math.round(clamp(Math.log10(demand(a)+10)*110,80,640));const pos=new Float32Array(cnt*3);const depth=big?14:tier==='theatre'?9:6;for(let i=0;i<cnt;i++){pos[i*3]=rnd(-W/2-1,W/2+1);pos[i*3+1]=rnd(.3,1.4)+(big?Math.random()*2:0);pos[i*3+2]=rnd(2.6,2.6+depth)}
+  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));const crowd=new T.Points(geo,new T.PointsMaterial({color:new T.Color(col),size:.22,map:dotTex(T),transparent:true,depthWrite:false,blending:T.AdditiveBlending}));crowd.userData.base=pos.slice();root.add(crowd);
+  const cam=new T.PerspectiveCamera(38,1,.1,80);cam.position.set(0,2.8,big?12:10);cam.lookAt(0,1.7,0);const e=clamp(a.hype/60,.4,1.3);
+  V3.anim=[t=>{figs.forEach(f=>{const u=f.userData,p=t*(2.2+e)+u.ph;f.position.y=(u.baseY||0)+Math.abs(Math.sin(p*1.5))*.05*e;u.head.rotation.x=Math.sin(p)*.06;if(u.role==='drums'){u.arms[0].rotation.x=u.armX[0]+Math.sin(p*4)*.25;u.arms[1].rotation.x=u.armX[1]-Math.sin(p*4)*.25}else if(u.role!=='mic')u.arms[0].rotation.x=u.armX[0]+Math.sin(p*5)*.18});
+    cones.forEach((c,i)=>{c.rotation.z=Math.sin(t*.7+i)*.35});const p=crowd.geometry.attributes.position,b=crowd.userData.base;for(let i=0;i<p.count;i++)p.array[i*3+1]=b[i*3+1]+Math.abs(Math.sin(t*3*e+i))*.12;p.needsUpdate=true}];
+  return {sc,cam,root}}
+function buildOffice(T){const sc=new T.Scene();sc.background=new T.Color('#dfe3ea');sc.add(new T.HemisphereLight(0xffffff,0x9aa0a8,.95));const dl=new T.DirectionalLight(0xffffff,.45);dl.position.set(-4,8,6);sc.add(dl);
+  const root=new T.Group();sc.add(root);mesh(T,new T.BoxGeometry(11,.2,9),'#c9b79c',0,-.1,0,root);mesh(T,new T.BoxGeometry(11,5.6,.2),'#f4f5f7',0,2.8,-4.5,root);mesh(T,new T.BoxGeometry(.2,5.6,9),'#eceef2',-5.5,2.8,0,root);
+  const sign=new T.Mesh(new T.PlaneGeometry(4.6,.8),new T.MeshBasicMaterial({map:textTex(T,[{t:S.co.toUpperCase(),s:54}],1024,180,'#f4f5f7')}));sign.position.set(1,4.6,-4.38);root.add(sign);
+  // a poster for every artist, in their identity tint
+  S.artists.filter(a=>a.status==='active').forEach((a,i)=>{const x=-3.4+i*1.6;const p=new T.Mesh(new T.PlaneGeometry(1.2,1.6),new T.MeshBasicMaterial({map:textTex(T,[{t:initials(a.name),s:110,c:tintInk(a.hue)},{t:a.name,s:30,w:500,c:tintInk(a.hue)}],300,400,tint(a.hue))}));p.position.set(x,2.9,-4.38);root.add(p);
+    if(a.gold){const d=mesh(T,new T.CylinderGeometry(.28,.28,.02,28),'#d9b25f',x,1.6,-4.36,root);d.rotation.x=Math.PI/2}});
+  // the whiteboard: this week's lanes
+  const wb=document.createElement('canvas');wb.width=512;wb.height=320;const x=wb.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,512,320);x.fillStyle='#0a0a0a';x.font='600 26px Geist, Arial';x.fillText('Week '+wOfY(S.wk),20,40);
+  roster().forEach((a,i)=>{const d=dayPlan(a);x.fillStyle=tintInk(a.hue);x.font='500 20px Geist, Arial';x.fillText(initials(a.name),20,90+i*44);d.forEach((c,j)=>{if(!c)return;x.fillStyle=c.k==='show'?'#1d5fbf':c.k==='fest'?'#0a0a0a':'#c9ced6';x.fillRect(80+j*58,70+i*44,50,26)})});
+  const wbt=new T.CanvasTexture(wb);const wbm=new T.Mesh(new T.PlaneGeometry(2.8,1.75),new T.MeshBasicMaterial({map:wbt}));wbm.position.set(-5.38,2.8,-1);wbm.rotation.y=Math.PI/2;root.add(wbm);
+  // desks: yours, plus one per staff member
+  const desks=[['you',null]].concat(Object.keys(STAFF).filter(k=>S.staff[k]).map(k=>[k,STAFF[k].n]));
+  desks.forEach(([k],i)=>{const gx=(i%3)*3.2-2.4,gz=Math.floor(i/3)*2.6-1.2;mesh(T,new T.BoxGeometry(2,.1,1),'#ffffff',gx,1.3,gz,root);for(const [dx,dz] of [[-.9,-.4],[.9,-.4],[-.9,.4],[.9,.4]])mesh(T,new T.BoxGeometry(.06,1.3,.06),'#9aa0a8',gx+dx,.65,gz+dz,root);
+    mesh(T,new T.BoxGeometry(.9,.55,.05),'#0a0a0a',gx,1.68,gz-.3,root);const scr=mesh(T,new T.PlaneGeometry(.82,.47),new T.MeshBasicMaterial({color:new T.Color(k==='you'?'#1d5fbf':'#e6eefa')}),gx,1.68,gz-.27,root);
+    const f=figure(T,genLook(hsh(k+S.co)),'desk',.62);f.position.set(gx,0,gz+.75);f.rotation.y=Math.PI;root.add(f)});
+  mesh(T,new T.CylinderGeometry(.3,.24,.6,12),'#e2e4e9',4.6,.3,-3.6,root);for(let i=0;i<6;i++){const l=mesh(T,new T.SphereGeometry(.32,10,8),'#4f8a5b',4.6+Math.cos(i)*.25,.95+i*.12,-3.6+Math.sin(i)*.25,root);l.scale.set(1,.6,1)}
+  const cam=new T.PerspectiveCamera(42,1,.1,60);cam.position.set(2.2,4.6,7.6);cam.lookAt(-.4,1.8,-1.4);V3.anim=[];return {sc,cam,root}}
+function hydrate(){const els=[...document.querySelectorAll('[data-stage]')];const el=els[els.length-1];if(!el||!S||S.three===false||V3.failed)return;loadThree().then(T=>{if(el.isConnected)mount(T,el)}).catch(()=>{})}
+function mount(T,el){
+  if(!V3.r){try{V3.r=new T.WebGLRenderer({antialias:true});V3.r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));const c=V3.r.domElement;c.setAttribute('aria-label','3D scene. Drag to spin.');
+    c.addEventListener('pointerdown',e=>{V3.drag={x:e.clientX,r:V3.rotY};try{c.setPointerCapture(e.pointerId)}catch(_){}});c.addEventListener('pointermove',e=>{if(V3.drag)V3.rotY=V3.drag.r+(e.clientX-V3.drag.x)*.011});['pointerup','pointercancel'].forEach(k=>c.addEventListener(k,()=>{V3.drag=null}))}catch(e){V3.failed=true;return}}
+  const sid=el.dataset.stage;const key=sid+'|'+(sid==='office'?S.wk+'|'+JSON.stringify(S.staff)+roster().length:'');
+  if(key!==V3.key){dispose();const [k,id]=sid.split(':');try{const a=k==='art'?(art(id)||S.prospects.find(p=>p.id===id)):null;const b=k==='art'?buildArt(T,a):buildOffice(T);V3.sc=b.sc;V3.cam=b.cam;V3.root=b.root}catch(e){console.warn(e);return}V3.key=key;V3.rotY=0}
+  const w=el.clientWidth||320,h=el.clientHeight||240;V3.r.setSize(w,h,false);V3.cam.aspect=w/h;V3.cam.updateProjectionMatrix();if(V3.r.domElement.parentNode!==el)el.insertBefore(V3.r.domElement,el.firstChild);
+  if(!V3.raf){V3.t0=performance.now();V3.raf=requestAnimationFrame(loop3)}}
+function loop3(){V3.raf=0;const c=V3.r&&V3.r.domElement;if(!c||!c.isConnected||!V3.sc||document.hidden)return;const t=V3.still?0:(performance.now()-V3.t0)/1000;V3.root.rotation.y=V3.rotY+(V3.drag||V3.still?0:Math.sin(t*.25)*.12);for(const f of V3.anim)f(t);V3.r.render(V3.sc,V3.cam);if(!V3.still)V3.raf=requestAnimationFrame(loop3)}
+function dispose(){if(!V3.sc)return;V3.sc.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material&&o.material.map&&o.material.map!==V3.dot)o.material.map.dispose()});V3.sc=null;V3.key=''}
+function stop3D(){if(V3.raf)cancelAnimationFrame(V3.raf);V3.raf=0;dispose();if(V3.r&&V3.r.domElement.parentNode)V3.r.domElement.remove()}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&V3.sc&&!V3.raf)V3.raf=requestAnimationFrame(loop3)});
+window.addEventListener('resize',()=>{const c=V3.r&&V3.r.domElement;const el=c&&c.parentNode;if(el&&V3.cam){V3.r.setSize(el.clientWidth,el.clientHeight,false);V3.cam.aspect=el.clientWidth/el.clientHeight;V3.cam.updateProjectionMatrix()}});
+
+// Same live-update approach as the other games in this repo.
+function checkUpdate(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
+setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
+render();
+</script>
+</body>
+</html>
