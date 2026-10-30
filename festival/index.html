@@ -57,7 +57,7 @@ p{margin:0}
 .tb-cash span{font-size:12px;color:var(--muted)}
 .iconbtn{width:44px;height:44px;display:grid;place-items:center;border-radius:999px;margin-right:-10px;color:var(--muted)}
 .iconbtn:active{background:var(--raised)}
-.tabs{position:fixed;left:0;right:0;bottom:0;height:var(--tabs);padding:0 var(--sr) env(safe-area-inset-bottom,0px) var(--sl);display:grid;grid-template-columns:repeat(5,1fr);background:var(--ground);border-top:1px solid var(--rule);z-index:30}
+.tabs{position:fixed;left:0;right:0;bottom:0;height:var(--tabs);padding:0 var(--sr) env(safe-area-inset-bottom,0px) var(--sl);display:grid;grid-template-columns:repeat(6,1fr);background:var(--ground);border-top:1px solid var(--rule);z-index:30}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:#bbb;min-height:48px;position:relative}
 .tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6}
 .tab[aria-current=page]{color:#fff}
@@ -218,6 +218,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .sheet h2{font-size:18px;margin-bottom:4px}
 .sheet .sub{margin-bottom:14px}
 .sheet .card{background:var(--raised)}
+.sheet .chip{background:var(--raised2)}
 @keyframes up{from{transform:translateY(40px);opacity:.4}}
 @keyframes fade{from{opacity:0}}
 .toast{position:fixed;left:50%;bottom:calc(var(--tabs) + 16px);transform:translateX(-50%);background:#fff;color:#000;padding:10px 16px;border-radius:999px;font-weight:500;z-index:80;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.4);animation:fade .2s;text-align:center;font-size:13px}
@@ -312,7 +313,7 @@ const START_YEAR=2027;
 /* ---------- buildables ----------
    cost = weekend hire incl. crew, install and de-rig.
    spl  = dB(A) LAeq at the mix position (40 m) */
-const CATS=[['stage','Stages'],['camp','Camping'],['fac','Facilities'],['fnb','Food & drink'],['entry','Entry & VIP'],['extra','Extras']];
+const CATS=[['stage','Stages'],['camp','Camping'],['fac','Facilities'],['fnb','Food & drink'],['entry','Entry & VIP'],['areas','Areas'],['extra','Extras']];
 const B={
   main:{n:'Main stage',cat:'stage',w:4,h:2,cost:165000,spl:100,cone:7,max:1,col:'#e8e8e8',stage:true,ht:3,headline:1,
     d:'Roofed stage with line-array PA, lights and IMAG screens. Needs an open field in front of it.'},
@@ -324,6 +325,8 @@ const B={
     d:'Club tent for DJs. Low-end carries further than anything else on site.'},
   small:{n:'Bandstand',cat:'stage',w:2,h:1,cost:11000,spl:91,cone:3,max:2,col:'#e2b04a',stage:true,ht:1.4,
     d:'Small open stage for new acts and acoustic sets.'},
+  disc:{n:'Discovery stage',cat:'stage',w:2,h:1,cost:6000,spl:88,cone:3,max:1,col:'#c6f24e',stage:true,ht:1.2,
+    d:'A tiny stage for unsigned acts you pick from demos. Some of them will be famous one day.'},
   camp:{n:'Campsite',cat:'camp',w:4,h:4,cost:7200,campers:1100,col:'#7fa35a',ht:.3,
     d:'Marked pitches for 1,100 campers with stewards and fire points. Keep 20 m between campsites for fire breaks.'},
   glamp:{n:'Boutique camping',cat:'camp',w:3,h:2,cost:36000,glamp:60,col:'#f0e6d2',ht:.6,
@@ -350,6 +353,16 @@ const B={
     d:'10 search lanes, box office and wristband exchange. Must sit on the site boundary.'},
   vip:{n:'VIP area',cat:'entry',w:3,h:2,cost:42000,vip:900,col:'#151515',ht:.6,
     d:'Decking, private bar and loos for 900 VIP ticket holders. Best with a view of the main stage.'},
+  late:{n:'Late-night area',cat:'areas',w:3,h:2,cost:26000,vibe:3,col:'#7a3fbf',ht:1.2,
+    d:'Warehouse-style area that runs until 3am. Big bar money each night, and some complaints.'},
+  silent:{n:'Silent disco',cat:'areas',w:2,h:2,cost:9000,vibe:2,col:'#3fbfa0',ht:.6,
+    d:'Headphone party after curfew. No noise complaints, decent bar money.'},
+  heal:{n:'Healing field',cat:'areas',w:3,h:3,cost:12000,vibe:3,mood:2,col:'#a6d189',ht:.3,
+    d:'Yoga, saunas and hammocks. Raises the mood and calms Sunday mornings.'},
+  kids:{n:'Kids’ field',cat:'areas',w:3,h:2,cost:15000,vibe:2,mood:2,col:'#ffd166',ht:.5,
+    d:'Circus skills and a soft-play tent. Families stay longer and spend more.'},
+  landmark:{n:'Signature landmark',cat:'areas',w:2,h:2,cost:65000,vibe:9,max:1,col:'#ff8a2a',ht:4,tall:1,
+    d:'One huge structure that becomes your festival’s symbol, with a ritual on Sunday night.'},
   art:{n:'Art installation',cat:'extra',w:1,h:1,cost:14000,vibe:4,col:'#ff6fb1',ht:2,
     d:'A big-scale sculpture that lights up at night. Photos, press and a place to meet.'},
   wheel:{n:'Big wheel',cat:'extra',w:2,h:2,cost:28000,vibe:5,col:'#e8e8e8',ht:4,tall:1,
@@ -366,6 +379,7 @@ const SLOTS={
   get mega(){return this.main},
   tent:[[21.75,1.25,'Tent headliner',[50,80]],[20.25,1,'',[38,66]],[18.75,1,'',[26,56]],[17.25,.9,'',[14,46]],[15.75,.75,'',[5,38]]],
   dance:[[21.5,1.5,'Closing DJ',[45,80]],[20,1.25,'',[30,62]],[18.5,1.25,'',[16,50]],[17,1,'',[5,40]]],
+  disc:[[19.5,.75,'',[0,15]],[18,.75,'',[0,15]],[16.5,.75,'',[0,15]]],
   small:[[20,.9,'',[12,42]],[18.5,.75,'',[5,34]],[17,.75,'',[0,28]],[15.5,.75,'',[0,24]]],
 };
 const GENRES={indie:{n:'Indie',c:'#c6f24e'},rock:{n:'Rock',c:'#e6e6e6'},pop:{n:'Pop',c:'#ff8fc6'},hiphop:{n:'Hip-hop',c:'#e5a93b'},
@@ -449,7 +463,8 @@ function newState(o){
     founder:o.founder,events:[]};
   S=st;setGrid(st.grid);
   autoLayout(st,false);
-  marketYear(st,true);makeGoals(st);st.requests=[];
+  st.identity=o.identity||'indie';st.story=o.story?{on:true,ch:1,seen:{},flags:{},obj:'Open the gates on your first festival.'}:null;
+  marketYear(st,true);makeGoals(st);st.requests=[];yearExtras(st,true);
   addNews(st,'You signed the lease on '+site.n+'. '+site.council+' granted a premises licence for '+fmtN(site.cap)+' people.');
   sponsorOffers(st);
   return st}
@@ -457,16 +472,16 @@ function defaultTix(cap,camping){return {
   wk:[{k:'early',n:'Early bird',p:135,a:Math.round(cap*.12)},{k:'t1',n:'Tier 1',p:165,a:Math.round(cap*.35)},{k:'t2',n:'Tier 2',p:185,a:Math.round(cap*.3)},{k:'final',n:'Final release',p:205,a:9e9}],
   day:{p:79,a:camping?Math.round(cap*.12):Math.round(cap*.6)},vip:{p:395},glamp:{p:420},vans:{p:95},
   named:false,resale:false,mkt:60000,pint:6.5,pricesLocked:false}}
-function defaultOps(){return {sec:0,stew:0,med:'standard',prod:'standard',barStaff:1,clean:1,ins:{pl:true,cancel:false,nonapp:false},contingency:50000,community:0,green:0,shuttle:false,cues:{}}}
+function defaultOps(){return {sec:0,stew:0,med:'standard',prod:'standard',barStaff:1,clean:1,ins:{pl:true,cancel:false,nonapp:false},contingency:50000,community:0,green:0,shuttle:false,cues:{},menu:{cider:true,water:true},stock:'normal'}}
 function starterSite(s){setGrid(s.grid);autoLayout(s,false)}
 function addNews(s,t,k){s.news.unshift({y:s.year,ph:s.phase,t,k:k||''});if(s.news.length>80)s.news.length=80}
 
 /* ---------- saves ---------- */
 const slotKey=n=>'festival_slot_'+n;
-function save(){if(!S)return;try{localStorage.setItem(slotKey(S.slot),JSON.stringify(S));localStorage.setItem('festival_last',String(S.slot))}catch(e){toast('Could not save on this device.')}}
+function save(){if(!S)return;if(!isFinite(S.money))S.money=0;try{localStorage.setItem(slotKey(S.slot),JSON.stringify(S));localStorage.setItem('festival_last',String(S.slot))}catch(e){toast('Could not save on this device.')}}
 function readSlot(n){try{const r=localStorage.getItem(slotKey(n));return r?JSON.parse(r):null}catch(e){return null}}
 function delSlot(n){try{localStorage.removeItem(slotKey(n))}catch(e){}}
-function migrate(s){if(!s.rec)s.rec=SITES[s.site].rec.map(r=>({...r}));if(!s.diff)s.diff='standard';s.expand=s.expand||0;s.goals=s.goals||null;s.trophies=s.trophies||{};setGrid(s.grid);s.ops=Object.assign(defaultOps(),s.ops||{});s.flags=s.flags||{};s.trophies=s.trophies||{};s.events=s.events||[];return s}
+function migrate(s){if(!s.rec)s.rec=SITES[s.site].rec.map(r=>({...r}));if(!s.diff)s.diff='standard';s.expand=s.expand||0;s.goals=s.goals||null;if(!s.regulars){s.regulars=makeRegulars();s.scrap=s.scrap||[];s.inbox=s.inbox||[];s.board=s.board||60;s.social=s.social||newSocial(s);discoveryDemos(s);merchOptions(s)}s.identity=s.identity||'indie';s.trophies=s.trophies||{};setGrid(s.grid);s.ops=Object.assign(defaultOps(),s.ops||{});s.flags=s.flags||{};s.trophies=s.trophies||{};s.events=s.events||[];return s}
 let toastT=0;
 function toast(t,a){let el=$('.toast');if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.appendChild(el)}el.textContent=t;if(a){const b=document.createElement('button');b.textContent=a.l;b.dataset.a=a.a;el.appendChild(b)}clearTimeout(toastT);toastT=setTimeout(()=>el.remove(),a?5000:2600)}
 /* ============================================================
@@ -974,7 +989,7 @@ function autoLayout(s,fixOnly){
   // 1. stages
   if(!s.pl.some(p=>isMain(p.t)))bestStage(N>=30000?'mega':'main',[]);
   if(!fixOnly){const st=()=>s.pl.filter(p=>B[p.t].stage);
-    bestStage('tent',st());if(N>=12000)bestStage('dance',st());if(N>=30000)bestStage('tent',st());if(N>=45000){bestStage('dance',st());bestStage('small',st())}bestStage('small',st())}
+    bestStage('tent',st());if(N>=12000)bestStage('dance',st());if(N>=30000)bestStage('tent',st());if(N>=45000){bestStage('dance',st());bestStage('small',st())}bestStage('small',st());bestStage('disc',st())}
   // never leave kit standing in a stage's field
   const reserved=new Set();for(const p of s.pl)if(B[p.t].cone)for(const c of coneCells(p,B[p.t].cone))reserved.add(c.y*W+c.x);
   for(const p of s.pl.slice()){if(B[p.t].stage||WALKT[p.t]||p.t==='camp')continue;const f=fp(p);let hit=false;for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)if(reserved.has(y*W+x))hit=true;if(hit){s.pl.splice(s.pl.indexOf(p),1);removed.push(p);reset()}}
@@ -1014,6 +1029,8 @@ function autoLayout(s,fixOnly){
   spread('bar',Math.max(0,Math.ceil(N/1700)-count('bar')));
   spread('food',Math.max(0,Math.ceil(N/420/B.food.traders)-count('food')));
   if(!fixOnly){near('art',Math.round(W*.45),Math.round(H*.4));if(N>=15000)near('wheel',Math.round(W*.3),Math.round(H*.4));if(N>=12000)near('vip',Math.round(W*.5),Math.round(H*.3))}
+  // anything nobody can walk to goes (a stage boxed in by trees, say)
+  for(const z of analyse(s).zones.filter(z=>z.ent<0)){if(isMain(z.p.t))continue;const i=s.pl.indexOf(z.p);if(i>=0){s.pl.splice(i,1);reset()}}
   reset();return {added,removed}}
 function expandSite(s){// lease the next field to the south: 8 more rows
   const oldH=s.grid.length,w=s.grid[0].length;for(let i=0;i<8;i++)s.grid.push(Array(w).fill('grass'));
@@ -1026,7 +1043,7 @@ function expandSite(s){// lease the next field to the south: 8 more rows
 const act=id=>S.acts.find(a=>a.id===id);
 const signed=s=>s.bk.filter(b=>b.st==='signed');
 const bkOf=(s,actId)=>s.bk.find(b=>b.actId===actId&&b.st!=='declined'&&b.st!=='cancelled'&&b.st!=='lost');
-function stagesOf(s){const order={main:0,mega:0,tent:1,dance:2,small:3};return s.pl.filter(p=>B[p.t].stage).sort((a,b)=>order[a.t]-order[b.t]||a.id.localeCompare(b.id))}
+function stagesOf(s){const order={main:0,mega:0,tent:1,dance:2,small:3,disc:4};return s.pl.filter(p=>B[p.t].stage).sort((a,b)=>order[a.t]-order[b.t]||a.id.localeCompare(b.id))}
 function stageName(s,p){if(!p)return'';const same=s.pl.filter(q=>q.t===p.t);const base=B[p.t].n;const sp=s.spons.find(x=>x.k==='volt');if(sp&&p.t==='tent'&&same.indexOf(p)===0)return'Volt Energy Stage';return same.length>1?base+' '+(same.indexOf(p)+1):base}
 function slotAt(s,stageId,day,slot){return s.bk.find(b=>b.stage===stageId&&b.day===day&&b.slot===slot&&(b.st==='signed'||b.st==='pending'||b.st==='counter'))}
 function slotDef(p,slot){return SLOTS[p.t][slot]}
@@ -1044,6 +1061,7 @@ function askFor(s,a,o){
   if(s.phase==='onsale'){m*=1.1;why.push('Late booking +10%')}
   if(s.phase==='build'){m*=1.4;why.push('Short notice +40%')}
   const rv=rivalHas(s,a.id);if(rv)m*=1.5;
+  m*=storyFeeMult(s);if(s.flags.cheapAfterRival===s.year)m*=.9;if(a.unsigned)m=.05;
   const opt=s.flags.opts&&s.flags.opts[a.id];let fee=feeOf(a,s,m);
   if(opt&&opt.y===s.year){fee=Math.min(fee,opt.cap);why.push('Your option caps the fee')}
   if(s.rival.bidOn&&s.rival.bidOn[a.id]){why.push(s.rival.n+' are bidding too');fee=Math.round(fee*1.12/250)*250}
@@ -1063,7 +1081,7 @@ function resolveOffer(s,b){
   const ratio=b.fee/ask.fee;
   // the rival may be chasing the same act
   const rb=s.rival.bidOn&&s.rival.bidOn[a.id];
-  if(rb){const mine=b.fee*(1+s.rep/150)*(b.excl?1:1.02),theirs=rb*(1+s.rival.rep/150);if(theirs>mine*1.02){b.st='lost';s.rival.bk.push({actId:a.id,fee:rb,excl:true,day:ri(0,2)});delete s.rival.bidOn[a.id];addNews(s,a.name+' chose '+s.rival.n+' over you. Their agent said the offer was stronger.','rival');return}}
+  if(rb){const mine=b.fee*(1+s.rep/150)*(b.excl?1:1.02),theirs=rb*(1+s.rival.rep/150);if(theirs>mine*1.02){delete s.rival.bidOn[a.id];if(s.phase==='build'){b.st='lost';s.rival.bk.push({actId:a.id,fee:rb,excl:true,day:ri(0,2)});addNews(s,a.name+' chose '+s.rival.n+' over you.','rival');return}startWar(s,b,rb);addNews(s,'Bidding war! '+s.rival.n+' are after '+a.name+' too.','rival');return}}
   if(ratio<.68){b.st='declined';s.agRel[a.ag]=clamp((s.agRel[a.ag]||50)-4,0,100);addNews(s,a.agent+' at '+AG_N(a.ag)+' turned down '+fmt$(b.fee)+' for '+a.name+' flat. They called it insulting.','book');return}
   const p=1/(1+Math.exp(-(ratio-.97)*16));
   if(Math.random()<p){signAct(s,b,a)}
@@ -1104,7 +1122,7 @@ function marketYear(s,first){
 
 /* ---------- ticket demand ---------- */
 function lineupStrength(s,day){
-  const list=signed(s).filter(b=>day==null||b.day===day).map(b=>appeal(act(b.actId))).sort((a,b)=>b-a);
+  const list=signed(s).filter(b=>(day==null||b.day===day)&&!(b.secret&&!(s.live&&s.live['seen'+b.id]))).map(b=>{const a=act(b.actId);return appeal(a)*identGenre(s,a)}).sort((a,b)=>b-a);
   let L=0;list.forEach((v,i)=>{L+=v*Math.pow(.78,i)});return L}
 function genreMix(s){const c={};for(const b of signed(s)){const g=act(b.actId).genre;c[g]=(c[g]||0)+1}return c}
 function demandMods(s){
@@ -1116,7 +1134,7 @@ function demandMods(s){
   const mix=genreMix(s),tot=Object.values(mix).reduce((a,v)=>a+v,0);if(tot>6){const top=Math.max(...Object.values(mix));if(top/tot>.5){m*=1.06;why.push('A clear identity')}else if(Object.keys(mix).length>=6){m*=1.04;why.push('An eclectic bill')}}
   if(s.flags.lastStars)m*=.85+s.flags.lastStars*.05;
   if(s.flags.disaster)m*=.72;
-  m*=DF(s).demand;
+  m*=DF(s).demand*socialDemand(s);if(signed(s).some(b=>b.secret))m*=1.03;
   return {m,why}}
 function refPrice(s){return 110+s.rep*.95+Math.min(85,lineupStrength(s)/2800)}
 function pools(s,announced){
@@ -1176,6 +1194,8 @@ function costLines(s,act0){
   add('Talent','Riders, hospitality & backline',signed(s).reduce((a,b)=>a+b.fee*.08+1500+300*act(b.actId).size,0));
   if(s.ledger['Kill fees'])add('Talent','Kill fees',-s.ledger['Kill fees']);
   if(s.ledger['Artist requests'])add('Talent','Artist requests',-s.ledger['Artist requests']);
+  for(const k of ['Reseeding the fields','Retention fees','Social media ads','Influencer partnership','Drainage (story)','Operations manager (story)'])if(s.ledger[k])add(k.includes('Social')||k.includes('Influencer')?'Marketing':'Overheads',k,-s.ledger[k]);
+  if(s.ops.stock==='high')add('Overheads','Extra bar stock (waste)',12000*scaleOf(s));
   const stages=s.pl.filter(p=>B[p.t].stage).reduce((a,p)=>a+placementCost(s,p),0);
   const big=Math.max(1,Math.sqrt(s.lic.cap/15000));
   add('Production','Stages, PA, lights & screens',stages*big,PROD[s.ops.prod].n+' production');
@@ -1184,7 +1204,7 @@ function costLines(s,act0){
   add('Site','Roads, plumbing & cabling',N*14*Math.max(1,s.lic.cap/25000)*infl);
   add('Site','Power & generators',(24000+N*5+s.pl.filter(p=>B[p.t].stage).length*5000)*infl*(s.ops.green?1.12:1),s.ops.green?'Includes HVO and solar':'Diesel generators');
   add('Site','Waste, cleaning & recycling',N*6.5*[.7,1,1.35][s.ops.clean]*infl,['Light','Standard','Thorough'][s.ops.clean]+' clean-up');
-  add('Site','Land rent',SITES[s.site].rent*(1+.3*(s.expand||0))*infl,s.expand?'Includes '+s.expand+' extra field'+(s.expand>1?'s':''):'');
+  add('Site','Land rent',(storyOn(s)&&s.story.flags.owned?0:1)*SITES[s.site].rent*(1+.3*(s.expand||0))*infl,s.expand?'Includes '+s.expand+' extra field'+(s.expand>1?'s':''):'');
   add('Site','Ground restoration',(12000+(act0?act0.mud*450+N*.6:N*1.6))*infl);
   add('Staff','Security (SIA licensed)',s.ops.sec*1050*infl,s.ops.sec+' guards');
   add('Staff','Stewards',s.ops.stew*220*infl,s.ops.stew+' stewards');
@@ -1212,14 +1232,16 @@ function revenueLines(s,act0){
   add('Tickets','Tickets (net of 20% VAT)',tick/1.2,sl?fmtN(sl.wkSold+sl.vipSold)+' weekend · '+fmtN(sl.daySold.reduce((a,v)=>a+v,0))+' day':'Projected');
   if(sl&&(sl.glamp||sl.vans))add('Tickets','Glamping & campervans',(sl.glamp*s.tix.glamp.p+sl.vans*s.tix.vans.p)/1.2);
   const days=att.wk*3+att.day.reduce((a,v)=>a+v,0);
-  const bar=act0?act0.bar:days*23*Math.pow(6.5/s.tix.pint,.6)*(s.tix.pint/6.5)*Math.min(1,A.bars*2000/Math.max(1,att.peak));
+  const bm=barMods(s);const bar=act0?act0.bar:days*23*bm.spend*Math.pow(6.5/s.tix.pint,.6)*(s.tix.pint/6.5)*Math.min(1,A.bars*2000/Math.max(1,att.peak));
   const cogs=s.spons.find(x=>x.k==='beer')?.23:.27;
   add('Bars','Bar takings (net of VAT)',bar/1.2);add('Bars','Drinks stock',-bar/1.2*cogs);
   const food=act0?act0.food:days*16*Math.min(1,A.traders*450/Math.max(1,att.peak));
   add('Food','Trader commission (18%)',food*.18/1.2);add('Food','Pitch fees',A.traders*950);
-  add('Other','Merchandise (net)',att.peak*5.5*(1+Math.max(0,...signed(s).map(b=>act(b.actId).fame))/250)*.4);
+  add('Other','Merchandise (net)',att.peak*5.5*(1+Math.max(0,...signed(s).map(b=>act(b.actId).fame))/250)*.4*merchMult(s),s.merch?s.merch.n:'Generic merch');
   if(SITES[s.site].camping)add('Other','Car parking passes',att.wk*.11*15);
   const wh=s.pl.filter(p=>p.t==='wheel').length;if(wh)add('Other','Big wheel rides',att.peak*.35*4*Math.min(wh,2));
+  if(s.ledger['Documentary fee'])add('Other','Documentary fee',s.ledger['Documentary fee']);
+  if(s.story)storyRevenue(s,add,tick);
   const sp=s.spons.reduce((a,x)=>a+x.v,0);if(sp)add('Sponsorship','Sponsors',sp,s.spons.map(x=>x.n).join(', '));
   if(act0){for(const [k,v] of Object.entries(act0.inc||{}))add('Weekend',k,v)}
   return L}
@@ -1255,7 +1277,7 @@ function endBookingRound(s){
   if(s.round===2&&!s.sales){s.sales=newSales();const r=sellWeek(s,0,true);if(r.soldW)addNews(s,'Blind early birds: '+fmtN(r.soldW)+' sold before a single act was announced.','sales');cash(s,r.soldW*s.tix.wk[0].p/1.2)}
   if(s.round===4&&s.lic.varReq)decideVariation(s);
   if(s.round===5&&chance(.6))sponsorOffers(s);
-  bookingNews(s);maybeRider(s);
+  bookingNews(s);maybeRider(s);roundExtras(s);
   s.round++;
   if(s.round>BOOK_ROUNDS){startOnsale(s)}
   save()}
@@ -1279,7 +1301,7 @@ function saleWeek(s){
   const r=sellWeek(s,s.week);
   cash(s,(r.soldW*r.price+r.dayN*s.tix.day.p+r.vipN*s.tix.vip.p)/1.2);
   cash(s,-s.tix.mkt/SALE_WEEKS);
-  saleEvents(s);maybeRider(s);
+  saleEvents(s);maybeRider(s);weekExtras(s);
   s.hype=clamp(s.hype*.97,0,100);
   if(s.week>=SALE_WEEKS)startBuild(s);
   save();return r}
@@ -1297,7 +1319,7 @@ function saleEvents(s){
   if(s.week===8&&s.rival.clash){const top=s.rival.bk.map(b=>act(b.actId)).filter(Boolean).sort((a,b)=>b.fame-a.fame)[0];if(top)addNews(s,s.rival.n+' added '+top.name+' to their bill for the same weekend.','rival')}}
 function runToBuild(s){while(s.phase==='onsale')saleWeek(s)}
 function startBuild(s){s.phase='build';opsAuto(s);
-  s.forecast=makeForecast(s);
+  s.forecast=makeForecast(s);buildExtras(s);
   addNews(s,'Build week. Trucks, trackway and 4 km of fencing arrive on site. The safety advisory group inspects on Thursday.','build');save()}
 const WX=[{k:'hot',n:'Heatwave',t:[29,34],rain:0,wind:[2,6],p:.17},{k:'sun',n:'Sunny',t:[22,27],rain:0,wind:[2,7],p:.3},{k:'mixed',n:'Sunny spells, showers',t:[18,23],rain:1.2,wind:[4,10],p:.26},{k:'wet',n:'Heavy rain',t:[14,18],rain:4.5,wind:[6,13],p:.17},{k:'storm',n:'Thunderstorms, gales',t:[17,22],rain:6,wind:[7,13],p:.1}];
 function makeForecast(s){return [0,1,2].map(()=>{let r=Math.random(),w=WX[0];for(const x of WX){if(r<x.p){w=x;break}r-=x.p}const conf=ri(45,80);return{k:w.k,conf}})}
@@ -1347,7 +1369,9 @@ function wrapYear(s){
   const rec={y:s.year,cal:START_YEAR+s.year-1,att:att.peak,net,rev:pr.tr,cost:pr.tc,stars,rep:s.rep,repD:s.rep-prevRep,top,soldOut:!!s.sales.soldOut,moment:L.moment||'',disaster:L.disaster||'',viral:L.viral||'',weather:L.wx.map(w=>WX.find(x=>x.k===w).n),mood:Math.round(L.moodAvg)};
   s.hist.push(rec);
   s.wrap={pr,R,C,rec,firsts,buyout:null};
-  s.wrap.awards=awardsNight(s,L,s.wrap);s.wrap.goals=evalGoals(s,L,s.wrap);checkTrophies(s,L,s.wrap);
+  s.wrap.awards=awardsNight(s,L,s.wrap);s.wrap.goals=evalGoals(s,L,s.wrap);wrapExtras(s,L,s.wrap);checkTrophies(s,L,s.wrap);
+  s.wrap.share=storyProfitShare(s,net);if(s.wrap.share)s.money-=s.wrap.share;
+  if(s.spin)award(s,'empire');if(s.acts.some(a=>a.disc&&!a.unsigned))award(s,'disc');
   if(s.rep>=55&&s.year>=3&&!s.flags.buyoutSeen&&chance(.5)){const avg=s.hist.slice(-3).reduce((a,h)=>a+h.net,0)/Math.min(3,s.hist.length);s.wrap.buyout=Math.max(1.5e6,Math.round((avg*5+s.rep*60000+att.peak*90)/50000)*50000);s.flags.buyoutSeen=1}
   s.phase='wrap';
   checkEnd(s);
@@ -1356,7 +1380,7 @@ function reviewYear(s,L){
   const A=analyse(s),att=attendancePlan(s);
   const music=clamp(2+lineupStrength(s)/45000+L.perf*.9,1,5);
   const q=Math.max(0,L.barQ-.6);const org=clamp(4.6-q*1.6-L.lostLoo*.8-(L.serious?.8:0)-(L.gateWait>1.5?.6:0)-(L.disaster?2:0),1,5);
-  const vibe=clamp(2.4+L.moodAvg/45+(A.artN*.12)+(L.viral?.5:0)-(L.mud>60?.6:0),1,5);
+  const vibe=clamp(2.4+L.moodAvg/45+(s.identity==='eco'?.2:0)+(A.artN*.12)+(L.viral?.5:0)-(L.mud>60?.6:0),1,5);
   const price=s.tix.wk[1].p;const value=clamp(3+(refPrice(s)-price)/60+(lineupStrength(s)/60000)-(q*.6),1,5);
   const local=clamp(4-L.complaints/80-L.overNoise*.3-(L.curfewBreach?1:0),1,5);
   const biz=clamp(2.5+att.peak/s.lic.cap*1.6+(s.sales.soldOut?.6:0)-(L.disaster?1.5:0),1,5);
@@ -1396,7 +1420,8 @@ function nextYear(s){
   s.year++;s.phase='booking';s.yrCash=0;s.flags.disaster=0;s.flags.prePaid=0;
   s.tix.wk.forEach(t=>{t.p=Math.round(t.p*1.03)});s.tix.pricesLocked=false;
   s.ops.sec=0;s.ops.stew=0;
-  marketYear(s,false);sponsorOffers(s);makeGoals(s);s.requests=[];s.flags.longSet=0;s.flags.pyro=0;
+  if(storyOn(s)&&s.story.flags.relocate&&!s.story.flags.relocated&&s.site==='farm'){s.story.flags.relocated=1;relocate(s,'airfield')}
+  marketYear(s,false);sponsorOffers(s);makeGoals(s);yearExtras(s);s.requests=[];s.flags.longSet=0;s.flags.pyro=0;
   // sponsors renew one year at a time
   s.spons=s.spons.filter(()=>chance(.65));
   s.wrap=null;s.live=null;s.forecast=null;
@@ -1420,24 +1445,25 @@ function openGates(s){
     log:[],dec:null,extra:{},inc:{},contUsed:0,stopped:{},viral:'',disaster:'',moment:'',firstCredit:0,
     played:{},delay:{},limiter:0,warnDrugs:1,risk:{},weekendIn:att.wk,dayT:att.day,fenceIn:0,noShow:Math.round(att.wk*.025+s.sales.touts*.15),
     done:false,speed:1,dist:null,cur:null,usedEv:{},hourBar:[],medCap:0,sold:att};
-  s.phase='live';
+  s.phase='live';s.live.mud=(s.scar||0)*.5;s.live.areaMood=s.pl.reduce((a,p)=>a+(B[p.t].mood||0),0)+((identOf(s)||{}).mood||0)+barMods(s).mood;
+  if(s.scar>15)logL(s,'The fields still haven’t recovered from last year. It’s muddy before it’s even rained.','warn');
   logL(s,'Gates open on '+s.name+'. '+fmtN(att.wk)+' weekend and '+fmtN(att.day[0])+' Friday ticket holders expected.','start');
   const wf=WX.find(w=>w.k===wx[0]);logL(s,'Weather today: '+wf.n.toLowerCase()+'.','wx');
   save()}
 function logL(s,t,k){const L=s.live;const st=STEPS[Math.min(L.i,STEPS.length-1)];L.log.unshift({t:DAYS[st.d]+' '+(st.h>=24?'night':hhmm(st.h)),x:t,k:k||''});if(L.log.length>120)L.log.length=120}
 function cashL(s,k,v){const L=s.live;cash(s,-v);L.extra[k]=(L.extra[k]||0)+v;if(L.contUsed<s.ops.contingency)L.contUsed+=v}
-function weatherAt(s,d,h){const L=s.live;const w=WX.find(x=>x.k===L.wx[d]);const seed=hash(s.id+s.year+'-'+d+'-'+h);const r=mulberry(seed);
+function weatherAt(s,d,h){const L=s.live;const w=WX.find(x=>x.k===L.wx[d]);const seed=hash(s.id+s.year+'-'+d+'-'+h);const r=mulberry(seed);const R=(x,y)=>x+r()*(y-x);
   const hh=Math.min(h,23);const temp=w.t[0]+(w.t[1]-w.t[0])*Math.max(0,Math.sin(Math.PI*(hh-7)/15));
-  let rain=0;if(w.rain){if(w.k==='mixed')rain=r()<.3?w.rain*rnd(.6,2):0;else if(w.k==='wet')rain=w.rain*rnd(.3,1.4);else if(w.k==='storm')rain=(hh>=15&&hh<=20)?w.rain*rnd(.8,2):r()<.3?2:0}
-  let wind=w.wind[0]+(w.wind[1]-w.wind[0])*r();let gust=wind*rnd(1.3,1.6);let light=false;
-  if(w.k==='storm'&&hh>=15&&hh<=20){gust=Math.max(gust,rnd(16,27));light=r()<.55}
+  let rain=0;if(w.rain){if(w.k==='mixed')rain=r()<.3?w.rain*R(.6,2):0;else if(w.k==='wet')rain=w.rain*R(.3,1.4);else if(w.k==='storm')rain=(hh>=15&&hh<=20)?w.rain*R(.8,2):r()<.3?2:0}
+  let wind=w.wind[0]+(w.wind[1]-w.wind[0])*r();let gust=wind*R(1.3,1.6);let light=false;
+  if(w.k==='storm'&&hh>=15&&hh<=20){gust=Math.max(gust,R(16,27));light=r()<.55}
   return{temp:Math.round(temp),rain:Math.round(rain*10)/10,wind:Math.round(wind),gust:Math.round(gust),light,k:w.k}}
 function playingAt(s,d,h){const out=[];for(const p of stagesOf(s)){SLOTS[p.t].forEach((sd,i)=>{const b=s.bk.find(b=>b.st==='signed'&&b.stage===p.id&&b.day===d&&b.slot===i);if(!b)return;const st=slotTime(s,p,i,d),en=st+sd[1]+(s.live.delay[b.id]||0)/60;const ov=Math.min(en,h+1)-Math.max(st,h);if(ov>=.45)out.push({p,b,a:act(b.actId),slot:i,st,en})})}return out}
 function liveStep(s){
   const L=s.live;if(L.done||L.dec)return;
   const A=analyse(s),st=STEPS[L.i],d=st.d,h=st.h,site=SITES[s.site];
   const wx=weatherAt(s,d,h);L.cur=wx;let pend=null;const P=x=>{if(!pend)pend=x};
-  const gate=A.gateRate*(L.fenceClosed?.6:1);
+  const gate=A.gateRate*(L.fenceClosed?.6:1)*(storyOn(s)&&s.story.flags.gates&&s.year===1?1.25:1);
   if(h===24){overnight(s,A,d);return advance(s)}
   if(h===11&&d>0){const wf=WX.find(w=>w.k===L.wx[d]);logL(s,DAYL[d]+'. Forecast holds: '+wf.n.toLowerCase()+'.','wx')}
   // arrivals
@@ -1462,7 +1488,7 @@ function liveStep(s){
   L.dist={stages:dist,camp:site.camping?N*(h<15?.42:h<19?.22:.08):0,bars:N*(h<15?.25:.16),roam:Math.max(0,N-atStages-(site.camping?N*(h<15?.42:h<19?.22:.08):0)-N*(h<15?.25:.16))};
   // sets starting: performance, delays, curfew
   for(const x of play){if(L.played[x.b.id]!=null)continue;
-    let perf=(x.a.live-58)/38+gauss()*.35+(s.ops.prod==='spectacular'?.15:s.ops.prod==='lean'?-.12:0)-(wx.rain>2?.15:0);
+    let perf=perfBonus(s,x)+(x.a.live-58)/38+gauss()*.35+(s.ops.prod==='spectacular'?.15:s.ops.prod==='lean'?-.12:0)-(wx.rain>2?.15:0);
     if(L.stopped[x.p.id])perf-=.5;
     L.played[x.b.id]=perf;L.perf=(L.perf*L.perfN+perf)/(L.perfN+1);L.perfN++;
     const score=perf+x.a.fame/100;if(score>L.bestScore){L.bestScore=score;L.best=x.a.id}
@@ -1477,8 +1503,8 @@ function liveStep(s){
   for(const x of play){if(x.slot===0&&x.en>cur+.01&&h===Math.floor(cur-.01)&&!L.usedEv['cur'+d]){L.usedEv['cur'+d]=1;const over=Math.round((x.en-cur)*60);P(DEC.curfew(s,x,over))}}
   // bars, food, toilets
   const drink=(h<14?.22:h<18?.48:.62)*(wx.temp>26?1.25:wx.rain>2?.88:1)*Math.pow(6.5/s.tix.pint,.6);
-  const barCap=A.bars*B.bar.serve*[.8,1,1.25][s.ops.barStaff]*(L.beerOut?.4:1);
-  const want=N*drink;const sold=Math.min(want,barCap);L.bar+=sold*s.tix.pint;const bq=want/Math.max(1,barCap);
+  const bm=barMods(s);const barCap=A.bars*B.bar.serve*bm.serve*[.8,1,1.25][s.ops.barStaff]*(L.beerOut?.4:1);
+  const want=N*drink;const sold=Math.min(want,barCap);L.bar+=sold*s.tix.pint*bm.spend;const bq=want/Math.max(1,barCap);
   L.barQ=(L.barQ*L.qN+Math.min(3,bq))/(L.qN+1);L.qN++;L.hourBar.push(Math.round(sold*s.tix.pint));
   const meals=N*((h>=12&&h<=14)||(h>=18&&h<=20)?.24:.07);const fcap=A.traders*110;L.food+=Math.min(meals,fcap)*11.5;const fq=meals/Math.max(1,fcap);
   const loo=N*.34/Math.max(1,A.units*14*(h>21?.85:1));L.lostLoo=Math.max(L.lostLoo,loo-1);
@@ -1490,7 +1516,7 @@ function liveStep(s){
   // medical
   const heat=Math.max(0,wx.temp-27)*.16*(A.taps*2500>=N?.6:1.3)*(L.heatAid?.45:1);
   const crowd=dist.reduce((a,x)=>a+Math.max(0,(x.ratio||0)-.85),0);
-  const rate=.0011*(1+heat+crowd*1.5+L.mud/160+(h>=21?.35:0))*(A.welfare?.82:1.1)*(L.drugBatch?1.6:1);
+  const rate=.0011*((identOf(s)||{}).inc||1)*(1+heat+crowd*1.5+L.mud/160+(h>=21?.35:0))*(A.welfare?.82:1.1)*(L.drugBatch?1.6:1);
   const pres=Math.round(N*rate*rnd(.7,1.3));L.pres+=pres;
   const medCap=N/1000*MED[s.ops.med].cap*6+A.fa*4;const over=pres/Math.max(1,medCap);
   let ser=0;L.hosp=(L.hosp||0)+Math.round(pres*.02*(over>1?1.5:1));for(let i=0;i<pres;i++)if(Math.random()<.0016*DF(s).inc*(over>1?2.4:1)*(L.drugBatch&&!L.warned?2.5:1)*(L.drugBatch&&L.warned?.9:1))ser++;
@@ -1507,15 +1533,16 @@ function liveStep(s){
   if(wx.temp>=29&&h>=13&&!L.usedEv['heat'+d]&&!L.heatAid){L.usedEv['heat'+d]=1;P(DEC.heat(s,wx))}
   // mud
   const dry=wx.rain?0:(wx.temp>22?2.5:1.2);
-  L.mud=clamp(L.mud+wx.rain*1.15*(1-A.trackCover*.7)*(N/Math.max(1,s.lic.cap)*.8+.4)-dry,0,100);
+  L.mud=clamp(L.mud+wx.rain*1.15*(storyOn(s)&&s.story.flags.drain===s.year?.5:1)*(1-A.trackCover*.7)*(N/Math.max(1,s.lic.cap)*.8+.4)-dry,0,100);
   if(L.mud>58&&!L.usedEv.mud){L.usedEv.mud=1;P(DEC.mud(s))}
   if(wx.rain>3&&A.lowCamp&&!L.usedEv.flood&&site.camping){L.usedEv.flood=1;P(DEC.flood(s))}
   // random happenings
   const r=Math.random();
   if(r<.09&&!pend){const ev=randomEvent(s,A,d,h,wx);if(ev)P(ev)}
+  liveExtras(s,{A,d,h,wx,play,dist,N,P,bq,loo});
   // mood
   const wxm=wx.k==='sun'?6:wx.k==='hot'?(L.heatAid?4:-2):wx.k==='mixed'?0:wx.k==='wet'?-9:-13;
-  const target=58+A.vibe+PROD[s.ops.prod].vibe+wxm+L.perf*10-Math.max(0,bq-1)*10-Math.max(0,fq-1)*5-Math.max(0,loo-1)*9-L.mud*.14-Math.min(20,wait*6)-crowd*14-(A.campNearStage&&h<13?2:0)+(L.boost||0);
+  const target=58+A.vibe+PROD[s.ops.prod].vibe+wxm+L.perf*10-Math.max(0,bq-1)*10-Math.max(0,fq-1)*5-Math.max(0,loo-1)*9-L.mud*.14-Math.min(20,wait*6)-crowd*14-(A.campNearStage&&h<13?2:0)+(L.boost||0)+(L.areaMood||0);
   L.mood=clamp(L.mood*.75+target*.25,0,100);L.moodSum+=L.mood;L.moodN++;L.moodAvg=L.moodSum/L.moodN;
   if(h===16&&d===1&&L.mood>75)L.moment=L.moment||'Saturday afternoon in the sun with '+fmtN(N)+' people';
   for(const k in L.stopped){if(--L.stopped[k]<=0)delete L.stopped[k]}
@@ -1528,6 +1555,7 @@ function overnight(s,A,d){const L=s.live;
   const N=L.onsite;
   if(N&&chance(.35)){const k=ri(12,80);logL(s,k+' tents broken into overnight. '+(s.ops.sec>=needSec(s)?'Security caught two of the thieves.':'Thin security on the campsites made it easy.'),'warn')}
   const dayBar=L.hourBar.slice(-13).reduce((a,v)=>a+v,0);
+  overnightExtras(s,A,d);
   logL(s,DAYL[d]+' wrap: '+fmtN(L.arrived)+' through the gates so far, '+fmt$(dayBar)+' over the bars, '+L.pres+' medical cases in total.','sum')}
 function advance(s){const L=s.live;L.i++;if(L.i>=STEPS.length){finishWeekend(s)}}
 function finishWeekend(s){const L=s.live;if(L.done)return;L.done=true;
@@ -1545,6 +1573,9 @@ function finishWeekend(s){const L=s.live;if(L.done)return;L.done=true;
 function ask(s,dec){s.live.dec=dec;save()}
 function decide(s,i){const L=s.live;const d=L.dec;if(!d)return;const o=d.opts[i];L.dec=null;try{o.fn(s)}catch(e){console.error(e)}logL(s,o.log||o.l,o.k||'');advance(s);save()}
 const DEC={
+  encore(s,x,cur){const st=STEPS[s.live.i];const room=Math.round((cur-x.en)*60);return{t:'The crowd wants more',x:'“One more song!” '+fmtN(s.live.onsite)+' people are chanting for '+x.a.name+'. '+(room>=8?'You have '+room+' minutes before curfew.':'Curfew is right behind them.'),opts:[
+    {l:'Give them an encore',d:room>=8?'A perfect ending':'About '+Math.max(0,10-room)+' minutes over curfew',log:x.a.name+' come back for an encore. The field explodes.',k:'good',fn:s=>{s.live.boost=(s.live.boost||0)+3;x.b.mood=(x.b.mood||0)+1;const over=Math.max(0,10-room);if(over){s.live.curfewBreach+=over;cashL(s,'Curfew fines',over*2500)}if(!s.live.viral&&chance(.2)){s.live.viral=x.a.name+'’s encore went viral ('+ri(3,12)+'m views)';s.live.moment=s.live.viral}}},
+    {l:'Stick to the schedule',d:'Lights up, everyone home',log:'No encore. Lights up on time.',fn:s=>{s.live.boost=(s.live.boost||0)-1}}]}},
   curfew(s,x,over){return{t:'Curfew in sight',x:x.a.name+' are running '+over+' minutes past the '+hhmm(s.lic.curfew[STEPS[s.live.i].d])+' curfew. The council licensing officer is standing at the mixing desk.',opts:[
     {l:'Pull the plug at curfew',d:'The crowd boos. The act’s agent is furious.',log:'Sound cut at curfew in the middle of '+x.a.name+'’s last song.',fn:s=>{s.live.boost=(s.live.boost||0)-4;s.agRel[x.a.ag]=clamp(s.agRel[x.a.ag]-8,0,100);s.live.moment=s.live.moment||'The night the plug was pulled on '+x.a.name}},
     {l:'Ask them to drop two songs',d:'Over by about '+Math.round(over/3)+' minutes. Small fine.',log:x.a.name+' cut the set short and finished '+Math.round(over/3)+' minutes late.',fn:s=>{const m=Math.round(over/3);s.live.curfewBreach+=m;cashL(s,'Curfew fines',m*2500);s.live.boost=(s.live.boost||0)-1}},
@@ -1582,7 +1613,7 @@ function randomEvent(s,A,d,h,wx){const L=s.live;const N=L.onsite;
   if(!L.usedEv.fence&&(L.gateWait>1||chance(.4))&&h>=16)pool.push('fence');
   if(!L.usedEv.secret&&d===1&&h>=13&&h<=16)pool.push('secret');
   if(!L.usedEv.power&&h>=15)pool.push('power');
-  if(!L.usedEv.beer&&wx.temp>24&&h>=15)pool.push('beer');
+  if(!L.usedEv.beer&&s.ops.stock!=='high'&&(wx.temp>24||(s.ops.stock==='low'&&wx.temp>18))&&h>=15)pool.push('beer');if(s.ops.stock==='low'&&!L.usedEv.beer&&wx.temp>22&&h>=15)pool.push('beer','beer');
   if(!L.usedEv.celeb)pool.push('celeb');
   if(!L.usedEv.child)pool.push('child');
   if(!L.usedEv.pyro&&h>=20)pool.push('pyro');
@@ -1721,6 +1752,323 @@ function fanPost(s,ctx){const L=s.live;const h=pick(HANDLES);let t='';
 function suggestPrices(s){const pl=pools(s,true);const cap=capWeekend(s);const target=cap*1.25;const p=pl.pool*1.5<target?Math.round(pl.P/Math.pow(1.5,1/2.2)/5)*5:Math.round(pl.P*Math.pow(pl.pool/target,1/2.2)/5)*5;const base=clamp(p,60,450);
   const steps=[.82,.95,1.05,1.15];s.tix.wk.forEach((t,i)=>{if(!(s.sales&&(s.sales.tier[t.k]>=t.a||(t.k==='early'&&s.sales.weeks.length))))t.p=Math.round(base*steps[i]/5)*5});
   s.tix.day.p=Math.round(base*.45/5)*5;s.tix.vip.p=Math.round(base*2.2/25)*25;return {base,short:pl.pool*1.5<target}}
+
+TROPHIES.push(['story','The end','Finish Story mode'],['disc','Talent spotter','Book a Discovery stage act who gets signed'],['empire','Empire','Launch a spin-off festival']);
+/* ============================================================
+   Social media: your festival's own account
+   ============================================================ */
+const SOCIAL_PER=3;
+const handleOf=s=>{const h=s.name.toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'');return '@'+(/fest/.test(h)?h:h+'fest')};
+function newSocial(s){return {followers:Math.round(800+s.rep*120),posts:[],left:SOCIAL_PER,boosts:0,influencer:0,pushWeek:0}}
+const POSTS={
+  tease:{n:'Line-up tease',ok:s=>s.phase==='booking'||(s.phase==='onsale'&&!s.sales?.announced),d:'Silhouettes and riddles before the announcement.',hype:4,fol:.03},
+  announce:{n:'Announce an act',ok:s=>signed(s).some(b=>!b.secret&&!b.posted),d:'Reveal one of your signed acts.',hype:0,fol:.04,act:1},
+  tickets:{n:'Ticket reminder',ok:s=>s.phase==='onsale',d:'Pushes sales this week. Overdo it and people mute you.',hype:1,fol:.005,push:1},
+  bts:{n:'Behind the scenes',ok:s=>true,d:'Crew, stage builds, the farm dog. Builds loyalty.',hype:2,fol:.035},
+  meme:{n:'Post a meme',ok:s=>true,d:'Could go viral. Could go very wrong.',hype:3,fol:.02,risky:1},
+  hint:{n:'Secret set hint',ok:s=>s.phase!=='wrap',d:'“Very special guest, Saturday.” Better have one booked.',hype:5,fol:.02,hint:1},
+  reply:{n:'Reply to complaints',ok:s=>s.hist.length>0&&(s.community<70||s.hist[s.hist.length-1].stars<3.3),d:'Own the problems from last year. The neighbours notice too.',hype:0,fol:.01,mend:1},
+  countdown:{n:'Countdown',ok:s=>s.phase==='onsale'&&s.week>=8||s.phase==='build',d:'X days to go. Easy engagement.',hype:3,fol:.02},
+  live:{n:'Post a live clip',ok:s=>s.phase==='live',d:'Share a moment from the weekend.',hype:5,fol:.05}};
+const REPLIES={good:['IM SO READY','this is the one','booked my time off already','omg omg omg','take my money','tagging everyone I know'],mid:['who?','hmm ok','nice','is there parking','will there be veggie food','price???'],bad:['ratio','who approved this','unfollowing','delete this','the intern did this didn’t they']};
+function postText(s,k,a){const n=s.name;const T={
+  tease:['Something big is coming to '+n+'. 🔎','Three nights. Three names. You’re not ready.','Emoji clue thread. Go.'],
+  announce:a?[a.name.toUpperCase()+' are coming to '+n+'.','Welcome to the family, '+a.name+'.','Say hello to '+a.name+'. See you in August.']:['Announcement soon.'],
+  tickets:['Tier 1 is almost gone. Don’t say we didn’t warn you.','Payment plans are open. No excuses.','Your group chat needs to sort this out today.'],
+  bts:['The crew have started marking out the fields. 4km of fence to go.','Meet the farm dog. He is in charge of security.','Sound check, no audience, chills anyway.'],
+  meme:['Me in January vs me at '+n+' in August','POV: you hear your favourite song from the toilet queue','Nobody: / Our campsite at 4am:'],
+  hint:['A very special guest. Saturday. That’s all we’re saying.','Did someone say secret set? 👀'],
+  reply:['We heard you about the queues. More bars, more toilets this year. Promise.','To our neighbours: thank you. Here’s what we’re changing.'],
+  countdown:['Not long now.','Pack the wellies. Pack the suncream. Pack both.'],
+  live:['RIGHT NOW on the main stage. 🔥','This crowd. This sunset. This festival.','We’ll never get over this.']}[k];return pick(T)}
+function makePost(s,k,boost){const P=POSTS[k],so=s.social;if(!P||!so||so.left<=0)return 'No posts left this '+(s.phase==='booking'?'round':'week')+'.';
+  let a=null;if(P.act){const b=signed(s).filter(b=>!b.secret&&!b.posted).sort((x,y)=>act(y.actId).fame-act(x.actId).fame)[0];if(!b)return 'Nothing new to announce.';b.posted=1;a=act(b.actId)}
+  so.left--;if(boost){const c=Math.round(5000*Math.sqrt(scaleOf(s))/500)*500;cash(s,-c);ledger(s,'Social media ads',-c);so.boosts++}
+  let q=rnd(.6,1.4)*(boost?2.2:1)*(1+s.hype/150);let flop=false,viral=false;
+  if(P.risky){if(chance(.18)){flop=true;q=.2}else if(chance(.18)){viral=true;q*=4}}
+  if(k==='tickets'&&so.posts.filter(p=>p.k==='tickets'&&p.y===s.year).length>=3)q*=.4;
+  if(P.hint){if(!signed(s).some(b=>b.secret))s.flags.bluff=1}
+  const reach=Math.round(so.followers*q*(.3+rnd(0,.4)));const likes=Math.round(reach*rnd(.04,.12)*(flop?.3:1));const shares=Math.round(likes*rnd(.05,.2)*(viral?4:1));
+  const gain=Math.round(so.followers*P.fol*q+(a?appeal(a)/40:0)+(viral?so.followers*.25:0));so.followers=Math.max(0,so.followers+(flop?-Math.round(so.followers*.01):gain));
+  s.hype=clamp(s.hype+(flop?-3:P.hype*q*.8+(a?appeal(a)/12000:0)+(viral?8:0)),0,100);
+  if(P.push)so.pushWeek=s.week+1;if(P.mend){s.community=clamp(s.community+4,0,100);s.cred=clamp(s.cred+1,0,100)}
+  const pool=flop?REPLIES.bad:q>1.1?REPLIES.good:REPLIES.mid;const replies=[0,1].map(()=>({h:pick(HANDLES),t:pick(pool)}));
+  const post={k,y:s.year,ph:s.phase,t:postText(s,k,a),likes,shares,gain:flop?-1:gain,viral,flop,boosted:!!boost,replies};so.posts.unshift(post);if(so.posts.length>40)so.posts.length=40;
+  if(viral)addNews(s,'Your '+P.n.toLowerCase()+' went viral: '+fmtK(shares*30)+' views.','social');
+  return viral?'It’s going viral!':flop?'That one landed badly.':fmtK(likes)+' likes, +'+fmtK(gain)+' followers.'}
+function influencer(s){const c=Math.round(20000*Math.sqrt(scaleOf(s))/1000)*1000;cash(s,-c);ledger(s,'Influencer partnership',-c);const g=Math.round(5000*scaleOf(s)*rnd(.7,1.4));s.social.followers+=g;s.social.influencer++;s.hype=clamp(s.hype+6,0,100);
+  s.social.posts.unshift({k:'collab',y:s.year,t:pick(['@ellie.out.there','@festivalfitsbyjo','@campsitecooking','@thegiglog'])+' is giving away 2 tickets to '+s.name+'!',likes:Math.round(g*2.2),shares:Math.round(g*.4),gain:g,replies:[{h:pick(HANDLES),t:'pick me!!!'},{h:pick(HANDLES),t:'tagging my whole family'}]});return '+'+fmtK(g)+' followers for '+fmt$(c)+'.'}
+function socialDemand(s){const so=s.social;if(!so)return 1;return 1+Math.min(.22,so.followers/Math.max(1,s.lic.cap*40))+(so.pushWeek===s.week?.08:0)}
+function viewSocial(){const so=S.social||(S.social=newSocial(S));const h=handleOf(S);
+  let x='<main><div class="title-row"><h1>'+esc(h)+'</h1></div><p class="sub">Your festival’s official account. '+so.left+' post'+(so.left===1?'':'s')+' left this '+(S.phase==='booking'?'round':S.phase==='live'?'weekend':'week')+'.</p>';
+  x+='<div class="kpis"><div class="kpi"><label>Followers</label><b>'+fmtK(so.followers)+'</b><small>More followers, more ticket demand</small></div><div class="kpi"><label>Hype</label><b>'+Math.round(S.hype)+'</b><small>Talk online and in the press</small></div></div>';
+  x+='<section class="card"><h2>New post</h2><div class="stack">'+Object.entries(POSTS).filter(([k,p])=>p.ok(S)).map(([k,p])=>'<div class="opt" style="flex-wrap:wrap"><span style="flex:1;min-width:0"><b>'+p.n+'</b><small>'+p.d+'</small></span><span class="row" style="flex-wrap:nowrap"><button class="btn ghost sm" data-a="post" data-v="'+k+'|0" '+(so.left?'':'disabled')+'>Post</button><button class="btn sm" data-a="post" data-v="'+k+'|1" '+(so.left?'':'disabled')+'>Boost '+fmt$(Math.round(5000*Math.sqrt(scaleOf(S))/500)*500)+'</button></span></div>').join('')+'</div>'+
+    '<button class="btn ghost wide" style="margin-top:10px" data-a="influ">Pay an influencer · '+fmt$(Math.round(20000*Math.sqrt(scaleOf(S))/1000)*1000)+'</button></section>';
+  x+='<section class="card"><h2>Feed</h2>'+(so.posts.length?'<ul class="list">'+so.posts.slice(0,15).map(p=>'<li style="align-items:flex-start;flex-direction:column;gap:6px"><div class="row" style="flex-wrap:nowrap;width:100%">'+MARK.replace('class="mark"','class="mark" style="width:22px;height:22px"')+'<b>'+esc(h)+'</b>'+(p.boosted?'<span class="pill">Ad</span>':'')+(p.viral?'<span class="pill pos">Viral</span>':'')+(p.flop?'<span class="pill neg">Flop</span>':'')+'</div><div>'+esc(p.t)+'</div><div class="small faint num">♥ '+fmtK(p.likes)+' · ↻ '+fmtK(p.shares)+(p.gain>0?' · +'+fmtK(p.gain)+' followers':'')+'</div>'+(p.replies||[]).map(r=>'<div class="small"><span class="muted">'+esc(r.h)+'</span> '+esc(r.t)+'</div>').join('')+'</li>').join('')+'</ul>':'<div class="empty">No posts yet. Your first one is the hardest.</div>')+'</section>';
+  return x+'</main>'}
+/* ============================================================
+   Extras: identity, areas, landmark, discovery stage, clashes, set moves,
+   secret sets, encores, radar, bidding wars, reunions, artist mood, duets,
+   legacy shout-outs, regular fans, bar menu, merch, board, rival arc,
+   documentary, site memory, scrapbook, wristbands, spin-off festival,
+   and the decision inbox they share with the story
+   ============================================================ */
+/* ---------- festival identity ---------- */
+const IDENT={
+  indie:{n:'Indie mecca',d:'Guitar bands, discovery and muddy boots. Indie, rock, punk and folk acts draw 15% more.',g:['indie','rock','punk','folk']},
+  rave:{n:'Rave weekend',d:'Big rigs and late nights. Electronic and hip-hop draw more, the bars take 15% more, the neighbours complain more.',g:['electronic','hiphop'],bar:1.15,noise:1.2},
+  pop:{n:'Pop party',d:'Glitter, singalongs and huge choruses. Pop, R&B and hip-hop draw more.',g:['pop','soul','hiphop']},
+  family:{n:'Family festival',d:'Kids go free, the crowd is kinder. Better mood and fewer incidents, but the bars take less.',g:['folk','pop','jazz'],bar:.85,mood:3,inc:.7},
+  eco:{n:'Eco festival',d:'Solar stages and no single-use plastic. Credibility, greener reviews and cheaper green power.',g:['folk','indie','jazz'],cred:6}};
+const identOf=s=>IDENT[s.identity]||null;
+function identGenre(s,a){const I=identOf(s);return I&&I.g.includes(a.genre)?1.15:1}
+
+/* ---------- decision inbox (shared with the story) ---------- */
+const CARD_FX={};
+function pushCard(s,key,t,x,opts,extra){s.inbox=s.inbox||[];if(s.inbox.some(c=>c.key===key&&c.ref===(extra&&extra.ref)))return;s.inbox.push({id:uid(),key,t,x,opts,...(extra||{})})}
+function answerCard(s,id,v){const c=(s.inbox||[]).find(q=>q.id===id);if(!c)return;s.inbox=s.inbox.filter(q=>q.id!==id);const f=CARD_FX[c.key];const msg=f?f(s,v,c):'';if(msg)toast(msg);save()}
+function inboxCard(){const I=S.inbox||[];if(!I.length)return '';return I.map(c=>'<section class="card" style="box-shadow:inset 0 0 0 1px #333"><h2>'+esc(c.t)+'</h2><p class="muted" style="margin-bottom:12px">'+esc(c.x)+'</p><div class="stack">'+c.opts.map(o=>'<button class="opt" data-a="card" data-v="'+c.id+'|'+o.v+'"><span><b>'+esc(o.l)+'</b>'+(o.d?'<small>'+esc(o.d)+'</small>':'')+'</span></button>').join('')+'</div></section>').join('')}
+
+/* ---------- discovery stage: unsigned acts (names invented) ---------- */
+const UN_A=['Static','Velvet','Paper','Hollow','Tender','Feral','Sunday','Copper','Lunar','Quiet','Glass','Gentle','Bitter','Neon','Honey','Polar'];
+const UN_B=['Harbours','Lanterns','Pylons','Magpies','Kites','Moths','Bonfires','Lidos','Ferries','Arcades','Satellites','Orchards','Swimmers','Comets'];
+const UN_F=['Mara','Jonah','Elsie','Ines','Kofi','Rosa','Callum','Nadia','Felix','Juno','Arlo','Priya','Esme','Wren','Noor','Ezra'];
+const UN_L=['Quill','Vale','Marrow','Ashby','Calloway','Okafor','Hart','Doyle','Fenwick','Holloway','Pryce','Larkin','Mensah','Rooke','Finch'];
+function unsignedName(used){for(let t=0;t<30;t++){const n=chance(.5)?pick(UN_A)+' '+pick(UN_B):pick(UN_F)+' '+pick(UN_L);if(!used.has(n))return n}return 'Demo '+ri(10,99)}
+function discoveryDemos(s){const used=new Set(s.acts.map(a=>a.name));s.demos=[];for(let i=0;i<6;i++){const g=pick(GKEYS);const pot=Math.round(clamp(20+Math.pow(Math.random(),1.6)*78,20,95));
+    s.demos.push({id:'u'+uid(),name:unsignedName(used),genre:g,pot,city:pick(['Leeds','Glasgow','Bristol','Cardiff','Belfast','Brighton','Manchester','Margate','Peckham','Sheffield','Hull','Norwich']),hint:pot>70?pick(['Their demo has 40,000 plays and no label yet','Two A&Rs were at their last gig','Everyone at the open mic stopped talking']):pot>45?pick(['Tight live band, a couple of good songs','A local radio DJ keeps playing them']):pick(['Lots of heart','Their mum runs the fan page'])})}}
+function discStage(s){return s.pl.find(p=>p.t==='disc')}
+function bookDemo(s,id){const d=(s.demos||[]).find(x=>x.id===id);const st=discStage(s);if(!d||!st)return 'Build a Discovery stage first.';
+  for(let day=0;day<3;day++)for(let i=0;i<SLOTS.disc.length;i++){if(slotAt(s,st.id,day,i))continue;
+    const a={id:d.id,name:d.name,genre:d.genre,fame:ri(2,9),pot:d.pot,mom:d.pot>65?rnd(6,10):rnd(1,4),live:clamp(Math.round(50+d.pot*.4+rnd(-8,8)),40,95),rel:.97,diva:0,age:0,ag:pick(AGENCIES).k,agent:'(unsigned)',home:'UK',size:pick([3,4,5]),tour:0,hist:[2],first:s.year,unsigned:1,disc:s.year};
+    s.acts.push(a);const b={id:uid(),actId:a.id,stage:st.id,day,slot:i,fee:300,excl:false,opt:false,st:'signed',ask:300,r:s.round,dep:300};s.bk.push(b);cash(s,-300);s.demos=s.demos.filter(x=>x.id!==id);
+    return a.name+' will open the Discovery stage on '+DAYL[day]+'.'}
+  return 'The Discovery stage is full.'}
+
+/* ---------- clashes and moving sets ---------- */
+function clashes(s){const out=[];const st=stagesOf(s);for(let d=0;d<3;d++){const sets=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(s,p.id,d,i);if(!b||b.st!=='signed')return;const a=act(b.actId);if(a.fame<58)return;const t=slotTime(s,p,i,d);sets.push({b,a,p,t,en:t+sd[1]})});
+  for(let i=0;i<sets.length;i++)for(let j=i+1;j<sets.length;j++){const x=sets[i],y=sets[j];if(x.p===y.p)continue;const ov=Math.min(x.en,y.en)-Math.max(x.t,y.t);if(ov>=.5)out.push({d,x,y})}}return out}
+function freeSlots(s,day){const out=[];for(const p of stagesOf(s))SLOTS[p.t].forEach((sd,i)=>{if(!slotAt(s,p.id,day,i))out.push({p,i,t:slotTime(s,p,i,day)})});return out}
+function moveSet(s,bid,stageId,slot){const b=s.bk.find(x=>x.id===bid);const p=s.pl.find(q=>q.id===stageId);if(!b||!p||slotAt(s,stageId,b.day,slot))return;const a=act(b.actId);
+  const rank=(t,i)=>(isMain(t)?0:t==='tent'?10:t==='dance'?12:20)+i;const old=s.pl.find(q=>q.id===b.stage);const down=rank(p.t,slot)>rank(old?old.t:'small',b.slot);
+  b.stage=stageId;b.slot=slot;if(down){b.mood=(b.mood||0)-2;s.agRel[a.ag]=clamp((s.agRel[a.ag]||50)-2,0,100);return a.name+'’s team aren’t thrilled about the new slot.'}return a.name+' moved.'}
+
+/* ---------- artist mood, legacy, duets ---------- */
+function perfBonus(s,x){let p=((x.b.mood||0)*.05);p+=identGenre(s,x.a)>1?.05:0;return p}
+function liveExtras(s,ctx){const L=s.live,{A,d,h,wx,play,P}=ctx;const I=identOf(s);
+  for(const x of play){const key='seen'+x.b.id;if(L[key])continue;L[key]=1;
+    if(x.b.secret){L.boost=(L.boost||0)+4;s.hype=clamp(s.hype+6,0,100);logL(s,'SECRET SET: '+x.a.name+' walk out on the '+stageName(s,x.p)+'. The field goes wild.','good');x.b.mood=(x.b.mood||0)+1;if(!L.viral&&chance(.3)){L.viral='The secret '+x.a.name+' set went viral ('+ri(4,16)+'m views)';L.moment=L.viral}}
+    if(x.a.first&&x.a.first<s.year&&x.a.fame>=55){L.boost=(L.boost||0)+2;logL(s,x.a.name+' on stage: “We played the '+(x.a.disc?'Discovery stage':'small stage')+' here in '+(START_YEAR+x.a.first-1)+'. Thank you for taking a chance on us.”','good')}
+    if(x.a.unsigned&&x.slot===0&&x.p.t==='disc'&&L.played[x.b.id]>.5)logL(s,x.a.name+' (unsigned) leave the Discovery stage tent rammed. Two A&Rs swap numbers at the bar.','good')}
+  // surprise duets between acts from the same scene
+  if(h>=19&&!L.usedEv['duet'+d]){const now=play.filter(x=>x.a.fame>=45&&!L.stopped[x.p.id]);for(const x of now){const mate=signed(s).find(b=>b.day===d&&b.id!==x.b.id&&act(b.actId).genre===x.a.genre&&act(b.actId).fame>=45&&L.played[b.id]!=null);
+      if(mate&&chance(.18+(x.b.mood||0)*.04)){L.usedEv['duet'+d]=1;const m=act(mate.actId);L.boost=(L.boost||0)+3;logL(s,x.a.name+' bring out '+m.name+' for a surprise duet!','good');if(!L.viral&&chance(.3)){L.viral=x.a.name+' and '+m.name+'’s surprise duet went viral ('+ri(3,14)+'m views)';L.moment=L.viral}break}}}
+  // clashes split the crowd
+  if(play.filter(x=>x.a.fame>=62&&!L.stopped[x.p.id]).length>=2&&!L.usedEv['clash'+d]&&h>=18){L.usedEv['clash'+d]=1;L.boost=(L.boost||0)-2;fanPostRaw(s,pick(HANDLES),'who decided '+play.filter(x=>x.a.fame>=62).slice(0,2).map(x=>x.a.name).join(' and ')+' should clash?? running between stages')}
+  // encore
+  const cur=s.lic.curfew[d];for(const x of play){if(x.slot===0&&isMain(x.p.t)&&!L.usedEv['enc'+d]&&!L.usedEv['cur'+d]&&h===Math.floor(x.en-.01)&&x.en<=cur+.01){L.usedEv['enc'+d]=1;P(DEC.encore(s,x,cur))}}
+  // landmark ritual on the last night
+  const lm=s.pl.find(p=>p.t==='landmark');if(lm&&d===2&&h===21&&!L.usedEv.lm){L.usedEv.lm=1;const k=LANDMARKS[(lm.k||0)%LANDMARKS.length];L.boost=(L.boost||0)+5;logL(s,k.ritual,'good');if(!L.viral&&chance(.3)){L.viral='The '+k.n+' '+k.verb+' went viral ('+ri(5,20)+'m views)';L.moment=L.viral}g3burst('fire',lm)}
+  // the regulars
+  if(chance(.3))regularPost(s,ctx);
+  if(UI.follow!=null)followLine(s,ctx)}
+function overnightExtras(s,A,d){const L=s.live;const camp=SITES[s.site].camping;if(!camp)return;const N=L.onsite;
+  const late=s.pl.filter(p=>p.t==='late').length,sil=s.pl.filter(p=>p.t==='silent').length;
+  if(late){const v=Math.round(N*.3*9*Math.min(1,late*.6));L.inc['Late-night area']=(L.inc['Late-night area']||0)+v/1.2;L.complaints+=Math.round(25*late*(identOf(s)&&identOf(s).noise||1));logL(s,'The late-night area keeps '+fmtK(N*.3)+' people dancing till 3am. '+fmt$(v)+' over its bars.','')}
+  if(sil){const v=Math.round(N*.15*6*Math.min(1,sil*.8));L.inc['Silent disco']=(L.inc['Silent disco']||0)+v/1.2;logL(s,'Silent disco: '+fmtK(N*.15)+' people singing along to headphones in a silent field.','')}}
+
+/* ---------- regular fans ---------- */
+const REG_NAMES=[['Dot','retired teacher who has never missed a front row'],['Kemi','nurse who books the same pitch every year'],['Big Steve','builder with a flag on a fishing pole'],['Ffion','student who saved all year for her ticket'],['Raj & Lou','couple who met in your campsite queue']];
+function makeRegulars(){return REG_NAMES.map((r,i)=>({n:r[0],d:r[1],age:[64,31,45,19,28][i],yrs:0,kids:0,on:true,handle:'@'+r[0].toLowerCase().replace(/[^a-z]/g,'')+['_frontrow','_campsite','_flagman','_saves','_metinaqueue'][i]}))}
+function regularPost(s,ctx){const R=(s.regulars||[]).filter(r=>r.on);if(!R.length)return;const r=pick(R);const L=s.live;let t;
+  if(ctx.wx.rain>2)t=pick(['year '+(r.yrs+1)+' and the mud never wins','brought spare socks for the whole row']);
+  else if(r.kids&&chance(.5))t=pick(['the little one is wearing ear defenders and loving it','first festival for the baby. '+(r.kids>1?'and the second one!':'')]);
+  else t=pick(['same spot as always, best view on site','back for year '+(r.yrs+1)+'. home.','the steward remembered my name!!',r.n==='Dot'?'front row again. knees are 64, heart is 19':'already crying and it’s only '+hhmm(ctx.h)]);
+  fanPostRaw(s,r.handle,t)}
+function followLine(s,ctx){const r=(s.regulars||[])[UI.follow];if(!r)return;const L=s.live;const x=ctx.play[0];let t;
+  if(ctx.h<13)t=r.n+' is putting up the tent and arguing with a guy rope.';else if(ctx.bq>1.4&&chance(.5))t=r.n+' has been in the bar queue for '+Math.round(Math.min(60,ctx.bq*14))+' minutes.';else if(ctx.loo>1.3&&chance(.5))t=r.n+' gave up on the toilet queue.';
+  else if(x)t=r.n+' is watching '+x.a.name+' on the '+stageName(s,x.p)+(x.slot===0?', right at the front.':'.');else t=r.n+' is wandering between stages with a bag of chips.';
+  L.followLog=L.followLog||[];L.followLog.unshift(hhmm(ctx.h)+' · '+t);if(L.followLog.length>8)L.followLog.length=8}
+function fanPostRaw(s,h,t){const L=s.live;L.feed=L.feed||[];L.feed.unshift({h,t});logL(s,h+': '+t,'social')}
+function ageRegulars(s,w){for(const r of s.regulars||[]){if(r.on){r.yrs++;if(w.rec.stars<2.6&&chance(.35)){r.on=false;addNews(s,r.n+' ('+r.handle+') says they won’t be back next year.','fans')}}else if(w.rec.stars>=3.5&&chance(.5)){r.on=true;addNews(s,r.n+' is coming back!','fans')}
+    r.age++;if(r.age<45&&r.age>24&&chance(.15)){r.kids++;addNews(s,r.n+' had a baby. They’re bringing them next year.','fans')}}}
+
+/* ---------- bar menu & merch ---------- */
+const MENU={craft:{n:'Craft beer bar',spend:1.08,serve:.95,d:'+8% spend, a little slower'},cocktails:{n:'Cocktail bus',spend:1.1,serve:.9,d:'+10% spend, slower service'},cider:{n:'Cider tent',spend:1.03,serve:1,d:'+3% spend'},water:{n:'Free water refills',spend:.98,serve:1,mood:2,d:'Mood up, fewer heat cases'}};
+function barMods(s){const m=s.ops.menu||{};let spend=1,serve=1,mood=0;for(const k in MENU)if(m[k]){spend*=MENU[k].spend;serve*=MENU[k].serve;mood+=MENU[k].mood||0}const I=identOf(s);if(I&&I.bar)spend*=I.bar;const st=s.ops.stock||'normal';return{spend,serve,mood,stock:st}}
+const MERCH_A=['Neon flag','Line-up','Tie-dye','Mud-proof','Vintage-wash','Glow-in-the-dark','Hand-drawn','Embroidered','Sunset print'];
+const MERCH_B=['tee','hoodie','tote','bucket hat','poster','enamel pin set'];
+function merchOptions(s){s.merchOpts=[0,1,2].map(()=>({n:pick(MERCH_A)+' '+pick(MERCH_B),q:rnd(.7,1.55)}));s.merch=null}
+function merchMult(s){return s.merch?s.merch.q:.9}
+
+/* ---------- landmark ---------- */
+const LANDMARKS=[{n:'Phoenix',verb:'burning',ritual:'Sunday 21:00: the giant wooden phoenix is set alight. Thousands watch it burn in silence, then cheer.'},{n:'Mechanical Spider',verb:'awakening',ritual:'The 15-metre mechanical spider wakes up, breathes fire and stomps across the arena to a techno soundtrack.'},{n:'Mirror Tower',verb:'lighting',ritual:'Lasers hit the Mirror Tower and throw light across the entire valley for ten minutes.'}];
+
+/* ---------- board, rival, documentary, reunions, wars ---------- */
+CARD_FX.board=(s,v,c)=>{s.board=s.board||60;if(v==='yes'){s.board=clamp(s.board+10,0,100);s.boardAsk=c.ask;return 'The board is pleased.'}s.board=clamp(s.board-15,0,100);if(s.board<25){const amt=Math.min(s.debt,Math.round(s.debt*.3/50000)*50000);s.debt-=amt;s.money-=amt;addNews(s,'The board lost patience and called in '+fmt$(amt)+' of its loans.','money');return 'The board called in '+fmt$(amt)+'.'}return 'You pushed back. The board is unhappy.'};
+function boardMeeting(s){if(!(s.founder==='backed'||s.debt>1000000))return;const asks=[['head','Book a headliner with fame '+bigFame(s)+' or more','Investors want a name they recognise.'],['cost','Cut production to Lean','They think the stages are too expensive.'],['price','Raise every ticket price by 10%','They say you’re leaving money on the table.']];const a=pick(asks);
+  pushCard(s,'board','Board meeting','Your investors have one demand this year: '+a[1].toLowerCase()+'. '+a[2],[{l:'Agree',d:'Keep the board happy',v:'yes'},{l:'Push back',d:'Risk them calling in their loans',v:'no'}],{ask:a[0],ref:'b'+s.year});}
+function boardCheck(s){if(!s.boardAsk)return;let ok=true;if(s.boardAsk==='head')ok=signed(s).some(b=>act(b.actId).fame>=bigFame(s));if(s.boardAsk==='cost')ok=s.ops.prod==='lean';if(s.boardAsk==='price')ok=true;
+  s.board=clamp((s.board||60)+(ok?8:-18),0,100);if(!ok)addNews(s,'The board noticed you didn’t do what you promised.','money');s.boardAsk=null}
+const VICTOR='Victor Crane';
+function rivalTaunt(s,when){const lines={sale:[VICTOR+' (Monolith Live): “Cute little festival. Let us know when you want to play with the grown-ups.”',VICTOR+' tells Live Ledger his '+s.rival.n+' line-up is “the best in Europe, by a distance.”'],wrap:[VICTOR+' sends flowers with a card: “Better luck next year.”',VICTOR+' calls your reviews “a participation trophy.”']};addNews(s,pick(lines[when]),'rival')}
+CARD_FX.poach=(s,v,c)=>{const b=s.bk.find(x=>x.id===c.ref);if(!b)return '';const a=act(b.actId);if(v==='pay'){cash(s,-c.cost);ledger(s,'Retention fees',-c.cost);b.mood=(b.mood||0)+1;return a.name+' stay. Victor is furious.'}
+  b.st='cancelled';cash(s,b.dep||0);s.events.push({k:'cancel',actId:a.id,stage:b.stage,day:b.day,slot:b.slot,fee:b.fee,why:'a better offer',w:0});s.rival.bk.push({actId:a.id,fee:b.fee*2,excl:true,day:b.day});addNews(s,a.name+' left for '+s.rival.n+'. Find a replacement fast.','cancel');return a.name+' are gone.'};
+function poachAttempt(s){if(s.rival.rep<s.rep-10||chance(.5))return;const b=signed(s).filter(b=>b.slot===0&&isMain(stageType(s,b.stage))).sort((x,y)=>act(y.actId).fame-act(x.actId).fame)[0];if(!b)return;const a=act(b.actId);const cost=Math.round(b.fee*.3/1000)*1000;
+  pushCard(s,'poach','Victor is poaching '+a.name,VICTOR+' has offered '+a.name+' double to play '+s.rival.n+' instead. Their agent says they’ll stay for a '+fmt$(cost)+' “loyalty bonus”.',[{l:'Pay '+fmt$(cost),d:'Keep your headliner',v:'pay'},{l:'Let them go',d:'Get the deposit back, find someone else',v:'go'}],{ref:b.id,cost})}
+function rivalYearEnd(s){if(s.rival.rep<20&&!s.flags.rivalFolded){s.flags.rivalFolded=1;addNews(s,s.rival.n+' has collapsed. '+VICTOR+' blames “the weather”. Their acts are looking for a new home.','rival');const r=RIVALS[1];s.rival={n:r.n,owner:r.owner,rep:35,budget:1200000,bk:[],clash:false,hist:[]};s.flags.cheapAfterRival=s.year+1}}
+CARD_FX.doc=(s,v)=>{if(v==='yes'){s.doc={y:s.year};const f=Math.round(40000*scaleOf(s)/5000)*5000;cash(s,f);ledger(s,'Documentary fee',f);return 'The crew start filming tomorrow. '+fmt$(f)+' paid.'}return 'Maybe next year.'};
+function docOffer(s){if(s.doc&&s.doc.y===s.year)return;if(s.rep<22||chance(.6))return;pushCard(s,'doc','A documentary crew wants in','A streaming service wants to follow you for the whole year: booking, build, the weekend, everything. Great years make great films. So do disasters.',[{l:'Let them film',d:'They pay a fee, and the film comes out next year',v:'yes'},{l:'No cameras',v:'no'}],{ref:'d'+s.year})}
+function docResult(s,w){if(!s.doc||s.doc.y!==s.year)return null;const good=w.rec.stars>=3.5,bad=!!w.rec.disaster||w.rec.stars<2.3;
+  const title=good?'“'+s.name+': '+pick(['Field of Dreams','Three Days in August','Build It and They Will Come'])+'”':bad?'“'+s.name+': '+pick(['Mud, Lies and Portaloos','The Weekend That Wasn’t','Trouble in the Fields'])+'”':'“'+s.name+': '+pick(['A Year in the Life','Behind the Fence'])+'”';
+  if(good){s.hype=clamp(s.hype+12,0,100);s.rep=clamp(s.rep+2,1,100)}else if(bad){s.hype=clamp(s.hype+15,0,100);s.rep=clamp(s.rep-3,1,100)}else s.hype=clamp(s.hype+5,0,100);
+  s.flags.docs=(s.flags.docs||0)+1;return {title,tone:good?'a love letter':bad?'a cult disaster classic':'a quiet hit'}}
+CARD_FX.reunion=(s,v,c)=>{if(v!=='yes')return 'Maybe they’ll call again.';const a=act(c.ref);const main=stagesOf(s).find(p=>isMain(p.t));if(!main)return 'You need a main stage.';
+  let day=[0,1,2].find(d=>!slotAt(s,main.id,d,0));if(day==null)return 'Free up a headline slot first, then ask again.';
+  const fee=Math.round(feeOf(a,s)*1.8/1000)*1000;const b={id:uid(),actId:a.id,stage:main.id,day,slot:0,fee,excl:true,opt:false,st:'pending',ask:fee,r:s.round};s.bk.push(b);signAct(s,b,a);a.hiatus=0;s.hype=clamp(s.hype+25,0,100);
+  addNews(s,'REUNION: '+a.name+' will play their only show of the year at '+s.name+'. The internet melts.','book');return a.name+' signed for '+fmt$(fee)+'!'};
+function reunionRumour(s){if(s.flags.reunionY===s.year||chance(.55))return;const c=s.acts.filter(a=>(a.hiatusRisk||a.hiatus)&&a.fame>=78&&!bkOf(s,a.id)&&!rivalHas(s,a.id)).sort(()=>Math.random()-.5)[0];if(!c)return;s.flags.reunionY=s.year;
+  pushCard(s,'reunion','Rumour: '+c.name+' might do a one-off','An agent tells you off the record that '+c.name+' are considering one exclusive show this summer. It would cost about '+fmt$(feeOf(c,s)*1.8)+' and need a free headline slot.',[{l:'Make it happen',d:'Book them as a headliner',v:'yes'},{l:'Too rich for us',v:'no'}],{ref:c.id})}
+CARD_FX.war=(s,v,c)=>{const b=s.bk.find(x=>x.id===c.ref);if(!b)return '';const a=act(b.actId);
+  if(v==='walk'){b.st='lost';s.rival.bk.push({actId:a.id,fee:c.rival,excl:true,day:ri(0,2)});return 'You walked away. '+a.name+' go to '+s.rival.n+'.'}
+  const mine=Math.round(b.fee*(v==='r25'?1.25:1.1)/250)*250;b.fee=mine;const myScore=mine*(1+s.rep/150),theirs=c.rival*(1+s.rival.rep/150);
+  const fold=myScore>theirs&&(c.round>=3||chance(c.round===1?.45:.65));
+  if(fold||myScore>theirs*1.25){signAct(s,b,a);return VICTOR+' folds. '+a.name+' sign for '+fmt$(mine)+'!'}
+  if(c.round>=3){b.st='lost';s.rival.bk.push({actId:a.id,fee:c.rival,excl:true,day:ri(0,2)});return a.name+'’s agent ran out of patience and chose '+s.rival.n+'.'}
+  const nr=Math.round(Math.max(c.rival,mine)*rnd(1.06,1.15)/250)*250;pushCard(s,'war','Bidding war: '+a.name+' (round '+(c.round+1)+')',s.rival.n+' came back at '+fmt$(nr)+'. You’re on '+fmt$(mine)+'. The agent wants a final answer soon.',warOpts(mine),{ref:b.id,rival:nr,round:c.round+1});return 'They came back with more.'};
+function warOpts(f){return [{l:'Raise 10% to '+fmt$(f*1.1),v:'r10'},{l:'Raise 25% to '+fmt$(f*1.25),d:'Likely to end it',v:'r25'},{l:'Walk away',v:'walk'}]}
+function startWar(s,b,rb){const a=act(b.actId);b.st='war';pushCard(s,'war','Bidding war: '+a.name,s.rival.n+' have offered '+fmt$(rb)+' for '+a.name+'. Your offer is '+fmt$(b.fee)+'. Their agent wants to see who blinks.',warOpts(b.fee),{ref:b.id,rival:rb,round:1})}
+
+/* ---------- radar & moving the headliner ---------- */
+function radarSheet(){const L=S.live;const st=STEPS[Math.min(L.i,STEPS.length-1)];if(st.h>=24)return '<h2>Weather radar</h2><p class="sub">Quiet night.</p><button class="btn ghost wide" data-a="closesheet">Close</button>';
+  const rows=[];for(let h=st.h;h<=Math.min(23,st.h+5);h++){const w=weatherAt(S,st.d,h);rows.push('<li><span class="num" style="width:48px">'+hhmm(h)+'</span><div class="grow">'+w.temp+'°C · '+(w.light?'lightning':w.rain>3?'heavy rain':w.rain>0?'showers':'dry')+' · gusts '+w.gust+' m/s</div>'+(w.light||w.gust>=18?'<span class="pill neg">Danger</span>':w.rain>2?'<span class="pill warn">Wet</span>':'')+'</li>')}
+  const main=stagesOf(S).find(p=>isMain(p.t));const hb=main&&slotAt(S,main.id,st.d,0),sb=main&&slotAt(S,main.id,st.d,1);const canSwap=hb&&sb&&hb.st==='signed'&&sb.st==='signed'&&slotTime(S,main,1,st.d)>st.h&&!L.usedEv['swap'+st.d];
+  return '<h2>Weather radar</h2><p class="sub">Met Office radar for the next few hours.</p><ul class="list">'+rows.join('')+'</ul>'+(canSwap?'<p class="small muted" style="margin:12px 0 8px">Storm due at headline time? Swap tonight’s headliner and special guest so the big set happens earlier. The headliner’s agent won’t love it.</p><button class="btn wide" data-a="swaphead">Swap '+esc(act(hb.actId).name)+' to '+hhmm(slotTime(S,main,1,st.d))+'</button>':'')+'<button class="btn ghost wide" style="margin-top:8px" data-a="closesheet">Close</button>'}
+function swapHead(s){const L=s.live;const st=STEPS[Math.min(L.i,STEPS.length-1)];const main=stagesOf(s).find(p=>isMain(p.t));const hb=slotAt(s,main.id,st.d,0),sb=slotAt(s,main.id,st.d,1);if(!hb||!sb)return;hb.slot=1;sb.slot=0;L.usedEv['swap'+st.d]=1;hb.mood=(hb.mood||0)-1;s.agRel[act(hb.actId).ag]-=3;logL(s,act(hb.actId).name+' moved earlier to dodge the weather. '+act(sb.actId).name+' close the night.','warn')}
+
+/* ---------- site memory, scrapbook, wristbands, spin-off ---------- */
+function wristband(s,w){const hue=hash(s.name+s.year)%360;const v=w.rec.soldOut?'gold':w.rec.weather.some(x=>/rain|storm/i.test(x))?'mud':w.rec.stars>=4?'holo':'plain';
+  return {c1:'hsl('+hue+',70%,55%)',c2:'hsl('+((hue+40)%360)+',70%,40%)',v,pat:hash(s.name+s.year+'p')%3}}
+function bandHtml(b,label){const bg=b.v==='gold'?'linear-gradient(90deg,#b8902f,#f5d77a,#b8902f)':b.v==='holo'?'linear-gradient(90deg,#ff8fc6,#5ec4e8,#c6f24e,#ff8fc6)':'repeating-linear-gradient('+[45,90,135][b.pat]+'deg,'+b.c1+' 0 8px,'+b.c2+' 8px 16px)';
+  return '<div style="height:22px;border-radius:4px;background:'+bg+';position:relative;'+(b.v==='mud'?'filter:sepia(.6) saturate(.7)':'')+'"><span style="position:absolute;left:8px;top:3px;font-size:11px;font-weight:600;color:#000;mix-blend-mode:hard-light">'+esc(label)+'</span></div>'}
+function scrapEntry(s,w,docR){const top=w.rec.top;const best=w.R.rv.slice().sort((a,b)=>b.s-a.s)[0];
+  return {y:s.year,cal:w.rec.cal,site:SITES[s.site].n,top,moment:w.rec.moment||w.rec.disaster||'',quote:best?'“'+best.line+'” · '+best.o:'',stars:w.rec.stars,att:w.rec.att,band:wristband(s,w),merch:s.merch?s.merch.n+(s.merch.q>1.3?' (now a collectible)':''):'',doc:docR?docR.title:'',awards:(w.awards||[]).filter(a=>a.won).map(a=>a.n)}}
+function scrapbookSheet(){const E=S.scrap||[];if(!E.length)return '<h2>Scrapbook</h2><p class="sub">Your first page fills in after your first festival.</p><button class="btn ghost wide" data-a="closesheet">Close</button>';
+  return '<h2>Scrapbook</h2><p class="sub">'+E.length+' year'+(E.length>1?'s':'')+' of '+esc(S.name)+'.</p>'+E.slice().reverse().map(e=>'<section class="card"><h2>'+e.cal+'<small>'+e.stars.toFixed(1)+'★ · '+fmtN(e.att)+' people</small></h2>'+bandHtml(e.band,S.name.toUpperCase()+' '+e.cal)+
+    '<p style="margin-top:10px;font-weight:600">'+e.top.map(esc).join(' · ')+'</p>'+(e.moment?'<p class="muted" style="margin-top:6px">'+esc(e.moment)+'</p>':'')+(e.quote?'<p class="small" style="margin-top:6px">'+esc(e.quote)+'</p>':'')+
+    (e.awards&&e.awards.length?'<p class="small pos" style="margin-top:6px">Won: '+e.awards.map(esc).join(', ')+'</p>':'')+(e.merch?'<p class="small faint" style="margin-top:6px">Merch: '+esc(e.merch)+'</p>':'')+(e.doc?'<p class="small faint">Film: '+esc(e.doc)+'</p>':'')+'</section>').join('')+'<button class="btn ghost wide" data-a="closesheet">Close</button>'}
+function spinOffYear(s){const sp=s.spin;if(!sp)return null;const fill=clamp(.45+s.rep/200+gauss()*.1,.25,1);const att=Math.round(sp.cap*fill);const rev=att*72/1.2+att*22/1.2*.7;const cost=sp.cap*58+380000;const net=Math.round(rev-cost);
+  sp.yrs++;sp.last={att,net,fill};return sp.last}
+
+/* ---------- year hooks ---------- */
+function yearExtras(s,first){if(first){s.regulars=makeRegulars();s.scrap=[];s.inbox=[];s.board=60;s.social=newSocial(s)}
+  discoveryDemos(s);merchOptions(s);s.flags.bluff=0;if(s.social){s.social.left=SOCIAL_PER;s.social.week=0}
+  if(s.scar){s.flags.scarNote=1}}
+function roundExtras(s){if(s.round===1)docOffer(s);if(s.round===3){boardMeeting(s);reunionRumour(s)}if(s.round===5&&!first5(s))rivalTaunt(s,'sale');if(s.social)s.social.left=SOCIAL_PER}
+const first5=s=>false;
+function weekExtras(s){if(s.week===2)rivalTaunt(s,'sale');if(s.social){s.social.left=SOCIAL_PER;if(s.social.pushWeek&&s.social.pushWeek<s.week)s.social.pushWeek=0}}
+function buildExtras(s){poachAttempt(s)}
+function wrapExtras(s,L,w){boardCheck(s);ageRegulars(s,w);s.scar=Math.round(clamp((L.mud||0)*.6,0,60));const docR=docResult(s,w);w.doc=docR;w.spin=spinOffYear(s);if(w.spin)s.money+=w.spin.net;
+  if(s.flags.bluff&&!signed(s).some(b=>b.secret)){s.rep=clamp(s.rep-3,1,100);w.bluff=1;addNews(s,'Fans worked out there never was a secret set. The replies are brutal.','fans')}
+  if(s.merch&&s.merch.q>1.3)w.collectible=s.merch.n;
+  // discovered acts that are taking off
+  for(const a of s.acts)if(a.unsigned&&a.disc===s.year){if(a.pot>65){a.unsigned=0;a.agent=pick(AGENTS);a.fame=ri(14,24);a.hist.push(a.fame);addNews(s,a.name+', from your Discovery stage, just signed a record deal.','book')}}
+  s.scrap=s.scrap||[];s.scrap.push(scrapEntry(s,w,docR));rivalYearEnd(s)}
+/* ============================================================
+   Story mode: five years on Hollow Farm, with choices that change
+   the game. Everything else plays as normal around it.
+   Characters are invented.
+   ============================================================ */
+const CAST={jess:{n:'Jess Moreno',r:'your best friend and co-founder',c:'#c6f24e'},ted:{n:'Ted Hollow',r:'the farmer',c:'#e5a93b'},victor:{n:'Victor Crane',r:'boss of Monolith Live',c:'#ff6369'},
+  priya:{n:'Priya Shah',r:'music editor at Loud & Clear',c:'#5ec4e8'},maya:{n:'Maya Hollow',r:'Ted’s daughter',c:'#ff8fc6'},glen:{n:'Glen Pike',r:'council licensing officer',c:'#b4b4b4'}};
+const SF=s=>s.story.flags;
+const STORY=[
+ {id:'intro',ch:1,who:'ted',when:s=>s.year===1&&s.phase==='booking',title:'Chapter 1: The kitchen table',
+  text:s=>'Rain on the windows of Hollow Farm. Ted Hollow pours three mugs of tea and slides the lease across the table. Jess squeezes your hand under it.\n\n“My father farmed this land. I don’t mind a party,” Ted says, “but the village has to still like me in September. What are you offering?”',
+  choices:[{l:'Promise quiet nights',d:'Noise limit 2 dB stricter, but the council and Ted trust you',fx:s=>{s.lic.noise-=2;s.council=clamp(s.council+10,0,100);SF(s).ted=2}},
+    {l:'Offer Ted 5% of the profits',d:'He’ll share in the wins',fx:s=>{SF(s).tedShare=1;SF(s).ted=1}},
+    {l:'Pay a year’s rent up front',d:'−£45,000 now; Ted is delighted',fx:s=>{cash(s,-45000);SF(s).ted=3}}],obj:'Open the gates on your first festival.'},
+ {id:'victor1',ch:1,who:'victor',when:s=>s.year===1&&s.phase==='booking'&&s.round>=3,title:'A call from Monolith Live',
+  text:s=>'Your phone lights up: Victor Crane. You’ve seen him on stage at industry awards, all teeth.\n\n“Love what you’re doing in that field. Let me help. Book through Monolith and every agent in the country gives you 15% off. We just take 10% of your ticket money. Everyone wins.”\n\nJess, mouthing behind you: no.',
+  choices:[{l:'Take the deal',d:'Artist fees 15% cheaper, but Monolith take 10% of ticket revenue',fx:s=>{SF(s).monolith=1}},
+    {l:'Politely decline',d:'Victor won’t forget it. His festival will chase your acts harder',fx:s=>{SF(s).spurned=1;s.rival.budget=Math.round(s.rival.budget*1.3)}},
+    {l:'Tell him where to go',d:'Jess cheers. Victor makes it personal',fx:s=>{SF(s).spurned=2;s.rival.budget=Math.round(s.rival.budget*1.5);s.cred=clamp(s.cred+5,0,100)}}]},
+ {id:'priya1',ch:1,who:'priya',when:s=>s.year===1&&s.phase==='onsale'&&s.week>=2,title:'The interview',
+  text:s=>'Priya Shah from Loud & Clear wants a big feature on “the festival everyone’s whispering about”. She has one condition: an exclusive.',
+  choices:[{l:'Give her the exclusive',d:'Hype up now, and she’ll be fair in her review',fx:s=>{s.hype=clamp(s.hype+10,0,100);SF(s).priya=1}},
+    {l:'Leak her a headliner nobody knows about',d:'Huge hype, but an agent will be furious',fx:s=>{s.hype=clamp(s.hype+16,0,100);const b=signed(s)[0];if(b){const a=act(b.actId);s.agRel[a.ag]=clamp(s.agRel[a.ag]-12,0,100)}SF(s).priya=2}},
+    {l:'No interviews',d:'Keep your head down',fx:s=>{SF(s).priya=0}}]},
+ {id:'build1',ch:1,who:'glen',when:s=>s.year===1&&s.phase==='build',title:'The man from the council',
+  text:s=>'Glen Pike from the council walks the site in a hi-vis vest two sizes too big, clipboard first. Jess has the forecast open on her phone and is going pale.\n\n“Rain coming Friday,” Glen says. “Your meadow floods. I’d hate to see anyone stuck.”',
+  choices:[{l:'Spend £25,000 on drainage and trackway',d:'Mud builds much more slowly this weekend',fx:s=>{cash(s,-25000);ledger(s,'Drainage (story)',-25000);SF(s).drain=s.year}},
+    {l:'Trust the weather',d:'Save the money, hope for sun',fx:s=>{}}]},
+ {id:'gates1',ch:1,who:'jess',when:s=>s.year===1&&s.phase==='live'&&s.live&&s.live.i===0,title:'Gates open',
+  text:s=>'11:00. The first wristbands go on. Somebody cheers in the queue. Jess grabs your arm: “We actually did it.”\n\nThe crew are waiting for you to say something.',
+  choices:[{l:'Give the crew a speech',d:'Everyone works harder today',fx:s=>{s.live.boost=(s.live.boost||0)+3}},
+    {l:'Go and check the gates yourself',d:'Shorter queues on Friday',fx:s=>{SF(s).gates=1}}]},
+ {id:'wrap1',ch:2,who:'jess',when:s=>s.year===1&&s.phase==='wrap',title:'Chapter 2: The morning after',
+  text:s=>{const r=s.wrap.rec;return 'Monday. The field is empty and smells of cider. '+(r.net>=0?'You made '+fmt$(r.net)+'. Jess cannot stop laughing.':'You lost '+fmt$(-r.net)+'. Jess is doing sums on a napkin.')+' '+(s.wrap.R.avg>=3.2?'The reviews are kind.':'The reviews are mixed.')+'\n\n'+(SF(s).ted>=2?'Ted waves from the tractor.':'Ted asks if the noise will be like that every year.')+'\n\nOver bacon rolls, Jess asks the big question: “What do we want this to be?”'},
+  choices:[{l:'Bigger',d:'Grow every year. Goal: lease the next field and sell 90% of tickets next year',fx:s=>{SF(s).path='grow'}},
+    {l:'Better',d:'Stay small and special. Goal: average 3.5 stars next year',fx:s=>{SF(s).path='soul'}}],obj:s=>SF(s).path==='grow'?'Lease the next field and sell 90% of weekend tickets.':'Average 3.5 stars in the reviews.'},
+ {id:'jess2',ch:2,who:'jess',when:s=>s.year===2&&s.phase==='onsale'&&s.week>=5,title:'Running on empty',
+  text:s=>'It’s 2am and Jess is asleep on the office floor with a spreadsheet open. When she wakes up she says she’s fine. She isn’t.',
+  choices:[{l:'Send Jess on holiday and hire an ops manager',d:'£40,000, but you keep your best friend',fx:s=>{cash(s,-40000);ledger(s,'Operations manager (story)',-40000);SF(s).jess='rested'}},
+    {l:'Push through together',d:'Free, for now',fx:s=>{SF(s).jess='tired'}}]},
+ {id:'poach2',ch:2,who:'victor',when:s=>s.year===2&&s.phase==='build',title:'Victor makes his move',
+  text:s=>{const b=signed(s).filter(b=>b.slot===0&&isMain(stageType(s,b.stage)))[0];return b?'An email lands at 7am. '+act(b.actId).name+'’s agent: “We’ve had a very strong offer from Monolith Live for the same weekend. We’d need a loyalty bonus to stay.” Victor sends you a winking emoji.':'Victor calls just to tell you he’s booked three headliners for the same weekend. “Good luck, kid.”'},
+  choices:[{l:'Pay whatever it takes',d:'30% of their fee as a bonus',fx:s=>{const b=signed(s).filter(b=>b.slot===0&&isMain(stageType(s,b.stage)))[0];if(b){const c=Math.round(b.fee*.3);cash(s,-c);ledger(s,'Retention fees',-c)}}},
+    {l:'Call Victor’s bluff',d:'50/50 they walk',fx:s=>{const b=signed(s).filter(b=>b.slot===0&&isMain(stageType(s,b.stage)))[0];if(b&&chance(.5)){CARD_FX.poach(s,'go',{ref:b.id});SF(s).lostHead=1}}}]},
+ {id:'wrap2',ch:3,who:'priya',when:s=>s.year===2&&s.phase==='wrap',title:'Chapter 3: The feature',
+  text:s=>{const ok=SF(s).path==='grow'?((s.wrap.rec.att/s.lic.cap)>=.85&&(s.expand||0)>0):s.wrap.R.avg>=3.5;SF(s).goal2=ok;return 'Priya’s long read lands: “'+s.name+': '+(s.wrap.R.avg>=3.5?'the festival that grew up':'growing pains in a field')+'”. '+(ok?'You hit the goal you and Jess set. ':'You missed the goal you and Jess set. ')+'She ends it with a question: “Can an independent survive Monolith?”\n\nThe comments are on fire.'},
+  choices:[{l:'Reply with a thank-you thread',d:'Followers and goodwill',fx:s=>{if(s.social)s.social.followers=Math.round(s.social.followers*1.15);s.cred=clamp(s.cred+2,0,100)}},
+    {l:'Say nothing and get back to work',fx:s=>{}}]},
+ {id:'ted3',ch:3,who:'maya',when:s=>s.year===3&&s.phase==='booking',title:'Ted’s fall',
+  text:s=>'Ted fell from the hay loft in March. He’ll be fine, but his daughter Maya is running the farm now and she doesn’t do sentiment.\n\n“Developers have offered three million for the land. Houses. I’m sorry. Unless you can match it by September, or pay a lot more rent.”',
+  choices:[{l:'Promise to buy the farm',d:'Have £3m in cash at the wrap-up this year',fx:s=>{SF(s).farm='buy'}},
+    {l:'Agree a 10-year lease at double rent',d:'Safe, but rent doubles for good',fx:s=>{SF(s).farm='lease';SF(s).rentX=2}},
+    {l:'Move to Hartwell Airfield next year',d:'A bigger, emptier site for 40,000. Start again',fx:s=>{SF(s).farm='move'}}],obj:s=>SF(s).farm==='buy'?'Have £3m in the bank at the wrap-up to buy Hollow Farm.':SF(s).farm==='move'?'Give Hollow Farm a final festival to remember.':'Average 3.5 stars and keep the village on side.'},
+ {id:'jess3',ch:3,who:'jess',when:s=>s.year===3&&s.phase==='onsale'&&s.week>=3&&SF(s).jess==='tired',title:'Jess has an offer',
+  text:s=>'Jess won’t look at you. “Victor offered me a job. Head of booking at Monolith. Double the money, and I’d get to sleep.”',
+  choices:[{l:'Give Jess 20% of the festival',d:'She stays. Profits are shared from now on',fx:s=>{SF(s).jessShare=1;SF(s).jess='partner'}},
+    {l:'Wish her luck',d:'She takes her contacts with her. Every agent likes you a bit less',fx:s=>{SF(s).jess='gone';for(const k in s.agRel)s.agRel[k]=clamp(s.agRel[k]-10,0,100)}}]},
+ {id:'farm3',ch:4,who:'maya',when:s=>s.year===3&&s.phase==='wrap',title:'Chapter 4: Decision day',
+  text:s=>{const f=SF(s).farm;if(f==='buy')return s.money>=3000000?'Maya counts the zeros twice. “Dad would have liked this.” Hollow Farm is yours. No more rent, ever.':'You’re short. Maya signs with the developers. The diggers come in November. You’ll have to start again somewhere bigger: Hartwell Airfield.';
+    if(f==='move')return 'One last sunrise over Hollow Farm. Next year: Hartwell Airfield, 40,000 people and nobody to wave at from the tractor.';return 'The lease is signed for ten years. Maya shakes your hand and almost smiles.'},
+  choices:[{l:'Onwards',fx:s=>{const f=SF(s).farm;if(f==='buy'&&s.money>=3000000){s.money-=3000000;SF(s).owned=1;addNews(s,'You bought Hollow Farm.','story')}else if(f==='buy'||f==='move'){SF(s).relocate=1}}}],
+  obj:'Make the next festival your best yet.'},
+ {id:'doc4',ch:4,who:'priya',when:s=>s.year===4&&s.phase==='booking',title:'The film',
+  text:s=>'Priya has left the magazine. She wants to direct a documentary about you, Jess, Ted and the fight with Monolith. A streamer is interested.',
+  choices:[{l:'Say yes',d:'Cameras everywhere this year',fx:s=>{CARD_FX.doc(s,'yes')}},{l:'Keep it private',fx:s=>{}}]},
+ {id:'victor4',ch:5,who:'victor',when:s=>s.year===4&&s.phase==='wrap',title:'Chapter 5: The offer',
+  text:s=>{const v=victorBid(s);return 'Victor turns up at your office in person. No winking emoji this time.\n\n“'+fmt$(v)+' for '+s.name+'. Cash. Or next year I put three superstars on '+s.rival.n+' on your weekend, and we see who’s standing in September.”'},
+  choices:[{l:'Sell to Victor',d:'Take the money. The end',fx:s=>{s.money+=victorBid(s);SF(s).ending='sold';s.over={k:'story',t:'Sold to Monolith'}}},
+    {l:'Fight',d:'Next year: beat '+'his festival with a sell-out and 3.5 stars',fx:s=>{SF(s).ending='fight';s.rival.budget*=2;s.rival.clash=true;s.rival.rep=clamp(s.rival.rep+15,0,95)}},
+    {l:'Merge as equals',d:'Monolith money, your name on it. The fans may not like it',fx:s=>{s.money+=Math.round(victorBid(s)*.5);s.cred=clamp(s.cred-15,0,100);SF(s).ending='merge'}}],obj:s=>SF(s).ending==='fight'?'Sell out and average 3.5 stars to beat Wildwood.':'Run one more great festival.'},
+ {id:'finale',ch:5,who:'jess',when:s=>s.year===5&&s.phase==='wrap',title:'Epilogue',
+  text:s=>{const w=s.wrap.rec;const won=w.soldOut&&w.stars>=3.5;const e=SF(s).ending;let t='';
+    if(e==='fight')t=won?'Wildwood Fields loses millions and quietly cancels its next year. Victor Crane resigns “to spend time with his yacht.” Your festival is the biggest independent in the country.':'You survived, just. Wildwood is still there. So are you, bruised and still independent.';
+    else if(e==='merge')t='The posters now say “Monolith Live presents”. The festival is safe, and richer, and a little less yours.';else t='Another summer, another field full of people singing.';
+    const j=SF(s).jess==='gone'?'Jess sends a text from Monolith HQ: “Proud of you. Always.”':SF(s).jess==='partner'?'Jess, your partner now, is already planning next year.':'Jess falls asleep on a hay bale by 10pm, grinning.';
+    const t2=SF(s).owned?'Ted, back on his feet, watches from the farmhouse porch. His land, your festival.':SF(s).relocate?'Ted visits the airfield once. He says it’s very flat.':'Ted waves from the tractor, as always.';
+    return t+'\n\n'+j+'\n\n'+t2},
+  choices:[{l:'The end (keep playing)',d:'Your story is done. The festival goes on in free play',fx:s=>{s.story.done=1;s.story.on=false;award(s,'story')}},{l:'Finish here',fx:s=>{s.story.done=1;s.over={k:'story',t:'The End'}}}]}];
+function victorBid(s){return SF(s).bid||(SF(s).bid=Math.max(2e6,Math.round((s.rep*90000+s.lic.cap*120)/100000)*100000))}
+function storyOn(s){return s&&s.story&&s.story.on}
+function nextScene(s){if(!storyOn(s))return null;return STORY.find(sc=>!s.story.seen[sc.id]&&sc.when(s))||null}
+function storySheet(){const sc=nextScene(S);if(!sc){UI.sheet=null;return ''}const who=CAST[sc.who];const txt=typeof sc.text==='function'?sc.text(S):sc.text;
+  return '<p class="small" style="color:'+who.c+';font-weight:600;margin-bottom:4px">'+esc(who.n)+' · '+esc(who.r)+'</p><h2 style="font-size:22px;margin-bottom:12px">'+esc(sc.title)+'</h2>'+txt.split('\n\n').map(p=>'<p style="margin-bottom:12px;font-size:15px;line-height:1.55">'+esc(p)+'</p>').join('')+
+    '<div class="stack" style="margin-top:6px">'+sc.choices.map((c,i)=>'<button class="opt" data-a="storych" data-v="'+sc.id+'|'+i+'"><span><b>'+esc(c.l)+'</b>'+(c.d?'<small>'+esc(c.d)+'</small>':'')+'</span></button>').join('')+'</div>'}
+function storyChoose(s,id,i){const sc=STORY.find(x=>x.id===id);if(!sc||s.story.seen[id])return;s.story.seen[id]=1;const c=sc.choices[i];try{c.fx(s)}catch(e){console.error(e)}
+  s.story.ch=sc.ch;if(sc.obj)s.story.obj=typeof sc.obj==='function'?sc.obj(s):sc.obj;s.story.log=s.story.log||[];s.story.log.push({y:s.year,t:sc.title,c:c.l});addNews(s,sc.title+': '+c.l+'.','story');save()}
+function storyCard(){if(!storyOn(S))return '';const ch=S.story.ch||1;return '<section class="card" style="box-shadow:inset 3px 0 0 var(--accent)"><h2>Story · Chapter '+ch+' of 5<small>'+esc(CAST.jess.n)+' & you</small></h2><p>'+esc(S.story.obj||'Open the gates on your first festival.')+'</p>'+(S.story.log&&S.story.log.length?'<p class="small faint" style="margin-top:8px">Last choice: '+esc(S.story.log[S.story.log.length-1].c)+'</p>':'')+'</section>'}
+/* story effects on the economy */
+function storyFeeMult(s){return storyOn(s)&&SF(s).monolith&&s.year===1?.85:1}
+function storyRevenue(s,add,tick){if(!s.story)return;const f=SF(s);if(f.monolith&&s.year===1)add('Tickets','Monolith commission (10%)',-tick/1.2*.1);
+  if(f.rentX)add('Tickets','Extra rent (10-year lease)',-SITES[s.site].rent*(f.rentX-1))}
+function storyProfitShare(s,net){if(!s.story||net<=0)return 0;const f=SF(s);let sh=0;if(f.tedShare&&!f.owned&&!f.relocate)sh+=.05;if(f.jessShare)sh+=.2;return Math.round(net*sh)}
+function relocate(s,k){const st=SITES[k];s.site=k;s.grid=terrain(k);s.rec=st.rec.map(r=>({...r}));s.pl=[];s.expand=0;setGrid(s.grid);
+  s.lic={cap:Math.round(st.cap*.75/1000)*1000,curfew:st.curfew.slice(),noise:st.noise+DF(s).noise,cond:[],varReq:0};s.tix=Object.assign(defaultTix(s.lic.cap,st.camping),{mkt:s.tix.mkt,pint:s.tix.pint});
+  autoLayout(s,false);A_CACHE={k:'',a:null};G3.world=null;addNews(s,'Welcome to '+st.n+': a licence for '+fmtN(s.lic.cap)+' people.','story')}
 /* ============================================================
    3D festival grounds (three.js r128) with a 2D canvas fallback
    1 world unit = 1 cell (20 m); heights are exaggerated to read
@@ -1883,6 +2231,14 @@ function buildMesh(p,wd,ghost){
     const wh=new T.Group();wh.position.y=1.6;const ring=new T.Mesh(g3geo('ring',()=>new T.TorusGeometry(.95,.035,6,32)),M('#e8e8e8',{em:'#000000'}));ring.userData.glow='#ffd166';wh.add(ring);
     for(let i=0;i<12;i++){const a=i/12*Math.PI*2;const sp=new T.Mesh(g3geo('spoke',()=>new T.BoxGeometry(.02,.95,.02).translate(0,.475,0)),M('#cfcfcf'));sp.rotation.z=a;wh.add(sp);const cb=new T.Mesh(g3geo('cab',()=>new T.BoxGeometry(.14,.14,.14)),M(['#e84a5f','#f7d154','#3e8ed0','#7bd389'][i%4]));cb.position.set(Math.sin(a)*.95,Math.cos(a)*.95,0);wh.add(cb)}
     g.add(wh);if(!ghost)G3.wheels.push(wh)}
+  else if(p.t==='disc'){box(1.6,.14,.7,'#2a2a2a',0,.07,0);box(1.7,.08,.8,'#c6f24e',0,.9,-.05);for(const sx of[-.75,.75])box(.05,.85,.05,'#888',sx,.45,.3)}
+  else if(p.t==='late'){box(2.8,.9,1.8,'#2b1a3f',0,.45,0);box(2.9,.06,1.9,'#7a3fbf',0,.92,0,ghost?null:{em:'#000000'}).userData.glow='#7a3fbf';box(.8,.5,.06,'#111',0,.25,.92)}
+  else if(p.t==='silent'){box(1.9,.02,1.9,'#1f3b35',0,.01,0);for(let i=0;i<6;i++){const hp=box(.18,.18,.18,['#3fbfa0','#5ec4e8','#ff6fb1'][i%3],-.6+(i%3)*.6,.1,-.35+Math.floor(i/3)*.7,ghost?null:{em:'#000000'});hp.userData.glow=['#3fbfa0','#5ec4e8','#ff6fb1'][i%3]}}
+  else if(p.t==='heal'){box(2.9,.02,2.9,'#8fbf6a',0,.01,0);for(let i=0;i<4;i++){const t=new T.Mesh(g3geo('tipi',()=>new T.ConeGeometry(.28,.5,6).translate(0,.25,0)),M('#f2e6c9'));t.position.set(-.8+(i%2)*1.6,0,-.8+Math.floor(i/2)*1.6);g.add(t)}box(.6,.35,.6,'#7d5a3c',0,.17,0)}
+  else if(p.t==='kids'){box(2.9,.02,1.9,'#b5d66b',0,.01,0);const bt=new T.Mesh(g3geo('bouncy',()=>new T.SphereGeometry(.45,12,8,0,Math.PI*2,0,Math.PI/2)),M('#ff6fb1'));bt.position.set(-.6,0,0);g.add(bt);box(.6,.4,.6,'#ffd166',.7,.2,0)}
+  else if(p.t==='landmark'){const k=(p.k||0)%3;if(k===0){for(let i=0;i<3;i++){const c=new T.Mesh(g3geo('lm'+i,()=>new T.ConeGeometry(.7-i*.15,1.2,6)),M('#c8843a'));c.position.y=.6+i*.9;g.add(c)}const w1=box(1.8,.08,.5,'#d9772b',0,2.2,0);w1.rotation.z=.2}
+    else if(k===1){box(.6,.5,.6,'#444',0,1.6,0);for(let i=0;i<8;i++){const a=i/8*Math.PI*2;const lg=box(.08,1.8,.08,'#555',Math.cos(a)*.7,.9,Math.sin(a)*.7);lg.rotation.z=Math.cos(a)*.6;lg.rotation.x=-Math.sin(a)*.6}}
+    else{const m2=new T.Mesh(g3geo('mtower',()=>new T.CylinderGeometry(.2,.45,3.6,6).translate(0,1.8,0)),M('#dfe8ff',{em:'#000000'}));m2.userData.glow='#9fe3ff';g.add(m2)}}
   else if(p.t==='track'){box(.98,.03,.98,'#8a8f93',0,.015,0)}
   else box(w*.9,.3,h*.9,b.col,0,.15,0);
   // light beams for stages
@@ -2020,10 +2376,11 @@ const ICON={
   site:'<svg viewBox="0 0 24 24"><path d="M3 20l5-11 4 6 3-4 6 9z"/><path d="M8 9V4l4 1.5L8 7"/></svg>',
   lineup:'<svg viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>',
   tickets:'<svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z" transform="translate(0 2)"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>',
+  social:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
   money:'<svg viewBox="0 0 24 24"><path d="M4 19h16M6 15V9M10 15V6M14 15v-4M18 15V8"/></svg>',
   menu:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>',
   rot:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 4v5h-5"/></svg>'};
-const TABS=[['plan','Plan'],['site','Site'],['lineup','Line-up'],['tickets','Tickets'],['money','Money']];
+const TABS=[['plan','Plan'],['site','Site'],['lineup','Line-up'],['tickets','Tickets'],['social','Social'],['money','Money']];
 function slotTime(s,p,i,d){return SLOTS[p.t][i][0]+(s.lic.curfew[d]-23)}
 function initials(n){return n.replace(/^(The|DJ|MC|Lil|Young|Big|Kid|Yung) /,'').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase()}
 function avatar(a){return '<span class="avatar" style="background:'+GENRES[a.genre].c+'" aria-hidden="true">'+esc(initials(a.name))+'</span>'}
@@ -2043,6 +2400,7 @@ function render(){
   else if(t==='site')body=viewSite();
   else if(t==='lineup')body=viewLineup();
   else if(t==='tickets')body=viewTickets();
+  else if(t==='social')body=viewSocial();
   else body=viewMoney();
   app.innerHTML=topbar()+body+tabbar();
   const st=$('#stage3d');
@@ -2070,11 +2428,13 @@ function demoState(){const g=terrain('farm');return {site:'farm',pl:[],grid:g,re
 function heroCrowd(demo){if(!G3.ok)return;const old=S;S=demoState();S.pl=demo.pl;S.grid=demo.grid;
   try{A_CACHE={k:'',a:null};const A=analyse(S);g3crowd(S,{stages:A.arenas.map(a=>({p:a.p,n:a.cap*.5})),camp:2500,bars:900,roam:1200})}catch(e){}S=old;A_CACHE={k:'',a:null}}
 function viewSetup(){const u=UI.setup;
-  const sites=Object.entries(SITES).map(([k,v])=>'<button class="tile" data-a="ssite" data-v="'+k+'" aria-pressed="'+(u.site===k)+'"><canvas class="mapthumb" data-thumb="'+k+'" width="56" height="74" aria-hidden="true"></canvas><span style="min-width:0;flex:1"><b>'+v.n+'</b><small>'+v.kind+' · '+fmtN(v.cap)+' people · '+Math.round(v.w*v.h*.04)+' ha · rent '+fmt$(v.rent)+'</small><small style="margin-top:6px">'+v.d+'</small></span></button>').join('');
+  const sites=Object.entries(SITES).filter(([k])=>u.mode!=='story'||k==='farm').map(([k,v])=>'<button class="tile" data-a="ssite" data-v="'+k+'" aria-pressed="'+(u.site===k)+'"><canvas class="mapthumb" data-thumb="'+k+'" width="56" height="74" aria-hidden="true"></canvas><span style="min-width:0;flex:1"><b>'+v.n+'</b><small>'+v.kind+' · '+fmtN(v.cap)+' people · '+Math.round(v.w*v.h*.04)+' ha · rent '+fmt$(v.rent)+'</small><small style="margin-top:6px">'+v.d+'</small></span></button>').join('');
   const st=SITES[u.site],D=DIFF[u.diff];const cash=(c,l)=>fmt$(Math.round(c*st.start*D.cash/50000)*50000)+' cash, '+fmt$(Math.round(l*st.start/50000)*50000)+' loan';
   const F=[['promoter','Club promoter',cash(900000,500000)+'. Agents already know you.'],['backed','Investor-backed',cash(1600000,1200000)+'. A bigger start, a bigger hole.'],['diy','DIY collective',cash(600000,250000)+'. Fans trust you; volunteers steward for less.']];
   return '<div class="title-screen" style="padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))"><div class="title-row"><h1>New festival</h1><button class="btn ghost sm" data-a="cancelsetup">Cancel</button></div><p class="sub">Slot '+u.slot+'. You can’t change the site later.</p>'+
     '<label class="field"><span>Festival name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="fname" name="festival-name" maxlength="28" value="'+esc(u.name)+'" autocomplete="off" spellcheck="false"><button class="btn quiet" data-a="rname" aria-label="Random name">Shuffle</button></div></label>'+
+    '<div class="sec">Mode</div>'+seg('smode',u.mode,[['free','Free play'],['story','Story']])+'<p class="small muted" style="margin:-4px 0 4px">'+(u.mode==='story'?'Five years on Hollow Farm with Jess, your co-founder, and a rival who wants you gone. Choices change the game; everything else plays as normal.':'Run your festival your way, for as long as you like.')+'</p>'+
+    '<div class="sec">Identity</div><div class="chips">'+Object.entries(IDENT).map(([k,v])=>'<button class="chip" data-a="sident" data-v="'+k+'" aria-pressed="'+(u.ident===k)+'">'+v.n+'</button>').join('')+'</div><p class="small muted" style="margin:-4px 0 4px">'+IDENT[u.ident].d+'</p>'+
     '<div class="sec">Difficulty</div>'+seg('sdiff',u.diff,Object.entries(DIFF).map(([k,v])=>[k,v.n]))+'<p class="small muted" style="margin:-4px 0 4px">'+D.d+'</p>'+
     '<div class="sec">Site<small>Bigger sites cost more but sell far more tickets</small></div><div class="sitepick">'+sites+'</div>'+
     '<div class="sec">Background</div><div class="stack">'+F.map(f=>'<button class="tile" data-a="sfound" data-v="'+f[0]+'" aria-pressed="'+(u.founder===f[0])+'"><b>'+f[1]+'</b><small>'+f[2]+'</small></button>').join('')+'</div>'+
@@ -2106,6 +2466,7 @@ function kpiStrip(){const pr=projection(S);const fees=signed(S).reduce((a,b)=>a+
     '<div class="kpi"><label>Hype</label><b>'+Math.round(S.hype)+'</b><small>Talk online and in the press</small></div></div>'}
 function viewPlan(){const ph=PHASES[phaseIdx(S)];const [fk,ft]=finding();
   let h='<main><div class="title-row"><h1>'+ph.n+'</h1>'+primary()+'</div><p class="sub">'+fmtSub()+'</p>';
+  h+=storyCard()+inboxCard();
   h+='<div class="finding '+(fk==='bad'?'bad':fk==='good'?'good':'')+'"><span class="bar"></span><p>'+esc(ft)+'</p></div>';
   h+='<section class="card"><h2>Tickets against capacity<small>'+(S.sales&&S.sales.soldOut?'Sold out':S.sales?pct((S.sales.wkSold+S.sales.vipSold)/Math.max(1,capWeekend(S)))+' of weekend':'Not on sale')+'</small></h2>'+gateBar()+'</section>';
   h+=kpiStrip();
@@ -2163,6 +2524,7 @@ function viewWrap(){const w=S.wrap;if(!w)return '<main><p>…</p></main>';const 
   h+='<section class="card"><h2>Reviews</h2><ul class="list">'+w.R.rv.map(v=>'<li style="align-items:flex-start"><div class="grow"><b>'+esc(v.o)+'</b><div class="meta" style="white-space:normal;color:var(--text)">“'+esc(v.line)+'”</div></div><span class="right">'+stars(v.s)+'</span></li>').join('')+'</ul></section>';
   if(w.goals)h+='<section class="card"><h2>Goals<small>'+w.goals.n+' of 3 hit</small></h2><ul class="list">'+S.goals.list.map(g=>'<li><span class="pill '+(g.done?'pos':'neg')+'">'+(g.done?'Done':'Missed')+'</span><div class="grow">'+esc(goalName(S,g))+'</div></li>').join('')+'</ul>'+(w.goals.cashR?'<p style="margin-top:8px">Your investors paid a bonus of <b>'+fmt$(w.goals.cashR)+'</b> and your reputation rose by '+w.goals.repR+'.</p>':'')+'</section>';
   if(w.awards&&w.awards.length)h+='<section class="card"><h2>Festival Awards</h2><ul class="list">'+w.awards.map(a=>'<li><span class="pill '+(a.won?'pos':'')+'">'+(a.won?'Winner':'Nominated')+'</span><div class="grow"><b>'+esc(a.n)+'</b></div></li>').join('')+'</ul></section>';
+  h+=storyCard()+inboxCard()+wrapExtrasHtml(w);
   if(w.firsts.length)h+='<section class="card"><h2>You booked them first</h2><p>'+w.firsts.map(esc).join(', ')+' played your festival when nobody knew them. Now they headline. Your legacy grows.</p></section>';
   if(w.buyout)h+='<section class="card"><h2>An offer from '+esc(S.rival.owner)+'</h2><p class="muted" style="margin-bottom:10px">They want to buy '+esc(S.name)+' outright for '+fmt$(w.buyout)+'. You’d stay on as “creative director” for two years.</p><div class="row"><button class="btn" data-a="sell">Sell for '+fmt$(w.buyout)+'</button><button class="btn ghost" data-a="nosell">Keep it independent</button></div></section>';
   h+='<section class="card"><h2>Council debrief<small>'+esc(SITES[S.site].council)+'</small></h2>'+(w.C.notes.length?'<ul class="list">'+w.C.notes.map(n=>'<li><div class="grow">'+esc(n)+'</div></li>').join('')+'</ul>':'')+(w.C.changes.length?'<p style="margin-top:8px"><b>Licence changes:</b> '+esc(w.C.changes.join(' '))+'</p>':'<p class="muted" style="margin-top:8px">Your licence conditions stay the same.</p>')+'</section>';
@@ -2227,6 +2589,7 @@ function viewMoney(){const pr=projection(S);const lock=S.phase==='wrap';
       '<div class="sec">Production</div>'+seg('prod',S.ops.prod,Object.entries(PROD).map(([k,v])=>[k,v.n]))+'<p class="small muted" style="margin:-4px 0 4px">'+PROD[S.ops.prod].d+'</p>'+
       '<div class="sec">Bar staffing</div>'+seg('bars',String(S.ops.barStaff),[['0','Lean'],['1','Standard'],['2','Generous']])+
       '<div class="sec">Clean-up</div>'+seg('clean',String(S.ops.clean),[['0','Light'],['1','Standard'],['2','Thorough']])+'</section>';
+    h+=moneyExtrasHtml();
     h+='<section class="card"><h2>Insurance &amp; extras</h2><ul class="list">'+
       tog('ins_cancel',S.ops.ins.cancel,'Cancellation & adverse weather','About 4% of ticket revenue. Pays out if the weekend is called off.')+
       tog('ins_nonapp',S.ops.ins.nonapp,'Non-appearance','3% of artist fees. Covers a headliner pulling out.')+
@@ -2295,6 +2658,7 @@ function viewLineup(){const d=UI.lineDay;const stg=stagesOf(S);const fees=signed
     SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);const a=b?act(b.actId):null;const t=slotTime(S,p,i,d);
       h+='<button class="slotrow '+(a?'':'open')+'" data-a="slot" data-v="'+p.id+'|'+d+'|'+i+'"><span class="time">'+hhmm(t)+'</span>'+(a?avatar(a):'')+'<span class="who"><b>'+(a?esc(a.name):(sd[2]||'Open slot'))+'</b><span>'+(a?GENRES[a.genre].n+' · '+tierOf(a.fame)+' · '+fmt$(b.st==='counter'?b.counter:b.fee):'Fame '+sd[3][0]+'–'+sd[3][1]+' · about '+fmt$(feeOf({fame:(sd[3][0]+sd[3][1])/2,genre:'indie',home:'UK'},S)))+'</span></span>'+(b?pillFor(b):'<span class="faint small">Book</span>')+'</button>'});
     h+='</section>'}
+  h+=lineupExtrasHtml();
   if(stg.length&&S.phase!=='wrap')h+='<section class="card"><h2>Fill the rest</h2><p class="small muted" style="margin-bottom:10px">Your booker offers the asking fee to the best-value acts for every open slot below the headliners. Agents reply at the end of the round.</p><button class="btn ghost sm" data-a="autofill">Plan the undercard</button></section>';
   h+=rivalCard();
   return h+'</main>'}
@@ -2327,7 +2691,7 @@ function slotSheet(){const o=UI.slotSel;const b=slotAt(S,o.p.id,o.day,o.slot);if
     '<ul class="list"><li><div class="grow">Fee</div><span class="num">'+fmt$(b.fee,true)+'</span></li><li><div class="grow">Deposit paid</div><span class="num">'+(b.dep?fmt$(b.dep,true):'—')+'</span></li><li><div class="grow">Exclusivity</div><span>'+(b.excl?'Yes':'No')+'</span></li><li><div class="grow">Fame</div><span class="num">'+a.fame+' · '+buzzTxt(a)+'</span></li></ul>'+
     (b.st==='counter'?'<div class="row" style="margin-top:12px"><button class="btn" data-a="acceptc" data-v="'+b.id+'">Pay '+fmt$(b.counter)+'</button><button class="btn ghost" data-a="walk" data-v="'+b.id+'">Walk away</button></div>':'')+
     (b.st==='pending'?'<button class="btn ghost wide" style="margin-top:12px" data-a="withdraw" data-v="'+b.id+'">Withdraw offer</button>':'')+
-    (b.st==='signed'&&S.phase!=='wrap'?'<button class="btn ghost wide" style="margin-top:12px" data-a="drop" data-v="'+b.id+'">Drop them · pay the full fee as a kill fee</button>':'')}
+    slotExtrasHtml(b)+(b.st==='signed'&&S.phase!=='wrap'?'<button class="btn ghost wide" style="margin-top:12px" data-a="drop" data-v="'+b.id+'">Drop them · pay the full fee as a kill fee</button>':'')}
 function oddsTxt(r){return r<.68?'They will refuse, and take it as an insult.':r<.88?'Expect a counter-offer.':r<.97?'Could go either way.':r<1.08?'Better than even.':'Very likely yes.'}
 function autofillPlan(){const out=[];const used=new Set(S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).map(b=>b.actId));
   for(const p of stagesOf(S))for(let d=0;d<3;d++)SLOTS[p.t].forEach((sd,i)=>{if(i===0&&(isMain(p.t)||p.t==='tent')&&!UI.autoHead)return;if(slotAt(S,p.id,d,i))return;
@@ -2346,7 +2710,7 @@ function renderLive(app){const L=S.live;const A=analyse(S);const st=STEPS[Math.m
   let panel='<div class="live-panel" id="livepanel">';
   if(L.done){panel+='<div class="decision"><h3>That’s a wrap</h3><p>'+fmtN(L.arrived+L.fenceIn)+' came through the gates. Mood averaged '+Math.round(L.moodAvg)+'. '+L.pres+' medical cases'+(L.serious?', '+L.serious+' to hospital':'')+'. '+fmt$(L.bar)+' over the bars.</p><button class="btn wide" data-a="wrap">Read the reviews</button></div>'}
   else if(L.dec){const d=L.dec;panel+='<div class="decision" role="alertdialog" aria-label="'+esc(d.t)+'"><h3>'+esc(d.t)+'</h3><p>'+esc(d.x)+'</p><div class="opts">'+d.opts.map((o,i)=>'<button class="opt" data-a="dec" data-v="'+i+'"><span><b>'+esc(o.l)+'</b>'+(o.d?'<small>'+esc(o.d)+'</small>':'')+'</span></button>').join('')+'</div></div>'}
-  else{panel+='<div class="live-controls">'+seg('speed',String(L.speed),[['0','Pause'],['1','Play'],['3','Fast']])+'<button class="btn ghost sm" data-a="skipday">Skip to tonight</button></div>';
+  else{panel+='<div class="live-controls">'+seg('speed',String(L.speed),[['0','Pause'],['1','Play'],['3','Fast']])+'<button class="btn ghost sm" data-a="skipday">Skip to tonight</button></div>'+liveExtrasHtml();
     const cx=cueAvailable(S);if(cx){const st2=STEPS[Math.min(L.i,STEPS.length-1)];panel+='<div class="chips" role="group" aria-label="Show cues">'+Object.entries(CUES).map(([k,c])=>{const used=L.cues&&L.cues[k+st2.d];return '<button class="chip" data-a="cue" data-v="'+k+'" '+(used?'disabled style="opacity:.4"':'')+'>'+c.n+(c.c?' · '+fmt$(c.c):'')+'</button>'}).join('')+'</div>'}}
   panel+='<ul class="list feed" aria-live="polite">'+L.log.slice(0,30).map(x=>'<li><time>'+esc(x.t)+'</time><div class="grow '+(x.k==='bad'?'neg':x.k==='good'?'pos':x.k==='warn'?'warn':x.k==='social'?'muted':'')+'">'+(x.k==='social'?'<b style="color:#fff;font-weight:500">'+esc(x.x.split(': ')[0])+'</b> '+esc(x.x.split(': ').slice(1).join(': ')):esc(x.x))+'</div></li>').join('')+'</ul></div>';
   app.innerHTML=top+hud+panel;
@@ -2354,7 +2718,7 @@ function renderLive(app){const L=S.live;const A=analyse(S);const st=STEPS[Math.m
   g3mount(stg,{mode:'live',cam:G3.lastMode!=='live'?{tx:0,tz:-H*.15,d:Math.max(W,H)*1.5,az:0,el:.95}:null}).then(()=>{if(!G3.world||G3.world.pl!==S.pl||G3.gw!==S.grid[0].length||G3.gh!==S.grid.length)g3setWorld({grid:S.grid,pl:S.pl,site:S.site,rec:S.rec});g3select(null);g3ghost(null);overlayPaint('none',S);
     const h=st.h>=24?26:st.h;setNight(h>=21?1:h>=20?.6:h>=19?.3:0);setRain(wx.rain);setMud(S,L.mud);if(L.dist)g3crowd(S,L.dist);
     if(G3.labelBox)G3.labelBox.style.display='none';G3.onTap=liveTap;G3.onGhostMove=null;}).catch(()=>{});
-  renderSheet();liveTimer()}
+  renderSheet();afterRender();liveTimer()}
 function liveTap(c){if(!inG(c.x,c.y))return;const o=occGrid(S)[c.y*W+c.x];if(!o)return;const L=S.live;const st=STEPS[Math.min(L.i,STEPS.length-1)];const A=analyse(S);let body='';
   if(B[o.t].stage){const play=playingAt(S,st.d,Math.min(st.h,23)).find(x=>x.p===o);const ar=A.arenas.find(a=>a.p===o);const n=L.dist&&L.dist.stages.find(x=>x.p===o);const next=SLOTS[o.t].map((sd,i)=>({i,t:slotTime(S,o,i,st.d),b:slotAt(S,o.id,st.d,i)})).filter(x=>x.b&&x.b.st==='signed'&&x.t>=st.h+.5).sort((a,b)=>a.t-b.t)[0];
     body='<h2>'+esc(stageName(S,o))+'</h2><p class="sub">'+(L.stopped[o.id]?'Stopped':play?'Now: '+esc(play.a.name):'Between sets')+'</p><div class="kpis"><div class="kpi"><label>Crowd</label><b>'+fmtK(n?n.n:0)+'</b><small>of '+fmtK(ar?ar.cap:0)+' capacity</small></div><div class="kpi"><label>Next up</label><b style="font-size:16px">'+(next?esc(act(next.b.actId).name):'—')+'</b><small>'+(next?hhmm(next.t):'Done for today')+'</small></div></div>'}
@@ -2364,7 +2728,7 @@ function liveTap(c){if(!inG(c.x,c.y))return;const o=occGrid(S)[c.y*W+c.x];if(!o)
   else body='<h2>'+B[o.t].n+'</h2><p class="sub">'+esc(B[o.t].d)+'</p>';
   UI.sheet=body+'<button class="btn ghost wide" style="margin-top:12px" data-a="closesheet">Back to the weekend</button>';UI.sheetAt=Date.now();renderSheet()}
 let LT=0;
-function liveTimer(){clearTimeout(LT);const L=S&&S.live;if(!L||L.done||L.dec||!L.speed||S.phase!=='live')return;LT=setTimeout(()=>{if(!S||!S.live||S.live.dec||S.live.done)return;liveStep(S);render()},L.speed===3?420:1300)}
+function liveTimer(){clearTimeout(LT);const L=S&&S.live;if(!L||L.done||L.dec||!L.speed||S.phase!=='live'||UI.lock)return;LT=setTimeout(()=>{if(!S||!S.live||S.live.dec||S.live.done)return;liveStep(S);render()},L.speed===3?420:1300)}
 
 /* ---------- endings ---------- */
 function renderEnding(app){$('#stage3d').hidden=true;const o=S.over;const hs=S.hist;const best=hs.slice().sort((a,b)=>b.stars-a.stars)[0];const tot=hs.reduce((a,h)=>a+h.net,0);
@@ -2378,10 +2742,14 @@ function renderEnding(app){$('#stage3d').hidden=true;const o=S.over;const hs=S.h
 function renderSheet(){const L=$('#layer');if(!UI.sheet){L.innerHTML='';return}let inner='';
   try{inner=typeof UI.sheet==='function'?UI.sheet():UI.sheet}catch(e){console.error(e);inner='<p>Something went wrong.</p>'}
   const prevScroll=L.querySelector('.sheet')?.scrollTop||0;
-  L.innerHTML='<div class="scrim" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" data-stop><div class="grab" aria-hidden="true"></div>'+inner+'</div></div>';
+  L.innerHTML='<div class="scrim" '+(UI.lock?'':'data-a="closesheet"')+'><div class="sheet" role="dialog" aria-modal="true" data-stop><div class="grab" aria-hidden="true"></div>'+inner+'</div></div>';
   const sh=L.querySelector('.sheet');if(sh&&UI.keepScroll)sh.scrollTop=prevScroll;UI.keepScroll=false}
 function guideSheet(){const G=[
   ['Getting started','Pick the Relaxed difficulty and a small site for your first go. Your site comes laid out already; “Fix it for me” on the Site tab tops up toilets, water, bars and campsites whenever you change things. On the Line-up tab, “Plan the undercard” can book the whole bill for you, and on Tickets, “Set prices for a fast sell-out” does the maths. Hit the three yearly goals for bonus cash.'],
+  ['Story mode','Five years on Hollow Farm with Jess, your co-founder, Ted the farmer and Victor Crane of Monolith Live. Story scenes appear at key moments; your choices change your money, your licence, your rivals and even your site. Everything else plays exactly as in free play.'],
+  ['Social','Your festival has its own account on the Social tab. You get three posts each booking round or sale week: teases, announcements, ticket pushes, memes (risky) and secret-set hints. Followers raise ticket demand. Boost posts or pay an influencer for reach.'],
+  ['Line-up tricks','The clash finder flags big acts on at the same time; tap a set to move it. Make an act a secret set, hint at it on social, and reveal it on the day. Book unsigned bands on the Discovery stage for £300: the best get signed. Watch out for bidding wars with the rival and rumours of reunions.'],
+  ['Running the show','Pick an identity, a bar menu, a merch design and a stock level on the Money tab. Build late-night areas, a silent disco, a healing field, a kids’ field or a signature landmark. During the weekend, check the radar, follow one of your regular fans around the site, grant encores and post clips.'],
   ['The year','Each turn is one festival year: booking season (8 rounds), ticket on-sale (12 weeks), build week, the weekend itself and the wrap-up. Cash moves as it would in real life: artist deposits when you sign, ticket money as it sells, production and staff in build week, the rest in September.'],
   ['The site','Each grid square is 20 m. Stages need an open field in front of them: anything in that field blocks sightlines. Sound falls off about 6 dB each time the distance doubles, and much faster behind a stage, so point stages away from homes. The crowd-flow view shows where people squeeze through at the headliner changeover. Drag to move the map, pinch to zoom, twist to turn it. With a keyboard: arrow keys move the map or the piece you are placing, R rotates, Enter places.'],
   ['Ratios that matter','Toilets: about 1 per 75–100 people (Purple Guide). Water: free, about 1 point per 2,500. Security: 1 SIA guard per 100, usually a licence condition. Bars: one 10 m bar per 1,500–2,000 people. Campsites need 20 m fire breaks.'],
@@ -2393,7 +2761,7 @@ function guideSheet(){const G=[
   ['During the weekend','Tap any stage, bar, campsite or the medical centre to see what is happening there. While a headliner plays you can fire show cues: fireworks, confetti, a drone show or lighters up. Fans post as it happens.'],
   ['Reputation','Five outlets review each year: fans, music press, the tabloids, the local paper and the trade. Reputation drives demand and lets you afford bigger acts. A disaster can end everything; a run of great years makes a legend.']];
   return '<h2>How it works</h2><p class="sub">Festival Tycoon uses real UK festival-industry rules of thumb.</p>'+G.map(g=>'<div class="sec">'+g[0]+'</div><p class="muted">'+g[1]+'</p>').join('')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>'}
-function menuSheet(){return '<h2>'+esc(S.name)+'</h2><p class="sub">Slot '+S.slot+' · saved automatically.</p><div class="stack"><button class="btn ghost wide" data-a="guide">How it works</button><button class="btn ghost wide" data-a="trophies">Trophies ('+Object.keys(S.trophies).length+' of '+TROPHIES.length+')</button><button class="btn ghost wide" data-a="licsheet">Licence conditions</button>'+(S.hist.length?'<button class="btn ghost wide" data-a="retire">Retire and hand it on</button>':'')+'<button class="btn wide" data-a="totitle">Save and exit</button><button class="btn quiet wide" data-a="closesheet">Back</button></div>'}
+function menuSheet(){return '<h2>'+esc(S.name)+'</h2><p class="sub">Slot '+S.slot+' · saved automatically.</p><div class="stack"><button class="btn ghost wide" data-a="guide">How it works</button><button class="btn ghost wide" data-a="scrap">Scrapbook</button><button class="btn ghost wide" data-a="trophies">Trophies ('+Object.keys(S.trophies).length+' of '+TROPHIES.length+')</button><button class="btn ghost wide" data-a="licsheet">Licence conditions</button>'+(S.hist.length?'<button class="btn ghost wide" data-a="retire">Retire and hand it on</button>':'')+'<button class="btn wide" data-a="totitle">Save and exit</button><button class="btn quiet wide" data-a="closesheet">Back</button></div>'}
 
 /* ---------- actions ---------- */
 function closeSheet(){UI.sheet=null;renderSheet()}
@@ -2403,14 +2771,14 @@ const ACT={
   guide(){UI.sheet=guideSheet;renderSheet()},
   licsheet(){UI.sheet=()=>'<h2>Premises licence</h2>'+licenceCard().replace(/^<section class="card"><h2>Premises licence<small>[^<]*<\/small><\/h2>/,'').replace(/<\/section>$/,'')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>';renderSheet()},
   totitle(){save();S=null;UI.sheet=null;UI.tab='plan';clearTimeout(LT);render()},
-  new(v){UI.setup={slot:+v,name:festName(),site:'farm',founder:'promoter',diff:'relaxed'};render();drawThumbs()},
+  new(v){UI.setup={slot:+v,name:festName(),site:'farm',founder:'promoter',diff:'relaxed',mode:'free',ident:'indie'};render();drawThumbs()},
   sdiff(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.diff=v;render();drawThumbs()},
   cancelsetup(){UI.setup=null;render()},
   rname(){UI.setup.name=festName();render();drawThumbs()},
   ssite(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.site=v;render();drawThumbs()},
   sfound(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.founder=v;render();drawThumbs()},
   start(){const u=UI.setup;const nm=($('#fname').value||'').trim()||u.name;const F={promoter:[900000,500000],backed:[1600000,1200000],diy:[600000,250000]}[u.founder];
-    newState({slot:u.slot,name:nm,site:u.site,founder:u.founder,cash:F[0],loan:F[1],diff:u.diff});
+    newState({slot:u.slot,name:nm,site:u.mode==='story'?'farm':u.site,founder:u.founder,cash:F[0],loan:F[1],diff:u.diff,story:u.mode==='story',identity:u.ident});
     if(u.founder==='promoter')for(const k in S.agRel)S.agRel[k]=62;if(u.founder==='diy'){S.cred=70}if(u.founder==='backed')S.rep+=4;
     UI.setup=null;UI.tab='plan';A_CACHE={k:'',a:null};save();render();window.scrollTo(0,0)},
   load(v){const s=readSlot(+v);if(!s){toast('That save could not be read.');return}S=migrate(s);S.slot=+v;UI.tab='plan';UI.sheet=null;A_CACHE={k:'',a:null};G3.world=null;render();window.scrollTo(0,0)},
@@ -2466,7 +2834,7 @@ const ACT={
   poster(){UI.sheet=posterSheet;renderSheet()},
   trophies(){UI.sheet=trophySheet;renderSheet()},
   rideryes(v){riderAnswer(S,v,true);save();render()},riderno(v){riderAnswer(S,v,false);save();render()},
-  suggest(){const r=suggestPrices(S);toast(r.short?'Even cheap tickets won’t fill the site with this line-up. Book bigger names.':'Tier 1 now '+fmt$(S.tix.wk[1].p)+'. Demand should comfortably beat capacity.');save();render()},
+  suggest(){if(!signed(S).some(b=>b.slot===0)){toast('Book your headliners first. Prices depend on the line-up.');return}const r=suggestPrices(S);toast(r.short?'Even cheap tickets won’t fill the site with this line-up. Book bigger names.':'Tier 1 now '+fmt$(S.tix.wk[1].p)+'. Demand should comfortably beat capacity.');save();render()},
   dropdone(){UI.drop=null;UI.sheet=null;render()},
   cue(v){fireCue(S,v);render()},
   assist(){if(S.phase==='live')return;const r=autoLayout(S,true);UI.sel=null;UI.place=null;if(G3.world)G3.world.pl=S.pl;afterSiteChange();const cost=r.added.reduce((a,p)=>a+placementCost(S,p),0);
@@ -2507,7 +2875,7 @@ document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset
   if(k==='ofee'){UI.offer.fee=+e.target.value;const card=e.target.closest('.card');const ask=askFor(S,act(UI.offer.actId),UI.offer).fee;card.querySelector('b').textContent=fmt$(UI.offer.fee,true);const r=UI.offer.fee/ask;card.querySelector('.row .small').textContent=pct(r)+' of asking';card.querySelector('p.small').textContent=oddsTxt(r)}});
 document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.in==='mkt')render()});
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(UI.sheet){closeSheet()}else if(UI.place){ACT.pcancel()}else if(UI.sel){ACT.sdone()}return}
+  if(e.key==='Escape'){if(UI.lock){}else if(UI.sheet){closeSheet()}else if(UI.place){ACT.pcancel()}else if(UI.sel){ACT.sdone()}return}
   // keyboard alternative to the touch gestures on the site map
   if(!S||UI.tab!=='site'||UI.sheet||S.phase==='live'||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
   const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
@@ -2515,12 +2883,68 @@ document.addEventListener('keydown',e=>{
   if(e.key==='r'||e.key==='R'){if(UI.place)ACT.prot();else if(UI.sel)ACT.srot()}
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
-function afterRender(){}
-const APP_VER='202610301804';
+function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
+const APP_VER='202610301832';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,liveStep,G3,sagChecks,projection,STEPS};
 (function boot(){render()})();
+/* ============================================================
+   UI for the extras, social and story
+   ============================================================ */
+function lineupExtrasHtml(){let h='';const C=clashes(S).filter(c=>c.d===UI.lineDay);
+  if(C.length)h+='<section class="card"><h2>Clash finder<small>'+C.length+' on '+DAYL[UI.lineDay]+'</small></h2><ul class="list">'+C.map(c=>'<li><span class="pill warn">Clash</span><div class="grow"><b>'+esc(c.x.a.name)+' vs '+esc(c.y.a.name)+'</b><div class="meta">'+hhmm(Math.max(c.x.t,c.y.t))+' · fans will have to choose. Tap a set to move it.</div></div></li>').join('')+'</ul></section>';
+  const ds=discStage(S);
+  h+='<section class="card"><h2>Discovery stage<small>Unsigned acts · £300 each</small></h2>'+(ds?'<p class="small muted" style="margin-bottom:8px">Demos from unsigned bands. Pick well and one of them could headline for you one day.</p><ul class="list">'+(S.demos||[]).map(d=>'<li><span class="avatar" style="background:'+GENRES[d.genre].c+'">'+esc(initials(d.name))+'</span><div class="grow"><b>'+esc(d.name)+'</b><div class="meta">'+GENRES[d.genre].n+' · '+esc(d.city)+' · '+esc(d.hint)+'</div></div>'+(S.phase==='wrap'?'':'<button class="btn ghost sm" data-a="demo" data-v="'+d.id+'">Book</button>')+'</li>').join('')+'</ul>'+(!(S.demos||[]).length?'<div class="empty">No more demos this year.</div>':''):'<div class="empty">Build a Discovery stage on the Site tab to book unsigned acts.</div>')+'</section>';
+  return h}
+function slotExtrasHtml(b){if(b.st!=='signed'||S.phase==='wrap'||S.phase==='live')return '';const a=act(b.actId);const mood=b.mood||0;
+  const free=freeSlots(S,b.day).filter(f=>!(f.p.id===b.stage&&f.i===b.slot)).slice(0,8);
+  return '<div class="sec">Backstage mood</div><p class="small">'+(mood>=2?'Over the moon. Expect a big performance.':mood>=1?'Happy with how you’re treating them.':mood<=-2?'Unhappy. They might phone it in.':mood<0?'A bit put out.':'Business as usual.')+'</p>'+
+    '<div class="sec">Move this set</div><div class="chips">'+(free.length?free.map(f=>'<button class="chip" data-a="moveset" data-v="'+b.id+'|'+f.p.id+'|'+f.i+'">'+esc(stageName(S,f.p))+' '+hhmm(f.t)+'</button>').join(''):'<span class="small faint">No free slots on '+DAYL[b.day]+'.</span>')+'</div>'+
+    '<ul class="list">'+tog('secret|'+b.id,!!b.secret,'Make it a secret set','Hidden from the poster and announcements. Hint at it on social, then reveal it on the day for a huge reaction.')+'</ul>'}
+function liveExtrasHtml(){const L=S.live;let h='<div class="chips" role="group" aria-label="Weekend tools"><button class="chip" data-a="radar">Radar</button><button class="chip" data-a="post" data-v="live|0" '+(S.social&&S.social.left?'':'disabled style="opacity:.4"')+'>Post a clip</button>'+
+  (S.regulars||[]).filter(r=>r.on).map(r=>'<button class="chip" data-a="follow" data-v="'+S.regulars.indexOf(r)+'" aria-pressed="'+(UI.follow===S.regulars.indexOf(r))+'">Follow '+esc(r.n)+'</button>').join('')+'</div>';
+  if(UI.follow!=null&&L.followLog&&L.followLog.length){const r=S.regulars[UI.follow];h+='<div class="decision" style="padding:10px 12px;margin-bottom:8px"><p class="small" style="margin:0"><b>'+esc(r.n)+'</b> · '+esc(r.d)+'</p><p style="margin:4px 0 0">'+esc(L.followLog[0])+'</p></div>'}
+  return h}
+function moneyExtrasHtml(){let h='';const I=identOf(S);const m=S.ops.menu||{};
+  h+='<section class="card"><h2>Festival identity<small>'+(I?I.n:'')+'</small></h2><p class="small muted" style="margin-bottom:10px">'+(I?I.d:'')+'</p>'+(S.phase==='booking'&&S.round<=2?'<div class="chips">'+Object.entries(IDENT).map(([k,v])=>'<button class="chip" data-a="ident" data-v="'+k+'" aria-pressed="'+(S.identity===k)+'">'+v.n+'</button>').join('')+'</div>':'<p class="small faint">You can change identity in the first two booking rounds of a year.</p>')+'</section>';
+  h+='<section class="card"><h2>Bar menu</h2><ul class="list">'+Object.entries(MENU).map(([k,v])=>tog('menu|'+k,!!m[k],v.n,v.d)).join('')+'</ul><div class="sec" style="margin-top:12px">Stock order</div>'+seg('stock',S.ops.stock||'normal',[['low','Lean'],['normal','Normal'],['high','Plenty']])+'<p class="small muted" style="margin-top:-4px">Lean stock risks running dry in a heatwave. Plenty costs more in waste.</p></section>';
+  h+='<section class="card"><h2>Merch</h2><p class="small muted" style="margin-bottom:8px">Pick this year’s design. A good one sells out and becomes a collectible.</p><div class="stack">'+(S.merchOpts||[]).map((o,i)=>'<button class="tile" data-a="merch" data-v="'+i+'" aria-pressed="'+(S.merch&&S.merch.n===o.n)+'"><b>'+esc(o.n)+'</b><small>'+(S.scout?'Your scout thinks it will '+(o.q>1.25?'fly':o.q>.95?'do fine':'struggle'):'Who knows until it’s on sale')+'</small></button>').join('')+'</div></section>';
+  if(S.scar>10)h+='<section class="card"><h2>The fields</h2><p class="small muted" style="margin-bottom:10px">Last year’s mud left ruts and bare patches. They’ll turn to mud early unless you reseed and drain them.</p><button class="btn ghost sm" data-a="reseed">Reseed and drain · '+fmt$(S.scar*1500*scaleOf(S))+'</button></section>';
+  if(!S.spin&&S.rep>=60&&S.hist.length>=3)h+='<section class="card"><h2>Launch a spin-off</h2><p class="small muted" style="margin-bottom:10px">A 15,000-capacity city weekender under your brand. Your team runs it; you get the profit or the loss each year.</p><button class="btn ghost sm" data-a="spin">Launch it · £600k set-up</button></section>';
+  else if(S.spin)h+='<section class="card"><h2>'+esc(S.spin.name)+'<small>Your spin-off</small></h2><p class="small muted">'+(S.spin.last?'Last year: '+fmtN(S.spin.last.att)+' people, '+fmt$(S.spin.last.net)+'.':'First edition next summer.')+'</p></section>';
+  return h}
+function wrapExtrasHtml(w){let h='';
+  if(w.doc)h+='<section class="card"><h2>The documentary</h2><p>'+esc(w.doc.title)+' premieres next spring. Early screenings call it '+esc(w.doc.tone)+'.</p></section>';
+  if(w.spin)h+='<section class="card"><h2>'+esc(S.spin.name)+'</h2><p>'+fmtN(w.spin.att)+' people came to your spin-off. It made '+fmt$(w.spin.net)+'.</p></section>';
+  if(w.share)h+='<section class="card"><h2>Profit share</h2><p>'+fmt$(w.share)+' went to your partners under the deals you made.</p></section>';
+  if(w.collectible)h+='<section class="card"><h2>Merch sell-out</h2><p>The '+esc(w.collectible)+' sold out on Saturday and is already on resale sites. A collectible.</p></section>';
+  if(w.bluff)h+='<div class="finding bad"><span class="bar"></span><p>You hinted at a secret set that never happened. Fans noticed.</p></div>';
+  const S2=S.scrap&&S.scrap[S.scrap.length-1];if(S2)h+='<section class="card"><h2>This year’s wristband</h2>'+bandHtml(S2.band,S.name.toUpperCase()+' '+S2.cal)+'<p class="small muted" style="margin-top:8px">Saved to your scrapbook (menu).</p></section>';
+  return h}
+Object.assign(ACT,{
+  card(v){const [id,val]=v.split('|');answerCard(S,id,val);render()},
+  post(v){const [k,b]=v.split('|');const r=makePost(S,k,b==='1');toast(r);save();render()},
+  influ(){toast(influencer(S));save();render()},
+  storych(v){const [id,i]=v.split('|');storyChoose(S,id,+i);UI.lock=false;UI.sheet=null;if(S.over){render();return}render()},
+  demo(v){toast(bookDemo(S,v));save();render()},
+  moveset(v){const [b,st,i]=v.split('|');const r=moveSet(S,b,st,+i);UI.sheet=null;if(r)toast(r);save();render()},
+  ident(v){S.identity=v;toast('You are now a '+IDENT[v].n.toLowerCase()+'.');save();render()},
+  stock(v){S.ops.stock=v;save();render()},
+  merch(v){S.merch=S.merchOpts[+v];save();render()},
+  reseed(){const c=Math.round(S.scar*1500*scaleOf(S));cash(S,-c);ledger(S,'Reseeding the fields',-c);S.scar=0;toast('The fields are reseeded and drained.');save();render()},
+  spin(){S.spin={name:S.name+' City Weekender',cap:15000,yrs:0,last:null};cash(S,-600000);addNews(S,'You announced '+S.spin.name+'.','book');award(S,'empire');save();render()},
+  follow(v){UI.follow=UI.follow===+v?null:+v;render()},
+  radar(){UI.sheet=radarSheet;renderSheet()},
+  swaphead(){swapHead(S);UI.sheet=null;save();render()},
+  scrap(){UI.sheet=scrapbookSheet;renderSheet()},
+  smode(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.mode=v;if(v==='story')UI.setup.site='farm';render();drawThumbs()},
+  sident(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.ident=v;render();drawThumbs()},
+});
+/* extend the toggle handler for menus and secret sets */
+const _tog=ACT.tog;ACT.tog=function(v){if(v.startsWith('menu|')){const k=v.split('|')[1];S.ops.menu=S.ops.menu||{};S.ops.menu[k]=!S.ops.menu[k];save();render();return}
+  if(v.startsWith('secret|')){const b=S.bk.find(x=>x.id===v.split('|')[1]);if(b){b.secret=!b.secret;b.posted=b.secret?1:b.posted}UI.keepScroll=true;save();renderSheet();return}
+  return _tog(v)};
 </script>
 </body>
 </html>
