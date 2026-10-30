@@ -193,6 +193,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .clock .d{font-size:12px;color:var(--muted);line-height:1.25;flex:1;min-width:0}
 .clock .d b{color:#fff;font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .live-panel{position:fixed;left:0;right:0;bottom:0;z-index:14;background:var(--ground);border-top:1px solid var(--rule);padding:10px var(--sr) calc(10px + env(safe-area-inset-bottom,0px)) var(--sl);max-height:46vh;display:flex;flex-direction:column}
+.live-panel .chips{flex:none;margin-bottom:8px}
 .live-panel .feed{overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
 .live-controls{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 .live-controls .seg{margin:0;flex:1}
@@ -270,7 +271,8 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 'use strict';
 /* ============================================================
    Festival Tycoon · core data, catalogue, sites, names, saves
-   Grid: 24 x 32 cells, each cell 20 m (480 m x 640 m, ~31 ha)
+   Each grid cell is 20 m. Sites range from 24 x 32 cells (31 ha)
+   to 44 x 52 cells (92 ha), and can grow by leasing the next field.
    ============================================================ */
 const $=s=>document.querySelector(s);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -290,7 +292,13 @@ function fmt$(n,full){n=Math.round(n||0);const s=n<0?'−£':'£';const a=Math.a
 const pct=v=>Math.round(v*100)+'%';
 const sgn=n=>(n>0?'+':n<0?'−':'')+Math.abs(Math.round(n));
 
-const W=24,H=32,CELL=20;
+let W=24,H=32;const CELL=20;
+function setGrid(g){if(g&&g.length){H=g.length;W=g[0].length}}
+const DIFF={
+  relaxed:{n:'Relaxed',cash:1.6,cost:.9,demand:1.2,rep:1.5,noise:5,inc:.5,od:2,d:'More money, keener fans, forgiving neighbours. Recommended.'},
+  standard:{n:'Standard',cash:1,cost:1,demand:1,rep:1,noise:0,inc:1,od:1,d:'Real-world margins: most first festivals lose money.'},
+  hard:{n:'Hard',cash:.8,cost:1.1,demand:.85,rep:.8,noise:-2,inc:1.4,od:.6,d:'Tight money, fussy council, fickle fans.'}};
+const DF=s=>DIFF[(s&&s.diff)||'standard'];
 const DAYS=['Fri','Sat','Sun'],DAYL=['Friday','Saturday','Sunday'];
 const PHASES=[
   {k:'booking',n:'Booking season',m:'Oct – Feb'},
@@ -306,8 +314,10 @@ const START_YEAR=2027;
    spl  = dB(A) LAeq at the mix position (40 m) */
 const CATS=[['stage','Stages'],['camp','Camping'],['fac','Facilities'],['fnb','Food & drink'],['entry','Entry & VIP'],['extra','Extras']];
 const B={
-  main:{n:'Main stage',cat:'stage',w:4,h:2,cost:165000,spl:100,cone:7,max:1,col:'#e8e8e8',stage:true,ht:3,
+  main:{n:'Main stage',cat:'stage',w:4,h:2,cost:165000,spl:100,cone:7,max:1,col:'#e8e8e8',stage:true,ht:3,headline:1,
     d:'Roofed stage with line-array PA, lights and IMAG screens. Needs an open field in front of it.'},
+  mega:{n:'Pyramid stage',cat:'stage',w:6,h:3,cost:420000,spl:102,cone:11,max:1,col:'#f2f2f2',stage:true,ht:5,headline:1,big:1,
+    d:'A festival-defining main stage for 40,000+ with delay towers and huge screens. Replaces the main stage.'},
   tent:{n:'Big top',cat:'stage',w:3,h:3,cost:62000,spl:96,tentCap:6000,max:2,col:'#d9473d',stage:true,ht:3,tall:1,
     d:'6,000-capacity circus tent. The canvas cuts noise to the sides and back.'},
   dance:{n:'Dance tent',cat:'stage',w:2,h:2,cost:39000,spl:99,tentCap:2600,max:2,col:'#2f8fd8',stage:true,ht:2,bass:1,tall:1,
@@ -350,8 +360,10 @@ const B={
 const ART_KINDS=[{n:'Mirror moon',c:'#d8e3ff'},{n:'Neon arch',c:'#ff4f8b'},{n:'Fire phoenix',c:'#ff8a2a'},{n:'Giant hands',c:'#f5d7b0'},{n:'Light forest',c:'#6effc4'}];
 
 /* stage slots: [start hour (decimal), set length (h), expected fame band] */
+const isMain=t=>!!(B[t]&&B[t].headline);
 const SLOTS={
   main:[[21.5,1.5,'Headliner',[72,100]],[19.75,1.15,'Special guest',[58,86]],[18.25,1,'',[44,72]],[16.75,.9,'',[30,60]],[15.25,.75,'',[15,48]]],
+  get mega(){return this.main},
   tent:[[21.75,1.25,'Tent headliner',[50,80]],[20.25,1,'',[38,66]],[18.75,1,'',[26,56]],[17.25,.9,'',[14,46]],[15.75,.75,'',[5,38]]],
   dance:[[21.5,1.5,'Closing DJ',[45,80]],[20,1.25,'',[30,62]],[18.5,1.25,'',[16,50]],[17,1,'',[5,40]]],
   small:[[20,.9,'',[12,42]],[18.5,.75,'',[5,34]],[17,.75,'',[0,28]],[15.5,.75,'',[0,24]]],
@@ -362,43 +374,38 @@ const GKEYS=Object.keys(GENRES);
 
 /* ---------- sites ---------- */
 const SITES={
-  farm:{n:'Hollow Farm',area:'Wexley Vale',kind:'Working farm',rent:45000,cap:9000,curfew:[23,23,22.5],noise:65,camping:true,scenic:2,demand:1,
+  farm:{n:'Hollow Farm',area:'Wexley Vale',kind:'Working farm',w:24,h:32,rent:45000,cap:10000,curfew:[23,23,22.5],noise:65,camping:true,scenic:2,demand:1,start:1,rep:14,
     council:'Wexley District Council',
     d:'Cheap and quiet, with a village to the east and a wet meadow in the south-west. The classic first festival.',
     rec:[{n:'Wexley village',x:46,y:12,homes:420},{n:'Hollow Lane cottages',x:6,y:-14,homes:14},{n:'Mill End',x:14,y:52,homes:60}],
     gen(g){for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(x<1&&y>4)g[y][x]='water';else if(x<9&&y>21)g[y][x]='low';else if(x>19&&y<6)g[y][x]='tree';else if(y>=3&&y<=9&&x>=7&&x<=16)g[y][x]='slope'}
       g[14][20]=g[15][21]=g[14][21]='tree';g[27][17]=g[26][17]='tree'}},
-  estate:{n:'Ashcombe Park',area:'Ashcombe',kind:'Country estate',rent:140000,cap:12000,costMul:1.1,curfew:[23,23,22.5],noise:65,camping:true,scenic:7,demand:1.12,
+  estate:{n:'Ashcombe Park',area:'Ashcombe',kind:'Country estate',w:28,h:36,rent:140000,cap:15000,costMul:1.1,curfew:[23,23,22.5],noise:65,camping:true,scenic:7,demand:1.12,start:1.4,rep:22,
     council:'Ashcombe & Fenn Council',
-    d:'Rolling parkland with a lake and protected oaks. Pricier, prettier, with the hall and its owners right next door.',
-    rec:[{n:'Ashcombe Hall',x:28,y:-4,homes:3},{n:'Ashcombe village',x:10,y:-14,homes:520},{n:'Fenn Cross',x:-14,y:26,homes:180}],
-    gen(g){const r=mulberry(77);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const dx=x-5,dy=y-14;if(dx*dx/9+dy*dy/22<1)g[y][x]='water';else if(r()<.035&&!(x>8&&x<20&&y>8&&y<26))g[y][x]='tree';else if(y>=16&&y<=24&&x>=11&&x<=20)g[y][x]='slope'}
+    d:'Rolling parkland with a lake and protected oaks. Pricier and prettier, with the hall and its owners right next door.',
+    rec:[{n:'Ashcombe Hall',x:32,y:-6,homes:3},{n:'Ashcombe village',x:10,y:-16,homes:520},{n:'Fenn Cross',x:-16,y:28,homes:180}],
+    gen(g){const r=mulberry(77);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const dx=x-5,dy=y-15;if(dx*dx/9+dy*dy/22<1)g[y][x]='water';else if(r()<.03&&!(x>8&&x<24&&y>8&&y<30))g[y][x]='tree';else if(y>=17&&y<=27&&x>=11&&x<=23)g[y][x]='slope'}
       for(let x=0;x<W;x++)if(r()<.5)g[0][x]='tree'}},
-  city:{n:'Millbrook Park',area:'Millbrook',kind:'City park',rent:480000,cap:20000,costMul:1.6,curfew:[22.5,22.5,22.5],noise:75,camping:false,scenic:3,demand:1.12,
+  city:{n:'Millbrook Park',area:'Millbrook',kind:'City park',w:28,h:36,rent:480000,cap:25000,costMul:1.5,curfew:[22.5,22.5,22.5],noise:75,camping:false,scenic:3,demand:1.12,start:2,rep:24,
     council:'Millbrook City Council',
-    d:'A big urban park. No camping, so it runs as day tickets, with homes on every side and a strict 22:30 curfew. Huge local demand.',
-    rec:[{n:'Park Road flats',x:12,y:-5,homes:900},{n:'Canal Street',x:30,y:16,homes:640},{n:'Millbrook Rise',x:-6,y:20,homes:480},{n:'Station Quarter',x:12,y:37,homes:700}],
-    gen(g){for(let y=0;y<H;y++)for(let x=0;x<W;x++){if((x===0||x===W-1||y===0)&&(x*7+y*3)%5<3)g[y][x]='tree';const dx=x-17,dy=y-7;if(dx*dx+dy*dy<6)g[y][x]='water'}}},
+    d:'A big urban park. No camping, so it runs on day tickets, with homes on every side and a strict 22:30 curfew. Huge local demand.',
+    rec:[{n:'Park Road flats',x:14,y:-6,homes:900},{n:'Canal Street',x:35,y:18,homes:640},{n:'Millbrook Rise',x:-7,y:22,homes:480},{n:'Station Quarter',x:14,y:43,homes:700}],
+    gen(g){for(let y=0;y<H;y++)for(let x=0;x<W;x++){if((x===0||x===W-1||y===0)&&(x*7+y*3)%5<3)g[y][x]='tree';const dx=x-20,dy=y-8;if(dx*dx+dy*dy<6)g[y][x]='water'}}},
+  airfield:{n:'Hartwell Airfield',area:'Hartwell',kind:'Old airfield',w:36,h:44,rent:220000,cap:40000,costMul:1.05,curfew:[23,23,23],noise:65,camping:true,scenic:1,demand:1.08,start:2.8,rep:28,
+    council:'North Hartwell Council',
+    d:'A huge flat wartime airfield with concrete runways that never turn to mud. Miles from anyone, so noise is easy. Big crowds, big costs.',
+    rec:[{n:'Hartwell',x:60,y:20,homes:900},{n:'Upper Saxby',x:-22,y:6,homes:240},{n:'Long Lane farms',x:18,y:66,homes:20}],
+    gen(g){for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(y>=20&&y<=21&&x>=2&&x<=W-3)g[y][x]='hard';if(x>=27&&x<=28&&y>=4&&y<=H-5)g[y][x]='hard';if((x===0||x===W-1)&&(y%3))g[y][x]='tree';if(x>W-8&&y>H-8)g[y][x]='low'}}},
+  valley:{n:'Avalon Vale',area:'Avalon',kind:'Dairy farm valley',w:44,h:52,rent:420000,cap:70000,costMul:1.1,curfew:[24,24,23.5],noise:65,camping:true,scenic:9,demand:1.2,start:5,rep:36,
+    council:'Mendle District Council',
+    d:'The big one: a whole valley of farmland with a stream, a natural amphitheatre and room for a small city of tents. Legendary if you get it right.',
+    rec:[{n:'Pilworth village',x:22,y:-24,homes:600},{n:'Coxford',x:76,y:30,homes:300},{n:'Westholt',x:-30,y:36,homes:220},{n:'Avalon town',x:22,y:86,homes:4000}],
+    gen(g){const r=mulberry(9);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const sx=Math.round(8+y*.55+Math.sin(y/5)*2);if(x===sx||x===sx+1)g[y][x]=(y%8>=3&&y%8<=5)?'grass':'water';else if(Math.abs(x-sx)<=3)g[y][x]='low';
+        const dx=x-29,dy=y-12;if(dx*dx/70+dy*dy/40<1&&g[y][x]==='grass')g[y][x]='slope';if(r()<.025&&(x<4||x>W-5||y<3))g[y][x]='tree'}}},
 };
-function terrain(siteK){const g=[];for(let y=0;y<H;y++){g.push(Array(W).fill('grass'))}SITES[siteK].gen(g);return g}
+function terrain(siteK){const st=SITES[siteK],oW=W,oH=H;W=st.w;H=st.h;const g=[];for(let y=0;y<H;y++){g.push(Array(W).fill('grass'))}st.gen(g);W=oW;H=oH;return g}
 
-/* ---------- names (all fictional) ---------- */
-const N_ADJ=['Velvet','Paper','Hollow','Static','Glass','Northern','Lunar','Quiet','Copper','Feral','Tender','Sunday','Saint','Little','Heavy','Soft','Pale','Golden','Neon','Wild','Midnight','Silver','Paperback','Coastal','Second','Lazy','Holy','Electric','Faded','Swim','Tin','Marble','Honey','Ghost','Polar','Rough','Plastic','Lucky','Bitter','Gentle'];
-const N_NOUN=['Harbours','Lanterns','Pylons','Tides','Orchards','Comets','Parades','Magpies','Satellites','Engines','Antlers','Lidos','Kites','Choirs','Arcades','Hearts','Hymns','Ferries','Signals','Moths','Bonfires','Daughters','Brothers','Machines','Gardens','Mirrors','Shapes','Cousins','Swimmers','Animals','Wolves','Rivals','Saints','Pilots','Ponies','Weather','Season','Static','Motel','Holiday'];
-const N_FIRST=['Mara','Jonah','Elsie','Theo','Ines','Kofi','Rosa','Callum','Nadia','Felix','Juno','Arlo','Priya','Esme','Dex','Lola','Tomas','Freya','Remi','Sade','Otis','Isla','Kai','Wren','Bea','Milo','Noor','Ezra','Cleo','Rory','Yara','Hal','Asha','Luca','Tess'];
-const N_LAST=['Quill','Vale','Marrow','Ashby','Calloway','Okafor','Lindqvist','Reyes','Hart','Sorensen','Doyle','Achebe','Moreau','Fenwick','Holloway','Kaur','Navarro','Pryce','Wilde','Larkin','Mensah','Rooke','Varga','Thorne','Ellery','Castell','Adeyemi','Strand','Finch','Keel'];
-const N_ONE=['Vesper','Marlowe','Nyla','Orlo','Kessler','Halcyon','Sorrel','Juniper','Paloma','Odessa','Tamsin','Rook','Ilsa','Zephyr','Calyx','Mercer','Lumen','Sable','Soren','Tallis','Indigo Bay','Nova Rae','Kaya','Belisle','Ottoline','Ferro','Kitt','Ondine','Vantablue','Anouk'];
-const N_RAP=['Lil','Young','Big','MC','Kid','Yung'];
-const N_RAP2=['Ferro','Static','Saint','Kairo','Dilly','Trax','Bando','Koda','Rizz','Meeko','Sosa','Blanco','Vibes','Juno','Tempo','Kasha','Nuno','Rafi'];
-function actName(genre,used){
-  for(let t=0;t<40;t++){let n;const r=Math.random();
-    if(genre==='hiphop')n=r<.45?pick(N_RAP)+' '+pick(N_RAP2):r<.75?pick(N_ONE):pick(N_FIRST)+' '+pick(N_LAST);
-    else if(genre==='electronic')n=r<.4?pick(N_ONE):r<.6?pick(N_ADJ)+' '+pick(['Systems','Club','Signal','Tapes','Motion','Theory','Unit','Frequencies']):r<.8?pick(N_FIRST)+' '+pick(N_LAST):'DJ '+pick(N_ONE);
-    else if(genre==='pop'||genre==='soul')n=r<.55?pick(N_FIRST)+' '+pick(N_LAST):r<.85?pick(N_ONE):'The '+pick(N_ADJ)+' '+pick(N_NOUN);
-    else if(genre==='folk'||genre==='jazz')n=r<.45?pick(N_FIRST)+' '+pick(N_LAST):r<.7?pick(N_FIRST)+' & the '+pick(N_NOUN):pick(N_ADJ)+' '+pick(N_NOUN);
-    else n=r<.55?'The '+pick(N_ADJ)+' '+pick(N_NOUN):r<.8?pick(N_ADJ)+' '+pick(N_NOUN):pick(N_NOUN.slice(0,20))+' '+pick(['Club','Club','Union','Society','Collective']);
-    if(!used.has(n)){used.add(n);return n}}
-  return pick(N_FIRST)+' '+pick(N_LAST)+' '+ri(2,9)}
+/* ---------- industry (agencies, press, brands and the rival are invented) ---------- */
 const AGENCIES=[{k:'nl',n:'Northline Artists'},{k:'pg',n:'Paragon Talent'},{k:'bs',n:'Brightside Agency'},{k:'ca',n:'Crown & Anchor'},{k:'at',n:'Atlas Live Agency'},{k:'lg',n:'Little Giant'},{k:'ke',n:'Kestrel Talent'}];
 const AGENTS=['Sam Okoro','Dani Whitlock','Hugo Brand','Maya Fenn','Rich Albright','Tasha Moyo','Nico Barre','Gemma Cole','Owen Price','Lena Hart','Jas Gill','Ruth Sallis','Ben Achterberg','Cass Lowry'];
 const OUTLETS=[{k:'lan',n:'The Lanyard',bias:'fans'},{k:'lc',n:'Loud & Clear',bias:'music'},{k:'cou',n:'The Daily Courier',bias:'drama'},{k:'gaz',n:'Local Gazette',bias:'local'},{k:'led',n:'Live Ledger',bias:'biz'}];
@@ -414,32 +421,14 @@ const SPONSORS=[
 const RIVALS=[{n:'Wildwood Fields',owner:'Monolith Live'},{n:'Eastbank Weekender',owner:'Monolith Live'}];
 
 /* ---------- acts ---------- */
-function makeAct(used,o={}){
-  const genre=o.genre||pick(['indie','indie','rock','rock','pop','pop','hiphop','electronic','electronic','folk','metal','soul','punk','jazz','hiphop','soul']);
-  let fame=o.fame!=null?o.fame:clamp(Math.round(Math.pow(Math.random(),1.65)*100),1,99);
-  const young=o.young||fame<35&&chance(.6);
-  const pot=young?clamp(fame+Math.abs(gauss())*30+rnd(0,25),fame,99):clamp(fame+gauss()*8,1,99);
-  const ag=pick(AGENCIES);
-  const home=chance(.62)?'UK':pick(['US','US','EU','EU','AUS','CA']);
-  return {id:uid(),name:o.name||actName(genre,used),genre,fame,pot:Math.round(pot),mom:young?rnd(2,9):rnd(-4,3),
-    live:clamp(Math.round(55+gauss()*16+(fame>70?6:0)),25,98),rel:clamp(.93+gauss()*.035,.8,.995),diva:clamp(Math.random()*(fame/100)+gauss()*.1,0,1),
-    age:young?ri(0,2):ri(2,20),ag:ag.k,agent:pick(AGENTS),home,size:pick([1,1,2,3,4,4,5,6]),
-    tour:0,hist:[fame],first:0}}
-function genActs(){const used=new Set();const acts=[];
-  for(let i=0;i<240;i++)acts.push(makeAct(used));
-  // guarantee a sensible top end
-  for(const f of[97,94,91,88,86,84,82,80,78,76])acts.push(makeAct(used,{fame:f}));
-  // and a crop of rising new acts
-  for(let i=0;i<18;i++)acts.push(makeAct(used,{fame:ri(6,24),young:1}));
-  return acts}
 function feeOf(a,S,extra=1){
   const infl=Math.pow(1.04,(S?S.year:1)-1);
-  let f=600*Math.exp(.075*a.fame)*infl;
+  let f=600*Math.exp(.075*a.fame)*infl*(1+Math.max(0,a.fame-90)*.25);
   if(a.genre==='electronic')f*=.88;if(a.genre==='jazz'||a.genre==='folk')f*=.8;if(a.genre==='pop'||a.genre==='hiphop')f*=1.1;
   f*=routing(a).m;
   return Math.round(f*extra/250)*250}
 function routing(a){if(a.home==='UK')return{m:1,t:'UK act'};if(a.tour)return{m:.9,t:'On a European run'};return{m:1.35,t:'Fly-in from '+a.home}}
-const appeal=a=>70000*Math.pow(a.fame/100,2.4);
+const appeal=a=>70000*Math.pow(a.fame/100,3.2)*(1+Math.max(0,a.fame-85)/5);
 function tierOf(f){return f>=80?'Headline':f>=62?'Major':f>=42?'Mid':f>=22?'Rising':'New'}
 function buzz(a,scout){ // noisy observed momentum
   const n=scout?gauss()*.6:gauss()*2.6;return a.mom+n}
@@ -448,19 +437,19 @@ function buzz(a,scout){ // noisy observed momentum
 let S=null;
 const UI={tab:'plan',sheet:null,sel:null,place:null,overlay:'none',cat:'stage',lineDay:0,mkt:{f:'all',g:'all',sort:'fit'},live:null,coach:null};
 function newState(o){
-  const site=SITES[o.site];
-  const st={v:1,id:uid(),slot:o.slot,name:o.name,site:o.site,year:1,phase:'booking',round:1,week:0,
-    money:o.cash,debt:o.loan,loanRate:.09,odLimit:400000,
-    rep:o.site==='estate'?22:o.site==='city'?20:14,hype:10,cred:50,council:60,community:60,safety:70,legacy:0,
-    grid:terrain(o.site),pl:[],acts:genActs(),bk:[],agRel:Object.fromEntries(AGENCIES.map(a=>[a.k,50])),
-    lic:{cap:site.cap,curfew:site.curfew.slice(),noise:site.noise,cond:[],varReq:0},
+  const site=SITES[o.site],D=DIFF[o.diff||'relaxed'];
+  const st={v:2,id:uid(),slot:o.slot,name:o.name,site:o.site,diff:o.diff||'relaxed',year:1,phase:'booking',round:1,week:0,
+    money:Math.round(o.cash*site.start*D.cash/50000)*50000,debt:Math.round(o.loan*site.start/50000)*50000,loanRate:.08,odLimit:Math.round(400000*site.start*D.od/50000)*50000,
+    rep:site.rep,hype:10,cred:50,council:60,community:60,safety:70,legacy:0,
+    grid:terrain(o.site),rec:site.rec.map(r=>({...r})),expand:0,pl:[],acts:genActs(),bk:[],agRel:Object.fromEntries(AGENCIES.map(a=>[a.k,50])),
+    lic:{cap:site.cap,curfew:site.curfew.slice(),noise:site.noise+D.noise,cond:[],varReq:0},
     tix:defaultTix(site.cap,site.camping),sales:null,ops:defaultOps(),spons:[],sponOffers:[],
     rival:{n:RIVALS[0].n,owner:RIVALS[0].owner,rep:46,budget:1600000,bk:[],clash:true,hist:[]},
     news:[],hist:[],flags:{},scout:false,artIdx:0,ledger:{},trophies:{},endings:[],over:null,
     founder:o.founder,events:[]};
-  S=st;
-  starterSite(st);
-  marketYear(st,true);
+  S=st;setGrid(st.grid);
+  autoLayout(st,false);
+  marketYear(st,true);makeGoals(st);st.requests=[];
   addNews(st,'You signed the lease on '+site.n+'. '+site.council+' granted a premises licence for '+fmtN(site.cap)+' people.');
   sponsorOffers(st);
   return st}
@@ -468,18 +457,8 @@ function defaultTix(cap,camping){return {
   wk:[{k:'early',n:'Early bird',p:135,a:Math.round(cap*.12)},{k:'t1',n:'Tier 1',p:165,a:Math.round(cap*.35)},{k:'t2',n:'Tier 2',p:185,a:Math.round(cap*.3)},{k:'final',n:'Final release',p:205,a:9e9}],
   day:{p:79,a:camping?Math.round(cap*.12):Math.round(cap*.6)},vip:{p:395},glamp:{p:420},vans:{p:95},
   named:false,resale:false,mkt:60000,pint:6.5,pricesLocked:false}}
-function defaultOps(){return {sec:0,stew:0,med:'standard',prod:'standard',barStaff:1,clean:1,ins:{pl:true,cancel:false,nonapp:false},contingency:50000,community:0,green:0,shuttle:false}}
-function starterSite(s){ // a sensible but imperfect starting layout so new players see a working site
-  const put=(t,x,y,r=0)=>{if(canPlace(s,t,x,y,r))return false;const p={id:uid(),t,x,y,r};if(t==='art')p.k=0;s.pl.push(p);return true};
-  if(s.site==='farm'){put('main',10,2,0);put('entrance',11,31,0);put('entrance',4,31,0);put('control',15,13,0);put('medical',17,10,0);
-    put('camp',11,19,0);put('camp',16,19,0);put('camp',11,24,0);put('camp',16,24,0);put('camp',19,6,0);
-    put('loos',15,18);put('loos',15,23);put('loos',20,16);put('water',15,22);put('water',8,9);put('bar',6,11,0);put('food',8,14,0);put('loos',5,13);}
-  if(s.site==='estate'){put('main',12,26,2);let ne=0;for(const x of [13,20,16,9,4])if(ne<2&&put('entrance',x,31,0))ne++;put('control',20,15,0);put('medical',20,12,0);
-    put('camp',9,2,0);put('camp',14,2,0);put('camp',19,2,0);put('camp',9,7,0);put('camp',14,7,0);put('camp',19,7,0);put('camp',1,25,0);put('camp',1,2,0);put('camp',2,20,0);put('camp',20,24,0);put('camp',6,27,0);put('camp',20,19,0);
-    put('loos',13,5);put('loos',18,10);put('loos',8,12);put('water',13,6);put('water',14,17);put('bar',16,17,0);put('food',11,17,0);put('loos',19,18);put('loos',10,19)}
-  if(s.site==='city'){put('main',8,2,0);put('entrance',11,31,0);put('entrance',20,31,0);put('entrance',1,31,0);put('control',20,24,0);put('medical',20,20,0);
-    put('loos',4,14);put('loos',5,14);put('loos',18,14);put('loos',19,14);put('water',12,14);put('bar',3,17,0);put('bar',16,17,0);put('food',9,18,0);put('food',12,18,0)}
-}
+function defaultOps(){return {sec:0,stew:0,med:'standard',prod:'standard',barStaff:1,clean:1,ins:{pl:true,cancel:false,nonapp:false},contingency:50000,community:0,green:0,shuttle:false,cues:{}}}
+function starterSite(s){setGrid(s.grid);autoLayout(s,false)}
 function addNews(s,t,k){s.news.unshift({y:s.year,ph:s.phase,t,k:k||''});if(s.news.length>80)s.news.length=80}
 
 /* ---------- saves ---------- */
@@ -487,9 +466,333 @@ const slotKey=n=>'festival_slot_'+n;
 function save(){if(!S)return;try{localStorage.setItem(slotKey(S.slot),JSON.stringify(S));localStorage.setItem('festival_last',String(S.slot))}catch(e){toast('Could not save on this device.')}}
 function readSlot(n){try{const r=localStorage.getItem(slotKey(n));return r?JSON.parse(r):null}catch(e){return null}}
 function delSlot(n){try{localStorage.removeItem(slotKey(n))}catch(e){}}
-function migrate(s){s.ops=Object.assign(defaultOps(),s.ops||{});s.flags=s.flags||{};s.trophies=s.trophies||{};s.events=s.events||[];return s}
+function migrate(s){if(!s.rec)s.rec=SITES[s.site].rec.map(r=>({...r}));if(!s.diff)s.diff='standard';s.expand=s.expand||0;s.goals=s.goals||null;s.trophies=s.trophies||{};setGrid(s.grid);s.ops=Object.assign(defaultOps(),s.ops||{});s.flags=s.flags||{};s.trophies=s.trophies||{};s.events=s.events||[];return s}
 let toastT=0;
 function toast(t,a){let el=$('.toast');if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.appendChild(el)}el.textContent=t;if(a){const b=document.createElement('button');b.textContent=a.l;b.dataset.a=a.a;el.appendChild(b)}clearTimeout(toastT);toastT=setTimeout(()=>el.remove(),a?5000:2600)}
+/* ============================================================
+   Real artists. Name|genre|fame (0-100)|home|trend
+   trend: '' steady, '+' rising, '++' breaking through, '-' past peak,
+   'h' rarely tours. Fame, fees and everything that happens to an act
+   in the game are invented for the game, not real figures.
+   ============================================================ */
+const ARTIST_DATA=`Taylor Swift|pop|99|US|h
+Beyoncé|soul|98|US|h
+Coldplay|pop|97|UK|
+Ed Sheeran|pop|96|UK|
+Billie Eilish|pop|96|US|
+Lady Gaga|pop|95|US|
+Ariana Grande|pop|94|US|h
+Dua Lipa|pop|95|UK|
+Harry Styles|pop|95|UK|h
+Kendrick Lamar|hiphop|95|US|
+Drake|hiphop|94|CA|
+Sabrina Carpenter|pop|94|US|+
+Bad Bunny|pop|94|EU|
+The Weeknd|soul|94|CA|
+Oasis|rock|94|UK|h
+Olivia Rodrigo|pop|93|US|
+Arctic Monkeys|indie|93|UK|h
+SZA|soul|92|US|
+Post Malone|pop|92|US|
+Calvin Harris|electronic|92|UK|
+Travis Scott|hiphop|92|US|
+Foo Fighters|rock|92|US|
+Chappell Roan|pop|90|US|+
+Tyler, the Creator|hiphop|90|US|+
+Lana Del Rey|pop|90|US|
+Red Hot Chili Peppers|rock|90|US|-
+Metallica|metal|90|US|
+Justin Bieber|pop|90|CA|h
+Bruce Springsteen|rock|90|US|-
+Charli xcx|pop|89|UK|+
+Imagine Dragons|rock|88|US|
+Muse|rock|88|UK|
+The Killers|indie|88|US|
+Green Day|punk|88|US|
+Stormzy|hiphop|88|UK|
+Fred again..|electronic|88|UK|+
+Doja Cat|pop|88|US|
+Zach Bryan|folk|88|US|+
+David Guetta|electronic|88|EU|
+J. Cole|hiphop|88|US|
+Robbie Williams|pop|87|UK|
+Lewis Capaldi|pop|87|UK|
+Sam Fender|indie|87|UK|+
+The 1975|indie|87|UK|h
+Gorillaz|indie|87|UK|
+Burna Boy|hiphop|87|EU|
+Pink|pop|87|US|
+Dave|hiphop|87|UK|+
+Nicki Minaj|hiphop|86|US|
+Florence + the Machine|indie|86|UK|
+Hozier|folk|86|EU|
+Blur|indie|86|UK|h
+Kylie Minogue|pop|86|AUS|
+Iron Maiden|metal|86|UK|-
+My Chemical Romance|rock|86|US|h
+Swedish House Mafia|electronic|86|EU|
+Central Cee|hiphop|86|UK|+
+Maroon 5|pop|86|US|-
+Raye|soul|85|UK|+
+Katy Perry|pop|85|US|-
+Tame Impala|indie|85|AUS|
+Noah Kahan|folk|85|US|+
+Bring Me the Horizon|metal|85|UK|
+Slipknot|metal|85|US|
+blink-182|punk|85|US|
+The Cure|rock|85|UK|
+Depeche Mode|electronic|85|UK|
+Megan Thee Stallion|hiphop|85|US|
+21 Savage|hiphop|85|US|
+Martin Garrix|electronic|85|EU|
+ROSÉ|pop|85|EU|+
+Pulp|indie|84|UK|
+Liam Gallagher|rock|84|UK|
+Lorde|pop|84|AUS|+
+Paramore|rock|84|US|h
+Twenty One Pilots|rock|84|US|
+Kings of Leon|rock|84|US|-
+Tate McRae|pop|84|CA|+
+Benson Boone|pop|84|US|+
+Skrillex|electronic|84|US|
+A$AP Rocky|hiphop|84|US|
+Wizkid|hiphop|84|EU|
+Rema|hiphop|84|EU|+
+Fatboy Slim|electronic|82|UK|
+The Chemical Brothers|electronic|82|UK|
+Stereophonics|rock|80|UK|
+Biffy Clyro|rock|82|UK|
+Queens of the Stone Age|rock|82|US|
+The Strokes|indie|82|US|
+Fall Out Boy|punk|82|US|
+George Ezra|pop|82|UK|
+Take That|pop|82|UK|-
+Chase & Status|electronic|82|UK|
+Disclosure|electronic|82|UK|
+Mumford & Sons|folk|82|UK|
+Massive Attack|electronic|82|UK|h
+Gracie Abrams|pop|82|US|+
+Sleep Token|metal|82|UK|++
+Doechii|hiphop|82|US|++
+Fisher|electronic|82|AUS|
+Lizzo|pop|82|US|-
+Shawn Mendes|pop|82|CA|
+Tems|soul|82|EU|+
+Daniel Caesar|soul|80|CA|
+Fontaines D.C.|indie|80|EU|+
+Little Simz|hiphop|80|UK|+
+Kasabian|rock|80|UK|
+Catfish and the Bottlemen|indie|80|UK|
+Paolo Nutini|folk|80|UK|
+Glass Animals|indie|80|UK|
+Mitski|indie|80|US|
+Phoebe Bridgers|indie|80|US|
+Teddy Swims|soul|80|US|+
+Skepta|hiphop|80|UK|
+Peggy Gou|electronic|80|EU|
+Avenged Sevenfold|metal|80|US|
+Ghost|metal|80|EU|
+Carl Cox|electronic|80|UK|
+Asake|hiphop|80|EU|+
+Anyma|electronic|80|EU|+
+Royal Blood|rock|78|UK|
+Bastille|pop|78|UK|-
+Foals|indie|78|UK|
+LCD Soundsystem|electronic|78|US|
+Vampire Weekend|indie|78|US|
+Jamie xx|electronic|78|UK|
+Charlotte de Witte|electronic|78|EU|
+Eric Prydz|electronic|78|EU|
+Kaytranada|electronic|78|CA|
+Brent Faiyaz|soul|78|US|
+Zara Larsson|pop|78|EU|
+James Arthur|pop|78|UK|
+Aitch|hiphop|78|UK|
+Lil Nas X|hiphop|78|US|
+Jack Harlow|hiphop|78|US|
+boygenius|indie|78|US|h
+Bon Iver|folk|78|US|
+The Lumineers|folk|78|US|
+Laufey|jazz|78|EU|+
+Olivia Dean|soul|78|UK|++
+Ayra Starr|soul|78|EU|+
+Wolf Alice|indie|76|UK|
+Jungle|soul|76|UK|
+Michael Kiwanuka|soul|76|UK|
+Jorja Smith|soul|76|UK|
+Loyle Carner|hiphop|76|UK|
+IDLES|punk|76|UK|
+Turnstile|punk|76|US|+
+Bicep|electronic|76|UK|
+Four Tet|electronic|76|UK|
+Solomun|electronic|76|EU|
+Ellie Goulding|pop|76|UK|
+Anne-Marie|pop|76|UK|
+Rag'n'Bone Man|soul|76|UK|
+Conan Gray|pop|76|US|
+Reneé Rapp|pop|76|US|+
+Pet Shop Boys|electronic|76|UK|
+The Black Keys|rock|76|US|
+Yungblud|rock|76|UK|
+Snow Patrol|indie|76|UK|
+Lola Young|pop|76|UK|++
+The Last Dinner Party|indie|76|UK|+
+Gregory Porter|jazz|72|US|
+Underworld|electronic|74|UK|
+alt-J|indie|74|UK|
+Keane|indie|74|UK|
+Ben Howard|folk|74|UK|
+beabadoobee|indie|74|UK|+
+Clairo|indie|74|US|
+Aurora|pop|74|EU|
+Robyn|pop|74|EU|h
+Rita Ora|pop|74|UK|
+Jess Glynne|pop|74|UK|
+Girls Aloud|pop|74|UK|h
+Tom Grennan|pop|74|UK|
+Myles Smith|pop|74|UK|++
+sombr|indie|74|US|++
+Judas Priest|metal|74|UK|-
+Megadeth|metal|74|US|-
+The Offspring|punk|74|US|
+Weezer|rock|74|US|
+Kneecap|hiphop|74|UK|+
+Kano|hiphop|74|UK|
+AJR|pop|74|US|
+Bonobo|electronic|72|UK|
+Gregory Alan Isakov|folk|60|US|
+Leon Bridges|soul|72|US|
+Victoria Monét|soul|72|US|
+Ezra Collective|jazz|72|UK|+
+Franz Ferdinand|indie|72|UK|
+The Kooks|indie|72|UK|
+Two Door Cinema Club|indie|72|UK|
+Courteeners|indie|72|UK|
+Manic Street Preachers|rock|72|UK|
+Elbow|indie|72|UK|
+Blossoms|indie|72|UK|+
+Djo|indie|72|US|+
+MGMT|indie|72|US|
+Yeah Yeah Yeahs|indie|72|US|
+Greta Van Fleet|rock|72|US|
+Tove Lo|pop|72|EU|
+Denzel Curry|hiphop|72|US|
+Gojira|metal|72|EU|
+Wet Leg|indie|72|UK|
+Fleet Foxes|folk|70|US|
+Laura Marling|folk|70|UK|
+Declan McKenna|indie|70|UK|
+The Wombats|indie|70|UK|
+Bombay Bicycle Club|indie|70|UK|
+Kaiser Chiefs|indie|70|UK|-
+Suede|rock|70|UK|
+Phoenix|indie|70|EU|
+Nothing But Thieves|rock|70|UK|
+Tom Odell|pop|70|UK|
+Rex Orange County|pop|70|UK|
+girl in red|pop|70|EU|
+Jacob Collier|jazz|70|UK|
+Architects|metal|70|UK|
+Spiritbox|metal|70|CA|+
+Electric Callboy|metal|70|EU|+
+Babymetal|metal|70|EU|
+Sugababes|pop|70|UK|
+Amyl and the Sniffers|punk|70|AUS|+
+Caribou|electronic|70|CA|
+Overmono|electronic|70|UK|+
+Sub Focus|electronic|70|UK|
+Andy C|electronic|70|UK|
+Placebo|rock|70|UK|
+Inhaler|indie|68|EU|
+Royel Otis|indie|68|AUS|+
+Barry Can't Swim|electronic|68|UK|+
+Sammy Virji|electronic|68|UK|+
+Bullet for My Valentine|metal|68|UK|
+Parkway Drive|metal|68|AUS|
+Cat Burns|pop|68|UK|+
+Jade|pop|68|UK|+
+Calum Scott|pop|68|UK|
+First Aid Kit|folk|66|EU|
+Big Thief|indie|66|US|
+Editors|indie|66|UK|
+The Vaccines|indie|66|UK|
+Interpol|indie|66|US|
+Nia Archives|electronic|66|UK|+
+Viagra Boys|punk|66|EU|+
+Sigrid|pop|66|EU|
+Mabel|pop|66|UK|
+Sophie Ellis-Bextor|pop|66|UK|
+Yussef Dayes|jazz|64|UK|+
+Kamasi Washington|jazz|66|US|
+Knucks|hiphop|66|UK|
+Holly Humberstone|pop|64|UK|
+Mahalia|soul|64|UK|
+Bakar|indie|64|UK|
+Trivium|metal|64|US|
+Lorna Shore|metal|64|US|+
+Knocked Loose|metal|64|US|+
+JPEGMAFIA|hiphop|64|US|
+English Teacher|indie|62|UK|++
+Wunderhorse|indie|62|UK|+
+Geese|indie|62|US|++
+Mk.gee|indie|62|US|+
+Alvvays|indie|62|CA|
+Cleo Sol|soul|62|UK|
+Bob Vylan|punk|60|UK|+
+CMAT|pop|60|EU|++
+Soft Play|punk|60|UK|
+The Lathums|indie|60|UK|
+Nubya Garcia|jazz|60|UK|
+Machine Head|metal|60|US|
+Lankum|folk|58|EU|+
+Shame|punk|58|UK|
+The Snuts|indie|58|UK|
+Black Country, New Road|indie|58|UK|
+Rachel Chinouriri|pop|56|UK|++
+Joy Crookes|soul|56|UK|
+Wednesday|indie|56|US|+
+The Dare|electronic|56|US|+
+Nova Twins|rock|54|UK|+
+Sprints|punk|54|EU|+
+Yard Act|indie|54|UK|
+Kae Tempest|hiphop|54|UK|
+Good Neighbours|pop|52|UK|++
+Ethel Cain|indie|56|US|++
+Jordan Adetunji|hiphop|52|UK|++
+Lambrini Girls|punk|48|UK|++
+Fat Dog|punk|48|UK|++
+High Vis|punk|46|UK|+
+Pa Salieu|hiphop|50|UK|+
+Jalen Ngonda|soul|44|US|++
+Glass Beams|indie|44|AUS|+
+The Mary Wallopers|folk|42|EU|+
+Getdown Services|indie|36|UK|++
+Antony Szmierek|indie|36|UK|++
+Master Peace|indie|34|UK|++
+Kingfishr|folk|38|EU|++
+Picture Parlour|indie|30|UK|++
+Lime Garden|indie|28|UK|+
+Elmiene|soul|30|UK|++
+Nectar Woode|soul|26|UK|++
+Bimini|pop|26|UK|+
+Jacob Alon|folk|30|UK|++
+The Clockworks|indie|24|EU|+
+Fcukers|electronic|30|US|++
+Chanel Beads|indie|22|US|+
+Hamdi|electronic|34|UK|+
+Sekou|soul|30|UK|++
+Pixey|indie|20|UK|+`;
+/* agencies represent many real acts; the names here are invented */
+function genActs(){const acts=[];const r=mulberry(20270801);
+  for(const line of ARTIST_DATA.split('\n')){const [name,genre,f,home,tr]=line.split('|');if(!name)continue;const fame=+f;
+    const mom=tr==='++'?6+r()*4:tr==='+'?2.5+r()*3:tr==='-'?-1.5-r()*2.5:(r()-.5)*2;
+    const pot=tr==='++'?Math.min(97,fame+18+r()*20):tr==='+'?Math.min(97,fame+8+r()*12):fame+2;
+    acts.push({id:'a'+hash(name).toString(36),name,genre,fame,pot:Math.round(pot),mom,
+      live:clamp(Math.round(62+r()*30+(fame>80?4:0)),55,98),rel:clamp(.955+r()*.04,.9,.995),diva:clamp(r()*.5*(fame/100),0,.6),
+      age:tr==='++'?ri(0,2):ri(2,20),ag:AGENCIES[hash(name)%AGENCIES.length].k,agent:AGENTS[hash(name+'x')%AGENTS.length],home,
+      size:genre==='electronic'?1:genre==='pop'||genre==='hiphop'||genre==='soul'?pick([1,1,2]):pick([3,4,4,5,6]),
+      tour:0,hist:[fame],first:0,hiatusRisk:tr==='h'?.7:0})}
+  return acts}
 /* ============================================================
    Site analysis: footprints, placement rules, sightlines, noise
    at the receptors, walking distances, crowd flow and the SAG list
@@ -503,6 +806,7 @@ function canPlace(s,t,x,y,r,ignore){
   const b=B[t];const sw=r%2?b.h:b.w,sh=r%2?b.w:b.h;
   if(x<0||y<0||x+sw>W||y+sh>H)return 'Off the edge of the site';
   if(b.cat==='camp'&&!SITES[s.site].camping)return 'The park licence does not allow camping';
+  if(b.headline&&s.pl.some(p=>isMain(p.t)&&p.id!==ignore))return 'You already have a headline stage. Remove it first.';
   if(b.max&&s.pl.filter(p=>p.t===t&&p.id!==ignore).length>=b.max)return 'The licence allows '+b.max+' '+b.n.toLowerCase()+(b.max>1?'s':'');
   if(b.edge&&!(x===0||y===0||x+sw===W||y+sh===H))return 'Entrances must sit on the boundary fence';
   const o=occGrid(s);
@@ -520,7 +824,7 @@ function lineBlocked(o,s,x0,y0,x1,y1,self){
   const n=Math.ceil(Math.hypot(x1-x0,y1-y0)*2);
   for(let i=1;i<n;i++){const x=Math.floor(lerp(x0,x1,i/n)),y=Math.floor(lerp(y0,y1,i/n));if(!inG(x,y))continue;const q=o[y*W+x];if(q&&q!==self&&q.t!=='track'&&!WALKT[q.t])return q;if(q&&(q.t==='vip'))continue}
   return null}
-function receptors(s){return SITES[s.site].rec}
+function receptors(s){return s.rec||SITES[s.site].rec}
 function stageSPL(s,p){let L=B[p.t].spl;if(s.ops.limiter)L-=3;if(s.ops.prod==='spectacular')L+=1;return L}
 function noiseAt(s,p,X,Y){
   const b=B[p.t],src=stageSrc(p);const dx=X-src.x,dy=Y-src.y;const dist=Math.max(2,Math.hypot(dx,dy))*CELL;
@@ -530,7 +834,7 @@ function noiseAt(s,p,X,Y){
 function sumDb(arr){if(!arr.length)return 0;return 10*Math.log10(arr.reduce((a,v)=>a+Math.pow(10,v/10),0))}
 
 let A_CACHE={k:'',a:null};
-function plKey(s){return s.pl.map(p=>p.t+p.x+'.'+p.y+'.'+p.r).join('|')+'#'+s.lic.cap+'#'+(s.ops.limiter?1:0)+s.ops.prod+'#'+expectedAttendance(s)}
+function plKey(s){return W+'x'+H+'|'+s.pl.map(p=>p.t+p.x+'.'+p.y+'.'+p.r).join('|')+'#'+s.lic.cap+'#'+(s.ops.limiter?1:0)+s.ops.prod+'#'+expectedAttendance(s)}
 function expectedAttendance(s){const sl=s.sales;if(sl&&sl.wkSold+sl.vipSold>0&&s.phase!=='booking')return Math.round(sl.wkSold+sl.vipSold+Math.max(...sl.daySold));return s.lic.cap}
 function analyse(s){
   const key=plKey(s);if(A_CACHE.k===key&&A_CACHE.a)return A_CACHE.a;
@@ -555,9 +859,9 @@ function analyse(s){
       const d=DIRS[p.r],f=fp(p);const mouth=[];for(let k=1;k<=2;k++){for(let i=0;i<(d[0]===0?f.w:f.h);i++){const x=d[0]===0?f.x+i:(d[0]>0?f.x+f.w-1+k:f.x-k),y=d[1]===0?f.y+i:(d[1]>0?f.y+f.h-1+k:f.y-k);if(inG(x,y)&&walk[y*W+x])mouth.push({x,y,k})}}
       arenas.push({p,cap:b.tentCap,cells:mouth,good:mouth.length,blocked:0,obst:0,slope:0,blockers:[],q:1,tent:1,mouth:mouth.length});
       if(mouth.length<2)I('bad',B[p.t].n+' entrance is blocked.','Leave the cells in front of the tent open so people can get in and out.','flow')}}
-  const main=arenas.find(a=>a.p.t==='main');
+  const main=arenas.find(a=>isMain(a.p.t));
   const arenaTot=arenas.reduce((a,v)=>a+v.cap,0);
-  for(const a of arenas){if(!a.tent&&a.blockers.length){const names=[...new Set(a.blockers.map(q=>B[q.t].n.toLowerCase()))];I(a.p.t==='main'&&a.q<.75?'bad':'warn','Sightlines at the '+B[a.p.t].n.toLowerCase()+': '+names.slice(0,2).join(' and ')+' block the view.','Move them out of the field in front of the stage.','sight')}}
+  for(const a of arenas){if(!a.tent&&a.blockers.length){const names=[...new Set(a.blockers.map(q=>B[q.t].n.toLowerCase()))];I(isMain(a.p.t)&&a.q<.75?'bad':'warn','Sightlines at the '+B[a.p.t].n.toLowerCase()+': '+names.slice(0,2).join(' and ')+' block the view.','Move them out of the field in front of the stage.','sight')}}
   // overlapping arenas (two stages sharing a field)
   let shared=0;for(let i=0;i<W*H;i++)if(coneOcc[i]>1)shared++;
   if(shared>3)I('warn','Two stages point at the same field ('+shared*CELL*CELL/1000+'k m² shared). Sound will bleed between them.','Turn one stage to face a different direction.','bleed');
@@ -595,9 +899,9 @@ function analyse(s){
     for(const [sx,sy,w] of srcs){let x=sx,y=sy;if(!inG(x,y))continue;let i=y*W+x;if(dMain[i]<0){let f=false;for(const [dx,dy] of DIRS){const j=(y+dy)*W+(x+dx);if(inG(x+dx,y+dy)&&dMain[j]>=0){x+=dx;y+=dy;i=j;f=true;break}}if(!f)continue}
       let guard=0;while(dMain[i]>0&&guard++<200){load[i]+=w;let nx=-1;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(!inG(xx,yy))continue;const j=yy*W+xx;if(dMain[j]>=0&&dMain[j]<dMain[i]){nx=j;x=xx;y=yy;break}}if(nx<0)break;i=nx}}
     for(let i=0;i<W*H;i++){if(!load[i])continue;const x=i%W,y=(i/W)|0;
-      let h=1;for(let k=x-1;k>=0&&walk[y*W+k]&&h<4;k--)h++;for(let k=x+1;k<W&&walk[y*W+k]&&h<4;k++)h++;
-      let v=1;for(let k=y-1;k>=0&&walk[k*W+x]&&v<4;k--)v++;for(let k=y+1;k<H&&walk[k*W+x]&&v<4;k++)v++;
-      const width=Math.min(h,v)*6.5;const capF=width*82*15;const pr=load[i]/capF;load[i]=pr;if(pr>1){hot++;hotCells.push(i)}if(pr>hotMax)hotMax=pr}}
+      let h=1;for(let k=x-1;k>=0&&walk[y*W+k]&&h<6;k--)h++;for(let k=x+1;k<W&&walk[y*W+k]&&h<6;k++)h++;
+      let v=1;for(let k=y-1;k>=0&&walk[k*W+x]&&v<6;k--)v++;for(let k=y+1;k<H&&walk[k*W+x]&&v<6;k++)v++;
+      const width=Math.min(h,v)*6.5;const capF=width*82*20;const pr=load[i]/capF;load[i]=pr;if(pr>1){hot++;hotCells.push(i)}if(pr>hotMax)hotMax=pr}}
   if(hotMax>1.3)I(hotMax>2?'bad':'warn','Crowd pinch point: '+hot+' cell'+(hot>1?'s':'')+' at up to '+Math.round(hotMax*100)+'% of safe flow at the headliner changeover.','Widen the route to the main stage: move stalls or loos out of narrow gaps.','flow');
   // capacities and ratios
   const units=of('loos').length*B.loos.units, taps=of('water').length;
@@ -615,11 +919,11 @@ function analyse(s){
   // mud
   let lowCamp=0;for(const c of camps){const f=fp(c);let low=0;for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)if(s.grid[y][x]==='low')low++;if(low>f.w*f.h/3)lowCamp++}
   if(lowCamp)I('warn',lowCamp+' campsite'+(lowCamp>1?'s are':' is')+' on low, wet ground.','In heavy rain these flood. Move them to higher ground.','mud');
-  let loadSum=0,trackLoad=0;for(let i=0;i<W*H;i++){if(load[i]>0){loadSum+=load[i];const q=o[i];if(q&&q.t==='track')trackLoad+=load[i]}}
+  let loadSum=0,trackLoad=0;for(let i=0;i<W*H;i++){if(load[i]>0){loadSum+=load[i];const q=o[i];if((q&&q.t==='track')||s.grid[(i/W)|0][i%W]==='hard')trackLoad+=load[i]}}
   const trackCover=loadSum?trackLoad/loadSum:0;
   // need checks against the people you plan to let in
   const camping=site.camping;
-  const campers=camping?Math.round((s.sales?(s.sales.wkSold+s.sales.vipSold):N*.88)*.93):0;
+  const campers=camping?Math.round((s.sales?(s.sales.wkSold+s.sales.vipSold):N*.88)*.85):0;
   if(camping&&campers>campCap)I('bad','Campsites hold '+fmtN(campCap)+' but about '+fmtN(campers)+' people will camp.','Add campsites, or cap weekend tickets.','camp');
   if(!med)I('bad','No medical centre.','The safety advisory group will not sign off without one.','med');
   if(!ctl)I('bad','No event control.','Security and the police need a control room on site.','ctl');
@@ -645,13 +949,84 @@ function analyse(s){
   A_CACHE={k:key,a};return a}
 function noiseField(s){const stg=s.pl.filter(p=>B[p.t].stage);const f=new Float32Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){f[y*W+x]=stg.length?sumDb(stg.map(p=>noiseAt(s,p,x+.5,y+.5))):0}return f}
 function placementCost(s,p){const b=B[p.t];let c=b.cost;if(b.stage)c*={lean:.82,standard:1,spectacular:1.42}[s.ops.prod];return Math.round(c*Math.pow(1.03,s.year-1))}
+
+/* ---------- site assistant: lays out a new site, or fixes the gaps in yours ---------- */
+function autoLayout(s,fixOnly){
+  setGrid(s.grid);const site=SITES[s.site];const N=s.lic.cap;const added=[];const removed=[];
+  const reset=()=>{A_CACHE={k:'',a:null}};
+  const put=(t,x,y,r=0)=>{if(canPlace(s,t,x,y,r))return null;const p={id:uid(),t,x,y,r};if(t==='art')p.k=(s.artIdx=(s.artIdx||0)+1)%ART_KINDS.length;s.pl.push(p);added.push(p);reset();return p};
+  const count=t=>s.pl.filter(p=>p.t===t).length;
+  const recs=s.rec||site.rec;
+  const stageNoise=(t,x,y,r)=>{const p={t,x,y,r};return Math.max(...recs.map(rc=>noiseAt(s,p,rc.x,rc.y)))-s.lic.noise};
+  const coneFree=(t,x,y,r)=>{let n=0;for(const c of coneCells({t,x,y,r},B[t].cone||3)){if(s.grid[c.y][c.x]==='water'||s.grid[c.y][c.x]==='tree')continue;n++}return n};
+  function bestStage(t,avoid){let best=null,bs=-1e9;const b=B[t];
+    for(let r=0;r<4;r++){const sw=r%2?b.h:b.w,sh=r%2?b.w:b.h;
+      for(let y=0;y+sh<=H;y++)for(let x=0;x+sw<=W;x++){if(canPlace(s,t,x,y,r))continue;
+        // big stages sit near an edge facing in, so the crowd has the middle of the site
+        const edge=Math.min(y,x,H-sh-y,W-sw-x);if(t==='main'&&edge>3)continue;
+        const d=DIRS[r];const cx=x+sw/2,cy=y+sh/2;const inward=((W/2-cx)*d[0]+(H/2-cy)*d[1]);if(t==='main'&&inward<0)continue;
+        let sc=-Math.max(0,stageNoise(t,x,y,r))*14-Math.max(0,stageNoise(t,x,y,r)+3)*3;
+        if(b.cone)sc+=coneFree(t,x,y,r)*.6;
+        for(const q of avoid){const qs=stageSrc(q),me=stageSrc({t,x,y,r});const dd=Math.hypot(qs.x-me.x,qs.y-me.y);sc+=Math.min(dd,14)*2;if(dd<7)sc-=60}
+        sc+=(hash(t+x+'.'+y+r)%100)/100;
+        if(sc>bs){bs=sc;best=[x,y,r]}}}
+    return best?put(t,...best):null}
+  // 1. stages
+  if(!s.pl.some(p=>isMain(p.t)))bestStage(N>=30000?'mega':'main',[]);
+  if(!fixOnly){const st=()=>s.pl.filter(p=>B[p.t].stage);
+    bestStage('tent',st());if(N>=12000)bestStage('dance',st());if(N>=30000)bestStage('tent',st());if(N>=45000){bestStage('dance',st());bestStage('small',st())}bestStage('small',st())}
+  // never leave kit standing in a stage's field
+  const reserved=new Set();for(const p of s.pl)if(B[p.t].cone)for(const c of coneCells(p,B[p.t].cone))reserved.add(c.y*W+c.x);
+  for(const p of s.pl.slice()){if(B[p.t].stage||WALKT[p.t]||p.t==='camp')continue;const f=fp(p);let hit=false;for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)if(reserved.has(y*W+x))hit=true;if(hit){s.pl.splice(s.pl.indexOf(p),1);removed.push(p);reset()}}
+  // also keep a 1-cell walkway in front of tents
+  for(const p of s.pl)if(B[p.t].tentCap){const f=fp(p),d=DIRS[p.r];for(let k=1;k<=2;k++)for(let i=-1;i<=Math.max(f.w,f.h);i++){const x=d[0]===0?f.x+i:(d[0]>0?f.x+f.w-1+k:f.x-k),y=d[1]===0?f.y+i:(d[1]>0?f.y+f.h-1+k:f.y-k);if(inG(x,y))reserved.add(y*W+x)}}
+  const freeFp=(t,x,y,r)=>{const b=B[t];const sw=r%2?b.h:b.w,sh=r%2?b.w:b.h;for(let yy=y;yy<y+sh;yy++)for(let xx=x;xx<x+sw;xx++)if(reserved.has(yy*W+xx))return false;return true};
+  const tryAt=(t,x,y,r=0)=>freeFp(t,x,y,r)?put(t,x,y,r):null;
+  const stageSrcs=()=>s.pl.filter(p=>B[p.t].stage).map(stageSrc);
+  // 2. entrances on the boundary nearest the road (south)
+  const needEnt=Math.max(2,Math.ceil(N*.85/(B.entrance.lanes*350*(site.camping?8:4))))-count('entrance');
+  for(let i=0,n=0;n<needEnt&&i<W*2;i++){const x=Math.round((W-2)*((i*0.618)%1));if(tryAt('entrance',x,H-1,0))n++}
+  for(let i=0,n=count('entrance');n<2&&i<H;i++){if(tryAt('entrance',0,i,1)||tryAt('entrance',W-1,i,1))n++}
+  // 3. control, medical, welfare and first aid near the middle
+  const near=(t,cx,cy,r=0)=>{for(let rad=0;rad<Math.max(W,H);rad++)for(let dy=-rad;dy<=rad;dy++)for(let dx=-rad;dx<=rad;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==rad)continue;const p=tryAt(t,cx+dx,cy+dy,r);if(p)return p}return null};
+  if(!count('control'))near('control',Math.round(W*.65),Math.round(H*.55));
+  if(!count('medical'))near('medical',Math.round(W*.35),Math.round(H*.5));
+  if(!count('welfare')&&N>5000)near('welfare',Math.round(W*.5),Math.round(H*.45));
+  const needFa=Math.floor(N/15000)-count('firstaid');for(let i=0;i<needFa;i++)near('firstaid',Math.round(W*(i%2?.2:.8)),Math.round(H*(.25+.5*((i>>1)%2))));
+  // 4. campsites with 20 m fire breaks, away from loud stages and wet ground
+  if(site.camping){const sold=s.sales?(s.sales.wkSold+s.sales.vipSold):Math.round(N*.88);const need=Math.ceil(sold*.95/B.camp.campers)+(fixOnly?0:1)-count('camp');
+    const cands=[];for(let y=0;y+4<=H;y++)for(let x=0;x+4<=W;x++){let low=0,hard=0;for(let yy=y;yy<y+4;yy++)for(let xx=x;xx<x+4;xx++){if(s.grid[yy][xx]==='low')low++;if(s.grid[yy][xx]==='hard')hard++}
+      const dmin=Math.min(99,...stageSrcs().map(q=>Math.hypot(q.x-x-2,q.y-y-2)));cands.push({x,y,sc:Math.min(dmin,10)*3-low*2-hard*3-Math.abs(y+2-H*.6)*.2})}
+    cands.sort((a,b)=>b.sc-a.sc);let n=0;
+    for(const c of cands){if(n>=need)break;const p=tryAt('camp',c.x,c.y,0);if(!p)continue;
+      const f=fp(p);if(s.pl.some(q=>q!==p&&B[q.t].cat==='camp'&&(()=>{const g=fp(q);return f.x<=g.x+g.w&&g.x<=f.x+f.w&&f.y<=g.y+g.h&&g.y<=f.y+f.h})())){s.pl.pop();added.pop();reset();continue}n++}}
+  // 5. toilets, water, bars and food spread around where people are
+  const zones=()=>{const z=[];for(const p of s.pl){const f=fp(p);if(B[p.t].cat==='camp'||B[p.t].stage)z.push({p,f,stage:!!B[p.t].stage})}return z};
+  const ring=(z,t)=>{const b=B[t];const out=[];const f=z.f;let pad=1;
+    if(z.stage&&B[z.p.t].cone){const cells=coneCells(z.p,B[z.p.t].cone);let mx=f.x,Mx=f.x+f.w,my=f.y,My=f.y+f.h;for(const c of cells){mx=Math.min(mx,c.x);Mx=Math.max(Mx,c.x+1);my=Math.min(my,c.y);My=Math.max(My,c.y+1)}return {x:mx-1,y:my-1,w:Mx-mx+2,h:My-my+2}}
+    return {x:f.x-pad,y:f.y-pad,w:f.w+pad*2,h:f.h+pad*2}};
+  function spread(t,want){let n=0,guard=0;const Z=zones();if(!Z.length)return;let zi=hash(t)%Z.length;
+    while(n<want&&guard++<want*Z.length*3){const z=Z[zi%Z.length];zi++;const R=ring(z,t);let done=false;
+      const per=[];for(let x=R.x;x<R.x+R.w;x++){per.push([x,R.y],[x,R.y+R.h-1])}for(let y=R.y;y<R.y+R.h;y++){per.push([R.x,y],[R.x+R.w-1,y])}
+      const off=(hash(t+zi)%Math.max(1,per.length));for(let i=0;i<per.length&&!done;i++){const [x,y]=per[(i+off)%per.length];for(const r of [0,1]){if(tryAt(t,x,y,r)){done=true;n++;break}}}}}
+  const units=count('loos')*B.loos.units;spread('loos',Math.max(0,Math.ceil(N/85/B.loos.units)-count('loos')));
+  spread('water',Math.max(0,Math.ceil(N/2300)+1-count('water')));
+  spread('bar',Math.max(0,Math.ceil(N/1700)-count('bar')));
+  spread('food',Math.max(0,Math.ceil(N/420/B.food.traders)-count('food')));
+  if(!fixOnly){near('art',Math.round(W*.45),Math.round(H*.4));if(N>=15000)near('wheel',Math.round(W*.3),Math.round(H*.4));if(N>=12000)near('vip',Math.round(W*.5),Math.round(H*.3))}
+  reset();return {added,removed}}
+function expandSite(s){// lease the next field to the south: 8 more rows
+  const oldH=s.grid.length,w=s.grid[0].length;for(let i=0;i<8;i++)s.grid.push(Array(w).fill('grass'));
+  for(const r of s.rec)if(r.y>=oldH-1)r.y+=8;
+  for(const p of s.pl){const f=fp(p);if(p.t==='entrance'&&f.y+f.h===oldH)p.y+=8}
+  s.expand=(s.expand||0)+1;setGrid(s.grid);A_CACHE={k:'',a:null}}
 /* ============================================================
    Booking, the rival, ticket demand, budget and the P&L
    ============================================================ */
 const act=id=>S.acts.find(a=>a.id===id);
 const signed=s=>s.bk.filter(b=>b.st==='signed');
 const bkOf=(s,actId)=>s.bk.find(b=>b.actId===actId&&b.st!=='declined'&&b.st!=='cancelled'&&b.st!=='lost');
-function stagesOf(s){const order={main:0,tent:1,dance:2,small:3};return s.pl.filter(p=>B[p.t].stage).sort((a,b)=>order[a.t]-order[b.t]||a.id.localeCompare(b.id))}
+function stagesOf(s){const order={main:0,mega:0,tent:1,dance:2,small:3};return s.pl.filter(p=>B[p.t].stage).sort((a,b)=>order[a.t]-order[b.t]||a.id.localeCompare(b.id))}
 function stageName(s,p){if(!p)return'';const same=s.pl.filter(q=>q.t===p.t);const base=B[p.t].n;const sp=s.spons.find(x=>x.k==='volt');if(sp&&p.t==='tent'&&same.indexOf(p)===0)return'Volt Energy Stage';return same.length>1?base+' '+(same.indexOf(p)+1):base}
 function slotAt(s,stageId,day,slot){return s.bk.find(b=>b.stage===stageId&&b.day===day&&b.slot===slot&&(b.st==='signed'||b.st==='pending'||b.st==='counter'))}
 function slotDef(p,slot){return SLOTS[p.t][slot]}
@@ -663,7 +1038,7 @@ function askFor(s,a,o){
   let m=1;const why=[];
   const relv=s.agRel[a.ag]||50;const rm=1+(50-relv)/400;m*=rm;if(relv>=65)why.push('Good relationship with '+AG_N(a.ag));if(relv<=35)why.push(AG_N(a.ag)+' don’t trust you');
   const gap=a.fame-(s.rep+40);if(gap>0){m*=1+gap/55;why.push('Your festival is small for them')}
-  if(sd){const [lo,hi]=sd[3];if(a.fame>hi+8){m*=1.22;why.push('Wants better billing')}if(o.slot===0&&p.t==='main')m*=1.04}
+  if(sd){const [lo,hi]=sd[3];if(a.fame>hi+8){m*=1.22;why.push('Wants better billing')}if(o.slot===0&&isMain(p.t))m*=1.04}
   if(o.excl){m*=1.15;why.push('Exclusivity +15%')}
   if(o.opt){m*=1.08;why.push('Next-year option +8%')}
   if(s.phase==='onsale'){m*=1.1;why.push('Late booking +10%')}
@@ -716,17 +1091,13 @@ function rivalMove(s){
 
 /* ---------- year market ---------- */
 function marketYear(s,first){
-  const used=new Set(s.acts.map(a=>a.name));
   if(!first){for(const a of s.acts){
-      const toward=a.pot-a.fame;let d=a.mom*rnd(.6,1.25)+gauss()*2.5;if(toward<3&&a.mom>0)a.mom=rnd(-5,1);
-      if(a.fame>85)d-=rnd(0,2.5);
-      a.fame=clamp(Math.round(a.fame+d),1,99);a.mom=clamp(a.mom*.8+gauss()*1.3+(a.pot-a.fame>15?2:0),-8,10);a.age++;a.hist.push(a.fame);if(a.hist.length>12)a.hist.shift()}
-    s.acts=s.acts.filter(a=>!(a.age>14&&a.fame<20&&chance(.25))&&!(a.fame<4&&chance(.5)));
-    for(let i=0;i<24;i++)s.acts.push(makeAct(used,{fame:ri(4,26),young:1}));
-    while(s.acts.filter(a=>a.fame>=80).length<6)s.acts.push(makeAct(used,{fame:ri(80,95)}))}
-  for(const a of s.acts){a.tour=a.home!=='UK'&&chance(.38)?1:0;a.hiatus=a.fame>40&&chance(.1)?1:0}
+      const toward=a.pot-a.fame;let d=a.mom*rnd(.6,1.2)+gauss()*1.5;if(toward<2&&a.mom>0)a.mom=rnd(-3,.5);
+      if(a.fame>88)d-=rnd(0,1.5);
+      a.fame=clamp(Math.round(a.fame+d),5,99);a.mom=clamp(a.mom*.82+gauss()*.9+(a.pot-a.fame>12?1.5:0),-6,10);a.age++;a.hist.push(a.fame);if(a.hist.length>12)a.hist.shift()}}
+  for(const a of s.acts){a.tour=a.home!=='UK'&&chance(.45)?1:0;a.hiatus=chance(a.hiatusRisk||(a.fame>60?.06:.03))?1:0}
   // "surprise" act on hiatus who might do a secret set
-  const R=s.rival;R.bk=[];R.bidOn={};R.budget=Math.round(rnd(1.3e6,2.4e6)*Math.pow(1.05,s.year-1)*(R.rep/50));R.clash=s.year===1||chance(.6);
+  const R=s.rival;R.bk=[];R.bidOn={};R.budget=Math.round(rnd(1.3e6,2.4e6)*Math.pow(1.05,s.year-1)*(R.rep/50)*Math.max(1,s.lic.cap/15000));R.clash=s.year===1||chance(.6);
   s.bk=[];s.ledger={};s.round=1;s.week=0;s.events=[];s.sales=null;s.live=null;s.flags.announced=0;
   // the rival grabs a couple of acts before you start
   rivalMove(s);rivalMove(s)}
@@ -734,7 +1105,7 @@ function marketYear(s,first){
 /* ---------- ticket demand ---------- */
 function lineupStrength(s,day){
   const list=signed(s).filter(b=>day==null||b.day===day).map(b=>appeal(act(b.actId))).sort((a,b)=>b-a);
-  let L=0;list.forEach((v,i)=>{L+=v/(1+.33*i)});return L}
+  let L=0;list.forEach((v,i)=>{L+=v*Math.pow(.78,i)});return L}
 function genreMix(s){const c={};for(const b of signed(s)){const g=act(b.actId).genre;c[g]=(c[g]||0)+1}return c}
 function demandMods(s){
   const site=SITES[s.site];let m=site.demand;const why=[];
@@ -745,16 +1116,17 @@ function demandMods(s){
   const mix=genreMix(s),tot=Object.values(mix).reduce((a,v)=>a+v,0);if(tot>6){const top=Math.max(...Object.values(mix));if(top/tot>.5){m*=1.06;why.push('A clear identity')}else if(Object.keys(mix).length>=6){m*=1.04;why.push('An eclectic bill')}}
   if(s.flags.lastStars)m*=.85+s.flags.lastStars*.05;
   if(s.flags.disaster)m*=.72;
+  m*=DF(s).demand;
   return {m,why}}
 function refPrice(s){return 110+s.rep*.95+Math.min(85,lineupStrength(s)/2800)}
 function pools(s,announced){
   const site=SITES[s.site],{m}=demandMods(s);const L=announced?lineupStrength(s):lineupStrength(s)*.25;
-  const repBase=380*s.rep+3000;
+  const repBase=300*s.rep+Math.max(3000,s.lic.cap*.1);
   const pool=(repBase+.33*L)*m;const P=refPrice(s);
   const days=[0,1,2].map(d=>((repBase*.35)+.3*(announced?lineupStrength(s,d):0))*m*(site.camping?.6:.9));
   return {pool,P,days}}
-const willWk=(s,pl,p)=>pl.pool*Math.pow(pl.P/p,2.2);
-const willDay=(s,pl,d,p)=>pl.days[d]*Math.pow(pl.P*.47/p,2);
+const willWk=(s,pl,p)=>pl.pool*Math.min(1.5,Math.pow(pl.P/p,2.2));
+const willDay=(s,pl,d,p)=>pl.days[d]*Math.min(1.5,Math.pow(pl.P*.47/p,2));
 function capWeekend(s){return Math.max(0,s.lic.cap-(s.tix.day.a||0))}
 function curTier(s){const sl=s.sales;let used=0;for(const t of s.tix.wk){if(sl.tier[t.k]<t.a)return t;used+=t.a}return s.tix.wk[s.tix.wk.length-1]}
 function newSales(){return{wkSold:0,vipSold:0,daySold:[0,0,0],tier:{early:0,t1:0,t2:0,final:0},rev:0,revDay:0,revVip:0,glamp:0,vans:0,touts:0,weeks:[],soldOut:null,resale:0,announced:false}}
@@ -789,25 +1161,30 @@ function sellWeek(s,w,early){
 /* ---------- operations & budget ---------- */
 const MED={basic:{n:'Basic',per:2900,cap:1.1,d:'1 medic per 1,500. Purple Guide minimum.'},standard:{n:'Standard',per:4600,cap:1.7,d:'1 medic per 900, a doctor on site.'},enhanced:{n:'Enhanced',per:7600,cap:2.6,d:'Field hospital, paramedics and an ambulance on standby.'}};
 const PROD={lean:{n:'Lean',m:.82,vibe:-3,d:'Smaller rigs, fewer screens. Saves 18% on stages.'},standard:{n:'Standard',m:1,vibe:0,d:'What acts expect at a festival this size.'},spectacular:{n:'Spectacular',m:1.42,vibe:6,d:'Bigger lighting, lasers, pyro and delay towers.'}};
-function needSec(s){return Math.ceil(expectedAttendance(s)/100)}
-function needStew(s){return Math.ceil(expectedAttendance(s)/250)}
+function needSec(s){return Math.ceil(attendancePlan(s).peak/100)}
+function syncStaff(s){if(s.ops.autoStaff!==false){s.ops.sec=needSec(s);s.ops.stew=needStew(s)}}
+function needStew(s){return Math.ceil(attendancePlan(s).peak/250)}
 function opsAuto(s){if(!s.ops.sec)s.ops.sec=needSec(s);if(!s.ops.stew)s.ops.stew=needStew(s)}
 function attendancePlan(s){const sl=s.sales;if(sl&&sl.wkSold)return{wk:sl.wkSold+sl.vipSold,day:sl.daySold.slice(),peak:sl.wkSold+sl.vipSold+Math.max(...sl.daySold)};const c=s.lic.cap;const day=Math.round(s.tix.day.a*.8);const wk=Math.round(capWeekend(s)*.85);return{wk,day:[day,day,day],peak:wk+day}}
 function costLines(s,act0){
+  if(!act0)syncStaff(s);
   const A=analyse(s),att=attendancePlan(s),N=att.peak,y=s.year,infl=Math.pow(1.03,y-1);
-  const L=[];const cm=SITES[s.site].costMul||1;const add=(g,k,v,n)=>L.push({g,k,v:Math.round(['Site','Staff','Licensing'].includes(g)&&k!=='Land rent'?v*cm:v),n});
+  const L=[];const cm=SITES[s.site].costMul||1,dc=DF(s).cost;const add=(g,k,v,n)=>L.push({g,k,v:Math.round((['Site','Staff','Licensing'].includes(g)&&k!=='Land rent'?v*cm:v)*(g==='Talent'||g==='Finance'||g==='Weekend'?1:dc)),n});
   const fees=signed(s).reduce((a,b)=>a+b.fee,0);
   add('Talent','Artist fees',fees,signed(s).length+' acts');
   if(!act0&&(s.phase==='booking'||s.phase==='onsale')){let est=0,n=0;for(const p of stagesOf(s))for(let d=0;d<3;d++)SLOTS[p.t].forEach((sd,i)=>{if(!slotAt(s,p.id,d,i)){est+=feeOf({fame:(sd[3][0]+sd[3][1])/2-4,genre:'indie',home:'UK'},s);n++}});if(n)add('Talent','Open slots (estimate)',est,n+' slots still to book')}
   add('Talent','Riders, hospitality & backline',signed(s).reduce((a,b)=>a+b.fee*.08+1500+300*act(b.actId).size,0));
   if(s.ledger['Kill fees'])add('Talent','Kill fees',-s.ledger['Kill fees']);
+  if(s.ledger['Artist requests'])add('Talent','Artist requests',-s.ledger['Artist requests']);
   const stages=s.pl.filter(p=>B[p.t].stage).reduce((a,p)=>a+placementCost(s,p),0);
-  add('Production','Stages, PA, lights & screens',stages,PROD[s.ops.prod].n+' production');
+  const big=Math.max(1,Math.sqrt(s.lic.cap/15000));
+  add('Production','Stages, PA, lights & screens',stages*big,PROD[s.ops.prod].n+' production');
   add('Production','Site structures & hire',s.pl.filter(p=>!B[p.t].stage).reduce((a,p)=>a+placementCost(s,p),0),s.pl.length+' pieces');
   add('Site','Fencing & trackway to site',(31000+N*1.1)*infl);
+  add('Site','Roads, plumbing & cabling',N*14*Math.max(1,s.lic.cap/25000)*infl);
   add('Site','Power & generators',(24000+N*5+s.pl.filter(p=>B[p.t].stage).length*5000)*infl*(s.ops.green?1.12:1),s.ops.green?'Includes HVO and solar':'Diesel generators');
   add('Site','Waste, cleaning & recycling',N*6.5*[.7,1,1.35][s.ops.clean]*infl,['Light','Standard','Thorough'][s.ops.clean]+' clean-up');
-  add('Site','Land rent',SITES[s.site].rent*infl);
+  add('Site','Land rent',SITES[s.site].rent*(1+.3*(s.expand||0))*infl,s.expand?'Includes '+s.expand+' extra field'+(s.expand>1?'s':''):'');
   add('Site','Ground restoration',(12000+(act0?act0.mud*450+N*.6:N*1.6))*infl);
   add('Staff','Security (SIA licensed)',s.ops.sec*1050*infl,s.ops.sec+' guards');
   add('Staff','Stewards',s.ops.stew*220*infl,s.ops.stew+' stewards');
@@ -878,7 +1255,7 @@ function endBookingRound(s){
   if(s.round===2&&!s.sales){s.sales=newSales();const r=sellWeek(s,0,true);if(r.soldW)addNews(s,'Blind early birds: '+fmtN(r.soldW)+' sold before a single act was announced.','sales');cash(s,r.soldW*s.tix.wk[0].p/1.2)}
   if(s.round===4&&s.lic.varReq)decideVariation(s);
   if(s.round===5&&chance(.6))sponsorOffers(s);
-  bookingNews(s);
+  bookingNews(s);maybeRider(s);
   s.round++;
   if(s.round>BOOK_ROUNDS){startOnsale(s)}
   save()}
@@ -894,7 +1271,7 @@ function startOnsale(s){s.phase='onsale';s.week=0;if(!s.sales)s.sales=newSales()
   addNews(s,'Booking season is over. Line-up announcement and general sale are next.','sales');save()}
 function saleWeek(s){
   const sl=s.sales;s.week++;
-  if(s.week===1){sl.announced=true;s.flags.announced=1;const hl=signed(s).filter(b=>b.slot===0&&stageType(s,b.stage)==='main').map(b=>act(b.actId).name);
+  if(s.week===1){sl.announced=true;s.flags.announced=1;const hl=signed(s).filter(b=>b.slot===0&&isMain(stageType(s,b.stage))).map(b=>act(b.actId).name);
     const L=lineupStrength(s);const reaction=L>90000?'The internet loses its mind':L>45000?'A strong reaction online':L>20000?'A polite reaction online':'A muted reaction online';
     addNews(s,'Line-up announced'+(hl.length?': '+hl.join(', '):'')+'. '+reaction+'.','sales');s.hype=clamp(s.hype+L/6000,0,100)}
   for(const b of s.bk.filter(b=>b.st==='pending'))resolveOffer(s,b);
@@ -902,7 +1279,7 @@ function saleWeek(s){
   const r=sellWeek(s,s.week);
   cash(s,(r.soldW*r.price+r.dayN*s.tix.day.p+r.vipN*s.tix.vip.p)/1.2);
   cash(s,-s.tix.mkt/SALE_WEEKS);
-  saleEvents(s);
+  saleEvents(s);maybeRider(s);
   s.hype=clamp(s.hype*.97,0,100);
   if(s.week>=SALE_WEEKS)startBuild(s);
   save();return r}
@@ -926,6 +1303,7 @@ const WX=[{k:'hot',n:'Heatwave',t:[29,34],rain:0,wind:[2,6],p:.17},{k:'sun',n:'S
 function makeForecast(s){return [0,1,2].map(()=>{let r=Math.random(),w=WX[0];for(const x of WX){if(r<x.p){w=x;break}r-=x.p}const conf=ri(45,80);return{k:w.k,conf}})}
 function actualWeather(s){return s.forecast.map(f=>{if(chance(f.conf/100))return f.k;const i=WX.findIndex(w=>w.k===f.k);const j=clamp(i+(chance(.5)?1:-1),0,WX.length-1);return WX[j].k})}
 function sagChecks(s){
+  syncStaff(s);
   const A=analyse(s),att=attendancePlan(s);const out=[];const add=(ok,n,d,block)=>out.push({ok,n,d,block});
   add(A.med>0,'Medical centre',A.med?MED[s.ops.med].n+' cover from the medical provider':'Missing',true);
   add(A.ctl>0,'Event control',A.ctl?'Control room and CCTV tower':'Missing',true);
@@ -934,7 +1312,7 @@ function sagChecks(s){
   add(A.taps*2500>=att.peak,'Drinking water',A.taps+' water point'+(A.taps===1?'':'s'),true);
   add(s.ops.sec>=Math.ceil(att.peak/100),'Security ratio',s.ops.sec+' SIA guards for '+fmtN(att.peak)+' (need '+Math.ceil(att.peak/100)+')',true);
   add(!A.touch,'Campsite fire breaks',A.touch?A.touch+' touching':'20 m gaps',true);
-  add(!SITES[s.site].camping||A.campCap>=Math.round(att.wk*.93),'Camping capacity',SITES[s.site].camping?fmtN(A.campCap)+' pitches for '+fmtN(Math.round(att.wk*.93))+' campers':'Not a camping event',true);
+  add(!SITES[s.site].camping||A.campCap>=Math.round(att.wk*.85),'Camping capacity',SITES[s.site].camping?fmtN(A.campCap)+' pitches for '+fmtN(Math.round(att.wk*.85))+' campers':'Not a camping event',true);
   add(att.peak<=A.safeCap||A.safeCap>=s.lic.cap,'Crowd capacity',fmtN(att.peak)+' on site against a safe capacity of '+fmtN(A.safeCap),true);
   add(A.noiseMax<=s.lic.noise,'Noise management plan','Predicted '+A.noiseMax.toFixed(1)+' dB against '+s.lic.noise+' dB',false);
   add(A.hotMax<=1.3,'Crowd flow',A.hotMax>1.3?'Pinch point at '+Math.round(A.hotMax*100)+'% of safe flow':'No pinch points',false);
@@ -953,7 +1331,7 @@ function wrapYear(s){
   const R=reviewYear(s,L);
   const stars=R.avg;s.flags.lastStars=stars;
   const prevRep=s.rep;
-  const gain=(stars-3)*(stars>3?5:3.5)+(L.viral?4:0)-(L.disaster?12:0)+(s.sales.soldOut?3:0)+(att.peak>s.lic.cap*.95?1:0)+1;s.rep=clamp(Math.round(s.rep+gain*(gain>0?Math.max(.35,1-s.rep/130):1)),3,100);
+  const gain=(stars-3)*(stars>3?5:3.5)+(L.viral?4:0)-(L.disaster?12:0)+(s.sales.soldOut?3:0)+(att.peak>s.lic.cap*.95?1:0)+1;s.rep=clamp(Math.round(s.rep+gain*(gain>0?Math.max(.35,1-s.rep/130)*DF(s).rep:1/DF(s).rep)),3,100);
   s.cred=clamp(Math.round(s.cred+s.spons.reduce((a,x)=>a+x.cred,0)*.6+(L.firstCredit||0)*3+(stars-3)*2),0,100);
   s.hype=clamp(Math.round(s.hype*.55+(stars-2.5)*8+(L.viral?14:0)),0,100);
   s.safety=clamp(Math.round(s.safety+(L.serious?-L.serious*8:4)+(L.disaster?-25:0)),0,100);
@@ -969,6 +1347,7 @@ function wrapYear(s){
   const rec={y:s.year,cal:START_YEAR+s.year-1,att:att.peak,net,rev:pr.tr,cost:pr.tc,stars,rep:s.rep,repD:s.rep-prevRep,top,soldOut:!!s.sales.soldOut,moment:L.moment||'',disaster:L.disaster||'',viral:L.viral||'',weather:L.wx.map(w=>WX.find(x=>x.k===w).n),mood:Math.round(L.moodAvg)};
   s.hist.push(rec);
   s.wrap={pr,R,C,rec,firsts,buyout:null};
+  s.wrap.awards=awardsNight(s,L,s.wrap);s.wrap.goals=evalGoals(s,L,s.wrap);checkTrophies(s,L,s.wrap);
   if(s.rep>=55&&s.year>=3&&!s.flags.buyoutSeen&&chance(.5)){const avg=s.hist.slice(-3).reduce((a,h)=>a+h.net,0)/Math.min(3,s.hist.length);s.wrap.buyout=Math.max(1.5e6,Math.round((avg*5+s.rep*60000+att.peak*90)/50000)*50000);s.flags.buyoutSeen=1}
   s.phase='wrap';
   checkEnd(s);
@@ -983,7 +1362,7 @@ function reviewYear(s,L){
   const biz=clamp(2.5+att.peak/s.lic.cap*1.6+(s.sales.soldOut?.6:0)-(L.disaster?1.5:0),1,5);
   const rv=[];const say=(o,score,line)=>rv.push({o:o.n,k:o.k,s:Math.round(clamp(score,1,5)*2)/2,line});
   const O=Object.fromEntries(OUTLETS.map(o=>[o.k,o]));
-  const hl=signed(s).filter(b=>b.slot===0&&stageType(s,b.stage)==='main').map(b=>act(b.actId));
+  const hl=signed(s).filter(b=>b.slot===0&&isMain(stageType(s,b.stage))).map(b=>act(b.actId));
   const best=L.best?act(L.best):null;
   say(O.lan,(vibe*.45+org*.35+value*.2),L.moodAvg>72?'The best weekend of the summer. '+(L.viral?L.viral+'. ':'')+'Already booked for next year.':L.moodAvg>55?'A good time, with '+(q>.5?'brutal bar queues':L.mud>50?'a lot of mud':'a few rough edges')+'.':'Long queues, '+(L.mud>50?'knee-deep mud ':'')+'and a crowd that never got going.');
   say(O.lc,music,best?best.name+' stole the weekend'+(music>3.8?' on a bill with real depth.':'. Thin elsewhere.'):'A line-up that never caught fire.');
@@ -1017,7 +1396,7 @@ function nextYear(s){
   s.year++;s.phase='booking';s.yrCash=0;s.flags.disaster=0;s.flags.prePaid=0;
   s.tix.wk.forEach(t=>{t.p=Math.round(t.p*1.03)});s.tix.pricesLocked=false;
   s.ops.sec=0;s.ops.stew=0;
-  marketYear(s,false);sponsorOffers(s);
+  marketYear(s,false);sponsorOffers(s);makeGoals(s);s.requests=[];s.flags.longSet=0;s.flags.pyro=0;
   // sponsors renew one year at a time
   s.spons=s.spons.filter(()=>chance(.65));
   s.wrap=null;s.live=null;s.forecast=null;
@@ -1076,7 +1455,7 @@ function liveStep(s){
   // what is playing and where everyone is
   const play=playingAt(s,d,h);
   const evening=h>=19?.78:h>=15?.5:.18;
-  const pulls=play.map(x=>{if(L.stopped[x.p.id])return 0;const base=Math.pow(appeal(x.a)+400,.72);return base*(x.p.t==='main'?1.25:1)});
+  const pulls=play.map(x=>{if(L.stopped[x.p.id])return 0;const base=Math.pow(appeal(x.a)+400,.72);return base*(isMain(x.p.t)?1.25:1)});
   const tot=pulls.reduce((a,v)=>a+v,0)||1;
   const dist=[];let atStages=0;
   play.forEach((x,i)=>{const n=N*evening*pulls[i]/tot;atStages+=n;dist.push({p:x.p,n,a:x.a})});
@@ -1087,7 +1466,7 @@ function liveStep(s){
     if(L.stopped[x.p.id])perf-=.5;
     L.played[x.b.id]=perf;L.perf=(L.perf*L.perfN+perf)/(L.perfN+1);L.perfN++;
     const score=perf+x.a.fame/100;if(score>L.bestScore){L.bestScore=score;L.best=x.a.id}
-    if(x.slot===0&&x.p.t==='main'){
+    if(x.slot===0&&isMain(x.p.t)){
       if(chance(.12+x.a.diva*.45)){const dl=ri(10,45);L.delay[x.b.id]=dl;logL(s,x.a.name+' are still in their dressing room. Stage time slips by '+dl+' minutes.','warn')}
       logL(s,'Headliner: '+x.a.name+' on the '+stageName(s,x.p)+'. '+(perf>.6?'A huge show.':perf>0?'A solid set.':'It never quite clicks.'),perf>.6?'good':'')}
     else if(perf>.85&&x.a.fame<50){logL(s,x.a.name+' pack out the '+stageName(s,x.p)+' and play a set people will talk about for years.','good')}
@@ -1114,7 +1493,7 @@ function liveStep(s){
   const rate=.0011*(1+heat+crowd*1.5+L.mud/160+(h>=21?.35:0))*(A.welfare?.82:1.1)*(L.drugBatch?1.6:1);
   const pres=Math.round(N*rate*rnd(.7,1.3));L.pres+=pres;
   const medCap=N/1000*MED[s.ops.med].cap*6+A.fa*4;const over=pres/Math.max(1,medCap);
-  let ser=0;L.hosp=(L.hosp||0)+Math.round(pres*.02*(over>1?1.5:1));for(let i=0;i<pres;i++)if(Math.random()<.0016*(over>1?2.4:1)*(L.drugBatch&&!L.warned?2.5:1)*(L.drugBatch&&L.warned?.9:1))ser++;
+  let ser=0;L.hosp=(L.hosp||0)+Math.round(pres*.02*(over>1?1.5:1));for(let i=0;i<pres;i++)if(Math.random()<.0016*DF(s).inc*(over>1?2.4:1)*(L.drugBatch&&!L.warned?2.5:1)*(L.drugBatch&&L.warned?.9:1))ser++;
   if(ser){L.serious+=ser;logL(s,ser+' serious '+(ser>1?'cases':'case')+(heat>.5?' of heatstroke':L.drugBatch?' after taking pills':'')+': blue-lighted to hospital.','bad')}
   if(over>1.3&&!L.usedEv['med'+d]){L.usedEv['med'+d]=1;logL(s,'The medical centre is overwhelmed: '+pres+' patients this hour.','bad')}
   // noise at the receptors
@@ -1140,6 +1519,7 @@ function liveStep(s){
   L.mood=clamp(L.mood*.75+target*.25,0,100);L.moodSum+=L.mood;L.moodN++;L.moodAvg=L.moodSum/L.moodN;
   if(h===16&&d===1&&L.mood>75)L.moment=L.moment||'Saturday afternoon in the sun with '+fmtN(N)+' people';
   for(const k in L.stopped){if(--L.stopped[k]<=0)delete L.stopped[k]}
+  if(!pend&&chance(.45)){const x=play.find(x=>L.played[x.b.id]!=null);fanPost(s,{wx,bq,loo,act:x&&x.a.name,perf:x?L.played[x.b.id]:0})}
   if(pend)ask(s,pend);else advance(s)}
 function windToward(from,r){const v={west:[1,0],'south-west':[.7,-.7],south:[0,-1],north:[0,1]}[from];const c=[r.x-W/2,r.y-H/2];return (v[0]*c[0]+v[1]*c[1])/Math.hypot(c[0],c[1])>.6}
 function overnight(s,A,d){const L=s.live;
@@ -1174,7 +1554,7 @@ const DEC={
     {l:'Close the field, open overflow',d:'Stewards turn people away. Needs enough stewards.',log:'Field closed to new arrivals; overflow area opened.',fn:s=>{if(s.ops.stew<needStew(s)&&chance(.4)){s.live.serious+=ri(1,3);logL(s,'Too few stewards to hold the line. Injuries at the barrier.','bad')}s.live.boost=(s.live.boost||0)-1}},
     {l:'Carry on',d:'Hope it settles.',log:'The show went on.',fn:s=>{if(chance(clamp((ratio-1)*1.6,.15,.7))){const n=ri(8,30);s.live.serious+=ri(3,8);s.live.disaster='Crowd crush at the '+stageName(s,x.p)+': '+n+' injured';s.flags.disasters=(s.flags.disasters||0)+1;s.flags.disaster=1;logL(s,'A crush at the front barrier. '+n+' people injured; the show is halted.','bad')}}}]}},
   wind(s,wx){return{t:'Gusts of '+wx.gust+' m/s',x:'The structural engineer’s limit for the main stage roof is 20 m/s. Tents should be cleared above about 17 m/s.',opts:[
-    {l:'Stop the shows until it drops',d:'Lose about an hour of music on the big stages.',log:'Main stage and tents cleared for an hour on the engineer’s advice.',k:'good',fn:s=>{for(const p of s.pl)if(p.t==='main'||B[p.t].tentCap)s.live.stopped[p.id]=1;s.live.boost=(s.live.boost||0)-5}},
+    {l:'Stop the shows until it drops',d:'Lose about an hour of music on the big stages.',log:'Main stage and tents cleared for an hour on the engineer’s advice.',k:'good',fn:s=>{for(const p of s.pl)if(isMain(p.t)||B[p.t].tentCap)s.live.stopped[p.id]=1;s.live.boost=(s.live.boost||0)-5}},
     {l:'Lower the screens and carry on',d:'Keeps the show going if the gusts ease.',log:'Screens lowered; the music carried on.',fn:s=>{if(wx.gust>=23&&chance(.45)){s.live.disaster='Part of the '+B.main.n.toLowerCase()+' roof came down in a gust';s.live.serious+=ri(2,6);s.flags.disasters=(s.flags.disasters||0)+1;s.flags.disaster=1;cashL(s,'Storm damage',ri(60,140)*1000);logL(s,'A gust tears a section of the stage roof loose. Several people are hurt.','bad')}}},
     {l:'Clear the tents only',d:'The open-air stages keep playing.',log:'Tents cleared; open-air stages continued.',fn:s=>{for(const p of s.pl)if(B[p.t].tentCap)s.live.stopped[p.id]=1;s.live.boost=(s.live.boost||0)-2}}]}},
   lightning(s){return{t:'Lightning within 10 km',x:'The Met Office has a yellow warning out. The safety officer wants an answer now.',opts:[
@@ -1222,7 +1602,7 @@ function randomEvent(s,A,d,h,wx){const L=s.live;const N=L.onsite;
     return ({t:cand.name+' want to play a secret set',x:'Their agent says they’re in the area and would play a surprise slot on the '+stageName(s,stagesOf(s)[1]||stagesOf(s)[0])+' tonight.',opts:[
       {l:'Book the secret set',d:fmt$(fee)+', paid tonight.',log:cand.name+' played a secret set. Word spread in minutes.',k:'good',fn:s=>{cashL(s,'Secret set fee',fee);s.hype=clamp(s.hype+8,0,100);s.live.boost=(s.live.boost||0)+5;s.live.moment=s.live.moment||'The secret '+cand.name+' set';if(!s.live.viral&&chance(.5)){s.live.viral='The secret '+cand.name+' set went viral ('+ri(5,18)+'m views)'}}},
       {l:'Not this time',d:'',log:'Turned down the secret set.',fn:s=>{}}]})}
-  if(k==='power'){const t=stagesOf(s).find(p=>p.t!=='main');if(!t)return null;return ({t:'Power cut at the '+stageName(s,t),x:'A generator has failed mid-set. The crowd is chanting in the dark.',opts:[
+  if(k==='power'){const t=stagesOf(s).find(p=>!isMain(p.t));if(!t)return null;return ({t:'Power cut at the '+stageName(s,t),x:'A generator has failed mid-set. The crowd is chanting in the dark.',opts:[
     {l:'Pay for the emergency backup',d:fmt$(8000)+', back in 10 minutes.',log:'Backup generator brought in; power back in 10 minutes.',k:'good',fn:s=>{cashL(s,'Emergency power',8000)}},
     {l:'Wait for the crew to fix it',d:'Maybe an hour.',log:'An hour of silence at the '+stageName(s,t)+'.',fn:s=>{s.live.stopped[t.id]=1;s.live.boost=(s.live.boost||0)-3}}]})}
   if(k==='beer')return ({t:'The bars are running dry',x:'The heat has emptied the lager kegs a day early. Bars report 20-minute waits for anything cold.',opts:[
@@ -1232,6 +1612,115 @@ function randomEvent(s,A,d,h,wx){const L=s.live;const N=L.onsite;
     {l:'Say no',d:'They grumble.',log:'Pyro refused; not in the safety plan.',k:'good',fn:s=>{s.agRel[x.a.ag]=clamp(s.agRel[x.a.ag]-2,0,100)}},
     {l:'Let them',d:'Spectacular, if nothing catches.',log:x.a.name+' fired the flame cannons.',fn:s=>{if(chance(.12)){cashL(s,'Fire damage',25000);s.council=clamp(s.council-5,0,100);logL(s,'A spark sets the stage-left drape on fire. Put out quickly; the fire service is not impressed.','bad')}else s.live.boost=(s.live.boost||0)+3}}]})}
   return null}
+/* ============================================================
+   Goals, trophies, awards, rider requests, poster, ticket drop,
+   show cues and the fan feed
+   ============================================================ */
+const scaleOf=s=>Math.max(1,s.lic.cap/10000);
+/* ---------- yearly goals ---------- */
+const GOALS={
+  sell:{n:y=>y<=1?'Sell 80% of weekend tickets':'Sell out the weekend',t:'sales',chk:(s,L)=>{const sl=s.sales;const f=(sl.wkSold+sl.vipSold)/Math.max(1,capWeekend(s));return s.year<=1?f>=.8:!!sl.soldOut},p:(s)=>{const sl=s.sales;return sl?(sl.wkSold+sl.vipSold)/Math.max(1,capWeekend(s)):0}},
+  stars:{n:y=>'Average '+(y<=1?'3':'3.5')+' stars in the reviews',chk:(s,L,w)=>w.R.avg>=(s.year<=1?3:3.5)},
+  profit:{n:y=>y<=1?'Lose less than £100k':'Make a profit',chk:(s,L,w)=>w.pr.net>=(s.year<=1?-100000:0)},
+  mood:{n:()=>'Keep the crowd mood above 60',chk:(s,L)=>L.moodAvg>=60},
+  safe:{n:()=>'No serious medical incidents',chk:(s,L)=>!L.serious},
+  quiet:{n:()=>'Fewer than 80 noise complaints',chk:(s,L)=>L.complaints<80},
+  first:{n:()=>'Book a rising act (fame under 45 and rising)',chk:s=>signed(s).some(b=>{const a=act(b.actId);return a.hist[a.hist.length-1]<45&&a.mom>1.5}),p:s=>signed(s).some(b=>{const a=act(b.actId);return a.hist[a.hist.length-1]<45&&a.mom>1.5})?1:0},
+  big:{n:s=>'Book a headliner with fame '+bigFame(s)+'+',chk:s=>signed(s).some(b=>act(b.actId).fame>=bigFame(s)),p:s=>signed(s).some(b=>act(b.actId).fame>=bigFame(s))?1:0},
+  viral:{n:()=>'Have a viral moment',chk:(s,L)=>!!L.viral},
+};
+function bigFame(s){return Math.min(95,Math.round(62+s.rep*.3+Math.log2(scaleOf(s))*6))}
+function makeGoals(s){const pool=s.year<=1?['sell','stars','profit','first','mood']:['sell','stars','profit','mood','safe','quiet','first','big','viral'];
+  const out=[];const p=pool.slice();for(let i=0;i<3&&p.length;i++){const k=p.splice(i===0&&s.year<=1?0:ri(0,p.length-1),1)[0];out.push({k,done:null})}
+  const reward=Math.round(40000*scaleOf(s)*(1+s.year*.1)/5000)*5000;s.goals={list:out,reward};return s.goals}
+function goalName(s,g){const d=GOALS[g.k];return typeof d.n==='function'?d.n(s.year<=1?1:s.year,s):d.n}
+function evalGoals(s,L,w){if(!s.goals)return null;let n=0;for(const g of s.goals.list){g.done=!!GOALS[g.k].chk(s,L,w);if(g.done)n++}
+  const cashR=n*s.goals.reward+(n===3?s.goals.reward:0);const repR=n*2+(n===3?3:0);
+  if(cashR){s.money+=cashR}s.rep=clamp(s.rep+repR,1,100);return {n,cashR,repR}}
+/* ---------- trophies ---------- */
+const TROPHIES=[
+  ['first','First gates','Open the gates on your first festival'],['sold','Sold out','Sell out every weekend ticket'],['fast','Gone in minutes','Sell out within the first week'],
+  ['four','Four stars','Average four stars or more'],['five','Five-star weekend','Get a five-star review'],['profit','In the black','Make a profit'],['million','Seven figures','Make a £1m profit in one year'],
+  ['legend','Legendary','Reach reputation 90'],['viral','Gone viral','Have a viral moment'],['scout','Called it','Book an act that later becomes a headliner'],
+  ['huge','Superstar','Book an act with fame 95 or more'],['grow','Room to grow','Lease an extra field'],['safe','Safe hands','Run a festival with no serious incidents'],
+  ['storm','Weathered it','Survive a thunderstorm day'],['award','Award winner','Win a festival award'],['decade','Ten years','Run ten festivals'],
+  ['mega','Pyramid scheme','Build a Pyramid stage'],['crowd','Fifty thousand','Get 50,000 people through the gates'],['goals','Clean sweep','Hit all three yearly goals']];
+function award(s,k){if(s.trophies[k])return false;s.trophies[k]=s.year;const t=TROPHIES.find(x=>x[0]===k);if(t){addNews(s,'Trophy unlocked: '+t[1]+'.','trophy');UI.newTrophy=t[1]}return true}
+function checkTrophies(s,L,w){const r=w.rec;award(s,'first');if(s.sales.soldOut)award(s,'sold');if(s.sales.soldOut&&s.sales.soldOut.w<=1)award(s,'fast');
+  if(r.stars>=4)award(s,'four');if(w.R.rv.some(v=>v.s>=5))award(s,'five');if(r.net>0)award(s,'profit');if(r.net>=1e6)award(s,'million');if(s.rep>=90)award(s,'legend');
+  if(L.viral)award(s,'viral');if(w.firsts.length)award(s,'scout');if(signed(s).some(b=>act(b.actId).fame>=95))award(s,'huge');if(s.expand)award(s,'grow');
+  if(!L.serious)award(s,'safe');if(L.wx.includes('storm'))award(s,'storm');if(s.hist.length>=10)award(s,'decade');if(s.pl.some(p=>p.t==='mega'))award(s,'mega');
+  if(r.att>=50000)award(s,'crowd');if(w.goals&&w.goals.n===3)award(s,'goals');if(w.awards&&w.awards.some(a=>a.won))award(s,'award')}
+function trophySheet(){const got=Object.keys(S.trophies).length;return '<h2>Trophies</h2><p class="sub">'+got+' of '+TROPHIES.length+' unlocked.</p><ul class="list">'+TROPHIES.map(t=>{const y=S.trophies[t[0]];return '<li><span class="pill '+(y?'pos':'')+'">'+(y?(START_YEAR+y-1):'Locked')+'</span><div class="grow"><b'+(y?'':' class="muted"')+'>'+t[1]+'</b><div class="meta">'+t[2]+'</div></div></li>'}).join('')+'</ul><button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>'}
+/* ---------- awards night ---------- */
+function awardsNight(s,L,w){const r=w.rec;const size=s.lic.cap>=40000?'Best Major Festival':s.lic.cap>=15000?'Best Medium Festival':'Best Small Festival';
+  const cats=[[size,(r.stars-3)*.35+(s.rep-30)/120+(r.soldOut?.15:0)],['Best Line-up',lineupStrength(s)/(90000*scaleOf(s))-.35+w.R.music*.08],['Best Family Festival',(L.moodAvg-55)/40-(L.serious?.3:0)],
+    ['Grassroots Award',(L.firstCredit?.25:0)+signed(s).filter(b=>act(b.actId).fame<45).length/40],['Greener Festival Award',(s.ops.green?.35:-.4)+(s.ops.clean===2?.1:0)]];
+  if(s.year<=2)cats.push(['Best New Festival',(r.stars-3)*.5+(r.soldOut?.2:0)]);
+  const out=[];for(const [n,sc] of cats){if(sc>0){const won=Math.random()<clamp(sc*.6,0,.7);out.push({n,won});if(won){s.rep=clamp(s.rep+2,1,100);s.hype=clamp(s.hype+4,0,100)}}}
+  return out}
+/* ---------- rider requests ---------- */
+const RIDERS=[
+  ['wants a ping-pong table and forty white towels backstage',1200,2],['asks for their own vegan catering team',6500,4],['wants a bigger screen package for their set',14000,6],
+  ['asks for 40 guest-list wristbands',8000,3],['wants a hot tub in their dressing room',4500,3],['asks for a sculpted ice bar for an after-show',3500,2],
+  ['wants an extra 30 minutes of stage time',0,4,'curfew'],['asks for a dedicated golf buggy and driver',1800,2],['wants a full lighting rehearsal the night before',9000,5],
+  ['asks for a quiet green room with houseplants and herbal tea',900,2],['wants a pyrotechnics package in the finale',22000,6,'pyro']];
+function maybeRider(s){if(S!==s||!signed(s).length||(s.requests||[]).length>=2||Math.random()>.35)return;
+  const b=pick(signed(s).filter(b=>act(b.actId).fame>=45));if(!b)return;const a=act(b.actId);const r=pick(RIDERS);s.requests=s.requests||[];
+  if(s.requests.some(q=>q.actId===a.id))return;const cost=Math.round(r[1]*(1+a.fame/120)/100)*100;
+  s.requests.push({id:uid(),actId:a.id,text:r[0],cost,rel:r[2],kind:r[3]||''});addNews(s,a.name+'’s team '+r[0]+'.','rider')}
+function riderCard(){const R=S.requests||[];if(!R.length)return '';return '<section class="card"><h2>Artist requests<small>'+R.length+'</small></h2><ul class="list">'+R.map(q=>{const a=act(q.actId);return '<li style="flex-wrap:wrap">'+avatar(a)+'<div class="grow"><b>'+esc(a.name)+'</b><div class="meta">'+esc(q.text.charAt(0).toUpperCase()+q.text.slice(1))+(q.cost?' · '+fmt$(q.cost):'')+'</div></div><div class="row" style="width:100%;justify-content:flex-end"><button class="btn ghost sm" data-a="riderno" data-v="'+q.id+'">Say no</button><button class="btn sm" data-a="rideryes" data-v="'+q.id+'">Agree'+(q.cost?' · '+fmt$(q.cost):'')+'</button></div></li>'}).join('')+'</ul></section>'}
+function riderAnswer(s,id,yes){const q=(s.requests||[]).find(x=>x.id===id);if(!q)return;const a=act(q.actId);s.requests=s.requests.filter(x=>x.id!==id);
+  if(yes){if(q.cost)cash(s,-q.cost),ledger(s,'Artist requests',-q.cost);s.agRel[a.ag]=clamp((s.agRel[a.ag]||50)+q.rel,0,100);a.happy=(a.happy||0)+1;if(q.kind==='curfew')s.flags.longSet=a.id;if(q.kind==='pyro')s.flags.pyro=a.id;
+    toast(a.name+' are happy. Their agent owes you one.')}
+  else{s.agRel[a.ag]=clamp((s.agRel[a.ag]||50)-Math.ceil(q.rel/2),0,100);if(chance(.12)){addNews(s,a.name+' posted a sulky story about '+s.name+'’s hospitality.','rider');s.hype=clamp(s.hype-2,0,100)}toast('Request declined.')}}
+/* ---------- line-up poster ---------- */
+function posterSheet(){const st=stagesOf(S);const y=START_YEAR+S.year-1;const days=[0,1,2].map(d=>{const acts=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);if(b&&b.st==='signed')acts.push({a:act(b.actId),w:(isMain(p.t)?10:p.t==='tent'?6:p.t==='dance'?5:3)-i})});return acts.sort((a,b)=>b.w-a.w)});
+  const sz=w=>w>=10?26:w>=9?19:w>=7?15:w>=5?13:11;
+  const col=['#c6f24e','#ff8fc6','#5ec4e8'];
+  return '<div style="background:#0b0f08;border-radius:18px;padding:22px 18px;text-align:center;margin-bottom:12px" role="img" aria-label="Line-up poster">'+
+    '<div style="font-size:12px;letter-spacing:.2em;color:#b4b4b4">'+esc(SITES[S.site].n.toUpperCase())+' · AUGUST '+y+'</div><div style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin:6px 0 16px;color:#fff">'+esc(S.name)+'</div>'+
+    days.map((acts,d)=>'<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:'+col[d]+';margin-bottom:6px">'+DAYL[d].toUpperCase()+'</div>'+(acts.length?acts.map((x,i)=>'<span style="display:inline-block;font-size:'+sz(x.w)+'px;font-weight:'+(x.w>=9?600:500)+';color:'+(x.w>=9?'#fff':'#d8d8d8')+';margin:0 6px;line-height:1.35">'+esc(x.a.name)+'</span>'+(i<acts.length-1&&x.w<9?'<span style="color:#555">·</span>':'')).join(''):'<span class="faint small">To be announced</span>')+'</div>').join('')+
+    '<div style="font-size:11px;color:#949494;margin-top:6px">'+fmtN(S.lic.cap)+' capacity · '+(SITES[S.site].camping?'camping weekend':'day tickets')+'</div></div><p class="small faint" style="text-align:center;margin-bottom:12px">Screenshot it and share your bill.</p><button class="btn ghost wide" data-a="closesheet">Close</button>'}
+/* ---------- the ticket drop ---------- */
+function dropSheet(){const D=UI.drop;if(!D)return '';const pctSold=Math.min(1,D.shown/Math.max(1,D.total));
+  return '<h2>General sale</h2><p class="sub">09:00, Friday. The online waiting room is open.</p>'+
+    '<div class="kpis" style="grid-template-columns:1fr 1fr"><div class="kpi"><label>In the queue</label><b class="num" id="dq">'+fmtN(D.queueNow)+'</b><small>Fans in the waiting room</small></div><div class="kpi"><label>Sold</label><b class="num" id="ds">'+fmtN(D.shown)+'</b><small id="dsub">of '+fmtN(D.cap)+' weekend tickets</small></div></div>'+
+    '<div class="gate"><div class="track"><div class="fill" id="dbar" style="width:'+(pctSold*D.total/D.cap*100)+'%"></div></div></div>'+
+    '<p id="dmsg" style="margin:14px 0;min-height:44px">'+esc(D.msg)+'</p><button class="btn wide" data-a="dropdone" '+(D.done?'':'disabled')+' id="dbtn">'+(D.done?'See the week':'Selling…')+'</button>'}
+function runDrop(r){const sl=S.sales;const cap=capWeekend(S);const total=r.soldW+r.vipN;const pl=pools(S,true);const queue=Math.round(Math.max(total*1.2,willWk(S,pl,r.price)*rnd(.8,1.4)));
+  UI.drop={total,cap,shown:0,queueNow:queue,done:false,msg:'The site is holding. Ticket pages are loading…',soldOut:!!(sl.soldOut&&sl.soldOut.w===1),min:sl.soldOut?sl.soldOut.min:0};
+  UI.sheet=dropSheet;renderSheet();const t0=performance.now(),dur=G3.reduced?300:4200;
+  const tick=()=>{const D=UI.drop;if(!D||UI.sheet!==dropSheet)return;const k=Math.min(1,(performance.now()-t0)/dur);const e=1-Math.pow(1-k,2);D.shown=Math.round(D.total*e);D.queueNow=Math.max(0,Math.round(queue*(1-e*1.05)));
+    D.msg=k<.25?'Queue numbers are huge. Servers holding up.':k<.6?'Tier 1 is flying out of the door.':k<1?'Resale sites are already listing tickets…':(D.soldOut?'SOLD OUT in '+(D.min>=120?Math.round(D.min/60)+' hours':D.min+' minutes')+'. Your phone won’t stop buzzing.':fmtN(D.total)+' sold on the first day. '+(D.total/D.cap>.6?'A strong start.':'A slower start than you hoped.'));
+    const q=$('#dq'),s2=$('#ds'),b=$('#dbar'),m=$('#dmsg');if(q)q.textContent=fmtN(D.queueNow);if(s2)s2.textContent=fmtN(D.shown);if(b)b.style.width=(D.shown/D.cap*100)+'%';if(m)m.textContent=D.msg;
+    if(k<1)requestAnimationFrame(tick);else{D.done=true;const bt=$('#dbtn');if(bt){bt.disabled=false;bt.textContent='See the week'}}};requestAnimationFrame(tick)}
+/* ---------- show cues during the weekend ---------- */
+const CUES={fire:{n:'Fireworks',c:18000,mood:5,hype:4,d:'Over the main stage at the end of the headliner'},conf:{n:'Confetti cannons',c:4500,mood:3,hype:1,d:'During the biggest chorus'},
+  drone:{n:'Drone show',c:48000,mood:7,hype:9,d:'500 drones spell out your festival’s name'},flare:{n:'Lighters up',c:0,mood:2,hype:1,d:'Ask the screens to light up the field'}};
+function cueAvailable(s){const L=s.live;if(!L||L.done||L.dec)return null;const st=STEPS[Math.min(L.i,STEPS.length-1)];if(st.h<20||st.h>=24)return null;
+  const play=playingAt(s,st.d,st.h).filter(x=>isMain(x.p.t)&&!L.stopped[x.p.id]);return play[0]||null}
+function fireCue(s,k){const L=s.live,c=CUES[k];const st=STEPS[Math.min(L.i,STEPS.length-1)];L.cues=L.cues||{};const key=k+st.d;if(L.cues[key])return;const x=cueAvailable(s);if(!x)return;
+  L.cues[key]=1;if(c.c)cashL(s,c.n,c.c);L.boost=(L.boost||0)+c.mood;s.hype=clamp(s.hype+c.hype,0,100);
+  const wind=(L.cur&&L.cur.gust>=15);if(k==='drone'&&wind){logL(s,'Too windy for the drones. The show is scrubbed; the operator keeps half the fee.','warn');L.boost-=c.mood}
+  else{logL(s,c.n+' during '+x.a.name+'. '+pick(['The whole field roars.','Phones go up everywhere.','People will be posting this for days.','The best moment of the night.']),'good');
+    if(!L.viral&&chance(k==='drone'?.35:k==='fire'?.18:.06)){L.viral='The '+c.n.toLowerCase()+' during '+x.a.name+' went viral ('+ri(3,15)+'m views)';L.moment=L.viral;logL(s,L.viral+'.','good')}
+    if(k==='fire'&&s.lic.curfew[st.d]<=st.h+1&&chance(.25)){s.council=clamp(s.council-3,0,100);L.complaints+=25}}
+  g3burst(k,x.p);save()}
+/* ---------- fan feed ---------- */
+const HANDLES=['@glitterwellies','@campsite_carl','@festivalfreya','@mudlarkmo','@bucket_hat_ben','@frontrowfi','@sunburnt_sam','@lostmyfriends','@ravegran','@tentpole_tom','@wristband_wes','@pintpaula'];
+function fanPost(s,ctx){const L=s.live;const h=pick(HANDLES);let t='';
+  if(ctx.wx&&ctx.wx.rain>2)t=pick(['the mud is now a lifestyle','wellies were the best £12 I ever spent','soaked but refusing to leave the front']);
+  else if(ctx.bq>1.6)t=pick(['bar queue so long I made friends and fell out with them','45 min for a pint. send help','queuing for a drink is the main stage now']);
+  else if(ctx.loo>1.3)t=pick(['the toilet situation is a crime','found a portaloo with no queue. not telling anyone where']);
+  else if(ctx.act&&ctx.perf>.6)t=pick([ctx.act+' just changed my life','crying at '+ctx.act+' and so is the man next to me',ctx.act+' were unreal. no notes','if you missed '+ctx.act+' I’m sorry for you']);
+  else if(ctx.wx&&ctx.wx.temp>=27)t=pick(['factor 50 and vibes','this heat is biblical, drink water people','sunburnt in places I didn’t know existed']);
+  else t=pick(['best weekend of the year','lost my friends again','the food here is actually good??','met someone from my home town in the queue','already planning next year',s.name+' you have my heart']);
+  L.feed=L.feed||[];L.feed.unshift({h,t});if(L.feed.length>40)L.feed.length=40;logL(s,h+': '+t,'social')}
+/* ---------- tickets helper ---------- */
+function suggestPrices(s){const pl=pools(s,true);const cap=capWeekend(s);const target=cap*1.25;const p=pl.pool*1.5<target?Math.round(pl.P/Math.pow(1.5,1/2.2)/5)*5:Math.round(pl.P*Math.pow(pl.pool/target,1/2.2)/5)*5;const base=clamp(p,60,450);
+  const steps=[.82,.95,1.05,1.15];s.tix.wk.forEach((t,i)=>{if(!(s.sales&&(s.sales.tier[t.k]>=t.a||(t.k==='early'&&s.sales.weeks.length))))t.p=Math.round(base*steps[i]/5)*5});
+  s.tix.day.p=Math.round(base*.45/5)*5;s.tix.vip.p=Math.round(base*2.2/25)*25;return {base,short:pl.pool*1.5<target}}
 /* ============================================================
    3D festival grounds (three.js r128) with a 2D canvas fallback
    1 world unit = 1 cell (20 m); heights are exaggerated to read
@@ -1256,12 +1745,12 @@ function g3init(){
   const T=G3.T=window.THREE;G3.ok=true;
   const r=G3.r=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});r.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   r.domElement.setAttribute('aria-label','3D view of the festival site');r.domElement.setAttribute('role','img');
-  const sc=G3.scene=new T.Scene();sc.background=new T.Color('#0b0f08');sc.fog=new T.Fog('#0b0f08',48,110);
-  G3.cam=new T.PerspectiveCamera(42,1,.3,300);
+  const sc=G3.scene=new T.Scene();sc.background=new T.Color('#0b0f08');sc.fog=new T.Fog('#0b0f08',60,160);
+  G3.cam=new T.PerspectiveCamera(42,1,.3,500);
   G3.hemi=new T.HemisphereLight(0xeef6ff,0x2a3418,.62);sc.add(G3.hemi);
   G3.sun=new T.DirectionalLight(0xfff3dc,.72);G3.sun.position.set(-18,40,22);sc.add(G3.sun);
   // ground beyond the site
-  const out=new T.Mesh(new T.PlaneGeometry(260,260),g3mat('#1f2b17'));out.rotation.x=-Math.PI/2;out.position.y=-.03;sc.add(out);
+  const out=new T.Mesh(new T.PlaneGeometry(420,420),g3mat('#1f2b17'));out.rotation.x=-Math.PI/2;out.position.y=-.03;sc.add(out);
   // patchwork fields
   const pr=mulberry(5);for(let i=0;i<26;i++){const f=new T.Mesh(new T.PlaneGeometry(rnd(8,18),rnd(8,18)),g3mat(pick(['#26341c','#2c3a1f','#33401f','#2a3320','#3a4422'])));f.rotation.x=-Math.PI/2;f.rotation.z=pr()*.3;let x,z;do{x=(pr()-.5)*120;z=(pr()-.5)*120}while(Math.abs(x)<W/2+6&&Math.abs(z)<H/2+6);f.position.set(x,-.025,z);sc.add(f)}
   // site terrain
@@ -1288,7 +1777,7 @@ function g3mount(host,opts={}){
   G3.host=host;G3.mode=opts.mode||'site';G3.auto=!!opts.auto;
   if(!G3.ok){if(G3.failed)return fb2d(host);return loadThree().then(()=>{if(!G3.ok)g3init();g3mount(host,opts)}).catch(()=>fb2d(host))}
   if(G3.r.domElement.parentNode!==host){host.innerHTML='';const cv=G3.r.domElement;cv.style.display='none';host.appendChild(cv);host.appendChild(G3.labelBox);requestAnimationFrame(()=>{cv.style.display='block';g3resize()})}
-  if(opts.cam)Object.assign(G3.cam0,opts.cam);else if(G3.lastMode!==G3.mode&&G3.mode!=='hero'&&G3.lastMode!=='site'&&G3.lastMode!=='live')Object.assign(G3.cam0,{tx:0,tz:-1,d:50,az:0,el:.98});G3.lastMode=G3.mode;
+  if(opts.cam)Object.assign(G3.cam0,opts.cam);else if(G3.lastMode!==G3.mode&&G3.mode!=='hero'&&G3.lastMode!=='site'&&G3.lastMode!=='live')Object.assign(G3.cam0,{tx:0,tz:-1,d:Math.max(W,H)*1.55,az:0,el:.98});G3.lastMode=G3.mode;
   g3resize();g3loop();return Promise.resolve()}
 function g3resize(){if(!G3.ok||!G3.host)return;const w=G3.host.clientWidth||innerWidth,h=G3.host.clientHeight||300;G3.r.setSize(w,h,false);G3.r.domElement.style.width=w+'px';G3.r.domElement.style.height=h+'px';G3.cam.aspect=w/h;G3.cam.updateProjectionMatrix();G3.idle=0}
 function g3cam(){const c=G3.cam0,cam=G3.cam;const ce=Math.cos(c.el);cam.position.set(c.tx+Math.sin(c.az)*ce*c.d,Math.sin(c.el)*c.d,c.tz+Math.cos(c.az)*ce*c.d);cam.lookAt(c.tx,0,c.tz)}
@@ -1304,17 +1793,23 @@ function g3frame(dt,t){
   if(G3.night>.01){G3.beams.forEach((b,i)=>{b.rotation.z=Math.sin(t*.7+i)*.5;b.rotation.x=Math.cos(t*.5+i*1.7)*.3})}
   // crowd tween
   if(G3.crowdN){const k=Math.min(1,dt*2.2);const m=G3.mtx||(G3.mtx=new G3.T.Matrix4());const D=G3.dots;for(let i=0;i<G3.crowdN;i++){const o=i*6;D[o]+=(D[o+3]-D[o])*k;D[o+2]+=(D[o+5]-D[o+2])*k;const bob=G3.night>.3&&D[o+4]>0&&!G3.reduced?Math.abs(Math.sin(t*6+i))*.05:0;m.makeTranslation(D[o],bob,D[o+2]);G3.crowd.setMatrixAt(i,m)}G3.crowd.instanceMatrix.needsUpdate=true}
+  if(G3.fx&&G3.fx.length)fxTick(dt);
   if(G3.rain.visible){const p=G3.rain.geometry.attributes.position;for(let i=0;i<p.count;i++){let y=p.getY(i)-dt*18;if(y<0)y+=14;p.setY(i,y)}p.needsUpdate=true;G3.rain.position.set(G3.cam0.tx,0,G3.cam0.tz)}
   G3.r.render(G3.scene,G3.cam);
   // labels
   if(G3.labels.length){const v=G3.vec||(G3.vec=new G3.T.Vector3());const w=G3.host.clientWidth,h=G3.host.clientHeight;for(const L of G3.labels){v.set(L.x,L.y,L.z).project(G3.cam);const vis=v.z<1&&Math.abs(v.x)<1.05&&Math.abs(v.y)<1.05;L.el.style.display=vis?'':'none';if(vis)L.el.style.transform='translate('+((v.x*.5+.5)*w)+'px,'+((-v.y*.5+.5)*h)+'px) translate(-50%,-100%)'}}}
 
 /* ---------- world ---------- */
-function g3setWorld(wd){G3.world=wd;if(!G3.ok){if(FB.on)fbDraw();return}drawTerrain(wd);buildStatic(wd);g3rebuild();G3.idle=0}
+function g3setWorld(wd){G3.world=wd;setGrid(wd.grid);if(!G3.ok){FB.ov=null;if(FB.on)fbDraw();return}sizePlanes();drawTerrain(wd);buildStatic(wd);g3rebuild();G3.idle=0}
+function sizePlanes(){if(G3.gw===W&&G3.gh===H)return;G3.gw=W;G3.gh=H;const T=G3.T;
+  G3.terrCv.width=W*16;G3.terrCv.height=H*16;G3.overlayCv.width=W*8;G3.overlayCv.height=H*8;
+  G3.terrainTex.dispose();G3.terrainTex=new T.CanvasTexture(G3.terrCv);G3.terrainTex.anisotropy=4;G3.ground.material.map=G3.terrainTex;G3.ground.material.needsUpdate=true;
+  G3.overlayTex.dispose();G3.overlayTex=new T.CanvasTexture(G3.overlayCv);G3.ov.material.map=G3.overlayTex;G3.ov.material.needsUpdate=true;
+  G3.ground.geometry.dispose();G3.ground.geometry=new T.PlaneGeometry(W,H);G3.ov.geometry.dispose();G3.ov.geometry=new T.PlaneGeometry(W,H)}
 function drawTerrain(wd,mud){const cv=G3.terrCv,x=cv.getContext('2d');const rr=mulberry(hash(wd.site||'s'));
-  for(let y=0;y<H;y++)for(let xx=0;xx<W;xx++){const g=wd.grid[y][xx];let c=g==='low'?[66,82,44]:g==='slope'?[88,116,58]:g==='water'?[40,78,104]:g==='tree'?[38,56,30]:[76,106,50];
+  for(let y=0;y<H;y++)for(let xx=0;xx<W;xx++){const g=wd.grid[y][xx];let c=g==='low'?[66,82,44]:g==='slope'?[88,116,58]:g==='water'?[40,78,104]:g==='tree'?[38,56,30]:g==='hard'?[118,118,112]:[76,106,50];
     const n=(rr()-.5)*10;c=c.map(v=>v+n);if(g==='grass'&&(xx%2===0))c=c.map(v=>v+4);
-    if(mud&&g!=='water'&&g!=='tree'){const m=Math.min(1,mud[y*W+xx]);c=[lerp(c[0],98,m),lerp(c[1],72,m),lerp(c[2],44,m)]}
+    if(mud&&g!=='water'&&g!=='tree'&&g!=='hard'){const m=Math.min(1,mud[y*W+xx]);c=[lerp(c[0],98,m),lerp(c[1],72,m),lerp(c[2],44,m)]}
     x.fillStyle='rgb('+c.map(v=>Math.round(clamp(v,0,255))).join(',')+')';x.fillRect(xx*16,y*16,16,16);
     if(g==='slope'){x.strokeStyle='rgba(255,255,255,.06)';x.beginPath();x.moveTo(xx*16,y*16+8);x.lineTo(xx*16+16,y*16+8);x.stroke()}}
   // faint planning grid
@@ -1326,13 +1821,13 @@ function buildStatic(wd){const T=G3.T,g=G3.worldG;clearGroup(g);const site=SITES
   const trunk=g3geo('trunk',()=>new T.CylinderGeometry(.05,.07,.4,5).translate(0,.2,0)),crown=g3geo('crown',()=>new T.IcosahedronGeometry(.42,0).translate(0,.75,0));
   const rr=mulberry(hash(wd.site+'t'));const trees=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(wd.grid[y][x]==='tree'){for(let k=0;k<2;k++)trees.push([wx_(x)+(rr()-.5)*.6,wz_(y)+(rr()-.5)*.6,.7+rr()*.6])}
   // hedgerows and trees off site
-  for(let i=0;i<70;i++){let x=(rr()-.5)*90,z=(rr()-.5)*90;if(Math.abs(x)<W/2+2&&Math.abs(z)<H/2+4)continue;trees.push([x,z,.8+rr()*.8])}
+  for(let i=0;i<90;i++){let x=(rr()-.5)*(W+70),z=(rr()-.5)*(H+70);if(Math.abs(x)<W/2+2&&Math.abs(z)<H/2+4)continue;trees.push([x,z,.8+rr()*.8])}
   if(trees.length){const it=new T.InstancedMesh(trunk,g3mat('#4a3424'),trees.length),ic=new T.InstancedMesh(crown,g3mat('#2f5a2a'),trees.length);const m=new T.Matrix4();const c=new T.Color();
     trees.forEach((t,i)=>{m.makeScale(t[2],t[2],t[2]);m.setPosition(t[0],0,t[1]);it.setMatrixAt(i,m);ic.setMatrixAt(i,m);c.setHSL(.28+rr()*.06,.45,.22+rr()*.08);ic.setColorAt(i,c)});g.add(it,ic)}
   // water
   for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(wd.grid[y][x]==='water'){const w=new T.Mesh(g3geo('wat',()=>new T.BoxGeometry(1,.04,1)),g3mat('#2f6d93'));w.position.set(wx_(x),.0,wz_(y));g.add(w)}
   // boundary fence
-  const fm=g3mat('#bfc7c9');const f1=g3geo('fx',()=>new T.BoxGeometry(W,.12,.04)),f2=g3geo('fz',()=>new T.BoxGeometry(.04,.12,H));
+  const fm=g3mat('#bfc7c9');const f1=new T.BoxGeometry(W,.12,.04),f2=new T.BoxGeometry(.04,.12,H);
   for(const z of[-H/2,H/2]){const f=new T.Mesh(f1,fm);f.position.set(0,.06,z);g.add(f)}for(const x of[-W/2,W/2]){const f=new T.Mesh(f2,fm);f.position.set(x,.06,0);g.add(f)}
   // road and car park
   const road=new T.Mesh(new T.BoxGeometry(160,.03,1.4),g3mat('#2b2b2b'));road.position.set(0,0,H/2+1.6);g.add(road);
@@ -1342,9 +1837,9 @@ function buildStatic(wd){const T=G3.T,g=G3.worldG;clearGroup(g);const site=SITES
   else{for(let i=0;i<5;i++){const b=new T.Mesh(new T.BoxGeometry(rnd(3,6),rnd(1,3.5),rnd(2.5,4)),g3mat('#5d5a55'));b.position.set(-14+i*7,0,H/2+5);b.position.y=b.geometry.parameters.height/2;g.add(b)}}
   // neighbours (noise receptors)
   const hb=g3geo('house',()=>new T.BoxGeometry(.5,.32,.4).translate(0,.16,0)),hr=g3geo('roof',()=>new T.CylinderGeometry(.01,.36,.24,4,1).rotateY(Math.PI/4).scale(1,1,.85).translate(0,.44,0));
-  for(const rc of site.rec){const n=Math.min(14,Math.max(3,Math.round(Math.sqrt(rc.homes))));for(let i=0;i<n;i++){const a=i*2.4,rad=.5+Math.sqrt(i)*.7;const x=wx_(rc.x)+Math.cos(a)*rad,z=wz_(rc.y)+Math.sin(a)*rad;const h1=new T.Mesh(hb,g3mat('#d8cdb8')),h2=new T.Mesh(hr,g3mat('#7d3b2c'));h1.position.set(x,0,z);h2.position.set(x,0,z);h1.rotation.y=h2.rotation.y=a;g.add(h1,h2)}}
+  const recs=wd.rec||site.rec;for(const rc of recs){const n=Math.min(14,Math.max(3,Math.round(Math.sqrt(rc.homes))));for(let i=0;i<n;i++){const a=i*2.4,rad=.5+Math.sqrt(i)*.7;const x=wx_(rc.x)+Math.cos(a)*rad,z=wz_(rc.y)+Math.sin(a)*rad;const h1=new T.Mesh(hb,g3mat('#d8cdb8')),h2=new T.Mesh(hr,g3mat('#7d3b2c'));h1.position.set(x,0,z);h2.position.set(x,0,z);h1.rotation.y=h2.rotation.y=a;g.add(h1,h2)}}
   G3.labels.forEach(l=>l.el.remove());G3.labels=[];
-  for(const rc of site.rec){const el=document.createElement('div');el.className='lab3d';el.style.cssText='position:absolute;left:0;top:0;font:500 11px/1.2 Inter,system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.72);padding:3px 7px;border-radius:999px;white-space:nowrap';el.dataset.rec=rc.n;el.textContent=rc.n;G3.labelBox.appendChild(el);G3.labels.push({el,x:wx_(rc.x),y:1.2,z:wz_(rc.y),rec:rc})}}
+  for(const rc of recs){const el=document.createElement('div');el.className='lab3d';el.style.cssText='position:absolute;left:0;top:0;font:500 11px/1.2 Inter,system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.72);padding:3px 7px;border-radius:999px;white-space:nowrap';el.dataset.rec=rc.n;el.textContent=rc.n;G3.labelBox.appendChild(el);G3.labels.push({el,x:wx_(rc.x),y:1.2,z:wz_(rc.y),rec:rc})}}
 function g3rebuild(){if(!G3.ok){if(FB.on)fbDraw();return}const wd=G3.world;if(!wd)return;clearGroup(G3.structG);G3.beams=[];G3.wheels=[];G3.meshes.clear();
   for(const p of wd.pl){const m=buildMesh(p,wd);G3.structG.add(m);G3.meshes.set(p.id,m)}
   if(G3.sel)g3select(G3.sel);setNight(G3.night,true);G3.idle=0}
@@ -1354,7 +1849,8 @@ function buildMesh(p,wd,ghost){
   const M=(c,o)=>ghost?g3mat(c,{op:.55}):g3mat(c,o);
   const box=(sx,sy,sz,c,x,y,z,o)=>{const m=new T.Mesh(g3geo('b'+sx+'_'+sy+'_'+sz,()=>new T.BoxGeometry(sx,sy,sz)),M(c,o));m.position.set(x,y,z);g.add(m);return m};
   const rr=mulberry(hash(p.id));
-  if(p.t==='main'){box(3.7,.22,1.6,'#2a2a2a',0,.11,0);box(3.9,.14,1.85,'#e8e8e8',0,1.65,-.02);for(const sx of[-1.85,1.85])for(const sz of[-.8,.75])box(.1,1.6,.1,'#9a9a9a',sx,.8,sz);
+  if(p.t==='mega'){const sub=buildMesh({...p,t:'main',r:0,x:0,y:0,id:p.id},wd,ghost);sub.position.set(0,0,0);sub.rotation.y=0;sub.scale.set(1.5,1.6,1.5);g.add(sub);for(const sx of[-2.6,2.6])box(.5,2.2,.5,'#1a1a1a',sx,1.1,6.2)}
+  else if(isMain(p.t)){box(3.7,.22,1.6,'#2a2a2a',0,.11,0);box(3.9,.14,1.85,'#e8e8e8',0,1.65,-.02);for(const sx of[-1.85,1.85])for(const sz of[-.8,.75])box(.1,1.6,.1,'#9a9a9a',sx,.8,sz);
     box(3.6,1.4,.08,'#121212',0,.9,-.78);for(const sx of[-1.75,1.75])box(.26,.9,.26,'#0d0d0d',sx,1.05,.72);
     for(const sx of[-2.55,2.55]){box(.06,1.2,.06,'#555',sx,.6,.4);const scr=box(.9,.55,.04,'#1b1b1b',sx,1.25,.4,ghost?null:{em:'#000000'});scr.userData.screen=1}
     box(3.4,.08,.05,'#a0a0a0',0,.1,1.15);box(.5,.25,.35,'#333',0,.12,4.6)}
@@ -1391,8 +1887,8 @@ function buildMesh(p,wd,ghost){
   else box(w*.9,.3,h*.9,b.col,0,.15,0);
   // light beams for stages
   if(b.stage&&!ghost){const beamG=g3geo('beam',()=>new T.ConeGeometry(.35,5,10,1,true).translate(0,-2.5,0).rotateX(Math.PI));
-    const cols=['#c6f24e','#5ec4e8','#ff6fb1','#ffffff'];const n=p.t==='main'?4:2;for(let i=0;i<n;i++){const bm=new T.Mesh(beamG,g3mat(cols[(i+hash(p.id))%4],{basic:1,op:.22,add:1,ds:1}));bm.position.set((i-(n-1)/2)*(p.t==='main'?1:.6),p.t==='main'?1.7:.9,p.t==='main'?.6:.3);bm.visible=false;bm.userData.beam=1;g.add(bm);G3.beams.push(bm)}
-    const pl=new T.PointLight(cols[hash(p.id)%4],0,p.t==='main'?9:5,1.5);pl.position.set(0,p.t==='main'?1.4:.8,p.t==='main'?1.6:1);pl.userData.nl=p.t==='main'?2.2:1.4;g.add(pl)}
+    const cols=['#c6f24e','#5ec4e8','#ff6fb1','#ffffff'];const n=isMain(p.t)?4:2;for(let i=0;i<n;i++){const bm=new T.Mesh(beamG,g3mat(cols[(i+hash(p.id))%4],{basic:1,op:.22,add:1,ds:1}));bm.position.set((i-(n-1)/2)*(isMain(p.t)?1:.6),isMain(p.t)?1.7:.9,isMain(p.t)?.6:.3);bm.visible=false;bm.userData.beam=1;g.add(bm);G3.beams.push(bm)}
+    const pl=new T.PointLight(cols[hash(p.id)%4],0,isMain(p.t)?9:5,1.5);pl.position.set(0,isMain(p.t)?1.4:.8,isMain(p.t)?1.6:1);pl.userData.nl=isMain(p.t)?2.2:1.4;g.add(pl)}
   placeGroup(g,p);g.userData.pid=p.id;return g}
 function stripeTex(c){if(G3.stripe)return G3.stripe;const cv=document.createElement('canvas');cv.width=64;cv.height=8;const x=cv.getContext('2d');for(let i=0;i<8;i++){x.fillStyle=i%2?'#f4f1ea':c;x.fillRect(i*8,0,8,8)}const t=new G3.T.CanvasTexture(cv);t.wrapS=G3.T.RepeatWrapping;t.repeat.set(3,1);return G3.stripe=t}
 
@@ -1409,6 +1905,7 @@ function g3select(id){if(!G3.ok){FB.sel=id;fbDraw();return}G3.sel=id;if(G3.selM)
 function heat(v){// 0..1 → overlay colour
   const stops=[[0,[198,242,78]],[.5,[229,169,59]],[1,[255,99,105]]];let a=stops[0],b=stops[2];for(let i=0;i<stops.length-1;i++)if(v>=stops[i][0]&&v<=stops[i+1][0]){a=stops[i];b=stops[i+1]}const t=(v-a[0])/((b[0]-a[0])||1);return a[1].map((c,i)=>Math.round(lerp(c,b[1][i],t)))}
 function overlayPaint(kind,s,extra){
+  if(!G3.ok&&(!FB.ov||FB.ov.width!==W*8||FB.ov.height!==H*8)){FB.ov=document.createElement('canvas');FB.ov.width=W*8;FB.ov.height=H*8}
   const cv=G3.ok?G3.overlayCv:FB.ov,x=cv.getContext('2d');const sz=cv.width/W;x.clearRect(0,0,cv.width,cv.height);
   const A=analyse(s);
   const cell=(i,rgba)=>{x.fillStyle=rgba;x.fillRect((i%W)*sz,((i/W)|0)*sz,sz,sz)};
@@ -1462,14 +1959,14 @@ function bindInput(el){const pts=new Map();let start=null,moved=0,pinch=null,dra
   el.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;G3.idle=0;
     if(start)moved+=Math.abs(dx)+Math.abs(dy);
     if(pts.size>=2&&pinch){const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),ang=Math.atan2(b.y-a.y,b.x-a.x);const k=pinch.d/d;
-      if(G3.ok){G3.cam0.d=clamp(G3.cam0.d*k,8,80);G3.cam0.az-=(ang-pinch.ang)}else{FB.z=clamp(FB.z/k,.5,4);fbDraw()}
+      if(G3.ok){G3.cam0.d=clamp(G3.cam0.d*k,8,Math.max(W,H)*2.6);G3.cam0.az-=(ang-pinch.ang)}else{FB.z=clamp(FB.z/k,.5,4);fbDraw()}
       const cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;panBy(cx-pinch.cx,cy-pinch.cy);pinch={d,ang,cx,cy};moved+=99;return}
     if(dragGhost&&UI.place){const c=G3.ok?screenToCell(e.clientX,e.clientY):fbCell(e.clientX,e.clientY);if(c&&G3.onGhostMove)G3.onGhostMove(c.x-dragGhost.ox,c.y-dragGhost.oy);return}
     panBy(dx,dy)});
   const up=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);if(pts.size<2)pinch=null;
     if(pts.size===0&&start){const dt=performance.now()-start.t;if(moved<10&&dt<500&&G3.onTap){const c=G3.ok?screenToCell(e.clientX,e.clientY):fbCell(e.clientX,e.clientY);if(c)G3.onTap(c)}start=null;dragGhost=false}};
   el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
-  el.addEventListener('wheel',e=>{e.preventDefault();if(G3.ok)G3.cam0.d=clamp(G3.cam0.d*(1+e.deltaY*.0012),8,80);else{FB.z=clamp(FB.z*(1-e.deltaY*.0012),.5,4);fbDraw()}G3.idle=0},{passive:false})}
+  el.addEventListener('wheel',e=>{e.preventDefault();if(G3.ok)G3.cam0.d=clamp(G3.cam0.d*(1+e.deltaY*.0012),8,Math.max(W,H)*2.6);else{FB.z=clamp(FB.z*(1-e.deltaY*.0012),.5,4);fbDraw()}G3.idle=0},{passive:false})}
 function panBy(dx,dy){if(!G3.ok){FB.ox+=dx;FB.oy+=dy;fbDraw();return}const h=G3.host.clientHeight||400;const wpp=2*G3.cam0.d*Math.tan(G3.cam.fov*Math.PI/360)/h;const c=Math.cos(G3.cam0.az),s=Math.sin(G3.cam0.az);
   const mx=-dx*wpp,mz=-dy*wpp/Math.sin(G3.cam0.el);G3.cam0.tx=clamp(G3.cam0.tx+mx*c+mz*s,-W/2-4,W/2+4);G3.cam0.tz=clamp(G3.cam0.tz-mx*s+mz*c,-H/2-4,H/2+8)}
 function g3focus(x,y){if(G3.ok){G3.cam0.tx=wx_(x);G3.cam0.tz=wz_(y)+2}}
@@ -1483,8 +1980,8 @@ function fbMetrics(){const r=FB.cv.getBoundingClientRect();const base=Math.min(r
 function fbCell(cx,cy){const m=fbMetrics();return{x:Math.floor((cx-m.r.left-m.x0)/m.cs),y:Math.floor((cy-m.r.top-m.y0)/m.cs)}}
 function fbDraw(){if(!FB.on||!FB.cv||!G3.world)return;const dpr=Math.min(2,devicePixelRatio||1);const m=fbMetrics();FB.cv.width=m.r.width*dpr;FB.cv.height=m.r.height*dpr;const x=FB.cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);
   x.fillStyle='#1f2b17';x.fillRect(0,0,m.r.width,m.r.height);const wd=G3.world,cs=m.cs;
-  for(let y=0;y<H;y++)for(let xx=0;xx<W;xx++){const g=wd.grid[y][xx];x.fillStyle=g==='low'?'#4e6234':g==='slope'?'#6c8c46':g==='water'?'#2f5c78':g==='tree'?'#2c4222':'#60843e';x.fillRect(m.x0+xx*cs,m.y0+y*cs,cs+.5,cs+.5)}
-  x.drawImage(FB.ov,m.x0,m.y0,W*cs,H*cs);
+  for(let y=0;y<H;y++)for(let xx=0;xx<W;xx++){const g=wd.grid[y][xx];x.fillStyle=g==='low'?'#4e6234':g==='slope'?'#6c8c46':g==='water'?'#2f5c78':g==='tree'?'#2c4222':g==='hard'?'#76766f':'#60843e';x.fillRect(m.x0+xx*cs,m.y0+y*cs,cs+.5,cs+.5)}
+  if(FB.ov)x.drawImage(FB.ov,m.x0,m.y0,W*cs,H*cs);
   const drawP=(p,alpha,col)=>{const f=fp(p);x.globalAlpha=alpha;x.fillStyle=col||B[p.t].col;x.fillRect(m.x0+f.x*cs+1,m.y0+f.y*cs+1,f.w*cs-2,f.h*cs-2);x.globalAlpha=1;if(B[p.t].stage){const sc=stageSrc(p);x.fillStyle='#000';x.beginPath();x.arc(m.x0+sc.x*cs,m.y0+sc.y*cs,cs*.18,0,7);x.fill()}
     if(cs*f.w>34){x.fillStyle=['camp','glamp','track','vans'].includes(p.t)?'#000':'#000';x.font='600 '+Math.max(9,cs*.32)+'px Inter,sans-serif';x.fillText(B[p.t].n.split(' ')[0],m.x0+f.x*cs+3,m.y0+f.y*cs+cs*.42)}};
   for(const p of wd.pl)drawP(p,1);
@@ -1492,7 +1989,28 @@ function fbDraw(){if(!FB.on||!FB.cv||!G3.world)return;const dpr=Math.min(2,devic
   if(FB.sel){const p=wd.pl.find(q=>q.id===FB.sel);if(p){const f=fp(p);x.strokeStyle='#fff';x.lineWidth=2;x.strokeRect(m.x0+f.x*cs,m.y0+f.y*cs,f.w*cs,f.h*cs)}}
   if(FB.crowd){x.fillStyle='rgba(255,255,255,.8)';for(const pt of FB.crowd){x.fillRect(m.x0+(pt[0]+W/2)*cs-1,m.y0+(pt[1]+H/2)*cs-1,2,2)}}
   x.strokeStyle='#bfc7c9';x.lineWidth=1;x.strokeRect(m.x0,m.y0,W*cs,H*cs);
-  x.fillStyle='#fff';x.font='500 11px Inter,sans-serif';for(const rc of SITES[wd.site].rec){const px=m.x0+(rc.x+.5)*cs,py=m.y0+(rc.y+.5)*cs;x.fillRect(px-3,py-3,6,6);x.fillText(rc.n,px+6,py+4)}}
+  x.fillStyle='#fff';x.font='500 11px Inter,sans-serif';for(const rc of (wd.rec||SITES[wd.site].rec)){const px=m.x0+(rc.x+.5)*cs,py=m.y0+(rc.y+.5)*cs;x.fillRect(px-3,py-3,6,6);x.fillText(rc.n,px+6,py+4)}}
+
+/* ---------- show effects: fireworks, confetti, drones ---------- */
+function g3burst(k,p){if(!G3.ok)return;const T=G3.T;const f=fp(p);const d0=DIRS[p.r];const sx=wx_(f.x)+(f.w-1)/2,sz=wz_(f.y)+(f.h-1)/2;const cx=sx+d0[0]*3,cz=sz+d0[1]*3;G3.fx=G3.fx||[];
+  G3.cam0.tx=cx;G3.cam0.tz=cz-3;G3.cam0.d=Math.min(G3.cam0.d,34);G3.idle=0;if(G3.reduced)return;
+  const n=k==='drone'?420:k==='conf'?500:k==='flare'?600:360;const pos=new Float32Array(n*3),col=new Float32Array(n*3),vel=new Float32Array(n*3);const c=new T.Color();
+  const pal=k==='fire'?['#ffd166','#ff6fb1','#c6f24e','#5ec4e8','#ffffff']:k==='conf'?['#ff6fb1','#c6f24e','#5ec4e8','#ffd166','#ffffff']:k==='flare'?['#fff3c4']:['#ffffff','#9fe3ff'];
+  const d=DIRS[p.r];
+  for(let i=0;i<n;i++){let x=cx,y=2,z=cz,vx=0,vy=0,vz=0;
+    if(k==='fire'){const burst=i%4;x=cx+(burst-1.5)*2.4;z=cz;y=6+(burst%2)*1.8;const th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),sp=2.4+Math.random()*1.5;vx=Math.sin(ph)*Math.cos(th)*sp;vy=Math.cos(ph)*sp;vz=Math.sin(ph)*Math.sin(th)*sp}
+    else if(k==='conf'){x=cx+(Math.random()-.5)*3;z=cz+d[1]*1.5;y=2.4;vx=(Math.random()-.5)*3+d[0]*3;vz=(Math.random()-.5)*3+d[1]*4;vy=3+Math.random()*3}
+    else if(k==='flare'){const cells=coneCells(p,B[p.t].cone||4);const cc=cells[Math.floor(Math.random()*cells.length)]||{x:f.x,y:f.y};x=wx_(cc.x)+(Math.random()-.5);z=wz_(cc.y)+(Math.random()-.5);y=.25}
+    else{const a=i/n*Math.PI*2;const r=3+Math.sin(a*5)*1.2;x=cx+Math.cos(a)*r;y=7+Math.sin(a)*r*.7;z=cz+d[1]*2}
+    pos.set([x,y,z],i*3);vel.set([vx,vy,vz],i*3);c.set(pal[i%pal.length]);col.set([c.r,c.g,c.b],i*3)}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));g.setAttribute('color',new T.BufferAttribute(col,3));
+  const m=new T.PointsMaterial({size:k==='conf'?.16:k==='flare'?.12:k==='drone'?.22:.32,vertexColors:true,transparent:true,opacity:1,depthWrite:false,blending:k==='conf'?T.NormalBlending:T.AdditiveBlending});
+  const pts=new T.Points(g,m);G3.scene.add(pts);G3.fx.push({pts,vel,k,t:0,life:k==='drone'?7:k==='flare'?6:4});G3.idle=0}
+function fxTick(dt){for(let j=G3.fx.length-1;j>=0;j--){const e=G3.fx[j];e.t+=dt;const P=e.pts.geometry.attributes.position;const v=e.vel;
+    for(let i=0;i<P.count;i++){if(e.k==='fire'||e.k==='conf'){v[i*3+1]-=(e.k==='conf'?3:1.6)*dt;if(e.k==='conf'){v[i*3]*=.98;v[i*3+2]*=.98}}
+      if(e.k==='drone'){P.setY(i,P.getY(i)+Math.sin(e.t*2+i)*.004)}else if(e.k==='flare'){}else{P.setX(i,P.getX(i)+v[i*3]*dt);P.setY(i,Math.max(.02,P.getY(i)+v[i*3+1]*dt));P.setZ(i,P.getZ(i)+v[i*3+2]*dt)}}
+    P.needsUpdate=true;e.pts.material.opacity=Math.max(0,1-Math.max(0,e.t-e.life*.6)/(e.life*.4));if(e.k==='flare')e.pts.material.opacity*=.6+Math.sin(e.t*9)*.4;
+    if(e.t>e.life){G3.scene.remove(e.pts);e.pts.geometry.dispose();e.pts.material.dispose();G3.fx.splice(j,1)}}}
 /* ============================================================
    UI: shell, title, setup, Plan, Tickets, Money
    ============================================================ */
@@ -1545,23 +2063,26 @@ function renderTitle(app){$('#stage3d').hidden=true;
     '<div class="hero3d" id="hero3d"></div>'+
     '<p class="muted" style="margin-bottom:16px">Lease a field, lay out the stages and campsites, sign the acts before your rival does, sell out, then live through the weekend hour by hour: heat, mud, storms, curfews and crowd surges. Every year ends with the reviews and the P&amp;L.</p>'+
     slots+'<div class="row" style="margin-top:8px"><button class="btn ghost" data-a="guide">How it works</button></div>'+
-    '<p class="small faint" style="margin-top:auto;padding-top:24px">All artists, festivals, agencies and companies are fictional. Version '+APP_VER+'.</p></div>';
-  const h=$('#hero3d');const demo={grid:terrain('farm'),pl:[],site:'farm'};const tmp={site:'farm',pl:[],grid:demo.grid};starterSite(tmp);demo.pl=tmp.pl;
+    '<p class="small faint" style="margin-top:auto;padding-top:24px">Real artists appear just for fun: their fees, popularity and everything that happens to them here are made up, and none of them is involved with this game. Festivals, agencies, brands and press are fictional. Version '+APP_VER+'.</p></div>';
+  const h=$('#hero3d');const tmp=demoState();const demo={grid:tmp.grid,pl:tmp.pl,site:'farm',rec:tmp.rec};
   g3mount(h,{mode:'hero',auto:true,cam:{tx:0,tz:-2,d:30,az:.6,el:.72}}).then(()=>{g3setWorld(demo);setNight(.85,true);if(G3.ok){G3.crowd.count=0;const fake={stages:[],camp:0,bars:0,roam:0};}heroCrowd(demo)}).catch(()=>{})}
-function heroCrowd(demo){if(!G3.ok)return;const old=S;S={site:'farm',pl:demo.pl,grid:demo.grid,lic:{cap:9000,noise:65,curfew:[23,23,22.5]},ops:defaultOps(),tix:defaultTix(9000,true),sales:null,phase:'booking',year:1};
+function demoState(){const g=terrain('farm');return {site:'farm',pl:[],grid:g,rec:SITES.farm.rec.map(r=>({...r})),lic:{cap:10000,noise:65,curfew:[23,23,22.5]},ops:defaultOps(),tix:defaultTix(10000,true),sales:null,phase:'booking',year:1,artIdx:0,diff:'relaxed',...(()=>{const t={site:'farm',pl:[],grid:g,rec:SITES.farm.rec,lic:{cap:10000,noise:65},tix:defaultTix(10000,true),ops:defaultOps(),sales:null,artIdx:0};autoLayout(t,false);return {pl:t.pl}})()}}
+function heroCrowd(demo){if(!G3.ok)return;const old=S;S=demoState();S.pl=demo.pl;S.grid=demo.grid;
   try{A_CACHE={k:'',a:null};const A=analyse(S);g3crowd(S,{stages:A.arenas.map(a=>({p:a.p,n:a.cap*.5})),camp:2500,bars:900,roam:1200})}catch(e){}S=old;A_CACHE={k:'',a:null}}
 function viewSetup(){const u=UI.setup;
-  const sites=Object.entries(SITES).map(([k,v])=>'<button class="tile" data-a="ssite" data-v="'+k+'" aria-pressed="'+(u.site===k)+'"><canvas class="mapthumb" data-thumb="'+k+'" width="56" height="74" aria-hidden="true"></canvas><span style="min-width:0;flex:1"><b>'+v.n+'</b><small>'+v.kind+' · '+fmtN(v.cap)+' licence · rent '+fmt$(v.rent)+'</small><small style="margin-top:6px">'+v.d+'</small></span></button>').join('');
-  const F=[['promoter','Club promoter','£900k cash, £500k loan. Agents already know you.'],['backed','Investor-backed','£1.6m cash, £1.2m of debt. A bigger start, a bigger hole.'],['diy','DIY collective','£600k cash, £250k loan. Fans trust you; volunteers steward for less.']];
+  const sites=Object.entries(SITES).map(([k,v])=>'<button class="tile" data-a="ssite" data-v="'+k+'" aria-pressed="'+(u.site===k)+'"><canvas class="mapthumb" data-thumb="'+k+'" width="56" height="74" aria-hidden="true"></canvas><span style="min-width:0;flex:1"><b>'+v.n+'</b><small>'+v.kind+' · '+fmtN(v.cap)+' people · '+Math.round(v.w*v.h*.04)+' ha · rent '+fmt$(v.rent)+'</small><small style="margin-top:6px">'+v.d+'</small></span></button>').join('');
+  const st=SITES[u.site],D=DIFF[u.diff];const cash=(c,l)=>fmt$(Math.round(c*st.start*D.cash/50000)*50000)+' cash, '+fmt$(Math.round(l*st.start/50000)*50000)+' loan';
+  const F=[['promoter','Club promoter',cash(900000,500000)+'. Agents already know you.'],['backed','Investor-backed',cash(1600000,1200000)+'. A bigger start, a bigger hole.'],['diy','DIY collective',cash(600000,250000)+'. Fans trust you; volunteers steward for less.']];
   return '<div class="title-screen" style="padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))"><div class="title-row"><h1>New festival</h1><button class="btn ghost sm" data-a="cancelsetup">Cancel</button></div><p class="sub">Slot '+u.slot+'. You can’t change the site later.</p>'+
     '<label class="field"><span>Festival name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="fname" name="festival-name" maxlength="28" value="'+esc(u.name)+'" autocomplete="off" spellcheck="false"><button class="btn quiet" data-a="rname" aria-label="Random name">Shuffle</button></div></label>'+
-    '<div class="sec">Site</div><div class="sitepick">'+sites+'</div>'+
+    '<div class="sec">Difficulty</div>'+seg('sdiff',u.diff,Object.entries(DIFF).map(([k,v])=>[k,v.n]))+'<p class="small muted" style="margin:-4px 0 4px">'+D.d+'</p>'+
+    '<div class="sec">Site<small>Bigger sites cost more but sell far more tickets</small></div><div class="sitepick">'+sites+'</div>'+
     '<div class="sec">Background</div><div class="stack">'+F.map(f=>'<button class="tile" data-a="sfound" data-v="'+f[0]+'" aria-pressed="'+(u.founder===f[0])+'"><b>'+f[1]+'</b><small>'+f[2]+'</small></button>').join('')+'</div>'+
     '<button class="btn wide" style="margin-top:20px" data-a="start">Sign the lease</button></div>'}
 const FEST_A=['Wild','Green','Hollow','Long','Golden','Lost','Sunken','Bright','High','Little','Big Sky','Hidden','Far','Silver','Wander'];
 const FEST_B=['Meadow','Acre','Fields','Valley','Weekend','Gathering','Moon','Hollow','Woods','Downs','Lanes','Grounds','Days','Tides'];
 function festName(){return pick(FEST_A)+' '+pick(FEST_B)+(chance(.3)?' Festival':'')}
-function drawThumbs(){document.querySelectorAll('canvas[data-thumb]').forEach(cv=>{const g=terrain(cv.dataset.thumb);const x=cv.getContext('2d');const sx=cv.width/W,sy=cv.height/H;for(let y=0;y<H;y++)for(let xx=0;xx<W;xx++){const t=g[y][xx];x.fillStyle=t==='low'?'#4e6234':t==='slope'?'#6c8c46':t==='water'?'#2f5c78':t==='tree'?'#2c4222':'#60843e';x.fillRect(xx*sx,y*sy,sx+.5,sy+.5)}})}
+function drawThumbs(){document.querySelectorAll('canvas[data-thumb]').forEach(cv=>{const g=terrain(cv.dataset.thumb);const x=cv.getContext('2d');const gw=g[0].length,gh=g.length;const sx=cv.width/gw,sy=cv.height/gh;for(let y=0;y<gh;y++)for(let xx=0;xx<gw;xx++){const t=g[y][xx];x.fillStyle=t==='low'?'#4e6234':t==='slope'?'#6c8c46':t==='water'?'#2f5c78':t==='tree'?'#2c4222':t==='hard'?'#8a8a84':'#60843e';x.fillRect(xx*sx,y*sy,sx+.5,sy+.5)}})}
 
 /* ---------- plan ---------- */
 function gateBar(){const sl=S.sales,cap=S.lic.cap;const A=analyse(S);const wk=sl?sl.wkSold+sl.vipSold:0,day=sl?Math.max(...sl.daySold):0;const safe=Math.min(A.safeCap,cap);
@@ -1572,7 +2093,7 @@ function finding(){const A=analyse(S);const bad=A.issues.find(i=>i.sev==='bad');
   const cancels=S.events.filter(e=>e.k==='cancel'&&!e.done);if(cancels.length){const e=cancels[0];return['bad',act(e.actId).name+' cancelled. Their '+DAYL[e.day]+' slot on the '+stageName(S,S.pl.find(p=>p.id===e.stage))+' is empty.']}
   const ctr=S.bk.filter(b=>b.st==='counter');if(ctr.length)return['warn',ctr.length+' agent'+(ctr.length>1?'s have':' has')+' come back with a counter-offer. Answer before the round ends.'];
   if(bad)return['bad',bad.t];
-  if(S.phase==='booking'){const hl=[0,1,2].filter(d=>{const m=stagesOf(S).find(p=>p.t==='main');return m&&!S.bk.find(b=>b.stage===m.id&&b.day===d&&b.slot===0&&['signed','pending','counter'].includes(b.st))});if(hl.length)return['warn','No headliner yet for '+hl.map(d=>DAYL[d]).join(', ')+'. Big acts get booked early.']}
+  if(S.phase==='booking'){const hl=[0,1,2].filter(d=>{const m=stagesOf(S).find(p=>isMain(p.t));return m&&!S.bk.find(b=>b.stage===m.id&&b.day===d&&b.slot===0&&['signed','pending','counter'].includes(b.st))});if(hl.length)return['warn','No headliner yet for '+hl.map(d=>DAYL[d]).join(', ')+'. Big acts get booked early.']}
   if(S.phase==='onsale'&&sl){const t=curTier(S),pl=pools(S,sl.announced);const w=willWk(S,pl,t.p);const left=capWeekend(S)-sl.wkSold;if(left>0&&w-sl.wkSold<left*.6)return['warn','At '+fmt$(t.p)+' only about '+fmtN(Math.max(0,w-sl.wkSold))+' more people want weekend tickets, and '+fmtN(left)+' are left.'];if(sl.touts>200)return['warn','Touts hold about '+fmtN(sl.touts)+' tickets, reselling at '+fmt$(sl.resale)+'.']}
   const w=A.issues[0];if(w)return['warn',w.t];return['good','Nothing urgent. The site, the bill and the budget all hold up.']}
 function primary(){if(S.phase==='booking')return '<button class="btn sm" data-a="endround">'+(S.round>=BOOK_ROUNDS?'Close booking':'End round')+'</button>';
@@ -1588,8 +2109,10 @@ function viewPlan(){const ph=PHASES[phaseIdx(S)];const [fk,ft]=finding();
   h+='<div class="finding '+(fk==='bad'?'bad':fk==='good'?'good':'')+'"><span class="bar"></span><p>'+esc(ft)+'</p></div>';
   h+='<section class="card"><h2>Tickets against capacity<small>'+(S.sales&&S.sales.soldOut?'Sold out':S.sales?pct((S.sales.wkSold+S.sales.vipSold)/Math.max(1,capWeekend(S)))+' of weekend':'Not on sale')+'</small></h2>'+gateBar()+'</section>';
   h+=kpiStrip();
+  h+=goalsCard();
   if(S.year===1&&S.phase==='booking')h+=startGuide();
   if(S.phase==='booking'||S.phase==='onsale')h+=offersCard();
+  h+=riderCard();
   if(S.phase==='onsale')h+=salesCard();
   if(S.phase==='build')h+=buildCard();
   h+=issuesCard();
@@ -1599,7 +2122,7 @@ function viewPlan(){const ph=PHASES[phaseIdx(S)];const [fk,ft]=finding();
 function fmtSub(){const y=START_YEAR+S.year-1;if(S.phase==='booking')return 'Year '+S.year+' · '+y+' · Round '+S.round+' of '+BOOK_ROUNDS+'. Agents reply at the end of each round.';if(S.phase==='onsale')return 'Year '+S.year+' · Week '+S.week+' of '+SALE_WEEKS+' before build week.';if(S.phase==='build')return 'Year '+S.year+' · The festival opens on Friday.';return ''}
 function startGuide(){const A=analyse(S);const st=[
   ['Fix the site',A.issues.filter(i=>i.sev==='bad').length===0,'site','Clear the red issues: campsites, toilets, entrances.'],
-  ['Book a headliner for each night',[0,1,2].every(d=>S.bk.find(b=>b.day===d&&b.slot===0&&stageType(S,b.stage)==='main'&&['signed','pending','counter'].includes(b.st))),'lineup','Main stage, last slot, Friday to Sunday.'],
+  ['Book a headliner for each night',[0,1,2].every(d=>S.bk.find(b=>b.day===d&&b.slot===0&&isMain(stageType(S,b.stage))&&['signed','pending','counter'].includes(b.st))),'lineup','Main stage, last slot, Friday to Sunday.'],
   ['Fill the undercard',S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).length>=15,'lineup','Use “Fill the rest” or pick rising acts yourself.'],
   ['Check your ticket prices',!!S.flags.tixSeen,'tickets','Early birds go on sale after round 2.'],
   ['End the round',S.round>1,null,'Agents answer your offers; the rival moves too.']];
@@ -1631,11 +2154,15 @@ function rivalCard(){const R=S.rival;const top=R.bk.map(b=>({a:act(b.actId),b}))
 function newsCard(){const n=S.news.slice(0,8);return '<section class="card"><h2>News</h2><ul class="list feed">'+n.map(x=>'<li><div class="grow"><p>'+esc(x.t)+'</p></div></li>').join('')+'</ul></section>'}
 
 /* ---------- wrap ---------- */
+function goalsCard(){const G=S.goals;if(!G)return '';return '<section class="card"><h2>This year’s goals<small>'+fmt$(G.reward)+' a goal</small></h2><ul class="list">'+G.list.map(g=>{const d=GOALS[g.k];const p=d.p&&S.sales!==undefined?d.p(S):null;const done=g.done;
+    return '<li><span class="pill '+(done===true?'pos':done===false?'neg':'')+'">'+(done===true?'Done':done===false?'Missed':p!=null&&p>=1?'On track':'Goal')+'</span><div class="grow"><b>'+esc(goalName(S,g))+'</b>'+(p!=null&&p<1&&g.k==='sell'?'<div class="meter"><i style="width:'+Math.round(p*100)+'%"></i></div>':'')+'</div></li>'}).join('')+'</ul><p class="small muted" style="margin-top:8px">Hit all three for a '+fmt$(G.reward)+' bonus on top.</p></section>'}
 function viewWrap(){const w=S.wrap;if(!w)return '<main><p>…</p></main>';const r=w.rec;
   let h='<main><div class="title-row"><h1>'+r.cal+' in review</h1><button class="btn sm" data-a="nextyear">Start '+(r.cal+1)+'</button></div><p class="sub">'+esc(r.moment||r.disaster||'The fields are empty again.')+'</p>';
   if(w.insolvent)h+='<div class="finding bad"><span class="bar"></span><p>You are beyond your overdraft. Borrow from the bank on the Money tab or the festival goes into administration.</p></div>';
   h+='<div class="kpis"><div class="kpi"><label>Net profit</label><b class="'+(r.net<0?'neg':'pos')+'">'+fmt$(r.net)+'</b><small>On '+fmt$(r.rev)+' revenue</small></div><div class="kpi"><label>Attendance</label><b>'+fmtN(r.att)+'</b><small>'+(r.soldOut?'Sold out':pct(r.att/S.lic.cap)+' of licence')+'</small></div><div class="kpi"><label>Reviews</label><b>'+r.stars.toFixed(1)+'</b><small>Average of 5 outlets</small></div><div class="kpi"><label>Reputation</label><b>'+S.rep+'</b><small>'+(r.repD>=0?'+':'')+r.repD+' this year</small></div></div>';
   h+='<section class="card"><h2>Reviews</h2><ul class="list">'+w.R.rv.map(v=>'<li style="align-items:flex-start"><div class="grow"><b>'+esc(v.o)+'</b><div class="meta" style="white-space:normal;color:var(--text)">“'+esc(v.line)+'”</div></div><span class="right">'+stars(v.s)+'</span></li>').join('')+'</ul></section>';
+  if(w.goals)h+='<section class="card"><h2>Goals<small>'+w.goals.n+' of 3 hit</small></h2><ul class="list">'+S.goals.list.map(g=>'<li><span class="pill '+(g.done?'pos':'neg')+'">'+(g.done?'Done':'Missed')+'</span><div class="grow">'+esc(goalName(S,g))+'</div></li>').join('')+'</ul>'+(w.goals.cashR?'<p style="margin-top:8px">Your investors paid a bonus of <b>'+fmt$(w.goals.cashR)+'</b> and your reputation rose by '+w.goals.repR+'.</p>':'')+'</section>';
+  if(w.awards&&w.awards.length)h+='<section class="card"><h2>Festival Awards</h2><ul class="list">'+w.awards.map(a=>'<li><span class="pill '+(a.won?'pos':'')+'">'+(a.won?'Winner':'Nominated')+'</span><div class="grow"><b>'+esc(a.n)+'</b></div></li>').join('')+'</ul></section>';
   if(w.firsts.length)h+='<section class="card"><h2>You booked them first</h2><p>'+w.firsts.map(esc).join(', ')+' played your festival when nobody knew them. Now they headline. Your legacy grows.</p></section>';
   if(w.buyout)h+='<section class="card"><h2>An offer from '+esc(S.rival.owner)+'</h2><p class="muted" style="margin-bottom:10px">They want to buy '+esc(S.name)+' outright for '+fmt$(w.buyout)+'. You’d stay on as “creative director” for two years.</p><div class="row"><button class="btn" data-a="sell">Sell for '+fmt$(w.buyout)+'</button><button class="btn ghost" data-a="nosell">Keep it independent</button></div></section>';
   h+='<section class="card"><h2>Council debrief<small>'+esc(SITES[S.site].council)+'</small></h2>'+(w.C.notes.length?'<ul class="list">'+w.C.notes.map(n=>'<li><div class="grow">'+esc(n)+'</div></li>').join('')+'</ul>':'')+(w.C.changes.length?'<p style="margin-top:8px"><b>Licence changes:</b> '+esc(w.C.changes.join(' '))+'</p>':'<p class="muted" style="margin-top:8px">Your licence conditions stay the same.</p>')+'</section>';
@@ -1656,7 +2183,7 @@ function viewTickets(){S.flags.tixSeen=1;const sl=S.sales;const A=analyse(S);con
   h+='<section class="card"><h2>Tickets against capacity</h2>'+gateBar()+'</section>';
   // demand read-out
   const t=sl?curTier(S):S.tix.wk[1];const want=willWk(S,pl,t.p);const cap=capWeekend(S);const ratio=want/Math.max(1,cap);
-  h+='<div class="finding '+(ratio>1.35?'':ratio<.9?'bad':'good')+'"><span class="bar"></span><p>'+(sl&&!sl.announced?'Before the line-up is announced, ':'At '+fmt$(t.p)+', ')+'about <b>'+fmtN(want)+'</b> people want weekend tickets for '+fmtN(cap)+' places. '+(ratio>1.35?'You could charge more; touts will take the difference.':ratio<.9?'You won’t sell out at this price.':'A healthy balance.')+(sl&&!sl.announced?' Your announced line-up drives most of the demand.':'')+'</p></div>';
+  h+='<div class="finding '+(ratio>1.35?'':ratio<.9?'bad':'good')+'"><span class="bar"></span><p>'+(sl&&!sl.announced?'Before the line-up is announced, ':'At '+fmt$(t.p)+', ')+'about <b>'+fmtN(want)+'</b> people want weekend tickets for '+fmtN(cap)+' places. '+(ratio>1.35?'You could charge more; touts will take the difference.':ratio<.9?'You won’t sell out at this price.':'A healthy balance.')+(sl&&!sl.announced?' Your announced line-up drives most of the demand.':'')+'</p></div><div class="row" style="margin:-4px 0 12px"><button class="btn ghost sm" data-a="suggest">Set prices for a fast sell-out</button></div>';
   // weekend tiers
   h+='<section class="card"><h2>Weekend tickets<small>'+(site.camping?'Camping included':'Three-day pass')+'</small></h2><ul class="list">'+
     S.tix.wk.map((x,i)=>{const sold=sl?sl.tier[x.k]:0;const lock=sl&&(sold>=x.a||(x.k==='early'&&sl.weeks.length));const cur=sl&&curTier(S)===x;
@@ -1673,7 +2200,7 @@ function viewTickets(){S.flags.tixSeen=1;const sl=S.sales;const A=analyse(S);con
     '<li><div class="grow"><b>Official face-value resale</b><div class="meta">Fans resell at cost through you. Halves touting, fans love it.</div></div><button class="btn '+(S.tix.resale?'':'ghost')+' sm" data-a="resale" aria-pressed="'+S.tix.resale+'">'+(S.tix.resale?'On':'Off')+'</button></li></ul>'+(sl&&sl.touts?'<p class="small muted" style="margin-top:8px">Touts bought about '+fmtN(sl.touts)+' tickets'+(sl.resale?' and resell at '+fmt$(sl.resale):'')+'.</p>':'')+'</section>';
   h+='<section class="card"><h2>Marketing<small>'+fmt$(S.tix.mkt)+'</small></h2><input type="range" class="slider" min="0" max="400000" step="10000" value="'+S.tix.mkt+'" data-in="mkt" aria-label="Marketing budget"><p class="small muted">Posters, socials, radio and festival guides. Most festivals spend 5–8% of revenue.</p></section>';
   h+='<section class="card"><h2>Bar prices</h2><ul class="list"><li><div class="grow"><b>Pint of lager</b><div class="meta">Higher prices earn more per drink but people buy fewer, and reviews notice</div></div>'+stepper('pint',0,'Pint price','£'+S.tix.pint.toFixed(2))+'</li></ul></section>';
-  h+=sponsorCard()+licenceCard();
+  h+=sponsorCard()+licenceCard()+landCard();
   return h+'</main>'}
 function sponsorCard(){return '<section class="card"><h2>Sponsors<small>'+fmt$(S.spons.reduce((a,x)=>a+x.v,0))+' this year</small></h2><ul class="list">'+
   S.spons.map(x=>'<li><div class="grow"><b>'+esc(x.n)+'</b><div class="meta">'+esc(x.t)+' · signed</div></div><span class="num">'+fmt$(x.v)+'</span></li>').join('')+
@@ -1682,6 +2209,9 @@ function sponsorCard(){return '<section class="card"><h2>Sponsors<small>'+fmt$(S
 function licenceCard(){const c=licenceConditions(S);const canVar=S.phase==='booking'&&S.round<4&&!S.lic.varReq;
   return '<section class="card"><h2>Premises licence<small>'+esc(SITES[S.site].council)+'</small></h2><table class="t"><tbody>'+c.map(x=>'<tr><td class="muted" style="width:34%">'+esc(x[0])+'</td><td>'+esc(x[1])+'</td></tr>').join('')+'</tbody></table>'+
     (canVar?'<div class="row" style="margin-top:12px"><button class="btn ghost sm" data-a="vary">Apply for +'+fmtN(varStep())+' capacity · £5,000</button></div><p class="small muted" style="margin-top:6px">The council decides in round 4. Residents, police and your safety record all count.</p>':S.lic.varReq?'<p class="small muted" style="margin-top:8px">Your application for +'+fmtN(S.lic.varReq)+' is with the council.</p>':'')+'</section>'}
+function landCard(){if(S.phase==='live')return '';const can=(S.phase==='booking'||S.phase==='wrap')&&(S.expand||0)<2;const add=Math.round(SITES[S.site].cap*.3/500)*500;const rent=Math.round(SITES[S.site].rent*.3);
+  return '<section class="card"><h2>Land<small>'+Math.round(S.grid[0].length*S.grid.length*.04)+' ha</small></h2><p class="small muted" style="margin-bottom:10px">Lease the next field to the south: 160 m more land and a licence for '+fmtN(add)+' more people, if the council agrees. Rent rises by '+fmt$(rent)+' a year.</p>'+
+    (can?'<button class="btn ghost sm" data-a="expand">Lease the next field</button>':'<p class="small faint">'+((S.expand||0)>=2?'The farmer won’t lease you any more land.':'You can lease more land in booking season or after the festival.')+'</p>')+'</section>'}
 function varStep(){return Math.round(S.lic.cap*.25/500)*500}
 
 /* ---------- money ---------- */
@@ -1728,7 +2258,7 @@ function viewSite(){const A=analyse(S);const ratio=A.units?Math.round(A.N/A.unit
 function overlayLegend(){const k=UI.overlay;if(k==='none')return '';const L={noise:['Noise at '+S.lic.noise+' dB limit','#c6f24e','#ff6369','60 dB','105 dB'],flow:['Crowd flow at the headliner changeover','#c6f24e','#ff6369','Light','Over safe flow'],sight:['Stage fields','#c6f24e','#e5a93b','Clear view','Blocked'],loos:['Walk to a toilet','#5ec4e8','#ff6369','Close','Over 120 m'],water:['Walk to water','#5ec4e8','#ff6369','Close','Over 160 m'],ground:['Ground','#c6f24e','#e5a93b','Natural slope','Wet, low ground']}[k];
   return '<div class="legend3d" style="top:calc(var(--top) + 104px)"><div>'+L[0]+'</div><div class="ramp" style="background:linear-gradient(90deg,'+L[1]+','+L[2]+')"></div><div style="display:flex;justify-content:space-between"><span>'+L[3]+'</span><span>'+L[4]+'</span></div></div>'}
 function paletteHtml(){if(siteLocked())return '';const items=Object.entries(B).filter(([k,b])=>b.cat===UI.cat&&!(b.cat==='camp'&&!SITES[S.site].camping));
-  return '<div class="palette"><div class="pal-cats" role="group" aria-label="Categories">'+CATS.filter(c=>c[0]!=='camp'||SITES[S.site].camping).map(([k,n])=>'<button class="chip" data-a="cat" data-v="'+k+'" aria-pressed="'+(UI.cat===k)+'">'+n+'</button>').join('')+'</div>'+
+  return '<div class="palette"><div class="pal-cats" role="group" aria-label="Categories"><button class="chip" data-a="assist" style="background:var(--accent-dim);color:var(--accent)">Fix it for me</button>'+CATS.filter(c=>c[0]!=='camp'||SITES[S.site].camping).map(([k,n])=>'<button class="chip" data-a="cat" data-v="'+k+'" aria-pressed="'+(UI.cat===k)+'">'+n+'</button>').join('')+'</div>'+
     '<div class="pal-items">'+items.map(([k,b])=>{const n=S.pl.filter(p=>p.t===k).length;const full=b.max&&n>=b.max;return '<button class="pal" data-a="pal" data-v="'+k+'" '+(full?'disabled style="opacity:.45"':'')+'><span class="sw" style="background:'+b.col+'"></span><b>'+b.n+'</b><small class="num">'+fmt$(Math.round(b.cost*Math.pow(1.03,S.year-1)))+(full?' · limit reached':n?' · '+n+' placed':'')+'</small></button>'}).join('')+'</div></div>'}
 function placePanel(){const g=UI.place,b=B[g.t];const why=g.x==null?'Tap the map where it should go.':canPlace(S,g.t,g.x,g.y,g.r,g.move);
   return '<div class="inspect" role="dialog" aria-label="Place '+b.n+'"><h3>'+(g.move?'Move ':'')+b.n+'</h3><p class="small muted">'+esc(b.d)+'</p><p class="warnline '+(why&&g.x!=null?'neg':'muted')+'">'+esc(why||'Drag it, rotate it, then place it.')+'</p><div class="row"><button class="btn ghost" data-a="prot" aria-label="Rotate">'+ICON.rot+'Rotate</button><button class="btn ghost" data-a="pcancel">Cancel</button><button class="btn" data-a="pok" '+(why?'disabled':'')+'>'+(g.move?'Move here':'Place · '+fmt$(Math.round(b.cost*Math.pow(1.03,S.year-1))))+'</button></div></div>'}
@@ -1740,7 +2270,7 @@ function inspectPanel(){const p=S.pl.find(q=>q.id===UI.sel),b=B[p.t];const A=ana
   return '<div class="inspect" role="dialog" aria-label="'+b.n+'"><h3>'+esc(b.stage?stageName(S,p):b.n)+'</h3><p class="small muted">'+esc(info)+' · '+fmt$(placementCost(S,p))+' a year</p>'+(warn?'<p class="warnline '+(warn.sev==='bad'?'neg':'warn')+'">'+esc(warn.t)+'</p>':'')+
     (siteLocked()?'':'<div class="row"><button class="btn ghost" data-a="smove">Move</button><button class="btn ghost" data-a="srot" aria-label="Rotate">'+ICON.rot+'</button><button class="btn ghost" data-a="sdel">Remove</button><button class="btn quiet" data-a="sdone">Done</button></div>')+'</div>'}
 function mountSite(){const st=$('#stage3d');
-  g3mount(st,{mode:'site'}).then(()=>{if(!G3.world||G3.world.site!==S.site||G3.world.pl!==S.pl||G3.world.grid!==S.grid)g3setWorld({grid:S.grid,pl:S.pl,site:S.site});
+  g3mount(st,{mode:'site'}).then(()=>{if(!G3.world||G3.world.site!==S.site||G3.world.pl!==S.pl||G3.world.grid!==S.grid||G3.gw!==S.grid[0].length||G3.gh!==S.grid.length)g3setWorld({grid:S.grid,pl:S.pl,site:S.site,rec:S.rec});
     G3.onTap=siteTap;G3.onGhostMove=(x,y)=>{if(!UI.place)return;UI.place.x=x;UI.place.y=y;refreshGhost();softRender()};
     if(G3.labelBox)G3.labelBox.style.display='';setNight(0);setRain(0);g3crowd(S,null);refreshGhost();g3select(UI.sel);overlayPaint(UI.overlay,S,ghostCone())}).catch(e=>console.error(e))}
 function ghostCone(){const g=UI.place;if(!g||g.x==null||!B[g.t].cone)return null;return{cone:coneCells({t:g.t,x:g.x,y:g.y,r:g.r},B[g.t].cone)}}
@@ -1758,7 +2288,7 @@ function afterSiteChange(){A_CACHE={k:'',a:null};g3rebuild();overlayPaint(UI.ove
 
 /* ---------- line-up ---------- */
 function viewLineup(){const d=UI.lineDay;const stg=stagesOf(S);const fees=signed(S).reduce((a,b)=>a+b.fee,0);const total=stg.reduce((a,p)=>a+SLOTS[p.t].length*3,0);const filled=S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).length;
-  let h='<main><div class="title-row"><h1>Line-up</h1><button class="btn sm" data-a="market">Browse acts</button></div><p class="sub">'+filled+' of '+total+' slots filled · '+fmt$(fees)+' signed · bill strength '+fmtK(lineupStrength(S))+'</p>';
+  let h='<main><div class="title-row"><h1>Line-up</h1><div class="row" style="flex-wrap:nowrap"><button class="btn ghost sm" data-a="poster">Poster</button><button class="btn sm" data-a="market">Browse acts</button></div></div><p class="sub">'+filled+' of '+total+' slots filled · '+fmt$(fees)+' signed · bill strength '+fmtK(lineupStrength(S))+'</p>';
   h+=seg('day',String(d),DAYL.map((n,i)=>[String(i),n]));
   if(!stg.length)h+='<div class="empty">No stages on the site yet. Place a main stage on the Site tab.</div>';
   for(const p of stg){h+='<section class="card lineup-day"><h2>'+esc(stageName(S,p))+'<small>'+(B[p.t].tentCap?fmtN(B[p.t].tentCap)+' capacity':fmtN((analyse(S).arenas.find(a=>a.p===p)||{cap:0}).cap)+' in the field')+'</small></h2>';
@@ -1800,11 +2330,11 @@ function slotSheet(){const o=UI.slotSel;const b=slotAt(S,o.p.id,o.day,o.slot);if
     (b.st==='signed'&&S.phase!=='wrap'?'<button class="btn ghost wide" style="margin-top:12px" data-a="drop" data-v="'+b.id+'">Drop them · pay the full fee as a kill fee</button>':'')}
 function oddsTxt(r){return r<.68?'They will refuse, and take it as an insult.':r<.88?'Expect a counter-offer.':r<.97?'Could go either way.':r<1.08?'Better than even.':'Very likely yes.'}
 function autofillPlan(){const out=[];const used=new Set(S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).map(b=>b.actId));
-  for(const p of stagesOf(S))for(let d=0;d<3;d++)SLOTS[p.t].forEach((sd,i)=>{if(i===0&&(p.t==='main'||p.t==='tent'))return;if(slotAt(S,p.id,d,i))return;
-    const c=S.acts.filter(a=>!used.has(a.id)&&!unavailable(S,a)&&fitsSlot(a,p,i)&&a.fame<=(sd[3][0]+sd[3][1])/2).sort((a,b)=>appeal(b)/feeOf(b,S)-appeal(a)/feeOf(a,S))[0];if(c){used.add(c.id);out.push({a:c,p,d,i,fee:askFor(S,c,{stage:p.id,slot:i}).fee})}});
+  for(const p of stagesOf(S))for(let d=0;d<3;d++)SLOTS[p.t].forEach((sd,i)=>{if(i===0&&(isMain(p.t)||p.t==='tent')&&!UI.autoHead)return;if(slotAt(S,p.id,d,i))return;
+    const head=i===0&&(isMain(p.t)||p.t==='tent');const budget=Math.max(60000,S.money*(isMain(p.t)?.14:.05));const c=head?S.acts.filter(a=>!used.has(a.id)&&!unavailable(S,a)&&a.fame>=sd[3][0]-8&&feeOf(a,S)<=budget).sort((a,b)=>b.fame-a.fame)[0]:S.acts.filter(a=>!used.has(a.id)&&!unavailable(S,a)&&fitsSlot(a,p,i)&&a.fame<=(sd[3][0]+sd[3][1])/2).sort((a,b)=>appeal(b)/feeOf(b,S)-appeal(a)/feeOf(a,S))[0];if(c){used.add(c.id);out.push({a:c,p,d,i,fee:askFor(S,c,{stage:p.id,slot:i}).fee})}});
   return out}
 function autofillSheet(){const L=autofillPlan();UI.auto=L;const tot=L.reduce((a,x)=>a+x.fee,0);
-  return '<h2>Plan the undercard</h2><p class="sub">'+L.length+' offers at asking price, '+fmt$(tot)+' in total ('+fmt$(tot/2)+' in deposits if all sign).</p><ul class="list">'+L.slice(0,40).map(x=>'<li>'+avatar(x.a)+'<div class="grow"><b>'+esc(x.a.name)+'</b><div class="meta">'+DAYS[x.d]+' · '+esc(stageName(S,x.p))+' · '+GENRES[x.a.genre].n+' · '+x.a.fame+'</div></div><span class="num">'+fmt$(x.fee)+'</span></li>').join('')+'</ul><button class="btn wide" style="margin-top:12px" data-a="autogo" '+(L.length?'':'disabled')+'>Send '+L.length+' offers</button>'}
+  return seg('autohead',UI.autoHead?'1':'0',[['0','Undercard only'],['1','Whole bill']])+'<h2>Plan the '+(UI.autoHead?'whole bill':'undercard')+'</h2><p class="sub">'+L.length+' offers at asking price, '+fmt$(tot)+' in total ('+fmt$(tot/2)+' in deposits if all sign).</p><ul class="list">'+L.slice(0,40).map(x=>'<li>'+avatar(x.a)+'<div class="grow"><b>'+esc(x.a.name)+'</b><div class="meta">'+DAYS[x.d]+' · '+esc(stageName(S,x.p))+' · '+GENRES[x.a.genre].n+' · '+x.a.fame+'</div></div><span class="num">'+fmt$(x.fee)+'</span></li>').join('')+'</ul><button class="btn wide" style="margin-top:12px" data-a="autogo" '+(L.length?'':'disabled')+'>Send '+L.length+' offers</button>'}
 
 /* ---------- live ---------- */
 function renderLive(app){const L=S.live;const A=analyse(S);const st=STEPS[Math.min(L.i,STEPS.length-1)];const wx=L.cur||weatherAt(S,st.d,Math.min(st.h,23));
@@ -1816,14 +2346,23 @@ function renderLive(app){const L=S.live;const A=analyse(S);const st=STEPS[Math.m
   let panel='<div class="live-panel" id="livepanel">';
   if(L.done){panel+='<div class="decision"><h3>That’s a wrap</h3><p>'+fmtN(L.arrived+L.fenceIn)+' came through the gates. Mood averaged '+Math.round(L.moodAvg)+'. '+L.pres+' medical cases'+(L.serious?', '+L.serious+' to hospital':'')+'. '+fmt$(L.bar)+' over the bars.</p><button class="btn wide" data-a="wrap">Read the reviews</button></div>'}
   else if(L.dec){const d=L.dec;panel+='<div class="decision" role="alertdialog" aria-label="'+esc(d.t)+'"><h3>'+esc(d.t)+'</h3><p>'+esc(d.x)+'</p><div class="opts">'+d.opts.map((o,i)=>'<button class="opt" data-a="dec" data-v="'+i+'"><span><b>'+esc(o.l)+'</b>'+(o.d?'<small>'+esc(o.d)+'</small>':'')+'</span></button>').join('')+'</div></div>'}
-  else panel+='<div class="live-controls">'+seg('speed',String(L.speed),[['0','Pause'],['1','Play'],['3','Fast']])+'<button class="btn ghost sm" data-a="skipday">Skip to tonight</button></div>';
-  panel+='<ul class="list feed" aria-live="polite">'+L.log.slice(0,30).map(x=>'<li><time>'+esc(x.t)+'</time><div class="grow '+(x.k==='bad'?'neg':x.k==='good'?'pos':x.k==='warn'?'warn':'')+'">'+esc(x.x)+'</div></li>').join('')+'</ul></div>';
+  else{panel+='<div class="live-controls">'+seg('speed',String(L.speed),[['0','Pause'],['1','Play'],['3','Fast']])+'<button class="btn ghost sm" data-a="skipday">Skip to tonight</button></div>';
+    const cx=cueAvailable(S);if(cx){const st2=STEPS[Math.min(L.i,STEPS.length-1)];panel+='<div class="chips" role="group" aria-label="Show cues">'+Object.entries(CUES).map(([k,c])=>{const used=L.cues&&L.cues[k+st2.d];return '<button class="chip" data-a="cue" data-v="'+k+'" '+(used?'disabled style="opacity:.4"':'')+'>'+c.n+(c.c?' · '+fmt$(c.c):'')+'</button>'}).join('')+'</div>'}}
+  panel+='<ul class="list feed" aria-live="polite">'+L.log.slice(0,30).map(x=>'<li><time>'+esc(x.t)+'</time><div class="grow '+(x.k==='bad'?'neg':x.k==='good'?'pos':x.k==='warn'?'warn':x.k==='social'?'muted':'')+'">'+(x.k==='social'?'<b style="color:#fff;font-weight:500">'+esc(x.x.split(': ')[0])+'</b> '+esc(x.x.split(': ').slice(1).join(': ')):esc(x.x))+'</div></li>').join('')+'</ul></div>';
   app.innerHTML=top+hud+panel;
   const stg=$('#stage3d');stg.hidden=false;const ph=$('#livepanel');stg.style.bottom=(ph?ph.offsetHeight:300)+'px';
-  g3mount(stg,{mode:'live',cam:G3.lastMode!=='live'?{tx:0,tz:-5,d:48,az:0,el:.95}:null}).then(()=>{if(!G3.world||G3.world.pl!==S.pl)g3setWorld({grid:S.grid,pl:S.pl,site:S.site});g3select(null);g3ghost(null);overlayPaint('none',S);
+  g3mount(stg,{mode:'live',cam:G3.lastMode!=='live'?{tx:0,tz:-H*.15,d:Math.max(W,H)*1.5,az:0,el:.95}:null}).then(()=>{if(!G3.world||G3.world.pl!==S.pl||G3.gw!==S.grid[0].length||G3.gh!==S.grid.length)g3setWorld({grid:S.grid,pl:S.pl,site:S.site,rec:S.rec});g3select(null);g3ghost(null);overlayPaint('none',S);
     const h=st.h>=24?26:st.h;setNight(h>=21?1:h>=20?.6:h>=19?.3:0);setRain(wx.rain);setMud(S,L.mud);if(L.dist)g3crowd(S,L.dist);
-    if(G3.labelBox)G3.labelBox.style.display='none';}).catch(()=>{});
+    if(G3.labelBox)G3.labelBox.style.display='none';G3.onTap=liveTap;G3.onGhostMove=null;}).catch(()=>{});
   renderSheet();liveTimer()}
+function liveTap(c){if(!inG(c.x,c.y))return;const o=occGrid(S)[c.y*W+c.x];if(!o)return;const L=S.live;const st=STEPS[Math.min(L.i,STEPS.length-1)];const A=analyse(S);let body='';
+  if(B[o.t].stage){const play=playingAt(S,st.d,Math.min(st.h,23)).find(x=>x.p===o);const ar=A.arenas.find(a=>a.p===o);const n=L.dist&&L.dist.stages.find(x=>x.p===o);const next=SLOTS[o.t].map((sd,i)=>({i,t:slotTime(S,o,i,st.d),b:slotAt(S,o.id,st.d,i)})).filter(x=>x.b&&x.b.st==='signed'&&x.t>=st.h+.5).sort((a,b)=>a.t-b.t)[0];
+    body='<h2>'+esc(stageName(S,o))+'</h2><p class="sub">'+(L.stopped[o.id]?'Stopped':play?'Now: '+esc(play.a.name):'Between sets')+'</p><div class="kpis"><div class="kpi"><label>Crowd</label><b>'+fmtK(n?n.n:0)+'</b><small>of '+fmtK(ar?ar.cap:0)+' capacity</small></div><div class="kpi"><label>Next up</label><b style="font-size:16px">'+(next?esc(act(next.b.actId).name):'—')+'</b><small>'+(next?hhmm(next.t):'Done for today')+'</small></div></div>'}
+  else if(o.t==='bar')body='<h2>Bar</h2><p class="sub">'+fmt$(L.bar)+' taken across '+A.bars+' bars so far. Queues average '+Math.round(Math.min(60,(L.barQ||0)*14))+' minutes.</p>';
+  else if(B[o.t].cat==='camp')body='<h2>'+B[o.t].n+'</h2><p class="sub">'+(L.mud>40?'Muddy and loud. ':'')+'About '+fmtK(L.dist?L.dist.camp/Math.max(1,S.pl.filter(p=>B[p.t].cat==='camp').length):0)+' people here right now.</p>';
+  else if(o.t==='medical'||o.t==='firstaid')body='<h2>'+B[o.t].n+'</h2><p class="sub">'+L.pres+' patients seen this weekend. '+(L.serious?L.serious+' serious.':'Nothing serious so far.')+'</p>';
+  else body='<h2>'+B[o.t].n+'</h2><p class="sub">'+esc(B[o.t].d)+'</p>';
+  UI.sheet=body+'<button class="btn ghost wide" style="margin-top:12px" data-a="closesheet">Back to the weekend</button>';UI.sheetAt=Date.now();renderSheet()}
 let LT=0;
 function liveTimer(){clearTimeout(LT);const L=S&&S.live;if(!L||L.done||L.dec||!L.speed||S.phase!=='live')return;LT=setTimeout(()=>{if(!S||!S.live||S.live.dec||S.live.done)return;liveStep(S);render()},L.speed===3?420:1300)}
 
@@ -1842,6 +2381,7 @@ function renderSheet(){const L=$('#layer');if(!UI.sheet){L.innerHTML='';return}l
   L.innerHTML='<div class="scrim" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" data-stop><div class="grab" aria-hidden="true"></div>'+inner+'</div></div>';
   const sh=L.querySelector('.sheet');if(sh&&UI.keepScroll)sh.scrollTop=prevScroll;UI.keepScroll=false}
 function guideSheet(){const G=[
+  ['Getting started','Pick the Relaxed difficulty and a small site for your first go. Your site comes laid out already; “Fix it for me” on the Site tab tops up toilets, water, bars and campsites whenever you change things. On the Line-up tab, “Plan the undercard” can book the whole bill for you, and on Tickets, “Set prices for a fast sell-out” does the maths. Hit the three yearly goals for bonus cash.'],
   ['The year','Each turn is one festival year: booking season (8 rounds), ticket on-sale (12 weeks), build week, the weekend itself and the wrap-up. Cash moves as it would in real life: artist deposits when you sign, ticket money as it sells, production and staff in build week, the rest in September.'],
   ['The site','Each grid square is 20 m. Stages need an open field in front of them: anything in that field blocks sightlines. Sound falls off about 6 dB each time the distance doubles, and much faster behind a stage, so point stages away from homes. The crowd-flow view shows where people squeeze through at the headliner changeover. Drag to move the map, pinch to zoom, twist to turn it. With a keyboard: arrow keys move the map or the piece you are placing, R rotates, Enter places.'],
   ['Ratios that matter','Toilets: about 1 per 75–100 people (Purple Guide). Water: free, about 1 point per 2,500. Security: 1 SIA guard per 100, usually a licence condition. Bars: one 10 m bar per 1,500–2,000 people. Campsites need 20 m fire breaks.'],
@@ -1849,9 +2389,11 @@ function guideSheet(){const G=[
   ['Tickets','Prices include 20% VAT, so £1 in every £6 goes to HMRC. Underprice and you sell out fast, but touts take the margin. Named tickets and a face-value resale platform fight touts. Day tickets eat into weekend capacity.'],
   ['The weekend','Hour by hour: arrivals through the gates, crowds at the stages, bar and toilet queues, heat, mud, wind and lightning. Over 20 m/s the main stage roof is at risk. Curfew breaches cost about £2,500 a minute and anger the council.'],
   ['Money','Most first-year festivals lose money. Artist fees are usually the biggest cost, then production and site. Bars are the biggest income after tickets. The bank lends against your last year’s revenue; the overdraft charges 14%.'],
+  ['Growing','Lease the next field (Tickets tab) for more land and a bigger licence, build a Pyramid stage for 40,000+ crowds, or start again on a bigger site: an old airfield for 40,000 or a whole valley for 70,000.'],
+  ['During the weekend','Tap any stage, bar, campsite or the medical centre to see what is happening there. While a headliner plays you can fire show cues: fireworks, confetti, a drone show or lighters up. Fans post as it happens.'],
   ['Reputation','Five outlets review each year: fans, music press, the tabloids, the local paper and the trade. Reputation drives demand and lets you afford bigger acts. A disaster can end everything; a run of great years makes a legend.']];
   return '<h2>How it works</h2><p class="sub">Festival Tycoon uses real UK festival-industry rules of thumb.</p>'+G.map(g=>'<div class="sec">'+g[0]+'</div><p class="muted">'+g[1]+'</p>').join('')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>'}
-function menuSheet(){return '<h2>'+esc(S.name)+'</h2><p class="sub">Slot '+S.slot+' · saved automatically.</p><div class="stack"><button class="btn ghost wide" data-a="guide">How it works</button><button class="btn ghost wide" data-a="licsheet">Licence conditions</button>'+(S.hist.length?'<button class="btn ghost wide" data-a="retire">Retire and hand it on</button>':'')+'<button class="btn wide" data-a="totitle">Save and exit</button><button class="btn quiet wide" data-a="closesheet">Back</button></div>'}
+function menuSheet(){return '<h2>'+esc(S.name)+'</h2><p class="sub">Slot '+S.slot+' · saved automatically.</p><div class="stack"><button class="btn ghost wide" data-a="guide">How it works</button><button class="btn ghost wide" data-a="trophies">Trophies ('+Object.keys(S.trophies).length+' of '+TROPHIES.length+')</button><button class="btn ghost wide" data-a="licsheet">Licence conditions</button>'+(S.hist.length?'<button class="btn ghost wide" data-a="retire">Retire and hand it on</button>':'')+'<button class="btn wide" data-a="totitle">Save and exit</button><button class="btn quiet wide" data-a="closesheet">Back</button></div>'}
 
 /* ---------- actions ---------- */
 function closeSheet(){UI.sheet=null;renderSheet()}
@@ -1861,22 +2403,23 @@ const ACT={
   guide(){UI.sheet=guideSheet;renderSheet()},
   licsheet(){UI.sheet=()=>'<h2>Premises licence</h2>'+licenceCard().replace(/^<section class="card"><h2>Premises licence<small>[^<]*<\/small><\/h2>/,'').replace(/<\/section>$/,'')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>';renderSheet()},
   totitle(){save();S=null;UI.sheet=null;UI.tab='plan';clearTimeout(LT);render()},
-  new(v){UI.setup={slot:+v,name:festName(),site:'farm',founder:'promoter'};render();drawThumbs()},
+  new(v){UI.setup={slot:+v,name:festName(),site:'farm',founder:'promoter',diff:'relaxed'};render();drawThumbs()},
+  sdiff(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.diff=v;render();drawThumbs()},
   cancelsetup(){UI.setup=null;render()},
   rname(){UI.setup.name=festName();render();drawThumbs()},
   ssite(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.site=v;render();drawThumbs()},
   sfound(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.founder=v;render();drawThumbs()},
   start(){const u=UI.setup;const nm=($('#fname').value||'').trim()||u.name;const F={promoter:[900000,500000],backed:[1600000,1200000],diy:[600000,250000]}[u.founder];
-    newState({slot:u.slot,name:nm,site:u.site,founder:u.founder,cash:F[0],loan:F[1]});
+    newState({slot:u.slot,name:nm,site:u.site,founder:u.founder,cash:F[0],loan:F[1],diff:u.diff});
     if(u.founder==='promoter')for(const k in S.agRel)S.agRel[k]=62;if(u.founder==='diy'){S.cred=70}if(u.founder==='backed')S.rep+=4;
     UI.setup=null;UI.tab='plan';A_CACHE={k:'',a:null};save();render();window.scrollTo(0,0)},
   load(v){const s=readSlot(+v);if(!s){toast('That save could not be read.');return}S=migrate(s);S.slot=+v;UI.tab='plan';UI.sheet=null;A_CACHE={k:'',a:null};G3.world=null;render();window.scrollTo(0,0)},
   del(v){const s=readSlot(+v);UI.sheet='<h2>Delete '+esc(s?s.name:'this save')+'?</h2><p class="sub">This can’t be undone.</p><div class="row"><button class="btn danger" data-a="dely" data-v="'+v+'">Delete</button><button class="btn ghost" data-a="closesheet">Cancel</button></div>';renderSheet()},
   dely(v){delSlot(+v);UI.sheet=null;render()},
   endround(){const before=S.news.length;endBookingRound(S);const n=S.news.slice(0,Math.max(1,S.news.length-before)).filter(x=>x.k==='book'||x.k==='rival').length;toast(S.phase==='onsale'?'Booking closed. Tickets go on general sale.':'Round '+(S.round-1)+' done. '+(n?n+' replies in the news.':''));render();window.scrollTo(0,0)},
-  week(){const r=saleWeek(S);toast(S.phase==='build'?'On-sale over. Build week begins.':'Week '+S.week+': '+fmtN(r.soldW+r.vipN)+' weekend, '+fmtN(r.dayN)+' day tickets.');render()},
+  week(){const w0=S.week;const r=saleWeek(S);if(w0===0&&S.phase==='onsale'){render();runDrop(r);return}toast(S.phase==='build'?'On-sale over. Build week begins.':'Week '+S.week+': '+fmtN(r.soldW+r.vipN)+' weekend, '+fmtN(r.dayN)+' day tickets.');render()},
   open(){if(!canOpen(S)){toast('The safety advisory group hasn’t signed off.');return}openGates(S);UI.tab='plan';render()},
-  wrap(){wrapYear(S);UI.tab='plan';$('#stage3d').hidden=true;G3.crowdN=0;if(G3.ok)G3.crowd.count=0;render();window.scrollTo(0,0)},
+  wrap(){wrapYear(S);if(UI.newTrophy){const tn=UI.newTrophy;setTimeout(()=>toast('Trophy unlocked: '+tn),400);UI.newTrophy=null}UI.tab='plan';$('#stage3d').hidden=true;G3.crowdN=0;if(G3.ok)G3.crowd.count=0;render();window.scrollTo(0,0)},
   nextyear(){if(S.money<-S.odLimit){const need=Math.ceil((-S.odLimit-S.money)/50000)*50000;const lim=creditLimit(S);
       UI.sheet='<h2>The bank wants a word</h2><p class="sub">You are '+fmt$(need)+' past your overdraft. '+(lim>=need?'The bank will lend you '+fmt$(need)+' at '+(loanRateFor(S)*100+2).toFixed(1)+'% to keep going.':'The bank won’t lend you any more.')+'</p><div class="stack">'+(lim>=need?'<button class="btn wide" data-a="rescue" data-v="'+need+'">Borrow '+fmt$(need)+' and carry on</button>':'')+'<button class="btn '+(lim>=need?'ghost':'danger')+' wide" data-a="bust">Call in the administrators</button><button class="btn quiet wide" data-a="closesheet">Not yet</button></div>';renderSheet();return}
     nextYear(S);UI.tab='plan';render();window.scrollTo(0,0)},
@@ -1900,8 +2443,8 @@ const ACT={
     g3ghost(null);refreshGhost();afterSiteChange()},
   smove(){const p=S.pl.find(q=>q.id===UI.sel);UI.place={t:p.t,r:p.r,x:p.x,y:p.y,move:p.id,k:p.k};UI.sel=null;g3select(null);refreshGhost();softRender()},
   srot(){const p=S.pl.find(q=>q.id===UI.sel);const nr=(p.r+1)%4;if(canPlace(S,p.t,p.x,p.y,nr,p.id)){toast('No room to rotate it here. Move it first.');return}p.r=nr;g3select(p.id);afterSiteChange()},
-  sdel(){const p=S.pl.find(q=>q.id===UI.sel);if(B[p.t].stage&&S.bk.some(b=>b.stage===p.id&&['signed','pending','counter'].includes(b.st))){toast('Acts are booked on this stage. Move them first.');return}S.pl=S.pl.filter(q=>q.id!==p.id);UI.undo=p;UI.sel=null;g3select(null);G3.world.pl=S.pl;afterSiteChange();toast(B[p.t].n+' removed.',{l:'Undo',a:'undo'})},
-  undo(){const p=UI.undo;if(!p||canPlace(S,p.t,p.x,p.y,p.r)){toast('Can’t put it back there now.');return}S.pl.push(p);UI.undo=null;G3.world.pl=S.pl;$('.toast')?.remove();afterSiteChange()},
+  sdel(){const p=S.pl.find(q=>q.id===UI.sel);if(B[p.t].stage&&S.bk.some(b=>b.stage===p.id&&['signed','pending','counter'].includes(b.st))){toast('Acts are booked on this stage. Move them first.');return}S.pl=S.pl.filter(q=>q.id!==p.id);UI.undo=p;UI.sel=null;g3select(null);if(G3.world)G3.world.pl=S.pl;afterSiteChange();toast(B[p.t].n+' removed.',{l:'Undo',a:'undo'})},
+  undo(){const p=UI.undo;if(!p||canPlace(S,p.t,p.x,p.y,p.r)){toast('Can’t put it back there now.');return}S.pl.push(p);UI.undo=null;if(G3.world)G3.world.pl=S.pl;$('.toast')?.remove();afterSiteChange()},
   sdone(){UI.sel=null;g3select(null);softRender()},
   // line-up
   day(v){UI.lineDay=+v;render()},
@@ -1919,6 +2462,17 @@ const ACT={
   drop(v){const b=S.bk.find(x=>x.id===v);const a=act(b.actId);UI.sheet='<h2>Drop '+esc(a.name)+'?</h2><p class="sub">You pay the full '+fmt$(b.fee)+' as a kill fee and '+esc(AG_N(a.ag))+' won’t forget it.</p><div class="row"><button class="btn danger" data-a="dropy" data-v="'+v+'">Drop them</button><button class="btn ghost" data-a="closesheet">Keep them</button></div>';renderSheet()},
   dropy(v){const b=S.bk.find(x=>x.id===v);const a=act(b.actId);cash(S,-(b.fee-(b.dep||0)));ledger(S,'Kill fees',-b.fee);b.st='cancelled';S.agRel[a.ag]=clamp(S.agRel[a.ag]-12,0,100);addNews(S,'You dropped '+a.name+'. Their agent called it unprofessional.','book');UI.sheet=null;save();render()},
   autofill(){UI.sheet=autofillSheet;renderSheet()},
+  autohead(v){UI.autoHead=v==='1';UI.keepScroll=true;renderSheet()},
+  poster(){UI.sheet=posterSheet;renderSheet()},
+  trophies(){UI.sheet=trophySheet;renderSheet()},
+  rideryes(v){riderAnswer(S,v,true);save();render()},riderno(v){riderAnswer(S,v,false);save();render()},
+  suggest(){const r=suggestPrices(S);toast(r.short?'Even cheap tickets won’t fill the site with this line-up. Book bigger names.':'Tier 1 now '+fmt$(S.tix.wk[1].p)+'. Demand should comfortably beat capacity.');save();render()},
+  dropdone(){UI.drop=null;UI.sheet=null;render()},
+  cue(v){fireCue(S,v);render()},
+  assist(){if(S.phase==='live')return;const r=autoLayout(S,true);UI.sel=null;UI.place=null;if(G3.world)G3.world.pl=S.pl;afterSiteChange();const cost=r.added.reduce((a,p)=>a+placementCost(S,p),0);
+    toast(r.added.length||r.removed.length?'Assistant added '+r.added.length+(r.removed.length?' and moved '+r.removed.length:'')+' items ('+fmt$(cost)+' a year).':'Nothing to fix. Your site meets the ratios.')},
+  expand(){if((S.expand||0)>=2)return;const add=Math.round(SITES[S.site].cap*.3/500)*500;if(S.council<40){toast('The council refused. Win back the neighbours first.');return}
+    expandSite(S);S.lic.cap+=add;S.tix.day.a=Math.round(S.tix.day.a*1.15);addNews(S,'You leased the next field. The council approved a licence for '+fmtN(S.lic.cap)+' people.','council');G3.world=null;save();UI.tab='site';render();toast('New field leased. Use “Fix it for me” to fill it.')},
   autogo(){const L=UI.auto||[];for(const x of L)makeOffer(S,x.a.id,{stage:x.p.id,day:x.d,slot:x.i,fee:x.fee});UI.sheet=null;toast(L.length+' offers sent.');save();render()},
   // tickets
   tp(v){const [i,d]=v.split('|');const t=S.tix.wk[+i];t.p=clamp(t.p+(+d)*5,40,600);save();render()},
@@ -1934,8 +2488,8 @@ const ACT={
   nospon(v){S.sponOffers=S.sponOffers.filter(x=>x.k!==v);save();render()},
   vary(){const n=varStep();S.lic.varReq=n;cash(S,-5000);addNews(S,'Applied to vary the licence to '+fmtN(S.lic.cap+n)+'.','council');save();render()},
   // money
-  sec(v){S.ops.sec=Math.max(0,S.ops.sec+(+v.split('|')[1])*5);save();render()},
-  stew(v){S.ops.stew=Math.max(0,S.ops.stew+(+v.split('|')[1])*5);save();render()},
+  sec(v){S.ops.autoStaff=false;S.ops.sec=Math.max(0,S.ops.sec+(+v.split('|')[1])*5);save();render()},
+  stew(v){S.ops.autoStaff=false;S.ops.stew=Math.max(0,S.ops.stew+(+v.split('|')[1])*5);save();render()},
   med(v){S.ops.med=v;save();render()},prod(v){S.ops.prod=v;A_CACHE.k='';save();render()},bars(v){S.ops.barStaff=+v;save();render()},clean(v){S.ops.clean=+v;save();render()},
   comm(v){S.ops.community=Math.max(0,S.ops.community+(+v.split('|')[1])*5000);save();render()},
   cont(v){S.ops.contingency=Math.max(0,S.ops.contingency+(+v.split('|')[1])*25000);save();render()},
@@ -1947,7 +2501,7 @@ const ACT={
   dec(v){decide(S,+v);render()},
   skipday(){const L=S.live;const d=STEPS[L.i].d;let guard=0;while(!L.done&&!L.dec&&STEPS[L.i]&&STEPS[L.i].d===d&&STEPS[L.i].h<21&&guard++<20)liveStep(S);render()},
 };
-document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;if(b.classList.contains('scrim')&&e.target!==b)return;const f=ACT[b.dataset.a];if(f){f(b.dataset.v,b)}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;if(b.classList.contains('scrim')&&(e.target!==b||Date.now()-(UI.sheetAt||0)<500))return;const f=ACT[b.dataset.a];if(f){f(b.dataset.v,b)}});
 document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.in;if(!k)return;
   if(k==='mkt'){S.tix.mkt=+e.target.value;const sm=e.target.closest('.card').querySelector('h2 small');if(sm)sm.textContent=fmt$(S.tix.mkt);save()}
   if(k==='ofee'){UI.offer.fee=+e.target.value;const card=e.target.closest('.card');const ask=askFor(S,act(UI.offer.actId),UI.offer).fee;card.querySelector('b').textContent=fmt$(UI.offer.fee,true);const r=UI.offer.fee/ask;card.querySelector('.row .small').textContent=pct(r)+' of asking';card.querySelector('p.small').textContent=oddsTxt(r)}});
@@ -1962,7 +2516,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){}
-const APP_VER='202610250240';
+const APP_VER='202610301804';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,liveStep,G3,sagChecks,projection,STEPS};

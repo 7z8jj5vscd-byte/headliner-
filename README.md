@@ -46,13 +46,11 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/manager/
 
 ## Festival Tycoon
 
-Found and run your own music festival, one festival year per turn. Lease a site (a cheap farm, a pretty country estate or a city park with no camping), then work through booking season, ticket on-sale, build week, the weekend itself and the wrap-up. All acts, festivals, agencies and companies are fictional.
+Found and run your own music festival, one festival year per turn. Pick a difficulty (Relaxed is the default) and a site, from a 10,000-capacity farm up to an old airfield for 40,000 or a whole valley for 70,000, then work through booking season, ticket on-sale, build week, the weekend itself and the wrap-up. Book real-world artists, from rising names to global superstars; their fees, popularity and everything that happens to them in the game are made up. The festivals, agencies, brands and press are fictional.
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/festival/
 
-Lay out the grounds in a 3D overhead view you can drag, pinch and turn: stages, campsites, bars, food courts, toilets, water, medical, event control, entrances, VIP, boutique camping and art. Overlays show noise at the neighbours' homes, sightlines, crowd pinch points, toilet and water coverage and wet ground, and a safety advisory group checks it all against Purple Guide ratios before you can open. Book acts through their agents with fees that rise steeply with fame, radius clauses, next-year options, routing discounts, counter-offers and cancellations, while a rival festival bids for the same names. Price early birds, tiers, day tickets and VIP, and watch touts and resale prices if you get it wrong. The weekend then plays hour by hour with gate queues, bar takings, medical cases, heat, mud, gales and lightning, curfew overruns and crowd surges to decide on, ending in five reviews, a council debrief and a full P&L. Grow it into a legendary brand, sell out to a giant promoter, or end up as a documentary.
-
-The other games install on iPhone the same way: open the link in Safari, tap Share, then Add to Home Screen.
+Your site arrives already laid out, and the site assistant tops up toilets, water, bars and campsites whenever you change things. Lay out the grounds yourself in a 3D overhead view you can drag, pinch and turn, with overlays for noise at the neighbours' homes, sightlines, crowd pinch points and wet ground. Grow by leasing the next field or building a Pyramid stage. Book acts through their agents (or let your booker plan the whole bill), handle rider requests, beat a rival festival to the big names, then watch the general sale open live in the online waiting room. During the hour-by-hour weekend, tap any stage to see who is on, fire fireworks, confetti or a drone show during the headliner, follow the fans' posts, and make the calls on storms, curfews and crowd surges. Each year ends with reviews, the Festival Awards, three goals with cash bonuses, a council debrief and a full P&L, with 19 trophies to collect.
 
 ## Updates go live automatically
 
