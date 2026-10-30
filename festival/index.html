@@ -2120,7 +2120,7 @@ const STORY=[
   text:s=>{const ok=SF(s).path==='grow'?((s.wrap.rec.att/s.lic.cap)>=.85&&(s.expand||0)>0):s.wrap.R.avg>=3.5;SF(s).goal2=ok;return 'Priya’s long read lands: “'+s.name+': '+(s.wrap.R.avg>=3.5?'the festival that grew up':'growing pains in a field')+'”. '+(ok?'You hit the goal you and Jess set. ':'You missed the goal you and Jess set. ')+'She ends it with a question: “Can an independent survive Monolith?”\n\nThe comments are on fire.'},
   choices:[{l:'Reply with a thank-you thread',d:'Followers and goodwill',fx:s=>{if(s.social)s.social.followers=Math.round(s.social.followers*1.15);s.cred=clamp(s.cred+2,0,100)}},
     {l:'Say nothing and get back to work',fx:s=>{}}]},
- {id:'ted3',ch:3,who:'maya',when:s=>s.year===3&&s.phase==='booking',title:'Ted’s fall',
+ {id:'ted3',ch:3,who:'maya',when:s=>s.year===3&&s.phase==='booking'&&s.site==='farm',title:'Ted’s fall',
   text:s=>'Ted fell from the hay loft in March. He’ll be fine, but his daughter Maya is running the farm now and she doesn’t do sentiment.\n\n“Developers have offered three million for the land. Houses. I’m sorry. Unless you can match it by September, or pay a lot more rent.”',
   choices:[{l:'Promise to buy the farm',d:'Have £3m in cash at the wrap-up this year',fx:s=>{SF(s).farm='buy'}},
     {l:'Agree a 10-year lease at double rent',d:'Safe, but rent doubles for good',fx:s=>{SF(s).farm='lease';SF(s).rentX=2}},
@@ -2129,7 +2129,7 @@ const STORY=[
   text:s=>'Jess won’t look at you. “Victor offered me a job. Head of booking at Monolith. Double the money, and I’d get to sleep.”',
   choices:[{l:'Give Jess 20% of the festival',d:'She stays. Profits are shared from now on',fx:s=>{SF(s).jessShare=1;SF(s).jess='partner'}},
     {l:'Wish her luck',d:'She takes her contacts with her. Every agent likes you a bit less',fx:s=>{SF(s).jess='gone';for(const k in s.agRel)s.agRel[k]=clamp(s.agRel[k]-10,0,100)}}]},
- {id:'farm3',ch:4,who:'maya',when:s=>s.year===3&&s.phase==='wrap',title:'Chapter 4: Decision day',
+ {id:'farm3',ch:4,who:'maya',when:s=>s.year===3&&s.phase==='wrap'&&!!SF(s).farm,title:'Chapter 4: Decision day',
   text:s=>{const f=SF(s).farm;if(f==='buy')return s.money>=3000000?'Maya counts the zeros twice. “Dad would have liked this.” Hollow Farm is yours. No more rent, ever.':'You’re short. Maya signs with the developers. The diggers come in November. You’ll have to start again somewhere bigger: Hartwell Airfield.';
     if(f==='move')return 'One last sunrise over Hollow Farm. Next year: Hartwell Airfield, 40,000 people and nobody to wave at from the tractor.';return 'The lease is signed for ten years. Maya shakes your hand and almost smiles.'},
   choices:[{l:'Onwards',fx:s=>{const f=SF(s).farm;if(f==='buy'&&s.money>=3000000){s.money-=3000000;SF(s).owned=1;addNews(s,'You bought Hollow Farm.','story')}else if(f==='buy'||f==='move'){SF(s).relocate=1}}}],
@@ -2147,9 +2147,9 @@ const STORY=[
     if(e==='fight')t=won?'Wildwood Fields loses millions and quietly cancels its next year. Victor Crane resigns “to spend time with his yacht.” Your festival is the biggest independent in the country.':'You survived, just. Wildwood is still there. So are you, bruised and still independent.';
     else if(e==='merge')t='The posters now say “Monolith Live presents”. The festival is safe, and richer, and a little less yours.';else t='Another summer, another field full of people singing.';
     const j=SF(s).jess==='gone'?'Jess sends a text from Monolith HQ: “Proud of you. Always.”':SF(s).jess==='partner'?'Jess, your partner now, is already planning next year.':'Jess falls asleep on a hay bale by 10pm, grinning.';
-    const t2=SF(s).owned?'Ted, back on his feet, watches from the farmhouse porch. His land, your festival.':SF(s).relocate?'Ted visits the airfield once. He says it’s very flat.':'Ted waves from the tractor, as always.';
+    const t2=SF(s).owned?'Ted, back on his feet, watches from the farmhouse porch. His land, your festival.':SF(s).relocate||s.site!=='farm'?'Ted visits '+SITES[s.site].n+' once. He says it’s very '+(s.site==='airfield'?'flat':s.site==='city'?'loud':'grand')+'.':'Ted waves from the tractor, as always.';
     return t+'\n\n'+j+'\n\n'+t2},
-  choices:[{l:'The end (keep playing)',d:'Your story is done. The festival goes on in free play',fx:s=>{s.story.done=1;s.story.on=false;award(s,'story')}},{l:'Finish here',fx:s=>{s.story.done=1;s.over={k:'story',t:'The End'}}}]}];
+  choices:[{l:'Carry on into Part Two',d:'Five more years, bigger venues, new characters and a new ending',fx:s=>{SF(s).p2=1;award(s,'story')}},{l:'Keep playing without the story',d:'The festival goes on in free play',fx:s=>{s.story.done=1;s.story.on=false;award(s,'story')}},{l:'Finish here',fx:s=>{s.story.done=1;s.over={k:'story',t:'The End'}}}]}];
 function victorBid(s){return SF(s).bid||(SF(s).bid=Math.max(2e6,Math.round((s.rep*90000+s.lic.cap*120)/100000)*100000))}
 function storyOn(s){return s&&s.story&&s.story.on}
 function nextScene(s){if(!storyOn(s))return null;return STORY.find(sc=>!s.story.seen[sc.id]&&sc.when(s))||null}
@@ -2157,8 +2157,8 @@ function storySheet(){const sc=nextScene(S);if(!sc){UI.sheet=null;return ''}cons
   return '<p class="small" style="color:'+who.c+';font-weight:600;margin-bottom:4px">'+esc(who.n)+' · '+esc(who.r)+'</p><h2 style="font-size:22px;margin-bottom:12px">'+esc(sc.title)+'</h2>'+txt.split('\n\n').map(p=>'<p style="margin-bottom:12px;font-size:15px;line-height:1.55">'+esc(p)+'</p>').join('')+
     '<div class="stack" style="margin-top:6px">'+sc.choices.map((c,i)=>'<button class="opt" data-a="storych" data-v="'+sc.id+'|'+i+'"><span><b>'+esc(c.l)+'</b>'+(c.d?'<small>'+esc(c.d)+'</small>':'')+'</span></button>').join('')+'</div>'}
 function storyChoose(s,id,i){const sc=STORY.find(x=>x.id===id);if(!sc||s.story.seen[id])return;s.story.seen[id]=1;const c=sc.choices[i];try{c.fx(s)}catch(e){console.error(e)}
-  s.story.ch=sc.ch;if(sc.obj)s.story.obj=typeof sc.obj==='function'?sc.obj(s):sc.obj;s.story.log=s.story.log||[];s.story.log.push({y:s.year,t:sc.title,c:c.l});addNews(s,sc.title+': '+c.l+'.','story');save()}
-function storyCard(){if(!storyOn(S))return '';const ch=S.story.ch||1;return '<section class="card" style="box-shadow:inset 3px 0 0 var(--accent)"><h2>Story · Chapter '+ch+' of 5<small>'+esc(CAST.jess.n)+' & you</small></h2><p>'+esc(S.story.obj||'Open the gates on your first festival.')+'</p>'+(S.story.log&&S.story.log.length?'<p class="small faint" style="margin-top:8px">Last choice: '+esc(S.story.log[S.story.log.length-1].c)+'</p>':'')+'</section>'}
+  s.story.ch=sc.ch||s.story.ch;if(sc.obj)s.story.obj=typeof sc.obj==='function'?sc.obj(s):sc.obj;s.story.log=s.story.log||[];s.story.log.push({y:s.year,t:sc.title,c:c.l});addNews(s,sc.title+': '+c.l+'.','story');save()}
+function storyCard(){if(!storyOn(S))return '';const ch=S.story.ch||1;return '<section class="card" style="box-shadow:inset 3px 0 0 var(--accent)"><h2>Story · Chapter '+ch+' of '+(SF(S).p2?10:5)+'<small>'+esc(CAST.jess.n)+' & you</small></h2><p>'+esc(S.story.obj||'Open the gates on your first festival.')+'</p>'+(S.story.log&&S.story.log.length?'<p class="small faint" style="margin-top:8px">Last choice: '+esc(S.story.log[S.story.log.length-1].c)+'</p>':'')+'</section>'}
 /* story effects on the economy */
 function storyFeeMult(s){return storyOn(s)&&SF(s).monolith&&s.year===1?.85:1}
 function storyRevenue(s,add,tick){if(!s.story)return;const f=SF(s);if(f.monolith&&s.year===1)add('Tickets','Monolith commission (10%)',-tick/1.2*.1);
@@ -2167,6 +2167,109 @@ function storyProfitShare(s,net){if(!s.story||net<=0)return 0;const f=SF(s);let 
 function relocate(s,k){const st=SITES[k];s.site=k;s.grid=terrain(k);s.rec=st.rec.map(r=>({...r}));s.pl=[];s.expand=0;setGrid(s.grid);
   s.lic={cap:Math.round(st.cap*.75/1000)*1000,curfew:st.curfew.slice(),noise:st.noise+DF(s).noise,cond:[],varReq:0};s.tix=Object.assign(defaultTix(s.lic.cap,st.camping),{mkt:s.tix.mkt,pint:s.tix.pint});
   autoLayout(s,false);A_CACHE={k:'',a:null};G3.world=null;addNews(s,'Welcome to '+st.n+': a licence for '+fmtN(s.lic.cap)+' people.','story')}
+/* ============================================================
+   Moving up: a venue ladder for every festival, and Story mode
+   Part Two (years 6 to 10) with invitations to bigger sites.
+   Characters and places are invented.
+   ============================================================ */
+Object.assign(CAST,{clara:{n:'Clara Ashcombe',r:'owner of Ashcombe Park',c:'#d8b4fe'},rav:{n:'Rav Bains',r:'manager of Hartwell Airfield',c:'#93c5fd'},
+  owen:{n:'Owen Pryce',r:'chair of the Avalon Vale farmers’ co-op',c:'#86efac'},zara:{n:'Zara Quinn',r:'manager to a global superstar',c:'#fcd34d'}});
+
+/* ---------- the venue ladder ---------- */
+const VENUE_REP={estate:25,city:35,airfield:40,valley:55};
+const moveFee=k=>Math.round(120000*Math.sqrt(SITES[k].cap/10000)/10000)*10000;
+function venueOptions(s){const cur=SITES[s.site].cap;return Object.keys(VENUE_REP).filter(k=>SITES[k].cap>cur).map(k=>({k,rep:VENUE_REP[k],fee:moveFee(k),ok:s.rep>=VENUE_REP[k]}))}
+function canMove(s){return !s.chal&&(s.phase==='booking'||s.phase==='wrap')}
+function venueCard(){if(!S||S.chal)return '';const opts=venueOptions(S);if(!opts.length&&!S.moveTo)return '';const nxt=START_YEAR+S.year-(S.phase==='wrap'?0:1)+1;
+  if(S.moveTo){const st=SITES[S.moveTo];return '<section class="card" style="box-shadow:inset 3px 0 0 var(--accent),var(--edge)"><h2>Moving to '+esc(st.n)+'<small>'+nxt+'</small></h2><p class="small muted" style="margin-bottom:10px">Next year you start on a new site for '+fmtN(Math.round(st.cap*.75/1000)*1000)+' people (more with extra fields and licence variations). The move costs '+fmt$(moveFee(S.moveTo))+' and you lay out the grounds again from scratch.</p>'+(canMove(S)?'<button class="btn ghost sm" data-a="venuecancel">Stay where we are</button>':'')+'</section>'}
+  return '<section class="card"><h2>Bigger venues<small>Now: '+esc(SITES[S.site].n)+'</small></h2><p class="small muted" style="margin-bottom:6px">Grow your reputation and bigger sites will have you. A move takes effect next year'+(canMove(S)?'':'; you can decide in booking season or at the wrap-up')+'.</p><ul class="list">'+
+    opts.map(o=>{const st=SITES[o.k];return '<li><div class="grow"><b>'+esc(st.n)+'</b><div class="meta" style="white-space:normal">'+esc(st.kind)+' · up to '+fmtN(st.cap)+' people · '+(o.ok?'move '+fmt$(o.fee):'needs reputation '+o.rep+' (you have '+S.rep+')')+'</div></div>'+(o.ok&&canMove(S)?'<button class="btn sm" data-a="venuemove" data-v="'+o.k+'">Move</button>':'<span class="pill">'+(o.ok?'Later':'Locked')+'</span>')+'</li>'}).join('')+'</ul></section>'}
+function doMove(s,to){const from=s.site;const fee=moveFee(to);
+  if(storyOn(s)||s.story){const f=SF(s);if(f.owned&&from==='farm'){s.money+=2500000;f.owned=0;addNews(s,'You sold Hollow Farm back to Maya for £2.5m.','story')}if(from==='farm'){f.relocate=1;f.relocated=1}f.rentX=0;(f.venues=f.venues||['farm']).push(to);f.movedY=s.year}
+  relocate(s,to);cash(s,-fee);ledger(s,'Moving costs',-fee);s.flags.movedY=s.year;award(s,'moved');if(to==='valley')award(s,'valley');
+  addNews(s,'Moving day: '+s.name+' now lives at '+SITES[to].n+'.','book')}
+
+/* ---------- Part Two and the invitations ---------- */
+const P2=s=>!!(s.story&&SF(s).p2);
+const notMoving=s=>!s.moveTo&&SF(s).farm!=='move'&&!(SF(s).relocate&&!SF(s).relocated);
+STORY.splice(STORY.findIndex(x=>x.id==='finale')+1,0,
+ {id:'estate',who:'clara',when:s=>s.site==='farm'&&s.rep>=VENUE_REP.estate&&s.year>=2&&s.phase==='booking'&&s.round>=2&&notMoving(s),title:'A letter from the big house',
+  text:s=>'A handwritten letter on heavy cream paper, delivered by hand. Clara Ashcombe, of Ashcombe Park, two valleys over.\n\n“I have watched your little festival from the ridge for '+(s.year-1)+' summer'+(s.year>2?'s':'')+'. My park holds fifteen thousand, there is a lake, and frankly the roof of the house needs the money. Would you consider us?”'+(SF(s).ted>=2?'\n\nJess reads it twice, then looks out at Ted on his tractor.':''),
+  choices:[{l:'Move to Ashcombe Park next year',d:'15,000 people, a lake and posher neighbours · '+fmt$(moveFee('estate')),fx:s=>{s.moveTo='estate'}},
+    {l:'Stay loyal to Hollow Farm',d:'Ted, the village and the council remember it',fx:s=>{s.council=clamp(s.council+6,0,100);s.community=clamp(s.community+6,0,100);SF(s).loyal=1}},
+    {l:'Ask her to host a one-off Ashcombe Sessions night',d:'About £60k profit and a bit of hype, no move',fx:s=>{s.money+=60000;s.hype=clamp(s.hype+5,0,100);addNews(s,'Ashcombe Sessions sold out the lakeside in an evening.','story')}}]},
+ {id:'airfield',who:'rav',when:s=>['farm','estate','city'].includes(s.site)&&s.rep>=VENUE_REP.airfield&&s.year>=3&&s.phase==='booking'&&s.round>=2&&!s.moveTo&&(s.site!=='farm'||(!!s.story.seen.ted3&&notMoving(s))),title:'Two runways and no neighbours',
+  text:s=>'Rav Bains runs Hartwell Airfield for the owners, who have run out of ideas. He sends a drone video: two concrete runways, hangars, and nobody for three miles.\n\n“Forty thousand people, easy. The concrete never turns to mud. We’d love a festival. We’d love the rent more.”',
+  choices:[{l:'Move to Hartwell Airfield next year',d:'Up to 40,000 people · '+fmt$(moveFee('airfield')),fx:s=>{s.moveTo='airfield'}},
+    {l:'Not yet',d:'He’ll keep the runways warm',fx:s=>{}}]},
+ {id:'valley',who:'owen',when:s=>s.site!=='valley'&&s.rep>=VENUE_REP.valley&&s.year>=4&&s.phase==='booking'&&s.round>=2&&!s.moveTo&&(s.site!=='farm'||notMoving(s)),title:'The valley',
+  text:s=>'Owen Pryce chairs the Avalon Vale farmers’ co-op: twelve families, one valley, a stream and a natural amphitheatre. He drives over in a muddy Land Rover and doesn’t take his cap off.\n\n“We’ve voted. We want you. Seventy thousand people, if you can handle them. And you’ll sell our cider.”',
+  choices:[{l:'Move to Avalon Vale next year',d:'Up to 70,000 people. The big one · '+fmt$(moveFee('valley')),fx:s=>{s.moveTo='valley';SF(s).cider=1}},
+    {l:'Not yet, but sell their cider',d:'Bars take 6% more from now on',fx:s=>{SF(s).cider=1}},
+    {l:'Not yet',fx:s=>{}}]},
+ {id:'newground',who:'jess',when:s=>SF(s).movedY===s.year&&s.phase==='booking'&&!s.story.seen['newground'+s.year],title:'New ground',
+  text:s=>{const st=SITES[s.site];return 'The first morning at '+st.n+'. '+(SF(s).jess==='gone'?'You walk the site alone with a coffee.':'Jess walks the site with you, counting fence posts out loud.')+' '+(s.site==='valley'?'The amphitheatre is bigger than it looked on the drone footage.':s.site==='airfield'?'The wind across the runways nearly takes your clipboard.':s.site==='estate'?'Clara waves from an upstairs window. Swans on the lake.':'Joggers stop to ask what you’re building.')+'\n\nThe neighbours here don’t know you yet.'},
+  choices:[{l:'Throw a welcome party for the neighbours',d:'About £20k. The council and residents warm to you',fx:s=>{const c=Math.round(20000*Math.sqrt(scaleOf(s)));s.money-=c;s.council=clamp(s.council+10,0,100);s.community=clamp(s.community+10,0,100)}},
+    {l:'Hire local crews and traders',d:'Fans and locals like it',fx:s=>{s.cred=clamp(s.cred+4,0,100);s.community=clamp(s.community+6,0,100)}},
+    {l:'Just get on with it',fx:s=>{}}]},
+ {id:'p2intro',ch:6,who:'jess',when:s=>P2(s)&&s.year>=6&&s.phase==='booking',title:'Chapter 6: The big league',
+  text:s=>(SF(s).jess==='gone'?'Jess sends a voice note from Monolith: “Five years. You did it. So what now?”':'Jess pins a map of the country to the office wall and draws a circle round '+SITES[s.site].n+'. “Five years. We’re not the new kids any more. So what now?”')+'\n\nYou are #'+(rankTable(s).find(r=>r.me).i)+' in the World Festival Rankings, at '+SITES[s.site].n+' with a licence for '+fmtN(s.lic.cap)+'.',
+  choices:[{l:'Become one of the best in the world',d:'Goal: reach the top five of the World Festival Rankings by year 10',fx:s=>{SF(s).p2goal='rank'}},
+    {l:'Be the festival everyone loves',d:'Goal: average 4 stars over years 6 to 10',fx:s=>{SF(s).p2goal='love'}},
+    {l:'Build an empire',d:'Goal: 50,000 people in a year and a spin-off festival',fx:s=>{SF(s).p2goal='empire'}}],
+  obj:s=>({rank:'Reach the top five of the World Festival Rankings by year 10.',love:'Average 4 stars over years 6 to 10.',empire:'Get 50,000 people through the gates in one year, and launch a spin-off.'})[SF(s).p2goal]},
+ {id:'zara7',ch:7,who:'zara',when:s=>P2(s)&&s.year>=7&&s.phase==='booking'&&s.round>=2,title:'Chapter 7: A call from LA',
+  text:s=>'Zara Quinn manages one of the biggest acts on the planet. She calls at 3am your time and talks like she’s in a hurry, because she is.\n\n“My client wants one European festival this summer. Not the obvious one. Something with a story. Yours has a story. Can you make it worth our while?”',
+  choices:[{l:'Make room for a superstar',d:'This year, acts with fame 88 or more cost 25% less',fx:s=>{SF(s).superY=s.year}},
+    {l:'Ask for a secret set instead',d:'A surprise slot: big hype now',fx:s=>{s.hype=clamp(s.hype+10,0,100);if(s.social)s.social.followers=Math.round(s.social.followers*1.08)}},
+    {l:'Not our kind of festival',d:'The fans respect it',fx:s=>{s.cred=clamp(s.cred+6,0,100)}}]},
+ {id:'victor7',ch:7,who:'victor',when:s=>P2(s)&&s.year>=7&&s.phase==='onsale'&&s.week>=3,title:'He’s back',
+  text:s=>SF(s).ending==='merge'?'Monolith’s board has a new chair: Victor Crane. His first memo: ticket prices up 15% across every Monolith festival, including yours.':'Victor Crane is back, with a new company and an old grudge. Crane & Co has bought the biggest staging and fencing suppliers in the country, and your contracts are “under review”.',
+  choices:[],dyn:s=>SF(s).ending==='merge'?[{l:'Go along with it',d:'Every ticket tier 15% dearer. Fans grumble',fx:s=>{for(const t of s.tix.wk)t.p=Math.round(t.p*1.15);s.cred=clamp(s.cred-6,0,100)}},{l:'Refuse in public',d:'The fans love it. Monolith pulls some sponsorship',fx:s=>{s.cred=clamp(s.cred+8,0,100);s.money-=50000}}]:
+    [{l:'Pay his suppliers’ new prices',d:'About £80k extra this year',fx:s=>{const c=Math.round(80000*Math.sqrt(scaleOf(s)));cash(s,-c);ledger(s,'Supplier price rises',-c)}},
+     {l:'Find new suppliers',d:'Free, but riskier: something may go wrong on the weekend',fx:s=>{SF(s).newSup=s.year}},
+     {l:'Tell the press',d:'Hype up, his reputation down',fx:s=>{s.hype=clamp(s.hype+8,0,100);s.rival.rep=clamp(s.rival.rep-10,0,100)}}]},
+ {id:'jess8',ch:8,who:'jess',when:s=>P2(s)&&s.year>=8&&s.phase==='booking',title:'Chapter 8: What it was all for',
+  text:s=>SF(s).jess==='gone'?'Jess is at your door with a bottle of wine. Monolith let her go. “I miss it,” she says. “I miss us.”':'Jess has been quiet for a week. Then she shows you a plan: the '+s.name+' Foundation. Free tickets for young carers, music lessons in the villages, a fund for new bands.',
+  choices:[],dyn:s=>SF(s).jess==='gone'?[{l:'Welcome her back as a partner',d:'Every agent warms to you; she takes 10% of profits',fx:s=>{SF(s).jess='partner';SF(s).jessShare=1;for(const k in s.agRel)s.agRel[k]=clamp(s.agRel[k]+10,0,100)}},{l:'Stay friends',fx:s=>{}}]:
+    [{l:'Fund the Foundation',d:'£100k a year. Fans, press and the council love it; your legacy grows',fx:s=>{SF(s).found=1}},
+     {l:'Not yet',d:'Jess understands. Mostly',fx:s=>{}}]},
+ {id:'ted8',ch:8,who:'maya',when:s=>P2(s)&&s.year>=8&&s.phase==='wrap',title:'Ted’s barn dance',
+  text:s=>'Maya calls. Ted turns eighty next month and is throwing a barn dance. “He keeps the wristbands from every year in a biscuit tin,” she says. “He’d never tell you.”',
+  choices:[{l:'Name the main stage after Ted',d:'The Ted Hollow Stage, from next year. Legacy up',fx:s=>{SF(s).tedStage=1;s.legacy+=4;s.community=clamp(s.community+5,0,100)}},
+    {l:'Fly him to the festival by helicopter',d:'£15k and a lot of photos',fx:s=>{s.money-=15000;s.hype=clamp(s.hype+5,0,100);SF(s).heli=1}},
+    {l:'Send a card',fx:s=>{}}]},
+ {id:'storm9',ch:9,who:'glen',when:s=>P2(s)&&s.year>=9&&s.phase==='build'&&!!s.forecast,title:'Chapter 9: The storm',
+  text:s=>'Glen Pike, older now and still in the same hi-vis vest, calls with the Met Office warning: a named storm, due to arrive on Saturday afternoon. Winds of fifty miles an hour.\n\n“I’m not telling you to cancel,” he says. “I’m telling you I’ll be there.”',
+  choices:[{l:'Storm-proof everything',d:'About '+'£150k: extra ballast, wind walls, a second power grid. Saturday becomes heavy rain',fx:s=>{const c=Math.round(150000*Math.sqrt(scaleOf(s)));cash(s,-c);ledger(s,'Storm-proofing',-c);s.forecast[1]={k:'wet',conf:92}}},
+    {l:'Buy weather insurance and hope',d:'Cancellation cover is on. The storm is still coming',fx:s=>{s.ops.ins.cancel=true;s.forecast[1]={k:'storm',conf:95}}},
+    {l:'Carry on as planned',d:'It might miss us',fx:s=>{s.forecast[1]={k:'storm',conf:70}}}]},
+ {id:'finale2',ch:10,who:'jess',when:s=>P2(s)&&s.year>=10&&s.phase==='wrap',title:'Chapter 10: Ten summers',
+  text:s=>{const g=SF(s).p2goal,ok=p2Done(s);const v=(SF(s).venues||[s.site]).map(k=>SITES[k].n);
+    const goal={rank:ok?'You are one of the five best festivals in the world. Priya’s documentary gets a sequel.':'The top five stayed just out of reach. You are still on the list everyone reads.',love:ok?'Four stars, five years running. People propose in your fields.':'Not every year was a four-star year. Every year was yours.',empire:ok?'Two festivals, fifty thousand people in a weekend, and a brand on a million wristbands.':'The empire is smaller than the plan. It is still an empire.'}[g]||'Ten summers.';
+    return goal+'\n\n'+(v.length>1?'From '+v.join(' to ')+'.':'Ten summers at '+SITES[s.site].n+'.')+' '+(SF(s).found?'The Foundation has put instruments in two hundred schools.':'')+'\n\n'+(SF(s).jess==='partner'?'Jess, your partner, raises a plastic cup of warm cider: “Same again?”':SF(s).jess==='gone'?'Jess texts at midnight: “Ten. Proud of you.”':'Jess is asleep on a hay bale again.')+' '+(SF(s).tedStage?'Ted watches the headliner from the side of his own stage.':'')},
+  choices:[{l:'The end (keep playing)',d:'Your story is done. The festival goes on in free play',fx:s=>{s.story.done=1;s.story.on=false;award(s,'story2')}},{l:'Finish here',fx:s=>{s.story.done=1;award(s,'story2');s.over={k:'story',t:p2Done(s)?'Ten summers: a legend':'Ten summers'}}}]});
+function p2Done(s){const g=SF(s).p2goal;if(g==='rank'){const r=s.rankHist&&s.rankHist[s.rankHist.length-1];return !!(r&&r.r<=5)}
+  if(g==='love'){const h=s.hist.filter(h=>h.y>=6);return h.length>0&&h.reduce((a,x)=>a+x.stars,0)/h.length>=4}
+  if(g==='empire')return Math.max(0,...s.hist.map(h=>h.att))>=50000&&!!s.spin;return false}
+/* scenes whose choices depend on the story so far */
+const _nextSceneV=nextScene;nextScene=function(s){const sc=_nextSceneV(s);if(sc&&sc.dyn)sc.choices=sc.dyn(s);return sc};
+const _storyChoose=storyChoose;storyChoose=function(s,id,i){const sc=STORY.find(x=>x.id===id);if(sc&&sc.dyn)sc.choices=sc.dyn(s);
+  if(id==='newground'){s.story.seen['newground'+s.year]=1}_storyChoose(s,id,i);if(id==='newground')delete s.story.seen.newground};
+
+/* ---------- effects ---------- */
+const _askForV=askFor;askFor=function(s,a,o){const r=_askForV(s,a,o);if(s.story&&SF(s).superY===s.year&&a.fame>=88){r.fee=Math.round(r.fee*.75/250)*250;r.why.push('Zara’s superstar deal')}return r};
+const _barModsV=barMods;barMods=function(s){const r=_barModsV(s);if(s.story&&SF(s).cider)r.spend*=1.06;return r};
+const _costLinesV=costLines;costLines=function(s,a0){const L=_costLinesV(s,a0);for(const k of ['Moving costs','Supplier price rises','Storm-proofing'])if(s.ledger[k])L.push({g:'Overheads',k,v:-s.ledger[k]});
+  if(s.story&&SF(s).found)L.push({g:'Overheads',k:s.name+' Foundation',v:100000});return L};
+const _stageNameV=stageName;stageName=function(s,p){if(s&&s.story&&SF(s).tedStage&&p&&isMain(p.t)&&s.pl.filter(q=>isMain(q.t))[0]===p)return 'Ted Hollow Stage';return _stageNameV(s,p)};
+const _wrapYearV=wrapYear;wrapYear=function(s){_wrapYearV(s);if(!s.story||!s.wrap)return;const f=SF(s);if(f.found){s.legacy+=3;s.cred=clamp(s.cred+2,0,100);s.community=clamp(s.community+3,0,100)}};
+const _openGatesV=openGates;openGates=function(s){_openGatesV(s);if(!s.story)return;const f=SF(s);
+  if(f.newSup===s.year&&chance(.45)){s.live.mood-=4;logL(s,'The new staging firm is behind schedule. The second stage opens an hour late.','bad')}
+  if(f.heli&&!f.heliDone){f.heliDone=1;s.live.mood+=4;logL(s,'A helicopter lands behind the main stage. Ted Hollow, eighty, waves to sixty thousand people.','good')}};
+const _nextYearV=nextYear;nextYear=function(s){const to=s.moveTo,from=s.site;_nextYearV(s);if(s.over)return;
+  if(to){s.moveTo=null;doMove(s,to)}else if(s.site!==from&&s.story){SF(s).movedY=s.year;(SF(s).venues=SF(s).venues||[from]).push(s.site)}};
+TROPHIES.push(['moved','Moving up','Move your festival to a bigger site'],['valley','The valley','Run your festival at Avalon Vale after moving there'],['story2','Ten summers','Finish Story mode Part Two']);
 /* ============================================================
    Long game: legacy across runs, challenges, the daily festival,
    crew heads, world rankings, world events, the off-season,
@@ -2724,7 +2827,7 @@ function viewSetup(){const u=UI.setup;
   const sites=Object.entries(SITES).filter(([k])=>u.mode!=='story'||k==='farm').map(([k,v])=>'<button class="tile" data-a="ssite" data-v="'+k+'" aria-pressed="'+(u.site===k)+'"><canvas class="mapthumb" data-thumb="'+k+'" width="56" height="74" aria-hidden="true"></canvas><span style="min-width:0;flex:1"><b>'+v.n+'</b><small>'+v.kind+' · '+fmtN(v.cap)+' people · '+Math.round(v.w*v.h*.04)+' ha · rent '+fmt$(v.rent)+'</small><small style="margin-top:6px">'+v.d+'</small></span></button>').join('');
   const st=SITES[u.site],D=DIFF[u.diff];const cash=(c,l)=>fmt$(Math.round(c*st.start*D.cash/50000)*50000)+' cash, '+fmt$(Math.round(l*st.start/50000)*50000)+' loan';
   const F=[['promoter','Club promoter',cash(900000,500000)+'. Agents already know you.'],['backed','Investor-backed',cash(1600000,1200000)+'. A bigger start, a bigger hole.'],['diy','DIY collective',cash(600000,250000)+'. Fans trust you; volunteers steward for less.']];
-  return '<div class="title-screen" style="padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))"><div class="title-row"><h1>New festival</h1><button class="btn ghost sm" data-a="cancelsetup">Cancel</button></div><p class="sub">Slot '+u.slot+'. You can’t change the site later.</p>'+
+  return '<div class="title-screen" style="padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))"><div class="title-row"><h1>New festival</h1><button class="btn ghost sm" data-a="cancelsetup">Cancel</button></div><p class="sub">Slot '+u.slot+'. You can move to a bigger site later as your reputation grows.</p>'+
     '<label class="field"><span>Festival name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="fname" name="festival-name" maxlength="28" value="'+esc(u.name)+'" autocomplete="off" spellcheck="false"><button class="btn quiet" data-a="rname" aria-label="Random name">Shuffle</button></div></label>'+
     '<div class="sec">Mode</div>'+seg('smode',u.mode,[['free','Free play'],['story','Story']])+'<p class="small muted" style="margin:-4px 0 4px">'+(u.mode==='story'?'Five years on Hollow Farm with Jess, your co-founder, and a rival who wants you gone. Choices change the game; everything else plays as normal.':'Run your festival your way, for as long as you like.')+'</p>'+
     '<div class="sec">Identity</div><div class="chips">'+Object.entries(IDENT).map(([k,v])=>'<button class="chip" data-a="sident" data-v="'+k+'" aria-pressed="'+(u.ident===k)+'">'+v.n+'</button>').join('')+'</div><p class="small muted" style="margin:-4px 0 4px">'+IDENT[u.ident].d+'</p>'+
@@ -3040,7 +3143,8 @@ function renderSheet(){const L=$('#layer');if(!UI.sheet){L.innerHTML='';return}l
   const sh=L.querySelector('.sheet');if(sh&&UI.keepScroll)sh.scrollTop=prevScroll;UI.keepScroll=false}
 function guideSheet(){const G=[
   ['Getting started','Pick the Relaxed difficulty and a small site for your first go. Your site comes laid out already; “Fix it for me” on the Site tab tops up toilets, water, bars and campsites whenever you change things. On the Line-up tab, “Plan the undercard” can book the whole bill for you, and on Tickets, “Set prices for a fast sell-out” does the maths. Hit the three yearly goals for bonus cash.'],
-  ['Story mode','Five years on Hollow Farm with Jess, your co-founder, Ted the farmer and Victor Crane of Monolith Live. Story scenes appear at key moments; your choices change your money, your licence, your rivals and even your site. Everything else plays exactly as in free play.'],
+  ['Story mode','Starts on Hollow Farm with Jess, your co-founder, Ted the farmer and Victor Crane of Monolith Live. Story scenes appear at key moments; your choices change your money, your licence, your rivals and even your site. Owners of bigger sites invite you to move as your reputation grows. After five years you can carry on into Part Two: five more chapters, new characters and a new ending. Everything else plays exactly as in free play.'],
+  ['Bigger venues','In any mode, the Plan tab lists bigger sites: Ashcombe Park (15,000), Millbrook Park (25,000), Hartwell Airfield (40,000) and Avalon Vale (70,000). Each unlocks at a reputation level. Moving costs money, happens the following year and means laying out a new site; your licence starts at three quarters of the new site’s maximum and grows with extra fields and licence variations.'],
   ['Social','Your festival has its own account on the Social tab. You get three posts each booking round or sale week: teases, announcements, ticket pushes, memes (risky) and secret-set hints. Followers raise ticket demand. Boost posts or pay an influencer for reach.'],
   ['Line-up tricks','The clash finder flags big acts on at the same time; tap a set to move it. Make an act a secret set, hint at it on social, and reveal it on the day. Book unsigned bands on the Discovery stage for £300: the best get signed. Watch out for bidding wars with the rival and rumours of reunions.'],
   ['Running the show','Pick an identity, a bar menu, a merch design and a stock level on the Money tab. Build late-night areas, a silent disco, a healing field, a kids’ field or a signature landmark. During the weekend, check the radar, follow one of your regular fans around the site, grant encores and post clips.'],
@@ -3178,7 +3282,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
-const APP_VER='202610302300';
+const APP_VER='202610310100';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
@@ -3270,7 +3374,7 @@ function chalSetupHtml(u){const D=u.chal==='daily'?dailyDef(todayKey()):CHAL[u.c
     '<label class="field"><span>Festival name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="fname" name="festival-name" maxlength="28" value="'+esc(u.name)+'" autocomplete="off" spellcheck="false">'+(D.daily?'':'<button class="btn quiet" data-a="rname" aria-label="Random name">Shuffle</button>')+'</div></label>'+
     '<section class="card"><h2>The brief<small>'+D.yrs+' years</small></h2><p>'+esc(D.d)+'</p><p class="small muted" style="margin-top:8px">Site: '+esc(SITES[D.site].n)+(D.ident?' · '+esc(IDENT[D.ident].n):'')+'</p><div class="sec">'+esc(D.goal)+'</div>'+tiersHtml(D)+'</section>'+
     '<button class="btn wide" style="margin-top:12px" data-a="start">Start the challenge</button></div>'}
-function metaPlanCards(){let h='';const D=chalDef(S);
+function metaPlanCards(){let h=(S.phase==='booking'||S.moveTo)?venueCard():'';const D=chalDef(S);
   if(D){const v=D.score(S);h+='<section class="card"><h2>'+esc(D.n)+'<small>Year '+Math.min(S.year,D.yrs)+' of '+D.yrs+'</small></h2><p class="small muted">'+esc(D.d)+'</p><div class="sec">'+esc(D.goal)+': '+(S.hist.length?esc(D.fmt(v)):'nothing yet')+'</div>'+tiersHtml(D,S.hist.length?v:null)+'</section>'}
   const e=S.era;if(e&&e.k!=='calm'||isAnniv(S))h+='<section class="card"><h2>The world this year<small>'+(START_YEAR+S.year-1)+'</small></h2>'+(e&&e.k!=='calm'?'<p><b>'+esc(e.n)+'.</b> <span class="muted">'+esc(e.d)+'</span></p>':'')+(isAnniv(S)?'<p style="margin-top:6px"><b>The '+ordinal(S.year)+' edition.</b> <span class="muted">Demand is up 8% for the anniversary.</span></p>':'')+'</section>';
   return h}
@@ -3278,7 +3382,7 @@ function crewCard(){const C=S.crew||{};const cand=crewCands(S);const sal=crewSal
   return '<section class="card"><h2>Crew heads<small>'+(sal?fmt$(sal)+' a year':'None hired')+'</small></h2><p class="small muted" style="margin-bottom:8px">Heads of department gain experience every year they stay, up to level 5. Good ones get poached.</p><ul class="list">'+
     Object.entries(CREW).map(([k,r])=>{const c=C[k];if(c)return '<li><div class="grow"><b>'+esc(c.n)+'</b><div class="meta" style="white-space:normal">'+r.n+' · level '+c.lvl+' '+'●'.repeat(c.lvl)+'<span style="opacity:.25">'+'●'.repeat(5-c.lvl)+'</span> · '+fmt$(c.sal)+' a year</div></div><button class="btn ghost sm" data-a="crewfire" data-v="'+k+'">Let go</button></li>';
       const x=cand[k];return '<li><div class="grow"><b>'+r.n+'</b><div class="meta" style="white-space:normal">'+r.d+' Candidate: '+esc(x.n)+', level '+x.lvl+'.</div></div><button class="btn sm" data-a="crewhire" data-v="'+k+'">Hire · '+fmt$(x.sal)+'</button></li>'}).join('')+'</ul></section>'}
-function wrapMetaHtml(w){let h='';
+function wrapMetaHtml(w){let h=w.chalEnd?'':venueCard();
   if(w.rank){const t=rankTable(S);const me=t.find(r=>r.me);const near=t.filter(r=>Math.abs(r.i-me.i)<=2||r.i<=3);const mv=w.rank.prev?w.rank.prev-w.rank.r:0;
     h+='<section class="card"><h2>World Festival Rankings<small>'+(mv>0?'Up '+mv:mv<0?'Down '+(-mv):w.rank.prev?'No change':'New entry')+'</small></h2><ul class="list">'+near.map(r=>'<li'+(r.me?' style="background:var(--raised2);border-radius:10px;padding-left:8px"':'')+'><span class="num" style="width:28px;color:var(--muted)">#'+r.i+'</span><div class="grow"><b'+(r.me?' style="color:var(--accent)"':'')+'>'+esc(r.n)+'</b>'+(r.rival?'<div class="meta">Your rival</div>':'')+'</div><span class="num">'+r.sc+'</span></li>').join('')+'</ul><button class="btn ghost sm" style="margin-top:10px" data-a="ranks">Full table</button></section>'}
   if(w.stars&&w.stars.length)h+='<section class="card"><h2>Legacy stars<small>+'+w.stars.reduce((a,x)=>a+x.n,0)+'</small></h2><ul class="list">'+w.stars.map(x=>'<li><span class="pill pos">+'+x.n+' ★</span><div class="grow">'+esc(x.why)+'</div></li>').join('')+'</ul><p class="small faint" style="margin-top:8px">Spend them on legacy perks from the title screen.</p></section>';
@@ -3367,6 +3471,9 @@ Object.assign(ACT,{
   ranks(){UI.sheet=rankSheet;renderSheet()},
   mgtoggle(){const L=legacy();L.mg=!L.mg;legSave();renderSheet()},
   postershare(){sharePoster()}});
+Object.assign(ACT,{
+  venuemove(k){if(!S||!canMove(S))return;const o=venueOptions(S).find(x=>x.k===k);if(!o||!o.ok)return;S.moveTo=k;toast('You’ll move to '+SITES[k].n+' next year.');save();render()},
+  venuecancel(){if(!S)return;S.moveTo=null;toast('Staying put.');save();render()}});
 window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,get liveStep(){return liveStep},G3,sagChecks,projection,STEPS};
 (function boot(){render()})();
 </script>
