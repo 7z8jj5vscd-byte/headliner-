@@ -16,7 +16,7 @@
 <title>Festival Tycoon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap">
 <style>
 /* True-black flat: elevation by lightness alone, hi-vis lime only on data */
 :root{
@@ -282,6 +282,84 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .grade.big{width:56px;height:56px;font-size:28px;border-radius:14px}
 .grade.gS,.grade.gA{background:var(--accent);color:#000}.grade.gB{background:#fff;color:#000}
 @media (prefers-reduced-motion:reduce){.mg-cell.hot{animation:none}.mg-pyro.boom .mg-target{animation:none}}
+
+/* ---------- 2026 refresh: display type, glass chrome, floating tabs, layered cards ---------- */
+:root{
+  --display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
+  --surface:#121212;--raised:#1c1c1c;--raised2:#272727;--rule:rgba(255,255,255,.07);
+  --edge:inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px rgba(255,255,255,.04);
+  --glass:rgba(14,14,14,.72);
+  --r-card:22px;--r-in:14px;
+  --tabs:calc(84px + env(safe-area-inset-bottom,0px));
+}
+body{background:radial-gradient(120% 60% at 85% -10%,rgba(198,242,78,.10),transparent 60%),radial-gradient(90% 50% at -10% 0%,rgba(255,143,198,.07),transparent 60%),var(--ground);background-attachment:fixed}
+h1{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:-.025em}
+.card>h2,.sheet h2,.decision h3,.inspect h3{font-family:var(--display);letter-spacing:-.015em;font-weight:700}
+.card>h2{font-size:17px}.sheet h2{font-size:22px}
+.topbar{background:var(--glass);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-bottom:1px solid var(--rule)}
+.tb-name b{font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:-.01em}
+.tb-cash{border-left-color:var(--rule)}
+.tb-cash b{font-family:var(--display);font-size:17px;font-weight:700}
+.mark{border-radius:8px}
+.tabs{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));height:64px;padding:0 6px;border:0;border-radius:24px;background:rgba(22,22,22,.78);-webkit-backdrop-filter:saturate(1.6) blur(20px);backdrop-filter:saturate(1.6) blur(20px);box-shadow:0 12px 32px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.07)}
+.tab{color:#9a9a9a;font-weight:500;gap:4px;transition:color .15s}
+.tab svg{width:22px;height:22px;padding:2px 10px;box-sizing:content-box;border-radius:999px;transition:background .2s,color .2s}
+.tab[aria-current=page]{color:#fff}
+.tab[aria-current=page] svg{background:var(--accent);color:#000;stroke:#000}
+.tab[aria-current=page]::after{display:none}
+.tab .dot{top:4px;left:calc(50% + 10px);box-shadow:0 0 0 2px #161616}
+.card,.kpis,.finding,.slot,.decision{box-shadow:var(--edge)}
+.card{background:linear-gradient(180deg,#161616,#111 70%);padding:18px}
+.kpis{background:linear-gradient(180deg,#161616,#111)}
+.kpi{padding:14px 16px}
+.kpi label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+.kpi b{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
+.finding{border-radius:16px;padding:14px 16px;background:#141414}
+.finding .bar{width:4px}
+.btn{background:var(--accent);color:#0a0a0a;font-weight:700;letter-spacing:-.005em;box-shadow:0 6px 18px rgba(198,242,78,.18)}
+.btn.ghost{box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);background:rgba(255,255,255,.03);font-weight:600}
+.btn.quiet{background:var(--raised2);box-shadow:none;font-weight:600}
+.btn.danger{box-shadow:0 6px 18px rgba(255,99,105,.2)}
+.btn[disabled]{box-shadow:none}
+.seg{background:#161616;box-shadow:var(--edge)}
+.seg button[aria-pressed=true]{background:#fff;color:#000;font-weight:600}
+.chip{background:#181818;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);font-weight:500}
+.chip[aria-pressed=true]{background:var(--accent);color:#000;box-shadow:none;font-weight:600}
+.overlays .chip{background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.overlays .chip[aria-pressed=true]{background:var(--accent)}
+.tile{background:#191919;box-shadow:var(--edge);border-radius:16px}
+.tile[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--accent);background:#1b2010}
+.pal{box-shadow:var(--edge)}
+.pal[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--accent);background:#1b2010}
+.opt{background:#202020;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);border-radius:14px;transition:background .15s,transform .08s}
+.opt:active{transform:scale(.99)}
+.pill{height:22px;padding:0 9px;font-weight:600}
+.avatar{border-radius:12px;font-family:var(--display);font-weight:700}
+.input{background:#0c0c0c;border-color:rgba(255,255,255,.14);border-radius:14px}
+.input:focus{border-color:var(--accent);outline:0;box-shadow:0 0 0 3px rgba(198,242,78,.18)}
+.gate .track,.meter,.fame{background:#262626}
+.hudbar,.clock,.mini-kpis,.legend3d{background:var(--glass);-webkit-backdrop-filter:saturate(1.5) blur(16px);backdrop-filter:saturate(1.5) blur(16px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);border-radius:16px}
+.hudbar div,.mini-kpis div{border-left-color:rgba(255,255,255,.07)}
+.hudbar b,.mini-kpis b{font-family:var(--display);font-weight:700;font-size:15px}
+.clock .t{font-family:var(--display);font-size:24px;font-weight:800}
+.palette{background:var(--glass);-webkit-backdrop-filter:saturate(1.5) blur(18px);backdrop-filter:saturate(1.5) blur(18px)}
+.live-panel{background:rgba(8,8,8,.9);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:0;border-radius:24px 24px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08)}
+.decision{background:linear-gradient(180deg,#1f1f1f,#191919);border-radius:20px}
+.inspect{background:rgba(28,28,28,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.08);border-radius:22px}
+.scrim{background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sheet{background:#141414;border-radius:28px 28px 0 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.sheet .card{background:#1b1b1b}
+.toast{background:rgba(250,250,250,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-weight:600;border-radius:18px;padding:11px 18px}
+.brand h1{font-size:34px;font-weight:800;letter-spacing:-.035em;background:linear-gradient(90deg,#fff 30%,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero3d{border-radius:26px;box-shadow:0 20px 50px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.06)}
+.slot{background:linear-gradient(180deg,#161616,#111);border-radius:20px;padding:14px 16px}
+.slot b{font-family:var(--display);font-size:16px;font-weight:700}
+.sec{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:-.01em}
+.stars{letter-spacing:2px}
+.grade{font-family:var(--display)}
+.tb-cash b,.kpi b,.hudbar b,.mini-kpis b{font-family:var(--font);font-weight:700;letter-spacing:-.025em}
+.card>h2 small,.sheet h2 small{font-family:var(--font);font-weight:500}
+@media (prefers-reduced-transparency:reduce){.topbar,.tabs,.palette,.live-panel,.hudbar,.clock,.mini-kpis{-webkit-backdrop-filter:none;backdrop-filter:none;background:#121212}}
 </style>
 </head>
 <body>
@@ -3100,7 +3178,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
-const APP_VER='202610302100';
+const APP_VER='202610302300';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
