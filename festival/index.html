@@ -262,6 +262,26 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 @media (hover:hover) and (pointer:fine){.btn:hover{opacity:.88}.btn.ghost:hover,.chip:hover,.seg button:hover,.tab:hover,.pal:hover,.opt:hover,.slotrow:hover,.tile:hover,.iconbtn:hover{background:var(--raised)}.chip[aria-pressed=true]:hover{background:#e6e6e6}}
 .toast button{margin-left:10px;font-weight:600;text-decoration:underline;color:#000}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.rankbar{position:relative;height:8px;border-radius:4px;background:var(--raised2);overflow:hidden;margin-bottom:14px}.rankbar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:4px}
+.mgbox{margin-top:10px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.mg-track{position:relative;height:44px;border-radius:12px;background:var(--raised2);overflow:hidden}
+.mg-zone{position:absolute;top:0;bottom:0;background:var(--accent-dim);box-shadow:inset 0 0 0 2px var(--accent)}
+.mg-needle{position:absolute;top:4px;bottom:4px;width:4px;margin-left:-2px;border-radius:2px;background:#fff}
+.mg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mg-cell{height:62px;border-radius:12px;background:var(--raised2);transition:background .15s}
+.mg-cell.hot{background:var(--warning);animation:mghot 1.5s linear forwards}
+.mg-cell.ok{background:var(--accent)}.mg-cell.bad{background:var(--negative)}
+@keyframes mghot{from{background:var(--warning)}to{background:var(--negative)}}
+.mg-pyro{position:relative;height:150px;border-radius:12px;background:var(--raised2);overflow:hidden}
+.mg-target,.mg-ring{position:absolute;left:50%;top:50%;width:64px;height:64px;border-radius:50%;transform:translate(-50%,-50%)}
+.mg-target{box-shadow:inset 0 0 0 3px var(--accent)}.mg-ring{box-shadow:inset 0 0 0 3px #fff}
+.mg-pyro b{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:14px}
+.mg-pyro.boom .mg-target{animation:mgboom .35s ease-out}
+@keyframes mgboom{from{background:var(--accent);transform:translate(-50%,-50%) scale(1.25)}to{background:transparent;transform:translate(-50%,-50%) scale(1)}}
+.grade{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--raised2);font-weight:700;flex:none}
+.grade.big{width:56px;height:56px;font-size:28px;border-radius:14px}
+.grade.gS,.grade.gA{background:var(--accent);color:#000}.grade.gB{background:#fff;color:#000}
+@media (prefers-reduced-motion:reduce){.mg-cell.hot{animation:none}.mg-pyro.boom .mg-target{animation:none}}
 </style>
 </head>
 <body>
@@ -1789,14 +1809,14 @@ function makePost(s,k,boost){const P=POSTS[k],so=s.social;if(!P||!so||so.left<=0
   if(k==='tickets'&&so.posts.filter(p=>p.k==='tickets'&&p.y===s.year).length>=3)q*=.4;
   if(P.hint){if(!signed(s).some(b=>b.secret))s.flags.bluff=1}
   const reach=Math.round(so.followers*q*(.3+rnd(0,.4)));const likes=Math.round(reach*rnd(.04,.12)*(flop?.3:1));const shares=Math.round(likes*rnd(.05,.2)*(viral?4:1));
-  const gain=Math.round(so.followers*P.fol*q+(a?appeal(a)/40:0)+(viral?so.followers*.25:0));so.followers=Math.max(0,so.followers+(flop?-Math.round(so.followers*.01):gain));
+  const sat=1/(1+so.followers/(s.lic.cap*12));const gain=Math.round((so.followers*P.fol*q+(a?appeal(a)/40:0)+(viral?so.followers*.25:0))*sat);so.followers=Math.max(0,so.followers+(flop?-Math.round(so.followers*.01):gain));
   s.hype=clamp(s.hype+(flop?-3:P.hype*q*.8+(a?appeal(a)/12000:0)+(viral?8:0)),0,100);
   if(P.push)so.pushWeek=s.week+1;if(P.mend){s.community=clamp(s.community+4,0,100);s.cred=clamp(s.cred+1,0,100)}
   const pool=flop?REPLIES.bad:q>1.1?REPLIES.good:REPLIES.mid;const replies=[0,1].map(()=>({h:pick(HANDLES),t:pick(pool)}));
   const post={k,y:s.year,ph:s.phase,t:postText(s,k,a),likes,shares,gain:flop?-1:gain,viral,flop,boosted:!!boost,replies};so.posts.unshift(post);if(so.posts.length>40)so.posts.length=40;
   if(viral)addNews(s,'Your '+P.n.toLowerCase()+' went viral: '+fmtK(shares*30)+' views.','social');
   return viral?'It’s going viral!':flop?'That one landed badly.':fmtK(likes)+' likes, +'+fmtK(gain)+' followers.'}
-function influencer(s){const c=Math.round(20000*Math.sqrt(scaleOf(s))/1000)*1000;cash(s,-c);ledger(s,'Influencer partnership',-c);const g=Math.round(5000*scaleOf(s)*rnd(.7,1.4));s.social.followers+=g;s.social.influencer++;s.hype=clamp(s.hype+6,0,100);
+function influencer(s){const c=Math.round(20000*Math.sqrt(scaleOf(s))/1000)*1000;cash(s,-c);ledger(s,'Influencer partnership',-c);const g=Math.round(5000*scaleOf(s)*rnd(.7,1.4)/(1+s.social.followers/(s.lic.cap*12)));s.social.followers+=g;s.social.influencer++;s.hype=clamp(s.hype+6,0,100);
   s.social.posts.unshift({k:'collab',y:s.year,t:pick(['@ellie.out.there','@festivalfitsbyjo','@campsitecooking','@thegiglog'])+' is giving away 2 tickets to '+s.name+'!',likes:Math.round(g*2.2),shares:Math.round(g*.4),gain:g,replies:[{h:pick(HANDLES),t:'pick me!!!'},{h:pick(HANDLES),t:'tagging my whole family'}]});return '+'+fmtK(g)+' followers for '+fmt$(c)+'.'}
 function socialDemand(s){const so=s.social;if(!so)return 1;return 1+Math.min(.22,so.followers/Math.max(1,s.lic.cap*40))+(so.pushWeek===s.week?.08:0)}
 function viewSocial(){const so=S.social||(S.social=newSocial(S));const h=handleOf(S);
@@ -2069,6 +2089,201 @@ function storyProfitShare(s,net){if(!s.story||net<=0)return 0;const f=SF(s);let 
 function relocate(s,k){const st=SITES[k];s.site=k;s.grid=terrain(k);s.rec=st.rec.map(r=>({...r}));s.pl=[];s.expand=0;setGrid(s.grid);
   s.lic={cap:Math.round(st.cap*.75/1000)*1000,curfew:st.curfew.slice(),noise:st.noise+DF(s).noise,cond:[],varReq:0};s.tix=Object.assign(defaultTix(s.lic.cap,st.camping),{mkt:s.tix.mkt,pint:s.tix.pint});
   autoLayout(s,false);A_CACHE={k:'',a:null};G3.world=null;addNews(s,'Welcome to '+st.n+': a licence for '+fmtN(s.lic.cap)+' people.','story')}
+/* ============================================================
+   Long game: legacy across runs, challenges, the daily festival,
+   crew heads, world rankings, world events, the off-season,
+   anniversaries and live mini-games
+   ============================================================ */
+
+/* ---------- legacy: shared by every save on this device ---------- */
+const LEG_KEY='festival_legacy';const LEG={v:null};
+function legacy(){if(!LEG.v){let r=null;try{r=JSON.parse(localStorage.getItem(LEG_KEY))}catch(e){}LEG.v=Object.assign({stars:0,earned:0,perks:{},hall:[],medals:{},daily:{},streak:0,lastDaily:'',runs:0,mg:true},r||{})}return LEG.v}
+function legSave(){try{localStorage.setItem(LEG_KEY,JSON.stringify(legacy()))}catch(e){}}
+function earnStars(s,n,why,list){if(n<=0)return 0;s.legEarned=(s.legEarned||0)+n;const L=legacy();L.stars+=n;L.earned+=n;legSave();if(list)list.push({n,why});return n}
+const RANKS=[[0,'Field party rookie'],[15,'Local promoter'],[40,'Regional name'],[90,'National promoter'],[180,'Festival mogul'],[320,'Living legend']];
+function rankOf(e){let r=RANKS[0],nx=null;for(let i=0;i<RANKS.length;i++){if(e>=RANKS[i][0]){r=RANKS[i];nx=RANKS[i+1]||null}}return{n:r[1],at:r[0],next:nx}}
+const PERKS=[
+  {k:'contacts',n:'Old contacts',d:'Every agency starts on good terms with you.',c:6,fx:s=>{for(const k in s.agRel)s.agRel[k]=Math.max(s.agRel[k],66)}},
+  {k:'seed',n:'Seed money',d:'£250k more starting cash.',c:8,fx:s=>{s.money+=250000}},
+  {k:'fans',n:'Built-in audience',d:'Start with 6,000 extra followers.',c:4,fx:s=>{if(s.social)s.social.followers+=6000}},
+  {k:'crew',n:'Loyal crew chief',d:'Start with a level 2 production manager.',c:6,fx:s=>{hireCrew(s,'prod',{n:pick(CREW_FN)+' '+pick(CREW_LN),lvl:2,xp:0,sal:Math.round(CREW.prod.sal*1.3)})}},
+  {k:'weather',n:'Weather nose',d:'Forecasts are much more reliable.',c:6},
+  {k:'bank',n:'Friendly bank manager',d:'£250k more overdraft.',c:4,fx:s=>{s.odLimit+=250000}},
+  {k:'scout',n:'Scout from day one',d:'Start with an A&R scout on the team.',c:8,fx:s=>{s.scout=true}},
+  {k:'posts',n:'Social media manager',d:'One extra post every round and week.',c:6},
+  {k:'gold',n:'Golden first year',d:'Your first year’s goals pay double.',c:8,fx:s=>{if(s.goals)s.goals.reward*=2}},
+  {k:'royal',n:'Festival royalty',d:'Start with 6 more reputation.',c:10,fx:s=>{s.rep+=6}}];
+const hasPerk=(s,k)=>!!(s&&s.perks&&s.perks.includes(k));
+function applyPerks(s){const L=legacy();s.perks=PERKS.filter(p=>L.perks[p.k]).map(p=>p.k);for(const p of PERKS)if(hasPerk(s,p.k)&&p.fx)p.fx(s)}
+
+/* ---------- challenges ---------- */
+const MEDALS=['No medal','Bronze','Silver','Gold'];
+const sumNet=s=>s.hist.reduce((a,h)=>a+h.net,0);
+const CHAL={
+  shoestring:{n:'Shoestring',site:'farm',yrs:3,d:'Hollow Farm with £150k in the bank and no loan. Turn a profit.',goal:'Total profit over 3 years',tiers:[400000,1200000,2500000],score:sumNet,fmt:v=>fmt$(v),setup:s=>{s.money=150000;s.debt=0;s.odLimit=Math.min(s.odLimit,300000)}},
+  mud:{n:'Mud season',site:'estate',yrs:3,wet:1,d:'Every summer is a washout. Keep the reviews up anyway.',goal:'Average review score',tiers:[3.2,3.5,3.8],score:s=>s.hist.reduce((a,h)=>a+h.stars,0)/Math.max(1,s.hist.length),fmt:v=>v.toFixed(2)+'★'},
+  rescue:{n:'Rescue job',site:'estate',yrs:5,d:'You inherit a festival £1.5m in debt with a terrible reputation. Clear the debt.',goal:'Cash minus debt after 5 years',tiers:[1000000,3000000,6000000],score:s=>s.money-s.debt,fmt:v=>fmt$(v),setup:s=>{s.debt=1500000;s.money=250000;s.rep=Math.max(5,s.rep-12);s.community=38;s.hype=2;s.cred=35}},
+  hot:{n:'Hottest ticket',site:'city',yrs:3,d:'A city park and a city that has seen it all. Sell out within the first month of the on-sale, every year.',goal:'Years sold out within four weeks',tiers:[1,2,3],score:s=>s.hist.filter(h=>h.soW!=null&&h.soW<=4).length,fmt:v=>v+' of 3'},
+  big:{n:'Go big',site:'valley',yrs:5,d:'The whole valley. Pack it.',goal:'Best attendance',tiers:[40000,55000,68000],score:s=>Math.max(0,...s.hist.map(h=>h.att)),fmt:v=>fmtN(v)},
+  quiet:{n:'Light sleepers',site:'farm',yrs:3,d:'A tighter noise limit and a council that already hates you. Win them round.',goal:'Council trust after 3 years',tiers:[45,60,75],score:s=>Math.round(s.council),fmt:v=>v+' / 100',setup:s=>{s.lic.noise-=5;s.council=30;s.community=35}},
+  hype:{n:'Hype machine',site:'farm',yrs:3,noMkt:1,d:'No marketing budget at all. Social media is all you have.',goal:'Followers after 3 years',tiers:[60000,150000,280000],score:s=>s.social?s.social.followers:0,fmt:v=>fmtK(v),setup:s=>{s.tix.mkt=0}},
+  giant:{n:'Giant killer',site:'airfield',yrs:4,rival:1,d:'Your rival is at the top of their game and has twice the money. Beat their reputation.',goal:'Your reputation minus your rival’s',tiers:[-15,-3,8],score:s=>s.rep-s.rival.rep,fmt:v=>(v>0?'+':'')+v,setup:s=>{s.rival.rep=78}}};
+function chalDef(s){if(!s||!s.chal)return null;return s.chal.k==='daily'?dailyDef(s.chal.key):CHAL[s.chal.k]}
+function medalFor(def,v){let m=0;def.tiers.forEach((t,i)=>{if(v>=t)m=i+1});return m}
+
+/* ---------- the daily festival: same site, market and twist for everyone today ---------- */
+const TWISTS=[{k:'wet',n:'A wet summer',d:'Forecasts lean wet every year.'},{k:'rich',n:'Deep pockets',d:'£500k extra to start.'},{k:'hype',n:'Hyped from day one',d:'Start with hype 45 and 15,000 followers.'},{k:'cheap',n:'Agents in a good mood',d:'Every act is 15% cheaper.'},{k:'rival',n:'Rival on a spree',d:'Your rival has double the budget.'},{k:'heat',n:'Heatwave summers',d:'Forecasts lean hot. Water and shade matter.'}];
+function todayKey(off){const d=new Date(Date.now()+(off||0)*864e5);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dailyDef(key){const r=mulberry(hash('ftdaily'+key));const pk=a=>a[Math.floor(r()*a.length)];
+  const site=pk(['farm','estate','city','airfield']),ident=pk(Object.keys(IDENT)),tw=pk(TWISTS),founder=pk(['promoter','backed','diy']);
+  return {n:'Daily festival',daily:1,key,site,ident,founder,tw,yrs:3,wet:tw.k==='wet',heat:tw.k==='heat',rival:tw.k==='rival',seed:hash('ftseed'+key),name:FEST_A[Math.floor(r()*FEST_A.length)]+' '+FEST_B[Math.floor(r()*FEST_B.length)],
+    d:SITES[site].n+' · '+IDENT[ident].n+' · '+tw.n+'. '+tw.d,goal:'Score: profit, reviews and crowds over 3 years',tiers:[1800,3000,4200],score:dailyScore,fmt:v=>fmtN(v),
+    setup:s=>{if(tw.k==='rich')s.money+=500000;if(tw.k==='hype'){s.hype=45;if(s.social)s.social.followers+=15000}}}}
+function dailyScore(s){const hs=s.hist;if(!hs.length)return 0;return Math.max(0,Math.round(sumNet(s)/5000+hs.reduce((a,h)=>a+h.stars,0)/hs.length*300+Math.max(...hs.map(h=>h.att))/40))}
+
+/* ---------- crew heads ---------- */
+const CREW={
+  prod:{n:'Production manager',d:'Every set plays a little better.',sal:38000},
+  sec:{n:'Head of security',d:'Fewer people end up in hospital; the council trusts you more.',sal:34000},
+  site:{n:'Site manager',d:'Less mud and cheaper ground restoration.',sal:32000},
+  mkt:{n:'Marketing lead',d:'Posts gain more followers; ticket demand rises.',sal:36000},
+  book:{n:'Head of booking',d:'Agents ask for 3% less per level.',sal:42000},
+  hosp:{n:'Hospitality boss',d:'Bars take 4% more per level.',sal:30000}};
+const CREW_FN=['Aisha','Ben','Carys','Dev','Ellie','Finn','Grace','Hamza','Iona','Jamal','Kit','Leah','Marcus','Nia','Ollie','Priti','Rhys','Sana','Tom','Una','Viv','Wes','Yara','Zak'];
+const CREW_LN=['Adeyemi','Baxter','Chowdhury','Doyle','Evans','Fraser','Gill','Hughes','Iqbal','Jones','Kaur','Lowe','Mensah','Nash','Okafor','Patel','Quinn','Reid','Shah','Turner','Vaughan','Walsh','Young'];
+const crewLvl=(s,k)=>(s&&s.crew&&s.crew[k])?s.crew[k].lvl:0;
+function crewCands(s){if(!s.crewCand||s.crewCand.y!==s.year){s.crewCand={y:s.year,c:{}};for(const k in CREW){const lvl=chance(.3+s.rep/300)?2:1;s.crewCand.c[k]={n:pick(CREW_FN)+' '+pick(CREW_LN),lvl,xp:0,sal:Math.round(CREW[k].sal*(lvl===2?1.3:1)*Math.sqrt(scaleOf(s))/500)*500}}}return s.crewCand.c}
+function hireCrew(s,k,c){s.crew=s.crew||{};s.crew[k]=c;addNews(s,c.n+' joins as your '+CREW[k].n.toLowerCase()+'.','book')}
+function crewSalary(s){return Object.values(s.crew||{}).reduce((a,c)=>a+c.sal,0)}
+function crewYear(s,w){const out=[];for(const [k,c] of Object.entries(s.crew||{})){c.xp+=1+(w.rec.stars>=4?1:0);if(c.lvl<5&&c.xp>=c.lvl*2){c.xp=0;c.lvl++;c.sal=Math.round(c.sal*1.15/500)*500;out.push(c.n+' is now a level '+c.lvl+' '+CREW[k].n.toLowerCase()+'.');if(c.lvl>=5)award(s,'crew5')}}
+  const star=Object.entries(s.crew||{}).filter(([k,c])=>c.lvl>=3).sort((a,b)=>b[1].lvl-a[1].lvl)[0];
+  if(star&&chance(.22)){const [k,c]=star;pushCard(s,'crewpoach',s.rival.owner+' want '+c.n,s.rival.owner+' have offered your '+CREW[k].n.toLowerCase()+' a big pay rise to run '+s.rival.n+'. '+c.n.split(' ')[0]+' would rather stay, for the right money.',[{l:'Match it',d:'Their salary goes up 35%',v:'pay'},{l:'Wish them well',d:'You lose a level '+c.lvl+' head',v:'go'}],{ref:k})}
+  return out}
+CARD_FX.crewpoach=(s,v,c)=>{const m=s.crew&&s.crew[c.ref];if(!m)return '';if(v==='pay'){m.sal=Math.round(m.sal*1.35/500)*500;return m.n+' stays.'}delete s.crew[c.ref];addNews(s,m.n+' left for '+s.rival.n+'.','rival');return m.n+' has gone.'};
+
+/* ---------- world rankings (fictional festivals) ---------- */
+const WORLD=[['Solstice Coast','ES'],['Northern Lights Weekend','NO'],['Ironworks Open Air','DE'],['Cedar Lake','US'],['Paradiso Sands','PT'],['High Desert Gathering','US'],['Riverbend','UK'],['Moonrise','FR'],['Southern Cross','AU'],['Harbour Lights','IE'],['Copperfields','UK'],['Granite Peak','CH'],['Coral Bay','HR'],['Tundra Sound','FI'],['Orchard Days','UK'],['Saltmarsh','UK'],['Sunset Mesa','US'],['Velvet Hills','IT'],['Lantern Lake','CA'],['Blue Pine','PL']];
+function worldOf(s){if(!s.world){const r=mulberry(hash(s.id+'w'));s.world=WORLD.map(([n,c],i)=>({n,c,sc:Math.round(44+(WORLD.length-i)*2.7+r()*6)}))}return s.world}
+function myWorldScore(s){const h=s.hist[s.hist.length-1];return Math.round(s.rep*.5+(h?h.stars:3)*8+Math.min(25,(h?h.att:0)/2500)+Math.min(8,s.legacy/6))}
+function rankTable(s){const rows=worldOf(s).map(x=>({n:x.n,c:x.c,sc:x.sc}));const rh=s.rival.hist[s.rival.hist.length-1];
+  rows.push({n:s.rival.n,c:'UK',sc:Math.round(s.rival.rep*.5+(rh?rh.stars:3)*8+14),rival:1});rows.push({n:s.name,c:'UK',sc:myWorldScore(s),me:1});rows.sort((a,b)=>b.sc-a.sc);rows.forEach((r,i)=>r.i=i+1);return rows}
+function worldYear(s){for(const x of worldOf(s))x.sc=clamp(Math.round(x.sc+gauss()*2.2),35,104);const t=rankTable(s);const me=t.find(r=>r.me).i;const prev=s.rankHist&&s.rankHist.length?s.rankHist[s.rankHist.length-1].r:null;
+  (s.rankHist=s.rankHist||[]).push({y:s.year,r:me});if(me<=10)award(s,'rank10');if(me===1)award(s,'rank1');
+  if(prev&&me<prev)addNews(s,'You climbed to #'+me+' in the World Festival Rankings.','trophy');return{r:me,prev,n:t.length}}
+function rankSheet(){const t=rankTable(S);const me=t.find(r=>r.me);
+  return '<h2>World Festival Rankings</h2><p class="sub">Voted by fans and the industry each autumn. You are #'+me.i+' of '+t.length+'. All these festivals are fictional.</p><ul class="list">'+t.map(r=>'<li'+(r.me?' style="background:var(--raised2);border-radius:10px;padding-left:8px"':'')+'><span class="num" style="width:28px;color:var(--muted)">#'+r.i+'</span><div class="grow"><b'+(r.me?' style="color:var(--accent)"':'')+'>'+esc(r.n)+'</b><div class="meta">'+r.c+(r.rival?' · your rival':'')+'</div></div><span class="num">'+r.sc+'</span></li>').join('')+'</ul><button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>'}
+
+/* ---------- world events: each year has its own weather ---------- */
+const ERAS=[
+  {k:'calm',n:'A normal summer',d:'Nothing unusual is going on.',w:3},
+  {k:'boom',n:' is everywhere',d:'Acts in this genre draw 25% more and play with extra swagger.',w:3},
+  {k:'squeeze',n:'Cost-of-living squeeze',d:'Ticket demand is down 8%. Fans want value.',w:2,dem:.92},
+  {k:'fever',n:'Festival fever',d:'Everyone wants to go to a festival this year. Demand is up 8%.',w:2,dem:1.08},
+  {k:'fuel',n:'Fuel and freight crisis',d:'Production, power and fencing cost 12% more.',w:2},
+  {k:'heat',n:'Record-breaking summer',d:'Forecasts lean hot. Water, shade and cold drinks matter.',w:2},
+  {k:'wet',n:'The wettest summer on record',d:'Forecasts lean wet. Trackway and drainage pay off.',w:2},
+  {k:'craze',n:'A viral dance craze',d:'Social posts gain far more followers.',w:2}];
+function pickEra(s){if(s.year<=1)return{k:'calm',n:ERAS[0].n,d:ERAS[0].d};let t=ERAS.reduce((a,e)=>a+e.w,0),r=Math.random()*t,e=ERAS[0];for(const x of ERAS){if(r<x.w){e=x;break}r-=x.w}
+  const o={k:e.k,n:e.n,d:e.d,dem:e.dem};if(e.k==='boom'){o.g=pick(GKEYS);o.n=GENRES[o.g].n+o.n}return o}
+const eraK=s=>s&&s.era?s.era.k:'calm';
+
+/* ---------- anniversaries and the off-season ---------- */
+const isAnniv=s=>s.year>1&&s.year%5===0;
+CARD_FX.anniv=(s,v)=>{if(v==='party'){cash(s,-40000*Math.sqrt(scaleOf(s)));ledger(s,'Anniversary celebrations',-Math.round(40000*Math.sqrt(scaleOf(s))));s.flags.annivParty=s.year;return 'Birthday fireworks booked for every night.'}if(v==='merch'){s.flags.annivMerch=s.year;return 'Commemorative merch is in production.'}return 'Low-key it is.'};
+const OFFSEASON={
+  party:{n:'Winter warehouse party',d:'A one-night rave in the city. Could make money, could lose it.',c:30000},
+  tour:{n:'Club-night tour',d:'Take the brand round five cities. Followers and hype.',c:20000},
+  give:{n:'Give back locally',d:'Fund the village hall roof and a litter-pick. Council and neighbours love it.',c:15000},
+  boat:{n:'Festival boat party',d:'Sell out a river boat in spring. Big risk, big buzz.',c:60000,rep:40},
+  rest:{n:'Rest',d:'Everyone recharges. Crew heads gain experience, investors calm down.',c:0}};
+function offseasonCard(s){const opts=Object.entries(OFFSEASON).filter(([k,o])=>!o.rep||s.rep>=o.rep).map(([k,o])=>{const c=Math.round(o.c*Math.sqrt(scaleOf(s))/1000)*1000;return{l:o.n+(c?' · '+fmt$(c):''),d:o.d,v:k}});
+  pushCard(s,'offseason','The off-season','The fields are empty until spring. What does the team do over winter?',opts,{ref:'y'+s.year})}
+CARD_FX.offseason=(s,v)=>{const o=OFFSEASON[v];if(!o)return '';const c=Math.round(o.c*Math.sqrt(scaleOf(s))/1000)*1000;if(c){cash(s,-c)}s.offDone=(s.offDone||0)+1;if(s.offDone>=5)award(s,'never');let t='';
+  if(v==='party'){const back=Math.round(c*rnd(.4,2.1)/500)*500;s.money+=back;s.hype=clamp(s.hype+ri(3,8),0,100);t=back>=c?'The warehouse party sold out. You made '+fmt$(back-c)+'.':'A quiet night in a cold warehouse. You lost '+fmt$(c-back)+'.'}
+  else if(v==='tour'){const g=Math.round((s.social?s.social.followers:2000)*rnd(.08,.16));if(s.social)s.social.followers+=g;s.hype=clamp(s.hype+5,0,100);t='The club tour picked up '+fmtK(g)+' followers.'}
+  else if(v==='give'){s.council=clamp(s.council+7,0,100);s.community=clamp(s.community+9,0,100);t='The village hall has a new roof with your name on a plaque.'}
+  else if(v==='boat'){const back=Math.round(c*rnd(.3,2.6)/500)*500;s.money+=back;s.hype=clamp(s.hype+ri(4,10),0,100);s.legacy+=2;t=back>=c?'The boat party was the talk of spring: '+fmt$(back-c)+' profit.':'Rain, seasickness and '+fmt$(c-back)+' lost. A story, at least.'}
+  else{for(const m of Object.values(s.crew||{}))m.xp++;s.board=clamp((s.board||60)+5,0,100);t='Everyone comes back in spring rested.'}
+  addNews(s,'Off-season: '+t,'money');return t};
+
+/* ---------- live mini-games ---------- */
+const MINI={
+  mix:{n:'Sound check',x:'The headliner just walked on. Lock the mix in the green zone three times.',skip:'Let the engineer handle it'},
+  surge:{n:'Crowd control',x:'Saturday night, the busiest hour of the weekend. Tap the hot spots to send stewards before they turn red.',skip:'Trust the stewards'},
+  pyro:{n:'The drop',x:'Sunday finale. Fire the pyro on the beat: tap as each ring hits the circle.',skip:'Let the pyro tech fire it'}};
+function miniDec(s,k,ref){const M=MINI[k];return{t:M.n,x:M.x,mini:k,ref,opts:[
+  {l:M.skip,d:'An average result',log:M.n+': the crew handled it.',fn:s=>miniApply(s,k,ref,.5)},
+  {l:'Play',log:M.n,fn:s=>miniApply(s,k,ref,s.live.mgScore==null?.5:s.live.mgScore)}]}}
+function miniApply(s,k,ref,sc){const L=s.live;L.mg=L.mg||{};L.mg[k+(ref||'')]=sc;if(sc>=.95)award(s,'perfect');
+  if(k==='mix'){const b=s.bk.find(x=>x.id===ref);const bon=(sc-.5)*.8;if(b&&L.played[b.id]!=null){L.played[b.id]+=bon;L.perf+=bon/Math.max(1,L.perfN)}}
+  else if(k==='surge'){L.mood=clamp(L.mood+(sc-.5)*12,0,100);if(sc<.35)L.pres+=ri(4,12)}
+  else if(k==='pyro'){L.mood=clamp(L.mood+sc*8,0,100);if(sc>.85&&!L.viral&&chance(.5)){const v=ri(3,12);L.viral='The '+s.name+' finale pyro, perfectly on the drop ('+v+'m views)'}}}
+function miniLog(k,sc){const p=Math.round(sc*100);return MINI[k].n+': '+p+'%. '+(sc>=.9?'Perfect.':sc>=.7?'Really good.':sc>=.45?'Fine.':'Rough.')}
+
+/* ---------- wrappers on the core game ---------- */
+const _marketYear=marketYear;marketYear=function(s,first){_marketYear(s,first);const D=chalDef(s);if(D&&D.rival)s.rival.budget*=2};
+const _makeForecast=makeForecast;makeForecast=function(s){const f=_makeForecast(s);const D=chalDef(s);const e=eraK(s);
+  const lean=(D&&D.wet)||e==='wet'?['mixed','wet','storm','wet']:(D&&D.heat)||e==='heat'?['hot','sun','hot','mixed']:null;
+  for(const x of f){if(lean&&chance(.6))x.k=pick(lean);if(hasPerk(s,'weather'))x.conf=Math.min(95,x.conf+15)}return f};
+const _demandMods=demandMods;demandMods=function(s){const r=_demandMods(s);if(s.era&&s.era.dem){r.m*=s.era.dem;r.why.push(s.era.n)}if(isAnniv(s)){r.m*=1.08;r.why.push('Anniversary edition')}return r};
+const _identGenre=identGenre;identGenre=function(s,a){let m=_identGenre(s,a);if(eraK(s)==='boom'&&a&&a.genre===s.era.g)m*=1.25;return m};
+const _askFor=askFor;askFor=function(s,a,o){const r=_askFor(s,a,o);if(a.unsigned)return r;let m=1-.03*crewLvl(s,'book');const D=chalDef(s);if(D&&D.tw&&D.tw.k==='cheap')m*=.85;if(m!==1){r.fee=Math.round(r.fee*m/250)*250;if(crewLvl(s,'book'))r.why.push('Your head of booking')}return r};
+const _perfBonus=perfBonus;perfBonus=function(s,x){return _perfBonus(s,x)+.04*crewLvl(s,'prod')+(eraK(s)==='boom'&&x.a.genre===s.era.g?.05:0)};
+const _barMods=barMods;barMods=function(s){const r=_barMods(s);r.spend*=1+.04*crewLvl(s,'hosp');return r};
+const _socialDemand=socialDemand;socialDemand=function(s){return _socialDemand(s)*(1+.015*crewLvl(s,'mkt'))};
+const _makePost=makePost;makePost=function(s,k,b){const f0=s.social?s.social.followers:0;const r=_makePost(s,k,b);const g=(s.social?s.social.followers:0)-f0;
+  if(g>0){const x=Math.round(g*(.12*crewLvl(s,'mkt')+(eraK(s)==='craze'?.6:0)));s.social.followers+=x;if(s.social.posts[0])s.social.posts[0].gain+=x}return r};
+const _costLines=costLines;costLines=function(s,a0){const L=_costLines(s,a0);const sal=crewSalary(s);if(sal)L.push({g:'Staff',k:'Crew heads',v:sal,n:Object.keys(s.crew).length+' heads of department'});
+  if(eraK(s)==='fuel'){const base=L.filter(l=>l.g==='Production'||/^(Fencing|Power)/.test(l.k)).reduce((a,l)=>a+l.v,0);L.push({g:'Site',k:'Fuel & freight surcharge',v:Math.round(base*.12),n:'Fuel and freight crisis'})}
+  const sm=crewLvl(s,'site');if(sm){const gr=L.find(l=>l.k==='Ground restoration');if(gr)L.push({g:'Site',k:'Site manager savings',v:-Math.round(gr.v*.08*sm)})}
+  if(s.ledger['Anniversary celebrations'])L.push({g:'Overheads',k:'Anniversary celebrations',v:-s.ledger['Anniversary celebrations']});
+  return L};
+const _merchMult=merchMult;merchMult=function(s){return _merchMult(s)*(s.flags.annivMerch===s.year?1.4:1)};
+const _sellWeek=sellWeek;sellWeek=function(s,w,e){const D=chalDef(s);if(D&&D.noMkt)s.tix.mkt=0;return _sellWeek(s,w,e)};
+const _openGates=openGates;openGates=function(s){_openGates(s);if(s.flags.annivParty===s.year){s.live.mood+=6;logL(s,'Happy birthday, '+s.name+'. Fireworks every night this weekend.','good')}};
+const _finishWeekend=finishWeekend;finishWeekend=function(s){const L=s.live;const lv=crewLvl(s,'sec');if(lv&&L.serious&&!L.done){const cut=Math.min(L.serious,Math.floor(lv/2)+(chance(.5)?1:0));if(cut){L.serious-=cut;logL(s,'Your head of security’s team spotted '+cut+' serious case'+(cut>1?'s':'')+' early. Everyone went home.','good')}}_finishWeekend(s)};
+const _liveStep=liveStep;liveStep=function(s){const L=s.live;if(!L||L.done||L.dec)return _liveStep(s);const i0=L.i,st=STEPS[i0];_liveStep(s);
+  if(L.dec||L.done||L.i!==i0+1||!legacy().mg)return;L.mg=L.mg||{};
+  if(crewLvl(s,'site'))L.mud=Math.max(0,L.mud-.25*crewLvl(s,'site'));
+  let dec=null;
+  const hb=L.mg['mixd'+st.d]?null:signed(s).find(b=>b.day===st.d&&b.slot===0&&isMain(stageType(s,b.stage))&&L.played[b.id]!=null&&L.mg['mix'+b.id]==null);
+  if(hb){dec=miniDec(s,'mix',hb.id);L.mg['mixd'+st.d]=1}
+  else if(st.d===1&&st.h>=19&&st.h<=22&&L.mg.surge==null&&L.onsite>500)dec=miniDec(s,'surge','');
+  else if(st.d===2&&st.h>=21&&st.h<=23&&L.mg.pyro==null)dec=miniDec(s,'pyro','');
+  if(dec){if(dec.mini==='mix'){const a=act(hb.actId);dec.x=a.name+' just walked on. '+dec.x.split('. ').slice(1).join('. ')}L.i=i0;ask(s,dec)}};
+const _migrate=migrate;migrate=function(s){s=_migrate(s);s.crew=s.crew||{};if(!s.era)s.era={k:'calm',n:ERAS[0].n,d:ERAS[0].d};return s};
+const _nextYear=nextYear;nextYear=function(s){if(s.inbox)s.inbox=s.inbox.filter(c=>c.key!=='offseason');_nextYear(s);if(s.over)return;
+  s.era=pickEra(s);if(s.era.k!=='calm')addNews(s,'The world this year: '+s.era.n.toLowerCase()+'. '+s.era.d,'book');
+  if(hasPerk(s,'posts')&&s.social)s.social.left=SOCIAL_PER+1;
+  if(isAnniv(s)){s.hype=clamp(s.hype+12,0,100);addNews(s,'This is the '+ordinal(s.year)+' edition of '+s.name+'.','trophy');award(s,s.year>=10?'anniv10':'anniv5');
+    pushCard(s,'anniv','The '+ordinal(s.year)+' edition','It’s your '+ordinal(s.year)+' year. Demand is up 8% for the anniversary. How do you celebrate?',[{l:'Birthday fireworks every night',d:'About '+fmt$(40000*Math.sqrt(scaleOf(s)))+'. A happier crowd.',v:'party'},{l:'Commemorative merch',d:'Merch sells 40% more this year',v:'merch'},{l:'Keep it low-key',d:'Nothing changes',v:'none'}],{ref:'a'+s.year})}
+  save()};
+const _roundExtras=roundExtras;roundExtras=function(s){_roundExtras(s);if(hasPerk(s,'posts')&&s.social)s.social.left=SOCIAL_PER+1};
+const _weekExtras=weekExtras;weekExtras=function(s){_weekExtras(s);if(hasPerk(s,'posts')&&s.social)s.social.left=SOCIAL_PER+1};
+function ordinal(n){const v=n%100;return n+(v>=11&&v<=13?'th':['th','st','nd','rd'][n%10]||'th')}
+const _wrapYear=wrapYear;wrapYear=function(s){const tBefore=Object.keys(s.trophies).length;_wrapYear(s);const w=s.wrap;if(!w)return;const r=w.rec;
+  r.soW=s.sales&&s.sales.soldOut?s.sales.soldOut.w:null;w.crew=crewYear(s,w);w.rank=worldYear(s);
+  if(s.flags.annivMerch===s.year||s.flags.annivParty===s.year)s.legacy+=2;
+  const got=[];earnStars(s,r.net>0?1:0,'Made a profit',got);earnStars(s,r.stars>=4?1:0,'Four-star reviews',got);earnStars(s,r.stars>=4.5?1:0,'A near-perfect weekend',got);
+  earnStars(s,r.soldOut?1:0,'Sold out',got);earnStars(s,w.awards&&w.awards.some(a=>a.won)?1:0,'Won an award',got);earnStars(s,w.goals&&w.goals.n===3?1:0,'Hit every goal',got);
+  const nt=Object.keys(s.trophies).length-tBefore;earnStars(s,nt,nt+' new troph'+(nt>1?'ies':'y'),got);w.stars=got;
+  const D=chalDef(s);if(D&&s.hist.length>=D.yrs){const v=D.score(s);w.chalEnd={v,m:medalFor(D,v)}}
+  if(!s.over&&!w.chalEnd)offseasonCard(s);
+  save()};
+function finishRun(s,k,t){s.over={k,t};recordRun(s);save()}
+function recordRun(s){if(!s.over||s.over.res)return;const L=legacy();const hs=s.hist;const tot=sumNet(s);const peak=Math.max(0,...hs.map(h=>h.att));const best=Math.max(0,...hs.map(h=>h.stars));
+  const sc=Math.round(Math.max(0,tot)/100000+hs.reduce((a,h)=>a+h.stars,0)*10+s.rep+peak/2000+(s.legacy||0));
+  const grade=sc>=400?'S':sc>=250?'A':sc>=150?'B':sc>=80?'C':'D';const got=[];
+  earnStars(s,Math.floor(hs.length/2),hs.length+' years in the business',got);earnStars(s,Math.floor(s.rep/25),'Reputation '+s.rep,got);
+  const D=chalDef(s);let medal=null,dv=null;
+  if(D){const v=D.score(s);medal=hs.length>=D.yrs?medalFor(D,v):0;dv=v;if(medal)earnStars(s,[0,3,6,10][medal],MEDALS[medal]+' medal',got);
+    if(D.daily){const prev=L.daily[D.key]||0;L.daily[D.key]=Math.max(prev,v);if(L.lastDaily!==D.key){L.streak=L.lastDaily===dayBefore(D.key)?L.streak+1:1;L.lastDaily=D.key}if(L.streak>=3)award(s,'daily3')}
+    else{L.medals[s.chal.k]=Math.max(L.medals[s.chal.k]||0,medal);if(medal===3)award(s,'gold')}}
+  L.runs++;L.hall.push({n:s.name,site:SITES[s.site].n,yrs:hs.length,tot,peak,best,rep:s.rep,sc,grade,end:s.over.t,mode:D?D.n:storyOn(s)?'Story':'Free play',at:todayKey()});L.hall.sort((a,b)=>b.sc-a.sc);L.hall=L.hall.slice(0,15);legSave();
+  s.over.res={sc,grade,stars:got,medal,dv}}
+function dayBefore(key){const d=new Date(key+'T12:00:00');d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+TROPHIES.push(['rank10','World top ten','Reach the top ten of the World Festival Rankings'],['rank1','Best in the world','Reach #1 in the World Festival Rankings'],['anniv5','Five years strong','Reach your fifth edition'],['anniv10','Ten-year party','Reach your tenth edition'],
+  ['crew5','Dream team','Train a crew head to level 5'],['perfect','Perfect timing','Score 95% or more in a weekend mini-game'],['never','Never off','Run five off-season events'],['gold','Gold standard','Win gold in a challenge'],['daily3','Habit forming','Play the daily festival three days in a row']);
 /* ============================================================
    3D festival grounds (three.js r128) with a 2D canvas fallback
    1 world unit = 1 cell (20 m); heights are exaggerated to read
@@ -2709,6 +2924,7 @@ function renderLive(app){const L=S.live;const A=analyse(S);const st=STEPS[Math.m
     '<div class="mini-kpis"><div><label>On site</label><b>'+fmtK(L.onsite+L.fenceIn)+'</b></div><div><label>Mood</label><b class="'+(L.mood<45?'neg':L.mood>70?'pos':'')+'">'+Math.round(L.mood)+'</b></div><div><label>Bars</label><b>'+fmt$(L.bar)+'</b></div><div><label>Medical</label><b class="'+(L.serious?'neg':'')+'">'+L.pres+(L.serious?' · '+L.serious:'')+'</b></div></div></div>';
   let panel='<div class="live-panel" id="livepanel">';
   if(L.done){panel+='<div class="decision"><h3>That’s a wrap</h3><p>'+fmtN(L.arrived+L.fenceIn)+' came through the gates. Mood averaged '+Math.round(L.moodAvg)+'. '+L.pres+' medical cases'+(L.serious?', '+L.serious+' to hospital':'')+'. '+fmt$(L.bar)+' over the bars.</p><button class="btn wide" data-a="wrap">Read the reviews</button></div>'}
+  else if(L.dec&&L.dec.mini){panel+=miniHtml(L.dec)}
   else if(L.dec){const d=L.dec;panel+='<div class="decision" role="alertdialog" aria-label="'+esc(d.t)+'"><h3>'+esc(d.t)+'</h3><p>'+esc(d.x)+'</p><div class="opts">'+d.opts.map((o,i)=>'<button class="opt" data-a="dec" data-v="'+i+'"><span><b>'+esc(o.l)+'</b>'+(o.d?'<small>'+esc(o.d)+'</small>':'')+'</span></button>').join('')+'</div></div>'}
   else{panel+='<div class="live-controls">'+seg('speed',String(L.speed),[['0','Pause'],['1','Play'],['3','Fast']])+'<button class="btn ghost sm" data-a="skipday">Skip to tonight</button></div>'+liveExtrasHtml();
     const cx=cueAvailable(S);if(cx){const st2=STEPS[Math.min(L.i,STEPS.length-1)];panel+='<div class="chips" role="group" aria-label="Show cues">'+Object.entries(CUES).map(([k,c])=>{const used=L.cues&&L.cues[k+st2.d];return '<button class="chip" data-a="cue" data-v="'+k+'" '+(used?'disabled style="opacity:.4"':'')+'>'+c.n+(c.c?' · '+fmt$(c.c):'')+'</button>'}).join('')+'</div>'}}
@@ -2884,11 +3100,10 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
-const APP_VER='202610301832';
+const APP_VER='202610302100';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
-window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,liveStep,G3,sagChecks,projection,STEPS};
-(function boot(){render()})();
+
 /* ============================================================
    UI for the extras, social and story
    ============================================================ */
@@ -2945,6 +3160,137 @@ Object.assign(ACT,{
 const _tog=ACT.tog;ACT.tog=function(v){if(v.startsWith('menu|')){const k=v.split('|')[1];S.ops.menu=S.ops.menu||{};S.ops.menu[k]=!S.ops.menu[k];save();render();return}
   if(v.startsWith('secret|')){const b=S.bk.find(x=>x.id===v.split('|')[1]);if(b){b.secret=!b.secret;b.posted=b.secret?1:b.posted}UI.keepScroll=true;save();renderSheet();return}
   return _tog(v)};
+/* ============================================================
+   UI for the long game: career, perks, hall of fame, challenges,
+   daily festival, crew heads, rankings, mini-games, poster image
+   ============================================================ */
+function medalPill(m){return m?'<span class="pill '+(m===3?'pos':m===2?'':'warn')+'">'+MEDALS[m]+'</span>':'<span class="pill">No medal</span>'}
+function careerHtml(){const L=legacy();const R=rankOf(L.earned);const nx=R.next;const p=nx?(L.earned-R.at)/(nx[0]-R.at):1;const D=dailyDef(todayKey());const best=L.daily[D.key];
+  const medals=Object.values(L.medals).filter(Boolean).length;
+  return '<section class="card career"><h2>Your career<small>'+L.stars+' legacy star'+(L.stars===1?'':'s')+' to spend</small></h2>'+
+    '<div class="row" style="justify-content:space-between;flex-wrap:nowrap;margin-bottom:6px"><b>'+esc(R.n)+'</b><span class="small faint num">'+L.earned+(nx?' / '+nx[0]:'')+' earned</span></div>'+
+    '<div class="rankbar" aria-hidden="true"><i style="width:'+Math.round(p*100)+'%"></i></div>'+
+    '<div class="stack"><button class="opt" data-a="daily"><span><b>Daily festival</b><small>'+esc(SITES[D.site].n)+' · '+esc(D.tw.n)+(best?' · your best today '+fmtN(best):' · not played today')+(L.streak>1?' · '+L.streak+'-day streak':'')+'</small></span><span class="pill pos">Today</span></button>'+
+    '<button class="opt" data-a="chals"><span><b>Challenges</b><small>Eight scenarios with bronze, silver and gold medals · '+medals+' won</small></span></button>'+
+    '<button class="opt" data-a="perks"><span><b>Legacy perks</b><small>Spend stars on head starts for new festivals · '+PERKS.filter(p=>L.perks[p.k]).length+' of '+PERKS.length+' owned</small></span></button>'+
+    '<button class="opt" data-a="hall"><span><b>Hall of fame</b><small>'+(L.hall.length?'Your best: '+esc(L.hall[0].n)+' · grade '+L.hall[0].grade:'Finished festivals are graded here')+'</small></span></button></div>'+
+    '<p class="small faint" style="margin-top:10px">Earn stars every year for profits, sell-outs, great reviews, awards and trophies, and when a festival ends.</p></section>'}
+function perksSheet(){const L=legacy();return '<h2>Legacy perks</h2><p class="sub">You have '+L.stars+' star'+(L.stars===1?'':'s')+'. Perks you own apply to every new free-play or story festival (you can switch them off when you start one). Challenges and the daily festival ignore them.</p><ul class="list">'+
+  PERKS.map(p=>{const own=L.perks[p.k];return '<li><div class="grow"><b>'+p.n+'</b><div class="meta" style="white-space:normal">'+p.d+'</div></div>'+(own?'<span class="pill pos">Owned</span>':'<button class="btn sm" data-a="perkbuy" data-v="'+p.k+'" '+(L.stars>=p.c?'':'disabled')+'>'+p.c+' ★</button>')+'</li>'}).join('')+'</ul><button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>'}
+function hallSheet(){const L=legacy();return '<h2>Hall of fame</h2><p class="sub">'+L.runs+' festival'+(L.runs===1?'':'s')+' finished on this device. Graded on profit, reviews, reputation and crowds.</p>'+(L.hall.length?'<ul class="list">'+L.hall.map((h,i)=>'<li style="align-items:flex-start"><span class="grade g'+h.grade+'">'+h.grade+'</span><div class="grow"><b>'+esc(h.n)+'</b><div class="meta" style="white-space:normal">'+esc(h.mode)+' · '+esc(h.site)+' · '+h.yrs+' year'+(h.yrs===1?'':'s')+' · '+fmt$(h.tot)+' · best '+h.best.toFixed(1)+'★ · '+fmtN(h.peak)+' peak · '+esc(h.end)+'</div></div><span class="num">'+h.sc+'</span></li>').join('')+'</ul>':'<div class="empty">No finished festivals yet. Retire, sell, finish a challenge or go bust to get graded.</div>')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>'}
+function tiersHtml(D,v){return '<div class="row" style="gap:6px;margin-top:8px">'+D.tiers.map((t,i)=>'<span class="pill '+(v!=null&&v>=t?'pos':'')+'">'+MEDALS[i+1]+' '+esc(D.fmt(t))+'</span>').join('')+'</div>'}
+function chalsSheet(){const L=legacy();return '<h2>Challenges</h2><p class="sub">Fixed scenarios on the Relaxed difficulty, without legacy perks. Hit the target for a medal and legacy stars: 3 for bronze, 6 for silver, 10 for gold.</p><div class="stack">'+
+  Object.entries(CHAL).map(([k,D])=>'<div class="tile"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>'+D.n+'</b>'+medalPill(L.medals[k]||0)+'</div><small>'+esc(SITES[D.site].n)+' · '+D.yrs+' years. '+esc(D.d)+'</small><small style="margin-top:6px;color:var(--text)">'+esc(D.goal)+'</small>'+tiersHtml(D)+'<button class="btn sm" style="margin-top:10px" data-a="chalpick" data-v="'+k+'">Play</button></div>').join('')+'</div><button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>'}
+function dailySheet(){const L=legacy();const D=dailyDef(todayKey());const best=L.daily[D.key];
+  return '<h2>Daily festival</h2><p class="sub">'+todayKey()+'. Everyone gets the same site, artist market, weather and twist today. Three years, then a score.</p>'+
+  '<div class="tile" style="margin-bottom:12px"><b>'+esc(D.name)+'</b><small>'+esc(SITES[D.site].n)+' · '+esc(IDENT[D.ident].n)+' · '+({promoter:'Club promoter',backed:'Investor-backed',diy:'DIY collective'})[D.founder]+'</small><small style="margin-top:6px;color:var(--text)">Twist: '+esc(D.tw.n)+'. '+esc(D.tw.d)+'</small>'+tiersHtml(D,best)+'</div>'+
+  '<div class="kpis"><div class="kpi"><label>Your best today</label><b>'+(best?fmtN(best):'—')+'</b><small>Profit, reviews and crowds</small></div><div class="kpi"><label>Streak</label><b>'+(L.streak||0)+'</b><small>Days in a row</small></div></div>'+
+  '<button class="btn wide" data-a="chalpick" data-v="daily">Play today’s festival</button><button class="btn ghost wide" style="margin-top:8px" data-a="closesheet">Close</button>'}
+function slotPickSheet(k){return '<h2>Pick a save slot</h2><p class="sub">Starting replaces whatever is in that slot.</p><div class="stack">'+[1,2,3].map(n=>{const s=readSlot(n);return '<button class="opt" data-a="chalslot" data-v="'+k+'|'+n+'"><span><b>Slot '+n+'</b><small>'+(s?'Replace '+esc(s.name)+' (year '+s.year+')':'Empty')+'</small></span></button>'}).join('')+'</div><button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Cancel</button>'}
+function chalSetupHtml(u){const D=u.chal==='daily'?dailyDef(todayKey()):CHAL[u.chal];
+  return '<div class="title-screen" style="padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))"><div class="title-row"><h1>'+esc(D.n)+'</h1><button class="btn ghost sm" data-a="cancelsetup">Cancel</button></div><p class="sub">Slot '+u.slot+' · Relaxed difficulty · no legacy perks.</p>'+
+    '<label class="field"><span>Festival name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="fname" name="festival-name" maxlength="28" value="'+esc(u.name)+'" autocomplete="off" spellcheck="false">'+(D.daily?'':'<button class="btn quiet" data-a="rname" aria-label="Random name">Shuffle</button>')+'</div></label>'+
+    '<section class="card"><h2>The brief<small>'+D.yrs+' years</small></h2><p>'+esc(D.d)+'</p><p class="small muted" style="margin-top:8px">Site: '+esc(SITES[D.site].n)+(D.ident?' · '+esc(IDENT[D.ident].n):'')+'</p><div class="sec">'+esc(D.goal)+'</div>'+tiersHtml(D)+'</section>'+
+    '<button class="btn wide" style="margin-top:12px" data-a="start">Start the challenge</button></div>'}
+function metaPlanCards(){let h='';const D=chalDef(S);
+  if(D){const v=D.score(S);h+='<section class="card"><h2>'+esc(D.n)+'<small>Year '+Math.min(S.year,D.yrs)+' of '+D.yrs+'</small></h2><p class="small muted">'+esc(D.d)+'</p><div class="sec">'+esc(D.goal)+': '+(S.hist.length?esc(D.fmt(v)):'nothing yet')+'</div>'+tiersHtml(D,S.hist.length?v:null)+'</section>'}
+  const e=S.era;if(e&&e.k!=='calm'||isAnniv(S))h+='<section class="card"><h2>The world this year<small>'+(START_YEAR+S.year-1)+'</small></h2>'+(e&&e.k!=='calm'?'<p><b>'+esc(e.n)+'.</b> <span class="muted">'+esc(e.d)+'</span></p>':'')+(isAnniv(S)?'<p style="margin-top:6px"><b>The '+ordinal(S.year)+' edition.</b> <span class="muted">Demand is up 8% for the anniversary.</span></p>':'')+'</section>';
+  return h}
+function crewCard(){const C=S.crew||{};const cand=crewCands(S);const sal=crewSalary(S);
+  return '<section class="card"><h2>Crew heads<small>'+(sal?fmt$(sal)+' a year':'None hired')+'</small></h2><p class="small muted" style="margin-bottom:8px">Heads of department gain experience every year they stay, up to level 5. Good ones get poached.</p><ul class="list">'+
+    Object.entries(CREW).map(([k,r])=>{const c=C[k];if(c)return '<li><div class="grow"><b>'+esc(c.n)+'</b><div class="meta" style="white-space:normal">'+r.n+' · level '+c.lvl+' '+'●'.repeat(c.lvl)+'<span style="opacity:.25">'+'●'.repeat(5-c.lvl)+'</span> · '+fmt$(c.sal)+' a year</div></div><button class="btn ghost sm" data-a="crewfire" data-v="'+k+'">Let go</button></li>';
+      const x=cand[k];return '<li><div class="grow"><b>'+r.n+'</b><div class="meta" style="white-space:normal">'+r.d+' Candidate: '+esc(x.n)+', level '+x.lvl+'.</div></div><button class="btn sm" data-a="crewhire" data-v="'+k+'">Hire · '+fmt$(x.sal)+'</button></li>'}).join('')+'</ul></section>'}
+function wrapMetaHtml(w){let h='';
+  if(w.rank){const t=rankTable(S);const me=t.find(r=>r.me);const near=t.filter(r=>Math.abs(r.i-me.i)<=2||r.i<=3);const mv=w.rank.prev?w.rank.prev-w.rank.r:0;
+    h+='<section class="card"><h2>World Festival Rankings<small>'+(mv>0?'Up '+mv:mv<0?'Down '+(-mv):w.rank.prev?'No change':'New entry')+'</small></h2><ul class="list">'+near.map(r=>'<li'+(r.me?' style="background:var(--raised2);border-radius:10px;padding-left:8px"':'')+'><span class="num" style="width:28px;color:var(--muted)">#'+r.i+'</span><div class="grow"><b'+(r.me?' style="color:var(--accent)"':'')+'>'+esc(r.n)+'</b>'+(r.rival?'<div class="meta">Your rival</div>':'')+'</div><span class="num">'+r.sc+'</span></li>').join('')+'</ul><button class="btn ghost sm" style="margin-top:10px" data-a="ranks">Full table</button></section>'}
+  if(w.stars&&w.stars.length)h+='<section class="card"><h2>Legacy stars<small>+'+w.stars.reduce((a,x)=>a+x.n,0)+'</small></h2><ul class="list">'+w.stars.map(x=>'<li><span class="pill pos">+'+x.n+' ★</span><div class="grow">'+esc(x.why)+'</div></li>').join('')+'</ul><p class="small faint" style="margin-top:8px">Spend them on legacy perks from the title screen.</p></section>';
+  if(w.crew&&w.crew.length)h+='<section class="card"><h2>Your crew</h2><ul class="list">'+w.crew.map(t=>'<li><span class="pill pos">Level up</span><div class="grow">'+esc(t)+'</div></li>').join('')+'</ul></section>';
+  return h}
+function chalEndHtml(w){const D=chalDef(S);const c=w.chalEnd;return '<section class="card" style="box-shadow:inset 0 0 0 1px var(--accent)"><h2>'+esc(D.n)+' complete</h2><p>'+esc(D.goal)+': <b>'+esc(D.fmt(c.v))+'</b></p>'+tiersHtml(D,c.v)+'<p style="margin-top:10px">'+(c.m?'You won <b>'+MEDALS[c.m].toLowerCase()+'</b>.':'Not enough for a medal this time.')+'</p><button class="btn wide" style="margin-top:12px" data-a="chalfin">Finish</button></section>'}
+
+/* ---------- mini-games ---------- */
+function miniHtml(d){return '<div class="decision mg" role="group" aria-label="'+esc(d.t)+'"><h3>'+esc(d.t)+'</h3><p>'+esc(d.x)+'</p><div id="mgbox" class="mgbox mg-'+d.mini+'"></div><div class="row" style="margin-top:10px"><button class="btn quiet sm" data-a="dec" data-v="0">'+esc(d.opts[0].l)+'</button></div></div>'}
+function mgFinish(k,sc){const L=S&&S.live;if(!L||!L.dec||L.dec.mini!==k)return;sc=clamp(sc,0,1);L.mgScore=sc;L.dec.opts[1].log=miniLog(k,sc);UI.mg=null;decide(S,1);L.mgScore=null;toast(miniLog(k,sc));render()}
+function mgMount(){const box=$('#mgbox');if(!box)return;const k=S.live.dec.mini;const tok=UI.mg={k,tok:uid()};const alive=()=>UI.mg===tok&&document.contains(box);const now=()=>performance.now();
+  const tap=(el,f)=>el.addEventListener('pointerdown',e=>{e.preventDefault();f(e)});
+  if(k==='mix'){let round=0,scores=[],zone=0,t0=now();const newZone=()=>{zone=rnd(.15,.85);t0=now()};newZone();
+    box.innerHTML='<div class="mg-track"><i class="mg-zone"></i><i class="mg-needle"></i></div><div class="row" style="justify-content:space-between;margin:8px 0"><span class="small muted" id="mgr">Mix 1 of 3</span><span class="small" id="mgf"></span></div><button class="btn wide" id="mgbtn">Lock the mix</button>';
+    const zEl=box.querySelector('.mg-zone'),nEl=box.querySelector('.mg-needle');const put=()=>{zEl.style.left=((zone-.08)*100)+'%';zEl.style.width='16%'};put();
+    const pos=()=>{const per=1500-round*300;const t=((now()-t0)%per)/per;return t<.5?t*2:2-t*2};
+    const loop=()=>{if(!alive())return;nEl.style.left=(pos()*100)+'%';requestAnimationFrame(loop)};loop();
+    tap(box.querySelector('#mgbtn'),()=>{if(!alive())return;const d=Math.abs(pos()-zone);const sc=d<=.08?1:clamp(1-(d-.08)/.25,0,1);scores.push(sc);round++;box.querySelector('#mgf').textContent=sc>=.95?'Perfect':sc>=.6?'Good':sc>0?'Off':'Feedback!';
+      if(round>=3){setTimeout(()=>mgFinish('mix',scores.reduce((a,v)=>a+v,0)/3),450);return}box.querySelector('#mgr').textContent='Mix '+(round+1)+' of 3';newZone();put()})}
+  else if(k==='surge'){const N=10,cells=[];let spawned=0,calmed=0;box.innerHTML='<div class="mg-grid">'+Array.from({length:9},(_,i)=>'<button class="mg-cell" aria-label="Zone '+(i+1)+'"></button>').join('')+'</div><p class="small muted" style="margin-top:8px" id="mgr">0 of '+N+' calmed</p>';
+    box.querySelectorAll('.mg-cell').forEach((el,i)=>{cells.push(el);tap(el,()=>{if(el.classList.contains('hot')){el.classList.remove('hot');el.classList.add('ok');clearTimeout(el._t);calmed++;box.querySelector('#mgr').textContent=calmed+' of '+N+' calmed';setTimeout(()=>el.classList.remove('ok'),300)}})});
+    const spawn=()=>{if(!alive())return;if(spawned>=N){setTimeout(()=>{if(alive())mgFinish('surge',calmed/N)},1700);return}const free=cells.filter(c=>!c.classList.contains('hot'));const el=pick(free);spawned++;el.classList.add('hot');el._t=setTimeout(()=>{el.classList.remove('hot');el.classList.add('bad');setTimeout(()=>el.classList.remove('bad'),400)},1500);setTimeout(spawn,820-spawned*25)};setTimeout(spawn,600)}
+  else if(k==='pyro'){const N=8,iv=760,start=now()+1200;const beats=Array.from({length:N},(_,i)=>start+i*iv);const got=Array(N).fill(null);
+    box.innerHTML='<div class="mg-pyro"><i class="mg-target"></i><i class="mg-ring"></i><b id="mgf"></b></div><button class="btn wide" id="mgbtn" style="margin-top:10px">Fire</button>';
+    const ring=box.querySelector('.mg-ring'),fb=box.querySelector('#mgf');
+    const loop=()=>{if(!alive())return;const t=now();const nb=beats.find(b=>b>t-120);if(nb==null){mgFinish('pyro',got.reduce((a,v)=>a+(v||0),0)/N);return}const f=clamp((nb-t)/iv,0,1);ring.style.transform='translate(-50%,-50%) scale('+(1+f*1.6)+')';ring.style.opacity=t<start-iv?0:1;requestAnimationFrame(loop)};loop();
+    tap(box.querySelector('#mgbtn'),()=>{if(!alive())return;const t=now();let bi=-1,bd=1e9;beats.forEach((b,i)=>{const d=Math.abs(t-b);if(d<bd&&got[i]==null){bd=d;bi=i}});if(bi<0||bd>380)return;const sc=bd<70?1:bd<160?.6:bd<260?.25:0;got[bi]=sc;fb.textContent=sc>=1?'Perfect':sc>=.6?'Good':sc>0?'Late':'Miss';fb.className=sc>=.6?'pos':'neg';box.querySelector('.mg-pyro').classList.remove('boom');void box.offsetWidth;if(sc>0)box.querySelector('.mg-pyro').classList.add('boom')})}}
+
+/* ---------- a shareable poster image ---------- */
+function posterBlob(cb){const st=stagesOf(S);const y=START_YEAR+S.year-1;const days=[0,1,2].map(d=>{const acts=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);if(b&&b.st==='signed'&&!b.secret)acts.push({a:act(b.actId),w:(isMain(p.t)?10:p.t==='tent'?6:p.t==='dance'?5:3)-i})});return acts.sort((a,b)=>b.w-a.w)});
+  const c=document.createElement('canvas');c.width=1080;c.height=1350;const x=c.getContext('2d');const F='Inter, -apple-system, system-ui, sans-serif';
+  x.fillStyle='#0b0f08';x.fillRect(0,0,1080,1350);x.textAlign='center';x.textBaseline='alphabetic';
+  x.fillStyle='#b4b4b4';x.font='500 30px '+F;x.fillText((SITES[S.site].n+' · August '+y).toUpperCase(),540,110);
+  let fs=96;x.font='700 '+fs+'px '+F;while(x.measureText(S.name).width>960&&fs>40){fs-=4;x.font='700 '+fs+'px '+F}x.fillStyle='#fff';x.fillText(S.name,540,110+fs+20);
+  let yy=110+fs+110;const col=['#c6f24e','#ff8fc6','#5ec4e8'];
+  days.forEach((acts,d)=>{x.fillStyle=col[d];x.font='700 30px '+F;x.fillText(DAYL[d].toUpperCase(),540,yy);yy+=58;
+    const hl=acts.filter(a=>a.w>=9),rest=acts.filter(a=>a.w<9);
+    for(const a of hl){let s=a.w>=10?64:46;x.font='700 '+s+'px '+F;while(x.measureText(a.a.name).width>980&&s>26){s-=2;x.font='700 '+s+'px '+F}x.fillStyle='#fff';x.fillText(a.a.name,540,yy);yy+=s+12}
+    x.font='500 30px '+F;x.fillStyle='#d8d8d8';let line='';const lines=[];for(const a of rest.slice(0,14)){const t=line?line+'  ·  '+a.a.name:a.a.name;if(x.measureText(t).width>960){lines.push(line);line=a.a.name}else line=t}if(line)lines.push(line);
+    for(const l of lines.slice(0,3)){x.fillText(l,540,yy);yy+=42}if(!acts.length){x.fillStyle='#777';x.fillText('To be announced',540,yy);yy+=42}yy+=46});
+  x.fillStyle='#949494';x.font='500 26px '+F;x.fillText(handleOf(S)+' · '+fmtN(S.lic.cap)+' capacity',540,1300);
+  c.toBlob(cb,'image/png')}
+function sharePoster(){posterBlob(b=>{if(!b){toast('Could not draw the poster.');return}const name=S.name.replace(/[^\w]+/g,'-').toLowerCase()+'-'+(START_YEAR+S.year-1)+'.png';let f=null;try{f=new File([b],name,{type:'image/png'})}catch(e){}
+  if(f&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:S.name}).catch(()=>{});return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast('Poster saved.')})}
+
+/* ---------- wiring into the existing screens ---------- */
+const _renderTitle=renderTitle;renderTitle=function(app){_renderTitle(app);if(UI.setup)return;const g=app.querySelector('.title-screen [data-a="guide"]');if(g)g.parentElement.insertAdjacentHTML('beforebegin',careerHtml())};
+const _viewSetup=viewSetup;viewSetup=function(){const u=UI.setup;if(u.chal)return chalSetupHtml(u);let h=_viewSetup();const n=PERKS.filter(p=>legacy().perks[p.k]).length;
+  if(n)h=h.replace('<button class="btn wide" style="margin-top:20px" data-a="start">','<div class="sec">Legacy perks</div>'+seg('sperks',u.perks===false?'0':'1',[['1','Use my '+n+' perk'+(n>1?'s':'')],['0','Start clean']])+'<button class="btn wide" style="margin-top:20px" data-a="start">');return h};
+const _viewPlan=viewPlan;viewPlan=function(){return _viewPlan().replace('<div class="finding','<!--m-->'+metaPlanCards()+'<div class="finding').replace(/<!--m-->/,'')};
+const _viewWrap=viewWrap;viewWrap=function(){const w=S.wrap;let h=_viewWrap();if(!w)return h;
+  if(w.chalEnd){h=h.replace(/<button class="btn sm" data-a="nextyear">[^<]*<\/button>/,'<button class="btn sm" data-a="chalfin">Finish</button>').replace('<section class="card"><h2>Reviews</h2>',chalEndHtml(w)+'<section class="card"><h2>Reviews</h2>')}
+  return h.replace('<section class="card"><h2>Council debrief',wrapMetaHtml(w)+'<section class="card"><h2>Council debrief')};
+const _viewMoney=viewMoney;viewMoney=function(){const h=_viewMoney();const i=h.lastIndexOf('</main>');return i<0?h+crewCard():h.slice(0,i)+crewCard()+h.slice(i)};
+const _menuSheet=menuSheet;menuSheet=function(){return _menuSheet().replace('<button class="btn ghost wide" data-a="licsheet">','<button class="btn ghost wide" data-a="ranks">World rankings</button><button class="btn ghost wide" data-a="mgtoggle">Weekend mini-games: '+(legacy().mg?'on':'off')+'</button><button class="btn ghost wide" data-a="licsheet">')};
+const _renderEnding=renderEnding;renderEnding=function(app){recordRun(S);save();_renderEnding(app);const r=S.over.res;const b=app.querySelector('[data-a="totitle"]');if(!r||!b)return;const D=chalDef(S);
+  b.insertAdjacentHTML('beforebegin','<section class="card"><h2>Final grade<small>Score '+r.sc+'</small></h2><div class="row" style="flex-wrap:nowrap;gap:14px"><span class="grade big g'+r.grade+'">'+r.grade+'</span><div class="grow">'+(D?'<p><b>'+esc(D.n)+'</b> · '+esc(D.goal)+': '+esc(D.fmt(r.dv))+'</p>'+(D.daily?'':'<p style="margin-top:4px">'+medalPill(r.medal)+'</p>'):'<p class="muted">Saved to your hall of fame.</p>')+'</div></div>'+
+    (r.stars.length?'<ul class="list" style="margin-top:10px">'+r.stars.map(x=>'<li><span class="pill pos">+'+x.n+' ★</span><div class="grow">'+esc(x.why)+'</div></li>').join('')+'</ul>':'')+'<p class="small faint" style="margin-top:8px">You have '+legacy().stars+' legacy stars to spend.</p></section>')};
+const _renderLive=renderLive;renderLive=function(app){_renderLive(app);const L=S.live;if(L&&L.dec&&L.dec.mini&&!(UI.mg&&document.contains($('#mgbox'))&&$('#mgbox').childElementCount))mgMount()};
+const _posterSheet=posterSheet;posterSheet=function(){return _posterSheet().replace('<p class="small faint" style="text-align:center;margin-bottom:12px">Screenshot it and share your bill.</p>','<button class="btn wide" style="margin-bottom:8px" data-a="postershare">Share the poster image</button>')};
+const _guideSheet=guideSheet;guideSheet=function(){return _guideSheet().replace('<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>',[
+  ['Your career','Every festival year earns legacy stars: a profit, a sell-out, four-star reviews, an award, a clean sweep of goals and every new trophy. More come when a festival ends. Stars raise your promoter rank and buy legacy perks for future festivals on the title screen. Finished festivals are graded in the hall of fame.'],
+  ['Challenges and the daily festival','Eight fixed scenarios, from a £150k shoestring to clearing a £1.5m debt, each with bronze, silver and gold targets. The daily festival gives everyone the same site, market, weather and twist for the day: play three years for a score and keep your streak going.'],
+  ['Crew heads','Hire a production manager, head of security, site manager, marketing lead, head of booking or hospitality boss on the Money tab. Each levels up over the years and makes the festival better at one thing. The rival will try to poach the good ones.'],
+  ['The world','Every year has its own news: genre booms, festival fever, a cost-of-living squeeze, fuel crises, heatwaves, washouts and dance crazes. The World Festival Rankings rate you against twenty other festivals each autumn. Every fifth edition is an anniversary. Over winter, pick one off-season event.'],
+  ['Weekend mini-games','Lock the mix before each night’s headliner, send stewards to crowd hot spots on Saturday night and fire the Sunday finale pyro on the beat. Good scores mean better shows and a happier crowd. You can let the crew handle them, or turn them off in the menu.']].map(g=>'<div class="sec">'+g[0]+'</div><p class="muted">'+g[1]+'</p>').join('')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>')};
+const _start=ACT.start;const _nextyearA=ACT.nextyear;
+Object.assign(ACT,{
+  start(){const u=UI.setup;if(!u)return;const D=u.chal?(u.chal==='daily'?dailyDef(todayKey()):CHAL[u.chal]):null;
+    if(D){u.site=D.site;u.mode='free';u.diff='relaxed';if(D.ident)u.ident=D.ident;if(D.founder)u.founder=D.founder}
+    const R0=Math.random;if(D&&D.daily)Math.random=mulberry(D.seed);
+    try{_start()}finally{Math.random=R0}
+    if(!S||UI.setup)return;
+    if(D){S.chal={k:u.chal,key:D.key};S.perks=[];if(D.setup)D.setup(S);if(D.rival)S.rival.budget*=2}else if(u.perks!==false)applyPerks(S);else S.perks=[];
+    S.crew=S.crew||{};S.era=S.era||pickEra(S);save();render()},
+  nextyear(v,el){if(S.wrap&&S.wrap.chalEnd){ACT.chalfin();return}return _nextyearA(v,el)},
+  sperks(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.perks=v==='1';render();drawThumbs()},
+  daily(){UI.sheet=dailySheet;renderSheet()},chals(){UI.sheet=chalsSheet;renderSheet()},perks(){UI.sheet=perksSheet;renderSheet()},hall(){UI.sheet=hallSheet;renderSheet()},
+  chalpick(k){UI.sheet=()=>slotPickSheet(k);renderSheet()},
+  chalslot(v){const [k,n]=v.split('|');const D=k==='daily'?dailyDef(todayKey()):CHAL[k];UI.sheet=null;UI.setup={slot:+n,name:D.daily?D.name:festName(),site:D.site,founder:D.founder||'promoter',diff:'relaxed',mode:'free',ident:D.ident||'indie',chal:k};render()},
+  perkbuy(k){const L=legacy();const p=PERKS.find(x=>x.k===k);if(!p||L.perks[k]||L.stars<p.c)return;L.stars-=p.c;L.perks[k]=1;legSave();toast(p.n+' unlocked for future festivals.');renderSheet();if(!S)render()},
+  chalfin(){if(!S||!S.wrap||!S.wrap.chalEnd)return;const m=S.wrap.chalEnd.m;const D=chalDef(S);S.over={k:'chal',t:D.daily?'Daily festival: '+fmtN(S.wrap.chalEnd.v):m?MEDALS[m]+' medal':'Challenge over'};save();render();window.scrollTo(0,0)},
+  crewhire(k){const c=crewCands(S)[k];if(!c)return;hireCrew(S,k,{...c});delete S.crewCand.c[k];toast(c.n+' is your new '+CREW[k].n.toLowerCase()+'.');save();render()},
+  crewfire(k){const c=S.crew&&S.crew[k];if(!c)return;delete S.crew[k];toast(c.n+' has left.');save();render()},
+  ranks(){UI.sheet=rankSheet;renderSheet()},
+  mgtoggle(){const L=legacy();L.mg=!L.mg;legSave();renderSheet()},
+  postershare(){sharePoster()}});
+window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,get liveStep(){return liveStep},G3,sagChecks,projection,STEPS};
+(function boot(){render()})();
 </script>
 </body>
 </html>
