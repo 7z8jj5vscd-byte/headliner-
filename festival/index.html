@@ -3906,7 +3906,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
-const APP_VER='202610310300';
+const APP_VER='202610310500';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
@@ -4062,7 +4062,7 @@ const _viewWrap=viewWrap;viewWrap=function(){const w=S.wrap;let h=_viewWrap();if
   if(w.chalEnd){h=h.replace(/<button class="btn sm" data-a="nextyear">[^<]*<\/button>/,'<button class="btn sm" data-a="chalfin">Finish</button>').replace('<section class="card"><h2>Reviews</h2>',chalEndHtml(w)+'<section class="card"><h2>Reviews</h2>')}
   return h.replace('<section class="card"><h2>Council debrief',wrapMetaHtml(w)+'<section class="card"><h2>Council debrief')};
 const _viewMoney=viewMoney;viewMoney=function(){const h=_viewMoney();const i=h.lastIndexOf('</main>');return i<0?h+crewCard():h.slice(0,i)+crewCard()+h.slice(i)};
-const _menuSheet=menuSheet;menuSheet=function(){return _menuSheet().replace('<button class="btn ghost wide" data-a="licsheet">','<button class="btn ghost wide" data-a="ranks">World rankings</button><button class="btn ghost wide" data-a="mgtoggle">Weekend mini-games: '+(legacy().mg?'on':'off')+'</button><button class="btn ghost wide" data-a="licsheet">')};
+const _menuSheet=menuSheet;menuSheet=function(){return _menuSheet().replace('<button class="btn ghost wide" data-a="licsheet">','<button class="btn ghost wide" data-a="rename">Rename festival ('+renamesLeft(S)+' of 2 left this year)</button><button class="btn ghost wide" data-a="ranks">World rankings</button><button class="btn ghost wide" data-a="mgtoggle">Weekend mini-games: '+(legacy().mg?'on':'off')+'</button><button class="btn ghost wide" data-a="licsheet">')};
 const _renderEnding=renderEnding;renderEnding=function(app){recordRun(S);save();_renderEnding(app);const r=S.over.res;const b=app.querySelector('[data-a="totitle"]');if(!r||!b)return;const D=chalDef(S);
   b.insertAdjacentHTML('beforebegin','<section class="card"><h2>Final grade<small>Score '+r.sc+'</small></h2><div class="row" style="flex-wrap:nowrap;gap:14px"><span class="grade big g'+r.grade+'">'+r.grade+'</span><div class="grow">'+(D?'<p><b>'+esc(D.n)+'</b> · '+esc(D.goal)+': '+esc(D.fmt(r.dv))+'</p>'+(D.daily?'':'<p style="margin-top:4px">'+medalPill(r.medal)+'</p>'):'<p class="muted">Saved to your hall of fame.</p>')+'</div></div>'+
     (r.stars.length?'<ul class="list" style="margin-top:10px">'+r.stars.map(x=>'<li><span class="pill pos">+'+x.n+' ★</span><div class="grow">'+esc(x.why)+'</div></li>').join('')+'</ul>':'')+'<p class="small faint" style="margin-top:8px">You have '+legacy().stars+' legacy stars to spend.</p></section>')};
@@ -4106,6 +4106,17 @@ const _marketSheet=marketSheet;marketSheet=function(o){const h=_marketSheet(o).r
   return i<0?box+h:h.slice(0,i)+box+h.slice(i)};
 document.addEventListener('input',e=>{if(!e.target.dataset||e.target.dataset.in!=='msearch')return;UI.mkt.q=e.target.value;if(typeof UI.sheet!=='function')return;const tmp=document.createElement('div');tmp.innerHTML=UI.sheet();const nl=tmp.querySelector('#mktlist'),ol=document.getElementById('mktlist');if(nl&&ol)ol.innerHTML=nl.innerHTML});
 const _migrateA=migrate;migrate=function(s){s=_migrateA(s);if(s.acts){const have=new Set(s.acts.map(a=>a.id));for(const a of genActs())if(!have.has(a.id))s.acts.push(a)}return s};
+/* ---------- rename the festival: two changes per festival year ---------- */
+const renamesLeft=s=>2-((s.renames&&s.renames.y===s.year)?s.renames.n:0);
+function renameSheet(){const n=renamesLeft(S);return '<h2>Rename festival</h2><p class="sub">'+(n?'You can change the name '+n+' more time'+(n>1?'s':'')+' this year. Your social handle changes with it.':'You’ve used both name changes for '+(START_YEAR+S.year-1)+'. You get two more next year.')+'</p>'+
+  '<label class="field"><span>New name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="rname" maxlength="28" value="'+esc(S.name)+'" autocomplete="off" spellcheck="false" '+(n?'':'disabled')+'>'+(n?'<button class="btn quiet" data-a="renameshuffle" aria-label="Random name">Shuffle</button>':'')+'</div></label>'+
+  '<div class="stack" style="margin-top:8px"><button class="btn wide" data-a="renamego" '+(n?'':'disabled')+'>Save the new name</button><button class="btn ghost wide" data-a="closesheet">Cancel</button></div>'}
+Object.assign(ACT,{
+  rename(){UI.sheet=renameSheet;renderSheet();setTimeout(()=>{const i=$('#rname');if(i){i.focus();i.select()}},50)},
+  renameshuffle(){const i=$('#rname');if(i)i.value=festName()},
+  renamego(){if(!S||renamesLeft(S)<=0)return;const v=(($('#rname')||{}).value||'').trim().replace(/\s+/g,' ').slice(0,28);if(!v){toast('Pick a name first.');return}if(v===S.name){closeSheet();return}
+    const old=S.name;S.name=v;S.renames={y:S.year,n:(S.renames&&S.renames.y===S.year?S.renames.n:0)+1};addNews(S,old+' is now '+v+'.','book');UI.sheet=null;save();render();toast('You’re now '+v+'. '+(renamesLeft(S)?'One more change left this year.':'No more changes this year.'))}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='rname'){e.preventDefault();ACT.renamego()}});
 window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,get liveStep(){return liveStep},G3,sagChecks,projection,STEPS};
 (function boot(){render()})();
 </script>
