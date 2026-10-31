@@ -262,6 +262,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 @media (hover:hover) and (pointer:fine){.btn:hover{opacity:.88}.btn.ghost:hover,.chip:hover,.seg button:hover,.tab:hover,.pal:hover,.opt:hover,.slotrow:hover,.tile:hover,.iconbtn:hover{background:var(--raised)}.chip[aria-pressed=true]:hover{background:#e6e6e6}}
 .toast button{margin-left:10px;font-weight:600;text-decoration:underline;color:#000}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.toast{pointer-events:none}.toast button{pointer-events:auto}
 .rankbar{position:relative;height:8px;border-radius:4px;background:var(--raised2);overflow:hidden;margin-bottom:14px}.rankbar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:4px}
 .mgbox{margin-top:10px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .mg-track{position:relative;height:44px;border-radius:12px;background:var(--raised2);overflow:hidden}
@@ -394,7 +395,8 @@ const sgn=n=>(n>0?'+':n<0?'−':'')+Math.abs(Math.round(n));
 let W=24,H=32;const CELL=20;
 function setGrid(g){if(g&&g.length){H=g.length;W=g[0].length}}
 const DIFF={
-  relaxed:{n:'Relaxed',cash:1.6,cost:.9,demand:1.2,rep:1.5,noise:5,inc:.5,od:2,d:'More money, keener fans, forgiving neighbours. Recommended.'},
+  chill:{n:'Chill',cash:2.6,cost:.75,demand:1.45,rep:2,noise:8,inc:.3,od:3,d:'The easiest: lots of money, cheap costs, fans who love everything and a council that barely notices.'},
+  relaxed:{n:'Relaxed',cash:1.6,cost:.9,demand:1.2,rep:1.5,noise:5,inc:.5,od:2,d:'More money, keener fans, forgiving neighbours.'},
   standard:{n:'Standard',cash:1,cost:1,demand:1,rep:1,noise:0,inc:1,od:1,d:'Real-world margins: most first festivals lose money.'},
   hard:{n:'Hard',cash:.8,cost:1.1,demand:.85,rep:.8,noise:-2,inc:1.4,od:.6,d:'Tight money, fussy council, fickle fans.'}};
 const DF=s=>DIFF[(s&&s.diff)||'standard'];
@@ -406,7 +408,7 @@ const PHASES=[
   {k:'live',n:'Festival weekend',m:'August'},
   {k:'wrap',n:'Wrap-up',m:'September'}];
 const BOOK_ROUNDS=8,SALE_WEEKS=12;
-const START_YEAR=2027;
+let START_YEAR=2027;
 
 /* ---------- buildables ----------
    cost = weekend hire incl. crew, install and de-rig.
@@ -1746,6 +1748,635 @@ function genActs(){const acts=[];const r=mulberry(20270801);
       tour:0,hist:[fame],first:0,hiatusRisk:tr==='h'?.7:0})}
   return acts}
 /* ============================================================
+   Real artists by decade, for festivals that start in the past.
+   Name|genre|fame in that decade|home. Fame, fees and events in the
+   game are invented; the decade lists only say who was around.
+   From 2020 on, the main artist list takes over.
+   ============================================================ */
+const ERA_DATA={
+1980:`Queen|rock|96|UK
+Michael Jackson|pop|98|US
+Madonna|pop|96|US
+Prince|pop|94|US
+U2|rock|92|EU
+Bruce Springsteen|rock|94|US
+David Bowie|rock|92|UK
+The Rolling Stones|rock|92|UK
+Dire Straits|rock|88|UK
+The Police|rock|88|UK
+Whitney Houston|soul|90|US
+Bon Jovi|rock|88|US
+Guns N' Roses|rock|86|US
+Def Leppard|rock|84|UK
+Duran Duran|pop|86|UK
+Wham!|pop|86|UK
+George Michael|pop|86|UK
+Phil Collins|pop|86|UK
+Genesis|rock|84|UK
+Elton John|pop|88|UK
+Tina Turner|soul|88|US
+Lionel Richie|soul|84|US
+Stevie Wonder|soul|86|US
+Fleetwood Mac|rock|84|US
+AC/DC|rock|86|AUS
+Iron Maiden|metal|82|UK
+Metallica|metal|78|US
+Van Halen|rock|82|US
+Bryan Adams|rock|82|CA
+Simple Minds|rock|80|UK
+The Cure|indie|80|UK
+Depeche Mode|electronic|80|UK
+New Order|electronic|78|UK
+The Smiths|indie|76|UK
+Pet Shop Boys|pop|78|UK
+Eurythmics|pop|80|UK
+Culture Club|pop|78|UK
+Spandau Ballet|pop|72|UK
+Tears for Fears|pop|76|UK
+Simply Red|soul|74|UK
+Sade|soul|76|UK
+Kylie Minogue|pop|76|AUS
+Rick Astley|pop|72|UK
+Erasure|pop|70|UK
+Bananarama|pop|68|UK
+Paul McCartney|rock|88|UK
+Status Quo|rock|74|UK
+Elvis Costello|rock|70|UK
+The Pretenders|rock|68|UK
+Echo & the Bunnymen|indie|66|UK
+Siouxsie and the Banshees|punk|64|UK
+The Clash|punk|76|UK
+The Specials|punk|66|UK
+Madness|pop|74|UK
+UB40|soul|72|UK
+Bob Marley & the Wailers|soul|84|US
+Run-DMC|hiphop|74|US
+Beastie Boys|hiphop|72|US
+Public Enemy|hiphop|70|US
+LL Cool J|hiphop|68|US
+Salt-N-Pepa|hiphop|62|US
+N.W.A|hiphop|66|US
+Eric B. & Rakim|hiphop|58|US
+De La Soul|hiphop|58|US
+Janet Jackson|pop|84|US
+Cyndi Lauper|pop|76|US
+Talking Heads|indie|74|US
+R.E.M.|indie|72|US
+Pixies|indie|58|US
+Sonic Youth|indie|54|US
+The Replacements|indie|48|US
+Hüsker Dü|punk|44|US
+Black Flag|punk|46|US
+Dead Kennedys|punk|48|US
+Bad Religion|punk|42|US
+Motörhead|metal|70|UK
+Judas Priest|metal|74|UK
+Ozzy Osbourne|metal|80|UK
+Megadeth|metal|66|US
+Slayer|metal|64|US
+Anthrax|metal|58|US
+Whitesnake|rock|72|UK
+Scorpions|rock|74|EU
+Europe|rock|70|EU
+a-ha|pop|76|EU
+ABBA|pop|80|EU
+Kraftwerk|electronic|62|EU
+Joy Division|indie|56|UK
+The Jesus and Mary Chain|indie|56|UK
+Cocteau Twins|indie|50|UK
+The Stone Roses|indie|62|UK
+Happy Mondays|indie|56|UK
+The Fall|punk|46|UK
+The Pogues|folk|64|UK
+Billy Bragg|folk|58|UK
+The Waterboys|folk|58|UK
+Christy Moore|folk|52|EU
+Tracy Chapman|folk|68|US
+Suzanne Vega|folk|58|US
+Kate Bush|pop|76|UK
+Peter Gabriel|rock|78|UK
+Sting|pop|80|UK
+Robert Palmer|rock|66|UK
+INXS|rock|74|AUS
+Crowded House|rock|66|AUS
+Midnight Oil|rock|62|AUS
+The B-52's|pop|62|US
+Blondie|pop|72|US
+Hall & Oates|pop|70|US
+Toto|rock|66|US
+Journey|rock|72|US
+Foreigner|rock|68|US
+Billy Idol|rock|70|UK
+Adam and the Ants|punk|60|UK
+Human League|electronic|66|UK
+Soft Cell|electronic|62|UK
+Frankie Goes to Hollywood|pop|70|UK
+Level 42|soul|58|UK
+Five Star|pop|52|UK
+Lisa Stansfield|soul|56|UK
+Soul II Soul|soul|62|UK
+Neneh Cherry|pop|60|EU
+Gloria Estefan|latin|74|US
+Julio Iglesias|latin|72|EU
+Gipsy Kings|latin|58|EU
+Fela Kuti|afro|56|Nigeria
+King Sunny Adé|afro|44|Nigeria
+Youssou N'Dour|afro|50|EU
+Dolly Parton|country|80|US
+Kenny Rogers|country|74|US
+Willie Nelson|country|72|US
+Johnny Cash|country|72|US
+George Strait|country|70|US
+Reba McEntire|country|64|US
+Miles Davis|jazz|70|US
+Herbie Hancock|jazz|62|US
+Courtney Pine|jazz|44|UK
+Frankie Knuckles|electronic|48|US
+808 State|electronic|50|UK
+A Guy Called Gerald|electronic|42|UK
+Inner City|electronic|52|US
+Bomb the Bass|electronic|46|UK
+S'Express|electronic|50|UK`,
+1990:`Oasis|indie|94|UK
+Blur|indie|88|UK
+Nirvana|rock|92|US
+Pearl Jam|rock|86|US
+Red Hot Chili Peppers|rock|86|US
+R.E.M.|indie|86|US
+U2|rock|92|EU
+Radiohead|indie|84|UK
+Pulp|indie|80|UK
+The Prodigy|electronic|86|UK
+The Chemical Brothers|electronic|80|UK
+Underworld|electronic|74|UK
+Orbital|electronic|70|UK
+Leftfield|electronic|66|UK
+Faithless|electronic|72|UK
+Massive Attack|electronic|76|UK
+Portishead|electronic|70|UK
+Daft Punk|electronic|76|EU
+Fatboy Slim|electronic|80|UK
+Basement Jaxx|electronic|68|UK
+Moby|electronic|74|US
+Spice Girls|pop|94|UK
+Take That|pop|88|UK
+Robbie Williams|pop|86|UK
+Backstreet Boys|pop|88|US
+Britney Spears|pop|86|US
+Mariah Carey|soul|90|US
+Whitney Houston|soul|88|US
+Madonna|pop|88|US
+Michael Jackson|pop|92|US
+Celine Dion|pop|88|CA
+Shania Twain|country|84|CA
+Garth Brooks|country|86|US
+Alanis Morissette|rock|82|CA
+Green Day|punk|84|US
+The Offspring|punk|76|US
+Blink-182|punk|70|US
+Foo Fighters|rock|76|US
+Smashing Pumpkins|rock|78|US
+Rage Against the Machine|rock|78|US
+Metallica|metal|88|US
+Guns N' Roses|rock|88|US
+Bon Jovi|rock|82|US
+Aerosmith|rock|80|US
+Korn|metal|70|US
+Marilyn Manson|metal|68|US
+Pantera|metal|66|US
+Soundgarden|rock|72|US
+Alice in Chains|rock|68|US
+Stone Temple Pilots|rock|62|US
+No Doubt|rock|72|US
+Beck|indie|70|US
+Weezer|indie|66|US
+Pavement|indie|54|US
+The Verve|indie|80|UK
+Manic Street Preachers|rock|76|UK
+Suede|indie|74|UK
+Primal Scream|rock|72|UK
+The Stone Roses|indie|72|UK
+Stereophonics|rock|70|UK
+Ocean Colour Scene|indie|64|UK
+Supergrass|indie|66|UK
+Elastica|indie|56|UK
+Ash|rock|58|UK
+Placebo|rock|64|UK
+Travis|indie|66|UK
+Kula Shaker|indie|56|UK
+Garbage|rock|66|UK
+Skunk Anansie|rock|62|UK
+Catatonia|indie|58|UK
+Cast|indie|52|UK
+Shed Seven|indie|50|UK
+The Charlatans|indie|60|UK
+James|indie|64|UK
+Echobelly|indie|44|UK
+Gene|indie|40|UK
+Mansun|indie|46|UK
+Super Furry Animals|indie|52|UK
+Belle and Sebastian|indie|48|UK
+Mogwai|rock|46|UK
+Teenage Fanclub|indie|48|UK
+Texas|pop|64|UK
+Eternal|soul|58|UK
+All Saints|pop|70|UK
+Boyzone|pop|72|EU
+Westlife|pop|72|EU
+The Cranberries|rock|76|EU
+The Corrs|pop|66|EU
+Björk|electronic|74|EU
+Roxette|pop|70|EU
+Ace of Base|pop|66|EU
+Jamiroquai|soul|76|UK
+Lauryn Hill|soul|80|US
+The Fugees|hiphop|80|US
+TLC|soul|80|US
+Destiny's Child|soul|72|US
+Boyz II Men|soul|74|US
+Usher|soul|66|US
+Erykah Badu|soul|62|US
+D'Angelo|soul|58|US
+Tupac|hiphop|86|US
+The Notorious B.I.G.|hiphop|84|US
+Dr. Dre|hiphop|84|US
+Snoop Dogg|hiphop|82|US
+Wu-Tang Clan|hiphop|76|US
+Jay-Z|hiphop|80|US
+Nas|hiphop|74|US
+Missy Elliott|hiphop|72|US
+Busta Rhymes|hiphop|68|US
+Cypress Hill|hiphop|66|US
+A Tribe Called Quest|hiphop|66|US
+The Roots|hiphop|56|US
+Eminem|hiphop|80|US
+Will Smith|hiphop|72|US
+So Solid Crew|hiphop|50|UK
+Roni Size|electronic|54|UK
+Goldie|electronic|58|UK
+LTJ Bukem|electronic|46|UK
+Carl Cox|electronic|64|UK
+Paul Oakenfold|electronic|66|UK
+Sasha|electronic|58|UK
+John Digweed|electronic|56|UK
+Judge Jules|electronic|52|UK
+Pete Tong|electronic|60|UK
+Groove Armada|electronic|56|UK
+Lighthouse Family|soul|60|UK
+Simply Red|soul|72|UK
+Gabrielle|soul|56|UK
+Des'ree|soul|50|UK
+Ricky Martin|latin|78|US
+Enrique Iglesias|latin|76|US
+Gloria Estefan|latin|70|US
+Buena Vista Social Club|latin|58|EU
+Shakira|latin|64|EU
+Chaka Demus & Pliers|soul|50|US
+Shaggy|soul|68|US
+Dixie Chicks|country|70|US
+Faith Hill|country|66|US
+Tim McGraw|country|64|US
+Jamie Cullum|jazz|30|UK
+Courtney Pine|jazz|42|UK
+Herbie Hancock|jazz|52|US
+Levellers|folk|58|UK
+The Waterboys|folk|50|UK
+Ani DiFranco|folk|48|US
+Jewel|folk|58|US
+Tori Amos|pop|62|US
+PJ Harvey|indie|60|UK
+Hole|rock|60|US
+Bikini Kill|punk|42|US
+Rancid|punk|62|US
+NOFX|punk|52|US
+Kylie Minogue|pop|72|AUS
+Savage Garden|pop|62|AUS
+Silverchair|rock|60|AUS
+INXS|rock|62|AUS
+Fela Kuti|afro|48|Nigeria
+Youssou N'Dour|afro|50|EU
+Angélique Kidjo|afro|46|EU`,
+2000:`Coldplay|pop|90|UK
+Arctic Monkeys|indie|86|UK
+The Killers|indie|84|US
+Muse|rock|84|UK
+Oasis|indie|86|UK
+Radiohead|indie|84|UK
+The White Stripes|rock|80|US
+The Strokes|indie|80|US
+Kings of Leon|rock|80|US
+Franz Ferdinand|indie|76|UK
+Kasabian|indie|78|UK
+Kaiser Chiefs|indie|74|UK
+The Libertines|indie|76|UK
+Razorlight|indie|66|UK
+Bloc Party|indie|66|UK
+Editors|indie|62|UK
+The Fratellis|indie|60|UK
+Keane|indie|72|UK
+Snow Patrol|indie|76|UK
+Elbow|indie|60|UK
+Doves|indie|56|UK
+Athlete|indie|50|UK
+The Kooks|indie|64|UK
+The Zutons|indie|54|UK
+Maxïmo Park|indie|56|UK
+The Futureheads|indie|50|UK
+Hard-Fi|indie|56|UK
+The Enemy|indie|52|UK
+The View|indie|50|UK
+The Pigeon Detectives|indie|48|UK
+Klaxons|indie|56|UK
+Foals|indie|52|UK
+The Wombats|indie|50|UK
+Biffy Clyro|rock|58|UK
+Stereophonics|rock|70|UK
+Feeder|rock|60|UK
+Lostprophets|rock|58|UK
+Bullet for My Valentine|metal|58|UK
+Iron Maiden|metal|76|UK
+Metallica|metal|82|US
+Linkin Park|rock|86|US
+Green Day|punk|86|US
+Foo Fighters|rock|84|US
+Red Hot Chili Peppers|rock|86|US
+My Chemical Romance|rock|76|US
+Fall Out Boy|punk|74|US
+Paramore|rock|66|US
+Panic! at the Disco|rock|66|US
+Blink-182|punk|76|US
+Sum 41|punk|64|CA
+Simple Plan|punk|60|CA
+Queens of the Stone Age|rock|72|US
+System of a Down|metal|76|US
+Slipknot|metal|72|US
+Rage Against the Machine|rock|72|US
+The Prodigy|electronic|72|UK
+The Chemical Brothers|electronic|74|UK
+Daft Punk|electronic|80|EU
+Justice|electronic|62|EU
+Basement Jaxx|electronic|66|UK
+Groove Armada|electronic|58|UK
+Faithless|electronic|62|UK
+Pendulum|electronic|66|AUS
+Chase & Status|electronic|56|UK
+Calvin Harris|electronic|66|UK
+David Guetta|electronic|76|EU
+Tiësto|electronic|74|EU
+Armin van Buuren|electronic|66|EU
+Paul Van Dyk|electronic|56|EU
+Mylo|electronic|48|UK
+Hot Chip|electronic|56|UK
+LCD Soundsystem|electronic|60|US
+Gorillaz|indie|80|UK
+Amy Winehouse|soul|84|UK
+Adele|pop|72|UK
+Duffy|soul|60|UK
+Lily Allen|pop|70|UK
+Kate Nash|pop|56|UK
+Florence + the Machine|indie|62|UK
+Girls Aloud|pop|72|UK
+Sugababes|pop|68|UK
+Robbie Williams|pop|84|UK
+Take That|pop|80|UK
+Westlife|pop|68|EU
+McFly|pop|60|UK
+Busted|pop|60|UK
+Kylie Minogue|pop|80|AUS
+Beyoncé|soul|92|US
+Destiny's Child|soul|80|US
+Rihanna|pop|86|US
+Britney Spears|pop|84|US
+Christina Aguilera|pop|80|US
+Justin Timberlake|pop|86|US
+Lady Gaga|pop|80|US
+Katy Perry|pop|74|US
+Kelly Clarkson|pop|70|US
+Pink|pop|78|US
+Gwen Stefani|pop|72|US
+Black Eyed Peas|pop|82|US
+Alicia Keys|soul|78|US
+Usher|soul|82|US
+Kanye West|hiphop|86|US
+Jay-Z|hiphop|88|US
+Eminem|hiphop|90|US
+50 Cent|hiphop|82|US
+OutKast|hiphop|80|US
+Missy Elliott|hiphop|72|US
+Lil Wayne|hiphop|78|US
+Snoop Dogg|hiphop|74|US
+The Streets|hiphop|70|UK
+Dizzee Rascal|hiphop|70|UK
+Wiley|hiphop|58|UK
+Kano|hiphop|56|UK
+Lethal Bizzle|hiphop|50|UK
+Ms. Dynamite|hiphop|54|UK
+Craig David|soul|74|UK
+Jamiroquai|soul|68|UK
+Mark Ronson|electronic|60|UK
+Shakira|latin|84|Colombia
+Daddy Yankee|latin|70|Puerto Rico
+Juanes|latin|62|Colombia
+Enrique Iglesias|latin|70|Spain
+Manu Chao|latin|60|EU
+Johnny Cash|country|60|US
+Dixie Chicks|country|66|US
+Taylor Swift|country|66|US
+Carrie Underwood|country|62|US
+Keith Urban|country|58|AUS
+Norah Jones|jazz|72|US
+Jamie Cullum|jazz|62|UK
+Michael Bublé|jazz|68|CA
+KT Tunstall|pop|60|UK
+James Blunt|pop|70|UK
+Damien Rice|folk|58|EU
+Jack Johnson|folk|64|US
+Bon Iver|folk|50|US
+Fleet Foxes|folk|52|US
+Mumford & Sons|folk|56|UK
+Laura Marling|folk|48|UK
+Seasick Steve|folk|52|US
+The Hives|punk|60|EU
+The Vines|rock|52|AUS
+Jet|rock|56|AUS
+Wolfmother|rock|56|AUS
+Interpol|indie|62|US
+Yeah Yeah Yeahs|indie|62|US
+The Shins|indie|52|US
+Modest Mouse|indie|56|US
+Vampire Weekend|indie|56|US
+MGMT|indie|60|US
+Arcade Fire|indie|72|CA
+Death Cab for Cutie|indie|58|US
+Tinariwen|folk|44|EU
+Amadou & Mariam|afro|46|EU
+Seun Kuti & Egypt 80|jazz|40|EU
+Sean Paul|soul|74|US
+Damian Marley|soul|62|US
+Kelis|soul|62|US
+Estelle|soul|52|UK
+Corinne Bailey Rae|soul|56|UK
+Leona Lewis|pop|68|UK
+Scissor Sisters|pop|72|US
+The Feeling|pop|52|UK
+Primal Scream|rock|62|UK
+The Charlatans|indie|54|UK`,
+2010:`Ed Sheeran|pop|92|UK
+Adele|pop|94|UK
+Taylor Swift|pop|96|US
+Beyoncé|soul|96|US
+Coldplay|pop|92|UK
+Rihanna|pop|90|US
+Kanye West|hiphop|90|US
+Drake|hiphop|90|CA
+Kendrick Lamar|hiphop|88|US
+Lady Gaga|pop|90|US
+Katy Perry|pop|86|US
+Bruno Mars|pop|88|US
+Justin Bieber|pop|88|CA
+One Direction|pop|88|UK
+Little Mix|pop|78|UK
+Arctic Monkeys|indie|90|UK
+The 1975|indie|78|UK
+Muse|rock|84|UK
+Foo Fighters|rock|86|US
+The Killers|indie|80|US
+Kings of Leon|rock|78|US
+Mumford & Sons|folk|80|UK
+Florence + the Machine|indie|80|UK
+Imagine Dragons|rock|80|US
+Twenty One Pilots|rock|74|US
+Paramore|rock|70|US
+Biffy Clyro|rock|74|UK
+Royal Blood|rock|70|UK
+Catfish and the Bottlemen|indie|70|UK
+Bastille|indie|70|UK
+Two Door Cinema Club|indie|64|UK
+Foals|indie|70|UK
+Kasabian|indie|72|UK
+alt-J|indie|66|UK
+Tame Impala|indie|74|AUS
+Vampire Weekend|indie|66|US
+The Lumineers|folk|64|US
+Hozier|folk|70|EU
+George Ezra|pop|72|UK
+Sam Smith|pop|82|UK
+Ellie Goulding|pop|76|UK
+Jessie J|pop|70|UK
+Rita Ora|pop|70|UK
+Dua Lipa|pop|78|UK
+Calvin Harris|electronic|90|UK
+Disclosure|electronic|72|UK
+Rudimental|electronic|72|UK
+Chase & Status|electronic|72|UK
+Avicii|electronic|86|EU
+Swedish House Mafia|electronic|84|EU
+David Guetta|electronic|84|EU
+Martin Garrix|electronic|78|EU
+Skrillex|electronic|80|US
+Diplo|electronic|72|US
+Major Lazer|electronic|78|US
+The Chainsmokers|electronic|80|US
+Kygo|electronic|74|EU
+Duke Dumont|electronic|60|UK
+Jamie xx|electronic|62|UK
+Four Tet|electronic|56|UK
+Bicep|electronic|56|UK
+Jungle|soul|58|UK
+Stormzy|hiphop|80|UK
+Skepta|hiphop|76|UK
+Dave|hiphop|74|UK
+J Hus|hiphop|68|UK
+Kano|hiphop|60|UK
+Little Simz|hiphop|56|UK
+Wretch 32|hiphop|56|UK
+Tinie Tempah|hiphop|70|UK
+Professor Green|hiphop|58|UK
+Eminem|hiphop|86|US
+Jay-Z|hiphop|86|US
+J. Cole|hiphop|80|US
+Travis Scott|hiphop|80|US
+Post Malone|pop|82|US
+Cardi B|hiphop|78|US
+Nicki Minaj|hiphop|84|US
+Childish Gambino|hiphop|76|US
+Chance the Rapper|hiphop|70|US
+Frank Ocean|soul|80|US
+The Weeknd|soul|86|CA
+SZA|soul|70|US
+Lana Del Rey|pop|78|US
+Lorde|pop|78|EU
+Billie Eilish|pop|80|US
+Ariana Grande|pop|88|US
+Sia|pop|76|AUS
+Halsey|pop|70|US
+Shawn Mendes|pop|76|CA
+Lewis Capaldi|pop|72|UK
+Jess Glynne|pop|68|UK
+Clean Bandit|pop|66|UK
+Years & Years|pop|62|UK
+Rag'n'Bone Man|soul|66|UK
+Michael Kiwanuka|soul|60|UK
+Jorja Smith|soul|58|UK
+Emeli Sandé|soul|70|UK
+Paloma Faith|pop|66|UK
+Ben Howard|folk|62|UK
+Laura Marling|folk|52|UK
+Bon Iver|folk|68|US
+Fleet Foxes|folk|60|US
+Kacey Musgraves|country|62|US
+Chris Stapleton|country|70|US
+Luke Combs|country|62|US
+Morgan Wallen|country|56|US
+Iron Maiden|metal|78|UK
+Metallica|metal|82|US
+Slipknot|metal|74|US
+Ghost|metal|62|EU
+Bring Me the Horizon|metal|70|UK
+Architects|metal|56|UK
+Green Day|punk|76|US
+Blink-182|punk|70|US
+IDLES|punk|52|UK
+Slaves|punk|50|UK
+The Libertines|indie|66|UK
+Liam Gallagher|indie|76|UK
+Noel Gallagher's High Flying Birds|indie|72|UK
+Stereophonics|rock|70|UK
+Elbow|indie|62|UK
+Wolf Alice|indie|62|UK
+Blossoms|indie|56|UK
+The Courteeners|indie|60|UK
+Sam Fender|indie|56|UK
+Gerry Cinnamon|folk|56|UK
+Gorillaz|indie|78|UK
+Daft Punk|electronic|82|EU
+Stromae|pop|62|EU
+Christine and the Queens|pop|60|EU
+Robyn|pop|58|EU
+Burna Boy|afro|62|Nigeria
+Wizkid|afro|66|Nigeria
+Davido|afro|58|Nigeria
+J Balvin|latin|74|Colombia
+Bad Bunny|latin|72|Puerto Rico
+Daddy Yankee|latin|74|Puerto Rico
+Luis Fonsi|latin|70|Puerto Rico
+Shakira|latin|80|Colombia
+Maluma|latin|66|Colombia
+Ozuna|latin|64|Puerto Rico
+Rosalía|latin|62|Spain
+BTS|kpop|84|Korea
+BLACKPINK|kpop|78|Korea
+PSY|kpop|72|Korea
+BIGBANG|kpop|66|Korea
+EXO|kpop|60|Korea
+TWICE|kpop|58|Korea
+Red Velvet|kpop|50|Korea
+Kamasi Washington|jazz|50|US
+Gregory Porter|jazz|60|US
+Snarky Puppy|jazz|46|US
+Jacob Collier|jazz|44|UK`};
+const ERA_STARTS=[[1980,'1980'],[1990,'1990'],[2000,'2000'],[2010,'2010'],[2027,'Today']];
+/* ============================================================
    Site analysis: footprints, placement rules, sightlines, noise
    at the receptors, walking distances, crowd flow and the SAG list
    ============================================================ */
@@ -2127,7 +2758,7 @@ function costLines(s,act0){
   const L=[];const cm=SITES[s.site].costMul||1,dc=DF(s).cost;const add=(g,k,v,n)=>L.push({g,k,v:Math.round((['Site','Staff','Licensing'].includes(g)&&k!=='Land rent'?v*cm:v)*(g==='Talent'||g==='Finance'||g==='Weekend'?1:dc)),n});
   const fees=signed(s).reduce((a,b)=>a+b.fee,0);
   add('Talent','Artist fees',fees,signed(s).length+' acts');
-  if(!act0&&(s.phase==='booking'||s.phase==='onsale')){let est=0,n=0;for(const p of stagesOf(s))for(let d=0;d<3;d++)SLOTS[p.t].forEach((sd,i)=>{if(!slotAt(s,p.id,d,i)){est+=feeOf({fame:(sd[3][0]+sd[3][1])/2-4,genre:'indie',home:'UK'},s);n++}});if(n)add('Talent','Open slots (estimate)',est,n+' slots still to book')}
+  if(!act0&&(s.phase==='booking'||s.phase==='onsale')){let est=0,n=0;for(const p of stagesOf(s))for(const d of activeDays(s))SLOTS[p.t].forEach((sd,i)=>{if(!slotAt(s,p.id,d,i)){est+=feeOf({fame:(sd[3][0]+sd[3][1])/2-4,genre:'indie',home:'UK'},s);n++}});if(n)add('Talent','Open slots (estimate)',est,n+' slots still to book')}
   add('Talent','Riders, hospitality & backline',signed(s).reduce((a,b)=>a+b.fee*.08+1500+300*act(b.actId).size,0));
   if(s.ledger['Kill fees'])add('Talent','Kill fees',-s.ledger['Kill fees']);
   if(s.ledger['Artist requests'])add('Talent','Artist requests',-s.ledger['Artist requests']);
@@ -2168,7 +2799,7 @@ function revenueLines(s,act0){
   const tick=sl?sl.rev+sl.revDay+sl.revVip:capWeekend(s)*.85*165+s.tix.day.a*.8*3*s.tix.day.p;
   add('Tickets','Tickets (net of 20% VAT)',tick/1.2,sl?fmtN(sl.wkSold+sl.vipSold)+' weekend · '+fmtN(sl.daySold.reduce((a,v)=>a+v,0))+' day':'Projected');
   if(sl&&(sl.glamp||sl.vans))add('Tickets','Glamping & campervans',(sl.glamp*s.tix.glamp.p+sl.vans*s.tix.vans.p)/1.2);
-  const days=att.wk*3+att.day.reduce((a,v)=>a+v,0);
+  const days=att.wk*nDays(s)+att.day.reduce((a,v)=>a+v,0);
   const bm=barMods(s);const bar=act0?act0.bar:days*23*bm.spend*Math.pow(6.5/s.tix.pint,.6)*(s.tix.pint/6.5)*Math.min(1,A.bars*2000/Math.max(1,att.peak));
   const cogs=s.spons.find(x=>x.k==='beer')?.23:.27;
   add('Bars','Bar takings (net of VAT)',bar/1.2);add('Bars','Drinks stock',-bar/1.2*cogs);
@@ -2384,7 +3015,7 @@ function openGates(s){
     done:false,speed:1,dist:null,cur:null,usedEv:{},hourBar:[],medCap:0,sold:att};
   s.phase='live';s.live.mud=(s.scar||0)*.5;s.live.areaMood=s.pl.reduce((a,p)=>a+(B[p.t].mood||0),0)+((identOf(s)||{}).mood||0)+barMods(s).mood;
   if(s.scar>15)logL(s,'The fields still haven’t recovered from last year. It’s muddy before it’s even rained.','warn');
-  logL(s,'Gates open on '+s.name+'. '+fmtN(att.wk)+' weekend and '+fmtN(att.day[0])+' Friday ticket holders expected.','start');
+  logL(s,'Gates open on '+s.name+'. '+fmtN(att.wk)+(nDays(s)===1?' ticket holders':' weekend and '+fmtN(att.day[firstDay(s)])+' '+DAYL[firstDay(s)]+' ticket holders')+' expected.','start');
   const wf=WX.find(w=>w.k===wx[0]);logL(s,'Weather today: '+wf.n.toLowerCase()+'.','wx');
   save()}
 function logL(s,t,k){const L=s.live;const st=STEPS[Math.min(L.i,STEPS.length-1)];L.log.unshift({t:DAYS[st.d]+' '+(st.h>=24?'night':hhmm(st.h)),x:t,k:k||''});if(L.log.length>120)L.log.length=120}
@@ -2406,7 +3037,7 @@ function liveStep(s){
   // arrivals
   const prof={11:.18,12:.18,13:.15,14:.13,15:.11,16:.09,17:.07,18:.05,19:.03,20:.01};
   let arriving=0;
-  if(site.camping){if(d===0)arriving+=(L.weekendIn-L.noShow)*(prof[h]||0)}
+  if(site.camping){if(d===firstDay(s))arriving+=(L.weekendIn-L.noShow)*(prof[h]||0)}
   else arriving+=(L.weekendIn-L.noShow)*({11:.18,12:.2,13:.18,14:.15,15:.12,16:.09,17:.05,18:.03}[h]||0);
   const dayArr=(L.dayT[d]||0)*({11:.16,12:.2,13:.2,14:.17,15:.13,16:.09,17:.05}[h]||0);arriving+=dayArr;
   L.queue+=arriving;const thru=Math.min(L.queue,gate);L.queue-=thru;L.onsite+=thru;L.arrived+=thru;L.dayIn[d]+=arriving?thru*dayArr/arriving:0;
@@ -2594,7 +3225,7 @@ const GOALS={
   safe:{n:()=>'No serious medical incidents',chk:(s,L)=>!L.serious},
   quiet:{n:()=>'Fewer than 80 noise complaints',chk:(s,L)=>L.complaints<80},
   first:{n:()=>'Book a rising act (fame under 45 and rising)',chk:s=>signed(s).some(b=>{const a=act(b.actId);return a.hist[a.hist.length-1]<45&&a.mom>1.5}),p:s=>signed(s).some(b=>{const a=act(b.actId);return a.hist[a.hist.length-1]<45&&a.mom>1.5})?1:0},
-  big:{n:s=>'Book a headliner with fame '+bigFame(s)+'+',chk:s=>signed(s).some(b=>act(b.actId).fame>=bigFame(s)),p:s=>signed(s).some(b=>act(b.actId).fame>=bigFame(s))?1:0},
+  big:{n:(y,s)=>'Book a headliner with fame '+bigFame(s)+'+',chk:s=>signed(s).some(b=>act(b.actId).fame>=bigFame(s)),p:s=>signed(s).some(b=>act(b.actId).fame>=bigFame(s))?1:0},
   viral:{n:()=>'Have a viral moment',chk:(s,L)=>!!L.viral},
 };
 function bigFame(s){return Math.min(95,Math.round(62+s.rep*.3+Math.log2(scaleOf(s))*6))}
@@ -3269,8 +3900,10 @@ const _liveStep=liveStep;liveStep=function(s){const L=s.live;if(!L||L.done||L.de
   const hb=L.mg['mixd'+st.d]?null:signed(s).find(b=>b.day===st.d&&b.slot===0&&isMain(stageType(s,b.stage))&&L.played[b.id]!=null&&L.mg['mix'+b.id]==null);
   if(hb){dec=miniDec(s,'mix',hb.id);L.mg['mixd'+st.d]=1}
   else if(st.d===1&&st.h>=19&&st.h<=22&&L.mg.surge==null&&L.onsite>500)dec=miniDec(s,'surge','');
-  else if(st.d===2&&st.h>=21&&st.h<=23&&L.mg.pyro==null)dec=miniDec(s,'pyro','');
+  else if(st.d===lastDay(s)&&st.h>=21&&st.h<=23&&L.mg.pyro==null)dec=miniDec(s,'pyro','');
   if(dec){if(dec.mini==='mix'){const a=act(hb.actId);dec.x=a.name+' just walked on. '+dec.x.split('. ').slice(1).join('. ')}L.i=i0;ask(s,dec)}};
+/* decisions keep their effects as functions, which a save can't hold: rebuild safe ones after a reload */
+const _decide=decide;decide=function(s,i){const L=s.live,d=L&&L.dec;if(d&&d.opts){d.opts.forEach((o,j)=>{if(typeof o.fn!=='function')o.fn=d.mini?(t=>miniApply(t,d.mini,d.ref,j===1&&t.live.mgScore!=null?t.live.mgScore:.5)):(()=>{})})}return _decide(s,i)};
 const _migrate=migrate;migrate=function(s){s=_migrate(s);s.crew=s.crew||{};if(!s.era)s.era={k:'calm',n:ERAS[0].n,d:ERAS[0].d};return s};
 const _nextYear=nextYear;nextYear=function(s){if(s.inbox)s.inbox=s.inbox.filter(c=>c.key!=='offseason');_nextYear(s);if(s.over)return;
   s.era=pickEra(s);if(s.era.k!=='calm')addNews(s,'The world this year: '+s.era.n.toLowerCase()+'. '+s.era.d,'book');
@@ -3304,6 +3937,142 @@ function recordRun(s){if(!s.over||s.over.res)return;const L=legacy();const hs=s.
 function dayBefore(key){const d=new Date(key+'T12:00:00');d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 TROPHIES.push(['rank10','World top ten','Reach the top ten of the World Festival Rankings'],['rank1','Best in the world','Reach #1 in the World Festival Rankings'],['anniv5','Five years strong','Reach your fifth edition'],['anniv10','Ten-year party','Reach your tenth edition'],
   ['crew5','Dream team','Train a crew head to level 5'],['perfect','Perfect timing','Score 95% or more in a weekend mini-game'],['never','Never off','Run five off-season events'],['gold','Gold standard','Win gold in a challenge'],['daily3','Habit forming','Play the daily festival three days in a row']);
+/* ============================================================
+   Sandbox, festival length, eras from 1980, buzz stunts,
+   pop-culture moments and more things happening on site
+   ============================================================ */
+
+/* ---------- festival length: 1, 2 or 3 days ---------- */
+const nDays=s=>(s&&s.days)||3;
+const activeDays=s=>nDays(s)===3?[0,1,2]:nDays(s)===2?[1,2]:[1];
+const isActiveDay=(s,d)=>activeDays(s).includes(d);
+const firstDay=s=>activeDays(s)[0];
+const lastDay=s=>{const a=activeDays(s);return a[a.length-1]};
+const LEN_PRICE={1:.45,2:.72,3:1};
+function setLength(s,n){const old=nDays(s);if(n===old)return '';const keep=new Set(nDays({days:n})===3?[0,1,2]:n===2?[1,2]:[1]);
+  const stuck=s.bk.filter(b=>['signed','pending','counter'].includes(b.st)&&!keep.has(b.day));if(stuck.length)return 'Move or drop the '+stuck.length+' act'+(stuck.length>1?'s':'')+' booked on '+[...new Set(stuck.map(b=>DAYL[b.day]))].join(' and ')+' first.';
+  const f=LEN_PRICE[n]/LEN_PRICE[old];for(const t of s.tix.wk)t.p=Math.round(t.p*f);s.tix.vip.p=Math.round(s.tix.vip.p*f);s.days=n;return ''}
+const _autofillPlanD=autofillPlan;autofillPlan=function(){return _autofillPlanD().filter(x=>isActiveDay(S,x.d))};
+const _poolsD=pools;pools=function(s,an){const r=_poolsD(s,an);if(nDays(s)<3){r.days=r.days.map((v,d)=>isActiveDay(s,d)?v:0);r.pool*=nDays(s)===2?.94:.86;r.P*=LEN_PRICE[nDays(s)]}return r};
+const _refPriceD=refPrice;refPrice=function(s){return _refPriceD(s)*LEN_PRICE[nDays(s)]};
+const _costLinesD=costLines;costLines=function(s,a0){const L=_costLinesD(s,a0);const n=nDays(s);if(n<3){const f=.45+.55*n/3;for(const l of L)if(l.g==='Staff'||l.g==='Production'||/^(Power|Waste|Riders)/.test(l.k))l.v=Math.round(l.v*f)}return L};
+const _liveStepD=liveStep;liveStep=function(s){const L=s.live;if(L&&!L.done&&!L.dec&&nDays(s)<3){while(L.i<STEPS.length&&!isActiveDay(s,STEPS[L.i].d))L.i++;if(L.i>=STEPS.length){finishWeekend(s);save();return}}return _liveStepD(s)};
+const _posterSheetD=posterSheet;posterSheet=function(){let h=_posterSheetD();if(nDays(S)<3)for(const d of [0,1,2])if(!isActiveDay(S,d))h=h.replace(new RegExp('<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:[^"]+;margin-bottom:6px">'+DAYL[d].toUpperCase()+'</div>.*?</div>(?=<div style="margin-bottom:16px">|<div style="font-size:11px)'),'');return h};
+
+/* ---------- sandbox ---------- */
+const _saveSB=save;save=function(){if(S&&S.sandbox&&S.money<20e6){S.money=50e6}return _saveSB()};
+const _earnStarsSB=earnStars;earnStars=function(s,n,why,list){if(s&&s.sandbox)return 0;return _earnStarsSB(s,n,why,list)};
+const _venueOptionsSB=venueOptions;venueOptions=function(s){const o=_venueOptionsSB(s);if(s.sandbox)o.forEach(x=>{x.ok=true});return o};
+
+/* ---------- eras: start in 1980, 1990, 2000 or 2010 ---------- */
+const calYear=s=>(s&&s.startYear||2027)+(s?s.year:1)-1;
+const isRetro=s=>!!(s&&s.startYear&&s.startYear<2027);
+const preSocial=s=>isRetro(s)&&calYear(s)<2006;
+function eraList(dec){if(dec>=2020)return null;const raw=ERA_DATA[dec];if(!raw)return [];return raw.split('\n').map(l=>{const [n,g,f,h]=l.split('|');return n&&+f>0?{n,g,f:+f,h}:null}).filter(Boolean)}
+function famesFor(dec){const m=new Map();const L=eraList(dec);if(L)for(const x of L)m.set(x.n,x.f);else for(const l of ARTIST_DATA.split('\n')){const p=l.split('|');if(p.length>=4)m.set(p[0],+p[2])}return m}
+function eraAct(x,next,r){const nf=next.has(x.n)?next.get(x.n):Math.max(8,x.f-28);const fame=x.f;const pot=Math.max(fame,nf);
+  return {id:'a'+hash(x.n).toString(36),name:x.n,genre:GENRES[x.g]?x.g:'pop',fame,pot:Math.round(Math.min(97,pot)),mom:clamp((nf-fame)/9+(r()-.5),-6,8),
+    live:clamp(Math.round(62+r()*30+(fame>80?4:0)),55,98),rel:clamp(.955+r()*.04,.9,.995),diva:clamp(r()*.5*(fame/100),0,.6),age:ri(1,12),
+    ag:AGENCIES[hash(x.n)%AGENCIES.length].k,agent:AGENTS[hash(x.n+'x')%AGENTS.length],home:x.h||'UK',
+    size:x.g==='electronic'?1:['pop','hiphop','soul','latin','kpop','afro'].includes(x.g)?pick([1,1,2]):pick([3,4,4,5,6]),tour:0,hist:[fame],first:0,hiatusRisk:0}}
+function eraActs(year){const dec=Math.floor(year/10)*10;const r=mulberry(hash('era'+dec));const next=famesFor(dec+10);return eraList(dec).map(x=>eraAct(x,next,r))}
+function decadeTurn(s){const cal=calYear(s);if(!isRetro(s)||cal%10!==0)return;const dec=cal;
+  let fresh;if(dec>=2020){fresh=genActs()}else fresh=eraActs(dec);const byId=new Map(s.acts.map(a=>[a.id,a]));const ids=new Set(fresh.map(a=>a.id));
+  for(const f of fresh){const a=byId.get(f.id);if(a){a.fame=Math.round((a.fame+f.fame)/2);a.pot=f.pot;a.mom=f.mom;a.retired=0;a.genre=f.genre}else s.acts.push(f)}
+  let gone=0;for(const a of s.acts)if(!ids.has(a.id)&&!a.disc&&!a.unsigned&&!a.retired){a.retired=1;gone++}
+  addNews(s,'A new decade: the '+dec+'s. '+fresh.filter(f=>!byId.has(f.id)).length+' new names on the scene, and '+gone+' acts have split up or stopped touring.','book')}
+const _unavailableE=unavailable;unavailable=function(s,a){if(a&&a.retired)return 'Split up or stopped touring';return _unavailableE(s,a)};
+const _rivalMoveE=rivalMove;rivalMove=function(s){const hid=s.acts.filter(a=>a.retired);for(const a of hid)a.hiatus=1;const r=_rivalMoveE(s);return r};
+const _marketYearE=marketYear;marketYear=function(s,first){_marketYearE(s,first);for(const a of s.acts)if(a.retired)a.hiatus=1};
+const _nextYearE=nextYear;nextYear=function(s){_nextYearE(s);if(s.over)return;START_YEAR=s.startYear||2027;decadeTurn(s);for(const a of s.acts)if(a.retired)a.hiatus=1;save()};
+const ERA_TXT=[[/went viral/g,'made the TV news'],[/m views\)/g,'m TV viewers)'],[/ views\b/g,' viewers'],[/phone torches/g,'lighters']];
+const eraTxt=(s,t)=>{if(!preSocial(s)||typeof t!=='string')return t;for(const [a,b] of ERA_TXT)t=t.replace(a,b);return t};
+const _addNewsE=addNews;addNews=function(s,t,k){return _addNewsE(s,eraTxt(s,t),k)};
+const _logLE=logL;logL=function(s,t,k){const r=_logLE(s,eraTxt(s,t),k);const L=s.live;if(L&&nDays(s)<3&&L.log[0]){const d=STEPS[Math.min(L.i,STEPS.length-1)].d;if(!isActiveDay(s,d)){const nd=d<firstDay(s)?firstDay(s):lastDay(s);L.log[0].t=L.log[0].t.replace(DAYS[d],DAYS[nd]).replace(/ \d\d:\d\d$/,d<firstDay(s)?' 11:00':' night')}}return r};
+const OLD_POSTS={tease:['Flyer drop','Flyers in every record shop in the county.'],announce:['Press release','Send the music papers your next big name.'],tickets:['Radio ad','Ads on local radio this week.'],
+  bts:['Fanzine interview','The crew talk to a photocopied fanzine.'],meme:['Pirate radio stunt','Take over a pirate station for an hour. Could backfire.'],hint:['Rumour in the music papers','“Very special guest, Saturday.”'],
+  reply:['Letter to the local paper','Own last year’s problems in print.'],countdown:['Poster campaign','Fly-posters across the city.'],live:['TV news clip','Get a clip on the regional news.']};
+const OLD_TEXT={tease:['Something big is coming. Watch this space.','Three nights. Three names. Coming soon.'],announce:a=>a?['Exclusive to the music papers: '+a.name+' will play.','Confirmed: '+a.name+'.']:['Announcement soon.'],
+  tickets:['Tickets on sale now from all usual outlets.','Postal applications close soon.'],bts:['“We built the stage ourselves,” the crew tell the fanzine.','A day on the farm with the festival team.'],
+  meme:['The pirate station plays your jingle forty times in an hour.','A prank call to the breakfast show goes out live.'],hint:['A very special guest, Saturday. That’s all we’re saying.'],
+  reply:['To our neighbours: thank you. Here’s what we’re changing.'],countdown:['Fly-posters all over town: not long now.'],live:['Regional news: crowds of thousands at the festival.']};
+const _postTextE=postText;postText=function(s,k,a){if(preSocial(s)&&OLD_TEXT[k]){const v=typeof OLD_TEXT[k]==='function'?OLD_TEXT[k](a):OLD_TEXT[k];return pick(v)}return _postTextE(s,k,a)};
+
+/* ---------- buzz stunts ---------- */
+const STUNTS={
+  billboard:{n:'Mystery billboards',d:'Cryptic posters across the big cities. Hype up.',c:15000,fx:s=>{s.hype=clamp(s.hype+6,0,100);return 'People are guessing the line-up from your billboards.'}},
+  ambassador:{n:'Celebrity ambassador',d:'A famous face fronts the campaign. Big hype, a little less credibility.',c:60000,rep:30,fx:s=>{s.hype=clamp(s.hype+11,0,100);s.cred=clamp(s.cred-2,0,100);s.flags.celebGuest=s.year;return 'Your new ambassador is all over the morning shows.'}},
+  popup:{n:'Pop-up gig in the city',d:'A surprise free show in a city square. Could go huge.',c:25000,fx:s=>{s.hype=clamp(s.hype+6,0,100);if(chance(.3)){s.hype=clamp(s.hype+8,0,100);if(s.social)s.social.followers=Math.round(s.social.followers*1.12);return 'The pop-up shut down a city centre. It’s everywhere.'}return 'A few thousand people turned up. Nice photos.'}},
+  collab:{n:'Fashion brand collab',d:'A limited clothing drop with a big brand. They pay you; purists grumble.',c:-30000,fx:s=>{s.hype=clamp(s.hype+4,0,100);s.cred=clamp(s.cred-3,0,100);return 'The collab sold out in an hour.'}},
+  charity:{n:'Charity partnership',d:'Tickets fund a cause. Fans and locals love it.',c:10000,fx:s=>{s.cred=clamp(s.cred+4,0,100);s.community=clamp(s.community+4,0,100);s.hype=clamp(s.hype+3,0,100);return 'The charity partnership got glowing coverage.'}},
+  contest:{n:'Fan contest',d:'Fans design a stage or win a set. Followers up.',c:5000,fx:s=>{if(s.social)s.social.followers=Math.round(s.social.followers*1.08);s.hype=clamp(s.hype+3,0,100);return 'Thousands of entries. The winner gets a set on the small stage.'}},
+  leak:{n:'“Accidentally” leak the line-up',d:'Free. Massive talk, but an agent may be furious.',c:0,fx:s=>{s.hype=clamp(s.hype+8,0,100);if(chance(.35)){const b=signed(s)[0];if(b){const a=act(b.actId);s.agRel[a.ag]=clamp(s.agRel[a.ag]-12,0,100);return 'It worked, but '+a.name+'’s agent is livid.'}}return 'The leak is the talk of the music world.'}},
+  tv:{n:'Late-night TV appearance',d:'You go on a chat show and talk up the festival.',c:0,rep:40,fx:s=>{s.hype=clamp(s.hype+6,0,100);return chance(.2)?'The host loved you. Your clip is the most watched of the week.':'A decent spot. Ticket enquiries are up.'}},
+  drones:{n:'Drone show over the city',d:'Your logo in the night sky. Huge for photos.',c:40000,modern:1,fx:s=>{s.hype=clamp(s.hype+9,0,100);if(s.social)s.social.followers=Math.round(s.social.followers*1.06);return 'Your logo floated over the city for ten minutes.'}},
+  dance:{n:'Start a dance challenge',d:'A dance to one of your headliners. Might catch on.',c:8000,modern:1,fx:s=>{if(chance(.35)){s.hype=clamp(s.hype+12,0,100);if(s.social)s.social.followers=Math.round(s.social.followers*1.2);return 'The dance challenge took off. Millions of videos.'}s.hype=clamp(s.hype+2,0,100);return 'A few people tried the dance. Nobody else did.'}},
+  paper:{n:'Music paper cover',d:'Buy your way on to the front of the weekly music paper.',c:20000,retro:1,fx:s=>{s.hype=clamp(s.hype+8,0,100);return 'You’re on the cover this week.'}},
+  pirate:{n:'Pirate radio takeover',d:'An hour of your bands on the city’s pirate station.',c:3000,retro:1,fx:s=>{s.hype=clamp(s.hype+5,0,100);s.cred=clamp(s.cred+2,0,100);return 'The pirate station played nothing but your line-up.'}}};
+const stuntCost=(s,k)=>{const c=STUNTS[k].c;return Math.round(c*Math.sqrt(scaleOf(s))/1000)*1000};
+const stuntsOK=s=>(s.phase==='booking'||s.phase==='onsale');
+function stuntList(s){return Object.entries(STUNTS).filter(([k,x])=>(!x.rep||s.rep>=x.rep)&&(!x.modern||!preSocial(s))&&(!x.retro||preSocial(s)))}
+function stuntLeft(s){const key=s.phase+(s.phase==='booking'?s.round:s.week);return s.stuntKey===key?0:1}
+function doStunt(s,k){const x=STUNTS[k];if(!x||!stuntsOK(s)||!stuntLeft(s))return '';const c=stuntCost(s,k);if(c>0&&s.money<c&&!s.sandbox)return 'Not enough cash.';
+  cash(s,-c);ledger(s,'Buzz stunts',-c);s.stuntKey=s.phase+(s.phase==='booking'?s.round:s.week);s.stunts=(s.stunts||0)+1;if(s.stunts>=8)award(s,'buzz');const t=x.fx(s);addNews(s,x.n+': '+t,'social');return t}
+
+/* ---------- pop-culture moments ---------- */
+const MOMENTS=[
+  {k:'synch',t:'Your headliner is everywhere',x:a=>a.name+'’s song just soundtracked the biggest TV finale of the year. Their agent says demand has gone through the roof.',need:s=>bigSigned(s),opts:a=>[{l:'Announce “even bigger production” for their set',d:'£20k. Hype way up',v:'big'},{l:'Ride the wave quietly',d:'A little hype',v:'quiet'}]},
+  {k:'wedding',t:'A celebrity wedding',x:()=>'A famous TV couple want to get married on your main stage before the gates open on Saturday. Their magazine deal would cover it.',opts:()=>[{l:'Say yes',d:'Huge coverage; a few purists roll their eyes',v:'yes'},{l:'Politely decline',d:'Fans approve',v:'no'}]},
+  {k:'film',t:'A film crew wants your festival',x:()=>'A big film studio wants to shoot a scene for a romantic comedy at your festival this year. They’d pay £40k and need a field for half a day.',opts:()=>[{l:'Lights, camera, action',d:'+£40k and hype; some campers in the way',v:'yes'},{l:'Not this year',v:'no'}]},
+  {k:'soap',t:'You’re in a soap opera',x:()=>'The country’s biggest soap is writing an episode set at “a festival just like yours”. They want to use your name.',opts:()=>[{l:'Let them use the name',d:'A big boost in hype',v:'yes'},{l:'Keep the brand to ourselves',d:'Credibility up',v:'no'}]},
+  {k:'meme',t:'Your logo is a meme',x:()=>'Someone photoshopped your logo into a famous scene and now it’s on every timeline.',modern:1,opts:()=>[{l:'Lean into it with merch',d:'Merch sells more this year',v:'merch'},{l:'Ignore it',d:'It fades by Friday',v:'no'}]},
+  {k:'royal',t:'A royal visit',x:()=>'A minor royal’s office asks whether they could visit your festival “informally” on Sunday afternoon.',opts:()=>[{l:'Roll out the welcome',d:'£15k on security; the papers love it',v:'yes'},{l:'Decline',d:'Fewer headaches',v:'no'}]},
+  {k:'final',t:'The big match',x:()=>'The national team are in the final on the Saturday of your festival. Everyone wants to watch it.',opts:()=>[{l:'Put up giant screens',d:'£25k. The whole field watches together',v:'screens'},{l:'Keep the music going',d:'Some fans will slip away to the pub',v:'no'}]},
+  {k:'reunion',t:'A huge band want to reunite for you',x:()=>'A legendary band that split years ago say they’d reform for one night only, but they want a fortune and the headline slot.',opts:()=>[{l:'Pay for the reunion',d:'Hype through the roof, for about £250k',v:'yes'},{l:'Too risky',v:'no'}]},
+  {k:'shout',t:'A superstar name-checks you',x:()=>'A global star mentioned your festival on a chat show: “I’d love to go to that one.” The internet wants it to happen.',opts:()=>[{l:'Invite them as a guest',d:'They might turn up',v:'yes'},{l:'Play it cool',v:'no'}]}];
+function bigSigned(s){return signed(s).map(b=>act(b.actId)).filter(Boolean).sort((a,b)=>b.fame-a.fame)[0]}
+function momentRoll(s){if(s.flags.momentY===s.year||!chance(.45))return;const pool=MOMENTS.filter(m=>(!m.need||m.need(s))&&(!m.modern||!preSocial(s))&&!(s.momentsSeen||[]).includes(m.k+s.year));if(!pool.length)return;const m=pick(pool);const a=m.need?m.need(s):null;
+  s.flags.momentY=s.year;(s.momentsSeen=s.momentsSeen||[]).push(m.k+s.year);pushCard(s,'moment',m.t,m.x(a),m.opts(a),{ref:m.k,actName:a?a.name:''})}
+CARD_FX.moment=(s,v,c)=>{const k=c.ref;let t='';
+  if(k==='synch'){if(v==='big'){cash(s,-20000);ledger(s,'Buzz stunts',-20000);s.hype=clamp(s.hype+12,0,100);t='The whole country is talking about '+c.actName+'’s set.'}else{s.hype=clamp(s.hype+4,0,100);t='Nice bump in ticket enquiries.'}}
+  else if(k==='wedding'){if(v==='yes'){s.hype=clamp(s.hype+10,0,100);s.cred=clamp(s.cred-2,0,100);s.flags.wedding=s.year;t='Wedding of the year, booked.'}else{s.cred=clamp(s.cred+2,0,100);t='Fans liked that.'}}
+  else if(k==='film'){if(v==='yes'){s.money+=40000;s.hype=clamp(s.hype+6,0,100);s.flags.film=s.year;t='The film crew arrives on Friday.'}else t='Maybe next year.'}
+  else if(k==='soap'){if(v==='yes'){s.hype=clamp(s.hype+9,0,100);t='Twelve million people watched “your” festival on TV.'}else{s.cred=clamp(s.cred+3,0,100);t='The brand stays yours.'}}
+  else if(k==='meme'){if(v==='merch'){s.flags.memeMerch=s.year;s.hype=clamp(s.hype+5,0,100);t='The meme T-shirt is selling fast.'}else t='It fades.'}
+  else if(k==='royal'){if(v==='yes'){cash(s,-15000);ledger(s,'Buzz stunts',-15000);s.hype=clamp(s.hype+7,0,100);s.council=clamp(s.council+5,0,100);s.flags.royal=s.year;t='A royal visit on Sunday. The council is thrilled.'}else t='Fewer headaches.'}
+  else if(k==='final'){if(v==='screens'){cash(s,-25000);ledger(s,'Buzz stunts',-25000);s.flags.screens=s.year;t='Giant screens booked for the final.'}else s.flags.noScreens=s.year,t='The music goes on.'}
+  else if(k==='reunion'){if(v==='yes'){const c2=Math.round(250000*Math.sqrt(scaleOf(s))/10000)*10000;cash(s,-c2);ledger(s,'Buzz stunts',-c2);s.hype=clamp(s.hype+20,0,100);s.flags.reunion=s.year;t='One night only. The announcement crashes the ticket site.'}else t='Probably wise.'}
+  else if(k==='shout'){if(v==='yes'){s.flags.starGuest=s.year;s.hype=clamp(s.hype+5,0,100);t='The invitation is out. Fingers crossed.'}else t='Very cool of you.'}
+  return t};
+const _merchMultM=merchMult;merchMult=function(s){return _merchMultM(s)*(s.flags.memeMerch===s.year?1.3:1)};
+const _costLinesM=costLines;costLines=function(s,a0){const L=_costLinesM(s,a0);if(s.ledger['Buzz stunts'])L.push({g:'Marketing',k:'Buzz stunts',v:-s.ledger['Buzz stunts']});return L};
+const _roundExtrasM=roundExtras;roundExtras=function(s){_roundExtrasM(s);if(s.round===2||s.round===6)momentRoll(s)};
+const _weekExtrasM=weekExtras;weekExtras=function(s){_weekExtrasM(s);if(s.week===4)momentRoll(s)};
+
+/* ---------- more things happening on site ---------- */
+const FUN_EV=[
+  {k:'proposal',w:s=>true,dec:s=>({t:'A proposal on the big screen',x:'Someone in the crowd has asked if they can propose to their partner on the main stage screen between sets.',opts:[
+    {l:'Put it on the big screen',d:'The field goes wild',log:'A proposal on the big screen. They said yes. The whole field cheered.',k:'good',fn:s=>{s.live.mood=clamp(s.live.mood+4,0,100);if(!s.live.viral&&chance(.25))s.live.viral='The big-screen proposal went viral ('+ri(3,9)+'m views)'}},
+    {l:'Let them do it quietly',log:'A quiet proposal by the sound desk.',fn:s=>{s.live.mood=clamp(s.live.mood+1,0,100)}}]})},
+  {k:'record',w:s=>s.live.onsite>3000,dec:s=>({t:'A world record attempt',x:'A fan group wants to break the record for the world’s biggest conga line, right now, across the main field.',opts:[
+    {l:'Go for the record',d:'About £5,000 for adjudicators',log:'',k:'good',fn:s=>{cashL(s,'World record attempt',5000);if(chance(.55)){logL(s,'WORLD RECORD: '+fmtN(ri(4000,12000))+' people in one conga line.','good');s.live.mood=clamp(s.live.mood+5,0,100);s.hype=clamp(s.hype+5,0,100);award(s,'record')}else logL(s,'The conga line fell apart at the burger vans. So close.','warn')}},
+    {l:'Not today',log:'No conga line today.',fn:s=>{}}]})},
+  {k:'jam',w:s=>signed(s).filter(b=>act(b.actId).fame>=60).length>=2,dec:s=>{const t=signed(s).map(b=>act(b.actId)).filter(a=>a.fame>=60).sort(()=>Math.random()-.5).slice(0,2);return {t:'An unplanned collaboration',x:t[0].name+' and '+t[1].name+' bumped into each other backstage and want to play a song together tonight.',opts:[
+    {l:'Make it happen',d:'A once-in-a-lifetime moment, a bit of curfew risk',log:t[0].name+' and '+t[1].name+' play a song together. Nobody will forget it.',k:'good',fn:s=>{s.live.mood=clamp(s.live.mood+6,0,100);s.live.boost=(s.live.boost||0)+2;s.live.moment=s.live.moment||t[0].name+' and '+t[1].name+' on stage together';if(chance(.3)){s.live.curfewBreach+=8;cashL(s,'Curfew fines',8*2500)}}},
+    {l:'Stick to the schedule',log:'The collaboration didn’t happen.',fn:s=>{}}]}}},
+  {k:'duck',w:s=>true,log:s=>pick(['A giant inflatable duck escaped from the art field and is being passed over the crowd.','A dog wandered on stage mid-set and got the loudest cheer of the day.','A streaker ran across the front of the main stage. Security, eventually, caught him.','Fans in the crowd formed a giant heart visible from the big wheel.','A lost wedding ring was found in the mud and returned at the info tent.','Somebody brought a full-size cardboard cut-out of the headliner. It’s been crowd-surfing all afternoon.'])},
+  {k:'food',w:s=>s.live.onsite>2000,log:s=>{s.live.bar+=ri(3,8)*1000;return 'A cheese toastie van has gone viral online. The queue is a hundred people long.'}},
+  {k:'rainbow',w:s=>{const c=s.live.cur;return c&&c.rain>0&&c.rain<2},log:s=>{s.live.mood=clamp(s.live.mood+4,0,100);return 'The rain stops and a double rainbow appears over the main stage. Everyone takes the same photo.'}},
+  {k:'celebs',w:s=>s.flags.celebGuest===s.year||s.flags.starGuest===s.year,log:s=>{s.hype=clamp(s.hype+4,0,100);return s.flags.starGuest===s.year&&chance(.6)?'The superstar who name-checked you on TV actually turned up and watched from the side of the stage.':'Your celebrity ambassador does the rounds of the VIP area. The photos are everywhere.'}},
+  {k:'wedding',w:s=>s.flags.wedding===s.year&&STEPS[s.live.i].d===1,log:s=>{s.live.mood=clamp(s.live.mood+3,0,100);return 'The celebrity wedding on the main stage: confetti cannons, a choir and a field full of gatecrashers.'}},
+  {k:'film',w:s=>s.flags.film===s.year,log:s=>'The film crew shoot their big scene in the main field. Thousands of extras, unpaid.'},
+  {k:'royal',w:s=>s.flags.royal===s.year&&STEPS[s.live.i].d===lastDay(s),log:s=>{s.live.mood=clamp(s.live.mood+2,0,100);return 'The royal visitor tours the site in wellies and tries the cider.'}},
+  {k:'final',w:s=>(s.flags.screens===s.year||s.flags.noScreens===s.year)&&STEPS[s.live.i].d===1,log:s=>{if(s.flags.screens===s.year){s.live.mood=clamp(s.live.mood+(chance(.55)?8:-3),0,100);return s.live.mood>60?'The whole field watches the final on the big screens. When the winner goes in, the noise is heard three miles away.':'Heartbreak on the big screens. The field sings anyway.'}s.live.onsite=Math.max(0,s.live.onsite-ri(500,2000));return 'Hundreds slip off to the village pub to watch the final.'}},
+  {k:'reunion',w:s=>s.flags.reunion===s.year&&STEPS[s.live.i].h>=20,log:s=>{s.live.mood=clamp(s.live.mood+10,0,100);s.live.boost=(s.live.boost||0)+4;s.live.moment=s.live.moment||'The one-night-only reunion';if(!s.live.viral)s.live.viral='The reunion set went viral ('+ri(10,30)+'m views)';return 'The reunion. Grown adults in tears. One night only, and you were there.'}}];
+const _randomEventF=randomEvent;randomEvent=function(s,A,d,h,wx){const L=s.live;L.usedEv=L.usedEv||{};
+  if(chance(.55)){const pool=FUN_EV.filter(e=>!L.usedEv['f_'+e.k]&&e.w(s));if(pool.length){const e=pick(pool);L.usedEv['f_'+e.k]=1;if(e.dec)return e.dec(s);const t=e.log(s);if(t)logL(s,t,'good');return null}}
+  return _randomEventF(s,A,d,h,wx)};
+TROPHIES.push(['buzz','Hype machine','Pull eight buzz stunts'],['record','Record breakers','Set a world record at your festival']);
 /* ============================================================
    3D festival grounds (three.js r128) with a 2D canvas fallback
    1 world unit = 1 cell (20 m); heights are exaggerated to read
@@ -3651,7 +4420,7 @@ function renderTitle(app){$('#stage3d').hidden=true;
   if(UI.setup){app.innerHTML=viewSetup();renderSheet();return}
   const slots=[1,2,3].map(n=>{const s=readSlot(n);if(!s)return '<div class="slot"><div class="grow"><b>Slot '+n+'</b><span>Empty</span></div><button class="btn sm" data-a="new" data-v="'+n+'">New festival</button></div>';
     const last=s.hist&&s.hist[s.hist.length-1];
-    return '<div class="slot"><div class="grow"><b>'+esc(s.name)+'</b><span>'+(s.over?'Ended '+(START_YEAR+s.year-1)+' · '+esc(s.over.t):'Year '+s.year+' · '+SITES[s.site].n+(last?' · last year '+last.stars+'★':''))+'</span></div><button class="btn sm" data-a="load" data-v="'+n+'">'+(s.over?'View':'Play')+'</button><button class="btn ghost sm" data-a="del" data-v="'+n+'" aria-label="Delete '+esc(s.name)+'">Delete</button></div>'}).join('');
+    return '<div class="slot"><div class="grow"><b>'+esc(s.name)+'</b><span>'+(s.over?'Ended '+((s.startYear||2027)+s.year-1)+' · '+esc(s.over.t):'Year '+s.year+' · '+((s.startYear||2027)+s.year-1)+' · '+SITES[s.site].n+(last?' · last year '+last.stars+'★':''))+'</span></div><button class="btn sm" data-a="load" data-v="'+n+'">'+(s.over?'View':'Play')+'</button><button class="btn ghost sm" data-a="del" data-v="'+n+'" aria-label="Delete '+esc(s.name)+'">Delete</button></div>'}).join('');
   app.innerHTML='<div class="title-screen"><div class="brand">'+MARK.replace('class="mark"','class="mark" style="width:44px;height:44px"')+'<div><h1>Festival Tycoon</h1><p>Found it. Book it. Sell it. Survive the weekend.</p></div></div>'+
     '<div class="hero3d" id="hero3d"></div>'+
     '<p class="muted" style="margin-bottom:16px">Lease a field, lay out the stages and campsites, sign the acts before your rival does, sell out, then live through the weekend hour by hour: heat, mud, storms, curfews and crowd surges. Every year ends with the reviews and the P&amp;L.</p>'+
@@ -3668,7 +4437,7 @@ function viewSetup(){const u=UI.setup;
   const F=[['promoter','Club promoter',cash(900000,500000)+'. Agents already know you.'],['backed','Investor-backed',cash(1600000,1200000)+'. A bigger start, a bigger hole.'],['diy','DIY collective',cash(600000,250000)+'. Fans trust you; volunteers steward for less.']];
   return '<div class="title-screen" style="padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))"><div class="title-row"><h1>New festival</h1><button class="btn ghost sm" data-a="cancelsetup">Cancel</button></div><p class="sub">Slot '+u.slot+'. You can move to a bigger site later as your reputation grows.</p>'+
     '<label class="field"><span>Festival name</span><div class="row" style="flex-wrap:nowrap"><input class="input" id="fname" name="festival-name" maxlength="28" value="'+esc(u.name)+'" autocomplete="off" spellcheck="false"><button class="btn quiet" data-a="rname" aria-label="Random name">Shuffle</button></div></label>'+
-    '<div class="sec">Mode</div>'+seg('smode',u.mode,[['free','Free play'],['story','Story']])+'<p class="small muted" style="margin:-4px 0 4px">'+(u.mode==='story'?'Five years on Hollow Farm with Jess, your co-founder, and a rival who wants you gone. Choices change the game; everything else plays as normal.':'Run your festival your way, for as long as you like.')+'</p>'+
+    '<div class="sec">Mode</div>'+seg('smode',u.mode,[['free','Free play'],['story','Story'],['sandbox','Sandbox']])+'<p class="small muted" style="margin:-4px 0 4px">'+(u.mode==='sandbox'?'Unlimited money, every bigger venue unlocked and no going bust. Build whatever you like. Legacy stars are switched off.':u.mode==='story'?'Five years on Hollow Farm with Jess, your co-founder, and a rival who wants you gone. Choices change the game; everything else plays as normal.':'Run your festival your way, for as long as you like.')+'</p>'+
     '<div class="sec">Identity</div><div class="chips">'+Object.entries(IDENT).map(([k,v])=>'<button class="chip" data-a="sident" data-v="'+k+'" aria-pressed="'+(u.ident===k)+'">'+v.n+'</button>').join('')+'</div><p class="small muted" style="margin:-4px 0 4px">'+IDENT[u.ident].d+'</p>'+
     '<div class="sec">Difficulty</div>'+seg('sdiff',u.diff,Object.entries(DIFF).map(([k,v])=>[k,v.n]))+'<p class="small muted" style="margin:-4px 0 4px">'+D.d+'</p>'+
     '<div class="sec">Site<small>Bigger sites cost more but sell far more tickets</small></div><div class="sitepick">'+sites+'</div>'+
@@ -3688,7 +4457,7 @@ function finding(){const A=analyse(S);const bad=A.issues.find(i=>i.sev==='bad');
   const cancels=S.events.filter(e=>e.k==='cancel'&&!e.done);if(cancels.length){const e=cancels[0];return['bad',act(e.actId).name+' cancelled. Their '+DAYL[e.day]+' slot on the '+stageName(S,S.pl.find(p=>p.id===e.stage))+' is empty.']}
   const ctr=S.bk.filter(b=>b.st==='counter');if(ctr.length)return['warn',ctr.length+' agent'+(ctr.length>1?'s have':' has')+' come back with a counter-offer. Answer before the round ends.'];
   if(bad)return['bad',bad.t];
-  if(S.phase==='booking'){const hl=[0,1,2].filter(d=>{const m=stagesOf(S).find(p=>isMain(p.t));return m&&!S.bk.find(b=>b.stage===m.id&&b.day===d&&b.slot===0&&['signed','pending','counter'].includes(b.st))});if(hl.length)return['warn','No headliner yet for '+hl.map(d=>DAYL[d]).join(', ')+'. Big acts get booked early.']}
+  if(S.phase==='booking'){const hl=activeDays(S).filter(d=>{const m=stagesOf(S).find(p=>isMain(p.t));return m&&!S.bk.find(b=>b.stage===m.id&&b.day===d&&b.slot===0&&['signed','pending','counter'].includes(b.st))});if(hl.length)return['warn','No headliner yet for '+hl.map(d=>DAYL[d]).join(', ')+'. Big acts get booked early.']}
   if(S.phase==='onsale'&&sl){const t=curTier(S),pl=pools(S,sl.announced);const w=willWk(S,pl,t.p);const left=capWeekend(S)-sl.wkSold;if(left>0&&w-sl.wkSold<left*.6)return['warn','At '+fmt$(t.p)+' only about '+fmtN(Math.max(0,w-sl.wkSold))+' more people want weekend tickets, and '+fmtN(left)+' are left.'];if(sl.touts>200)return['warn','Touts hold about '+fmtN(sl.touts)+' tickets, reselling at '+fmt$(sl.resale)+'.']}
   const w=A.issues[0];if(w)return['warn',w.t];return['good','Nothing urgent. The site, the bill and the budget all hold up.']}
 function primary(){if(S.phase==='booking')return '<button class="btn sm" data-a="endround">'+(S.round>=BOOK_ROUNDS?'Close booking':'End round')+'</button>';
@@ -3885,9 +4654,9 @@ function softRender(){// re-render the site HUD without remounting the 3D view
 function afterSiteChange(){A_CACHE={k:'',a:null};g3rebuild();overlayPaint(UI.overlay,S,ghostCone());save();softRender()}
 
 /* ---------- line-up ---------- */
-function viewLineup(){const d=UI.lineDay;const stg=stagesOf(S);const fees=signed(S).reduce((a,b)=>a+b.fee,0);const total=stg.reduce((a,p)=>a+SLOTS[p.t].length*3,0);const filled=S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).length;
+function viewLineup(){if(!isActiveDay(S,UI.lineDay))UI.lineDay=firstDay(S);const d=UI.lineDay;const stg=stagesOf(S);const fees=signed(S).reduce((a,b)=>a+b.fee,0);const total=stg.reduce((a,p)=>a+SLOTS[p.t].length*nDays(S),0);const filled=S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).length;
   let h='<main><div class="title-row"><h1>Line-up</h1><div class="row" style="flex-wrap:nowrap"><button class="btn ghost sm" data-a="poster">Poster</button><button class="btn sm" data-a="market">Browse acts</button></div></div><p class="sub">'+filled+' of '+total+' slots filled · '+fmt$(fees)+' signed · bill strength '+fmtK(lineupStrength(S))+'</p>';
-  h+=seg('day',String(d),DAYL.map((n,i)=>[String(i),n]));
+  h+=nDays(S)>1?seg('day',String(d),activeDays(S).map(i=>[String(i),DAYL[i]])):'<p class="small muted" style="margin:-6px 0 10px">A one-day festival: Saturday only.</p>';
   if(!stg.length)h+='<div class="empty">No stages on the site yet. Place a main stage on the Site tab.</div>';
   for(const p of stg){h+='<section class="card lineup-day"><h2>'+esc(stageName(S,p))+'<small>'+(B[p.t].tentCap?fmtN(B[p.t].tentCap)+' capacity':fmtN((analyse(S).arenas.find(a=>a.p===p)||{cap:0}).cap)+' in the field')+'</small></h2>';
     SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);const a=b?act(b.actId):null;const t=slotTime(S,p,i,d);
@@ -4121,7 +4890,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
-const APP_VER='202610310700';
+const APP_VER='202610311200';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
@@ -4333,6 +5102,72 @@ Object.assign(ACT,{
     const old=S.name;S.name=v;S.renames={y:S.year,n:(S.renames&&S.renames.y===S.year?S.renames.n:0)+1};addNews(S,old+' is now '+v+'.','book');UI.sheet=null;save();render();toast('You’re now '+v+'. '+(renamesLeft(S)?'One more change left this year.':'No more changes this year.'))}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='rname'){e.preventDefault();ACT.renamego()}});
 const _renderSheetC=renderSheet;renderSheet=function(){_renderSheetC();document.querySelectorAll('#layer .chips').forEach(r=>{const c=r.querySelector('[aria-pressed="true"]');if(c&&r.scrollWidth>r.clientWidth)r.scrollLeft=Math.max(0,c.offsetLeft-r.offsetLeft-16)})};
+/* ============================================================
+   UI: setup options (sandbox, length, start year), buzz stunts,
+   festival length, period promo, and a live soundtrack
+   ============================================================ */
+function stuntCard(){if(!S||!stuntsOK(S))return '';const left=stuntLeft(S);const L=stuntList(S);
+  return '<section class="card"><h2>Make some noise<small>'+(left?'One stunt this '+(S.phase==='booking'?'round':'week'):'Done this '+(S.phase==='booking'?'round':'week'))+'</small></h2><p class="small muted" style="margin-bottom:6px">Stunts and pop-culture moves that get people talking. Hype sells tickets.</p><ul class="list">'+
+    L.map(([k,x])=>{const c=stuntCost(S,k);return '<li><div class="grow"><b>'+x.n+'</b><div class="meta" style="white-space:normal">'+x.d+'</div></div><button class="btn '+(c<0?'':'ghost ')+'sm" data-a="stunt" data-v="'+k+'" '+(left?'':'disabled')+'>'+(c>0?fmt$(c):c<0?'+'+fmt$(-c):'Free')+'</button></li>'}).join('')+'</ul></section>'}
+function lengthCard(){if(!S||S.chal)return '';const can=S.phase==='booking'||S.phase==='wrap';const n=nDays(S);
+  return '<section class="card"><h2>Festival length<small>'+(n===1?'One day':n+' days')+'</small></h2><p class="small muted" style="margin-bottom:10px">Shorter festivals cost less to run and charge less per ticket. A one-day festival is Saturday only; two days is Saturday and Sunday.</p>'+(can?seg('flen',String(n),[['1','1 day'],['2','2 days'],['3','3 days']]):'<p class="small faint">You can change the length in booking season.</p>')+'</section>'}
+
+/* ---------- a live soundtrack (Web Audio, starts on your first tap) ---------- */
+const SND={ctx:null,on:null,bed:null,bedG:null,master:null,timer:0,step:0,next:0,lastLog:'',bpm:120};
+function soundOn(){if(SND.on==null){try{SND.on=localStorage.getItem('festival_sound')!=='0'}catch(e){SND.on=true}}return SND.on}
+function sndInit(){if(SND.ctx||!soundOn())return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;try{const c=SND.ctx=new AC();SND.master=c.createGain();SND.master.gain.value=.6;SND.master.connect(c.destination);
+  const len=c.sampleRate*2,buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;SND.noise=buf;
+  const src=c.createBufferSource();src.buffer=buf;src.loop=true;const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=700;bp.Q.value=.6;SND.bedG=c.createGain();SND.bedG.gain.value=0;src.connect(bp).connect(SND.bedG).connect(SND.master);src.start();SND.bed=src}catch(e){SND.ctx=null}}
+function sndKick(t,v){const c=SND.ctx,o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g).connect(SND.master);o.start(t);o.stop(t+.22)}
+function sndHat(t,v){const c=SND.ctx,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=SND.noise;f.type='highpass';f.frequency.value=7000;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.05);s.connect(f).connect(g).connect(SND.master);s.start(t,Math.random());s.stop(t+.06)}
+function sndBass(t,f,v,dur){const c=SND.ctx,o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(SND.master);o.start(t);o.stop(t+dur+.02)}
+function sndCheer(v){if(!SND.ctx)return;const c=SND.ctx,t=c.currentTime,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=SND.noise;f.type='bandpass';f.frequency.value=1200;f.Q.value=.5;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.25);g.gain.exponentialRampToValueAtTime(.001,t+2.2);s.connect(f).connect(g).connect(SND.master);s.start(t,Math.random());s.stop(t+2.3)}
+function sndPop(){if(!SND.ctx)return;for(let i=0;i<6;i++){const t=SND.ctx.currentTime+i*.18+Math.random()*.1;sndKick(t,.35);sndHat(t+.01,.2)}}
+const BASS=[55,55,65.4,49];
+function sndTick(){const c=SND.ctx;if(!c||!S||S.phase!=='live'||!S.live||S.live.done||!soundOn()){if(SND.bedG&&c)SND.bedG.gain.setTargetAtTime(0,c.currentTime,.3);return}
+  const L=S.live,st=STEPS[Math.min(L.i,STEPS.length-1)];const night=st.h>=24;const play=night?[]:playingAt(S,st.d,Math.min(st.h,23)).filter(x=>!L.stopped[x.p.id]);
+  SND.bedG.gain.setTargetAtTime(Math.min(.06,.01+(L.onsite+L.fenceIn)/400000)*(night?.3:1),c.currentTime,.5);
+  if(!play.length||L.dec){SND.next=c.currentTime+.1;return}
+  const top=play.slice().sort((a,b)=>b.a.fame-a.a.fame)[0].a;SND.bpm={electronic:124,hiphop:90,afro:104,latin:96,kpop:118,pop:116,soul:96,rock:126,punk:160,metal:150,indie:122,folk:100,country:104,jazz:110}[top.genre]||118;
+  const sp=60/SND.bpm/2;if(SND.next<c.currentTime)SND.next=c.currentTime+.05;
+  while(SND.next<c.currentTime+.25){const i=SND.step%16;const v=.18;if(i%4===0)sndKick(SND.next,v*(top.genre==='folk'||top.genre==='jazz'?.5:1));if(i%2===1)sndHat(SND.next,.04);if(i%8===0)sndBass(SND.next,BASS[(SND.step/16|0)%4],.08,sp*3.5);SND.next+=sp;SND.step++}
+  const lg=L.log[0];if(lg&&lg.x!==SND.lastLog){SND.lastLog=lg.x;if(lg.k==='good')sndCheer(.12)}}
+document.addEventListener('pointerdown',()=>{if(S&&S.phase==='live'&&soundOn()){sndInit();if(SND.ctx&&SND.ctx.state==='suspended')SND.ctx.resume();if(!SND.timer)SND.timer=setInterval(sndTick,100)}},{capture:true});
+
+/* ---------- wiring ---------- */
+const _renderM=render;render=function(){if(S){START_YEAR=S.startYear||2027;TABS[4][1]=preSocial(S)?'Promo':'Social'}else START_YEAR=2027;return _renderM()};
+const _topbarM=topbar;topbar=function(){let h=_topbarM();if(S&&S.sandbox)h=h.replace('<div class="tb-cash">','<span class="pill pos" style="margin-right:4px">Sandbox</span><div class="tb-cash">');return h};
+const _viewSetupM=viewSetup;viewSetup=function(){const u=UI.setup;if(u.chal)return _viewSetupM();u.days=u.days||3;u.start=u.start||2027;let h=_viewSetupM();
+  const extra='<div class="sec">Festival length</div>'+seg('sdays',String(u.days),[['1','1 day'],['2','2 days'],['3','3 days']])+'<p class="small muted" style="margin:-4px 0 4px">'+(u.days===1?'One big Saturday. Cheaper to run, cheaper tickets.':u.days===2?'Saturday and Sunday.':'Friday to Sunday, the classic weekend.')+'</p>'+
+    (u.mode==='story'?'':'<div class="sec">Start year<small>Artists of the time</small></div>'+seg('sstart',String(u.start),ERA_STARTS.map(([y,n])=>[String(y),n]))+'<p class="small muted" style="margin:-4px 0 4px">'+(u.start<2027?'Start in '+u.start+' with the real acts of that decade. Each year moves the calendar on: new names break through, old ones split up, and social media arrives in the 2000s. Money stays in today’s pounds.':'Today’s artists and prices.')+'</p>');
+  return h.replace('<div class="sec">Site<small>',extra+'<div class="sec">Site<small>')};
+const _viewPlanM=viewPlan;viewPlan=function(){const h=_viewPlanM();return h.replace('<section class="card"><h2>Tickets against capacity',stuntCard()+'<section class="card"><h2>Tickets against capacity')};
+const _viewTicketsM=viewTickets;viewTickets=function(){const h=_viewTicketsM();const i=h.lastIndexOf('</main>');return i<0?h:h.slice(0,i)+lengthCard()+h.slice(i)};
+const _viewSocialM=viewSocial;viewSocial=function(){if(!preSocial(S))return _viewSocialM();const bak={};for(const k in OLD_POSTS){bak[k]=[POSTS[k].n,POSTS[k].d];POSTS[k].n=OLD_POSTS[k][0];POSTS[k].d=OLD_POSTS[k][1]}
+  let h;try{h=_viewSocialM()}finally{for(const k in bak){POSTS[k].n=bak[k][0];POSTS[k].d=bak[k][1]}}
+  return h.replace('<h1>'+esc(handleOf(S))+'</h1>','<h1>Press office</h1>').replace('Your festival’s official account.','Flyers, radio, posters and the music papers ('+calYear(S)+'). Social media arrives in the 2000s.').replace('<label>Followers</label>','<label>Mailing list</label>').replace('More followers, more ticket demand','A bigger list sells more tickets').replace('Talk online and in the press','Talk in the press and the pubs').replace(/Pay an influencer/,'Buy a TV advert').replace('<h2>Feed</h2>','<h2>Coverage</h2>').replace(/<b>@[^<]*<\/b>/g,'<b>'+esc(S.name)+'</b>')};
+const _menuSheetM=menuSheet;menuSheet=function(){return _menuSheetM().replace('<button class="btn ghost wide" data-a="licsheet">','<button class="btn ghost wide" data-a="sndtoggle">Weekend sound: '+(soundOn()?'on':'off')+'</button><button class="btn ghost wide" data-a="licsheet">')};
+const _renderLiveM=renderLive;renderLive=function(app){_renderLiveM(app);if(SND.ctx&&soundOn()&&!SND.timer)SND.timer=setInterval(sndTick,100)};
+const _guideSheetM=guideSheet;guideSheet=function(){return _guideSheetM().replace('<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>',[
+  ['Modes and difficulty','Chill is the easiest difficulty: lots of money, cheap costs and fans who love everything. Sandbox gives you unlimited money, unlocks every venue and never lets you go bust.'],
+  ['Festival length','Run a one-day (Saturday), two-day (Saturday and Sunday) or three-day festival. Pick it when you start and change it in booking season on the Tickets tab.'],
+  ['Start year','Start in 1980, 1990, 2000 or 2010 with the real acts of that decade. Every year moves the calendar on; at each new decade, new names arrive and some old ones split up. Before 2006 your social account is a press office: flyers, radio and the music papers.'],
+  ['Buzz','The Plan tab has one buzz stunt per booking round or sale week: billboards, pop-up gigs, a celebrity ambassador, a fashion collab, a dance challenge and more. Pop-culture moments (a film shoot, a celebrity wedding, a royal visit, the big match, a reunion) arrive as choices and play out at the festival.'],
+  ['Sound','During the weekend you hear the crowd and a beat that follows whoever is playing. Tap anywhere to start it; switch it off in the menu.']].map(g=>'<div class="sec">'+g[0]+'</div><p class="muted">'+g[1]+'</p>').join('')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>')};
+const _startM=ACT.start;const _cueM=ACT.cue;
+Object.assign(ACT,{
+  start(){const u=UI.setup;if(!u)return;const sandbox=u.mode==='sandbox';const days=u.chal?3:(u.days||3);const start=u.chal||u.mode==='story'?2027:(u.start||2027);if(sandbox)u.mode='free';START_YEAR=start;
+    _startM();if(!S||UI.setup){if(sandbox&&UI.setup)UI.setup.mode='sandbox';return}
+    S.startYear=start;if(days!==3)setLength(S,days);
+    if(start<2027){S.acts=eraActs(start);S.rival.bk=[];marketYear(S,true);discoveryDemos(S);makeGoals(S);addNews(S,'It’s '+start+'. The scene is yours.','book')}
+    if(sandbox){S.sandbox=true;S.money=50e6;S.perks=[]}save();render()},
+  sdays(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.days=+v;render();drawThumbs()},
+  sstart(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.start=+v;render();drawThumbs()},
+  flen(v){const r=setLength(S,+v);if(r){toast(r);return}toast('Your festival now runs for '+(+v===1?'one day':v+' days')+'.');save();render()},
+  stunt(k){const r=doStunt(S,k);if(r)toast(r);save();render()},
+  sndtoggle(){SND.on=!soundOn();try{localStorage.setItem('festival_sound',SND.on?'1':'0')}catch(e){}if(!SND.on&&SND.bedG&&SND.ctx)SND.bedG.gain.value=0;renderSheet()},
+  cue(v){_cueM(v);if(v==='fire'||v==='drone')sndPop();else sndCheer(.15)}});
+
 window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,get liveStep(){return liveStep},G3,sagChecks,projection,STEPS};
 (function boot(){render()})();
 </script>
