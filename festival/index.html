@@ -4019,9 +4019,10 @@ const STUNTS={
 const stuntCost=(s,k)=>{const c=STUNTS[k].c;return Math.round(c*Math.sqrt(scaleOf(s))/1000)*1000};
 const stuntsOK=s=>(s.phase==='booking'||s.phase==='onsale');
 function stuntList(s){return Object.entries(STUNTS).filter(([k,x])=>(!x.rep||s.rep>=x.rep)&&(!x.modern||!preSocial(s))&&(!x.retro||preSocial(s)))}
-function stuntLeft(s){const key=s.phase+(s.phase==='booking'?s.round:s.week);return s.stuntKey===key?0:1}
+const stuntKeyOf=s=>s.year+s.phase+(s.phase==='booking'?s.round:s.week);
+function stuntLeft(s){return s.stuntKey===stuntKeyOf(s)?0:1}
 function doStunt(s,k){const x=STUNTS[k];if(!x||!stuntsOK(s)||!stuntLeft(s))return '';const c=stuntCost(s,k);if(c>0&&s.money<c&&!s.sandbox)return 'Not enough cash.';
-  cash(s,-c);ledger(s,'Buzz stunts',-c);s.stuntKey=s.phase+(s.phase==='booking'?s.round:s.week);s.stunts=(s.stunts||0)+1;if(s.stunts>=8)award(s,'buzz');const t=x.fx(s);addNews(s,x.n+': '+t,'social');return t}
+  cash(s,-c);ledger(s,'Buzz stunts',-c);s.stuntKey=stuntKeyOf(s);s.stunts=(s.stunts||0)+1;if(s.stunts>=8)award(s,'buzz');const t=x.fx(s);addNews(s,x.n+': '+t,'social');return t}
 
 /* ---------- pop-culture moments ---------- */
 const MOMENTS=[
@@ -4077,6 +4078,102 @@ const _randomEventF=randomEvent;randomEvent=function(s,A,d,h,wx){const L=s.live;
   if(chance(.55)){const pool=FUN_EV.filter(e=>!L.usedEv['f_'+e.k]&&e.w(s));if(pool.length){const e=pick(pool);L.usedEv['f_'+e.k]=1;if(e.dec)return e.dec(s);const t=e.log(s);if(t)logL(s,t,'good');return null}}
   return _randomEventF(s,A,d,h,wx)};
 TROPHIES.push(['buzz','Hype machine','Pull eight buzz stunts'],['record','Record breakers','Set a world record at your festival']);
+/* ============================================================
+   More fun: a yearly theme, a festival mascot, the fan vote,
+   lucky-dip acts, golden tickets, weekend quests and afterparties
+   ============================================================ */
+
+/* ---------- yearly theme: fans dress up ---------- */
+const THEMES={
+  neon:{n:'Neon jungle',d:'UV paint, glowing trees and fluorescent everything.',g:['electronic','afro','hiphop'],lines:['The woods glow green and pink after dark. Half the crowd is covered in UV paint.','A neon tiger parade winds through the campsites.']},
+  space:{n:'Space disco',d:'Silver suits, mirrorballs and a rocket on the main stage.',g:['pop','soul','kpop','electronic'],lines:['A field full of astronauts doing the hustle.','The mirrorball rocket lights up the whole valley.']},
+  sea:{n:'Under the sea',d:'Jellyfish lanterns, mermaids and a giant inflatable whale.',g:['folk','indie','pop'],lines:['Hundreds of jellyfish lanterns bob over the crowd.','A giant inflatable whale is crowd-surfing towards the main stage.']},
+  west:{n:'Wild West',d:'Cowboy hats, saloon bars and a mechanical bull.',g:['country','rock','folk'],lines:['The saloon bar queue is full of cowboy hats.','The mechanical bull has thrown 400 people so far today.']},
+  carnival:{n:'Carnival',d:'Feathers, drums and a samba parade every afternoon.',g:['latin','afro','pop'],lines:['The samba parade dances right through the main arena.','Feathers everywhere. Somebody will be finding glitter until Christmas.']},
+  heroes:{n:'Superheroes',d:'Capes, masks and a giant inflatable villain to defeat.',g:['pop','hiphop','rock'],lines:['Two thousand caped crusaders defeat the giant inflatable villain.','A rival festival’s logo is taped to the villain. Nobody misses.']},
+  fairy:{n:'Enchanted forest',d:'Fairy lights in every tree and a storyteller’s glade.',g:['folk','indie','jazz'],lines:['The storyteller’s glade is packed out by midnight.','Fairy lights in every tree. Even the security team are wearing wings.']},
+  retro:{n:'Throwback',d:'Fancy dress from a decade gone by.',g:['rock','pop','soul','punk'],lines:['A sea of shell suits, shoulder pads and bucket hats.','Somebody has brought a working jukebox to the campsite.']}};
+const themeCost=s=>Math.round(20000*Math.sqrt(scaleOf(s))/1000)*1000;
+const themeOf=s=>s.theme&&s.theme.y===s.year?THEMES[s.theme.k]:null;
+function themeFit(s){const T=themeOf(s);if(!T)return 0;const L=signed(s).map(b=>act(b.actId)).filter(Boolean);if(!L.length)return 0;return L.filter(a=>T.g.includes(a.genre)).length/L.length}
+function setTheme(s,k){if(!THEMES[k]||s.phase!=='booking')return '';if(s.theme&&s.theme.y===s.year&&s.theme.k===k)return '';const first=!(s.theme&&s.theme.y===s.year);if(first){const c=themeCost(s);cash(s,-c);ledger(s,'Theme & decor',-c)}
+  s.theme={k,y:s.year};s.hype=clamp(s.hype+(first?4:0),0,100);return 'This year’s theme: '+THEMES[k].n+'.'}
+
+/* ---------- mascot ---------- */
+const MASCOTS={badger:['Barry the Badger','Bella the Badger'],frog:['Fergus the Frog','Freya the Frog'],cow:['Moo-dy the Cow','Daisy the Cow'],robot:['Robo-Rave 3000','Unit 7'],llama:['Disco Llama','Lloyd the Llama'],owl:['Hoot','Olive the Owl'],sheep:['Shaun of the Fields','Woolly Jo'],octo:['Octavia','Sir Inkalot']};
+const MASCOT_N={badger:'Badger',frog:'Frog',cow:'Cow',robot:'Robot',llama:'Llama',owl:'Owl',sheep:'Sheep',octo:'Octopus'};
+function setMascot(s,k){if(!MASCOTS[k])return '';const nm=pick(MASCOTS[k]);s.mascot={k,n:nm};award(s,'mascot');return 'Meet '+nm+', your new mascot.'}
+POSTS.mascot={n:'Mascot post',ok:s=>!!s.mascot,d:'Your mascot does something silly. People love it.',hype:3,fol:.035};
+const _postTextX=postText;postText=function(s,k,a){if(k==='mascot'&&s.mascot)return pick([s.mascot.n+' tried to crowd-surf in the office. It did not go well.',s.mascot.n+' has a message for you: see you in August.',s.mascot.n+' is counting down the days. Badly.']);return _postTextX(s,k,a)};
+const _merchMultX=merchMult;merchMult=function(s){return _merchMultX(s)*(s.mascot?1.06:1)*(themeOf(s)?1.04:1)};
+
+/* ---------- the fan vote ---------- */
+function voteOffer(s){if(s.vote&&s.vote.y===s.year)return;const top=bigFame(s);const main=stagesOf(s).find(p=>isMain(p.t));if(!main)return;
+  const c=s.acts.filter(a=>!unavailable(s,a)&&a.fame>=top-18&&a.fame<=top+2).sort(()=>Math.random()-.5).slice(0,3);if(c.length<3)return;
+  s.vote={y:s.year,cands:c.map(a=>a.id),w:null};pushCard(s,'vote','Let the fans choose a headliner?','Run a public vote between '+c.map(a=>a.name).join(', ')+'. The winner gets your last-night headline slot at a fans’ discount. Ignore the result and the fans will remember.',[{l:'Run the vote',d:'Hype up now; the result comes in two rounds',v:'yes'},{l:'We’ll book our own headliners',v:'no'}],{ref:'v'+s.year})}
+CARD_FX.vote=(s,v)=>{if(!s.vote)return '';if(v!=='yes'){s.vote.off=1;return 'No vote this year.'}s.vote.on=1;s.vote.due=s.round+2;s.hype=clamp(s.hype+6,0,100);if(s.social)s.social.followers=Math.round(s.social.followers*1.05);return 'The vote is open. Fans are campaigning hard.'};
+function voteResult(s){const V=s.vote;if(!V||!V.on||V.w||s.year!==V.y||s.round<V.due)return;const c=V.cands.map(id=>act(id)).filter(Boolean);if(!c.length)return;
+  let tot=c.reduce((a,x)=>a+appeal(x)*rnd(.6,1.4),0),r=Math.random()*tot,w=c[0];for(const x of c){r-=appeal(x)*rnd(.6,1.4);if(r<=0){w=x;break}}V.w=w.id;
+  const pc=c.map(x=>({n:x.name,p:x===w?ri(41,62):0}));const rest=100-pc.find(x=>x.p).p;const lo=pc.filter(x=>!x.p);lo[0].p=Math.round(rest*rnd(.5,.75));if(lo[1])lo[1].p=rest-lo[0].p;
+  pushCard(s,'voteres','The fans have chosen: '+w.name,pc.map(x=>x.n+' '+x.p+'%').join(' · ')+'. Over '+fmtK(ri(40,200)*1000)+' votes. Their agent will do a fans’ deal.',[{l:'Book '+w.name+' (15% off)',d:'They headline your last night',v:'book'},{l:'Ignore the result',d:'The fans will be furious',v:'no'}],{ref:'r'+s.year})}
+CARD_FX.voteres=(s,v)=>{const V=s.vote;const a=V&&act(V.w);if(!a)return '';if(v!=='book'){s.cred=clamp(s.cred-8,0,100);s.hype=clamp(s.hype-6,0,100);addNews(s,'Fans are furious that you ignored the vote for '+a.name+'.','social');return 'The fans won’t forget that.'}
+  if(unavailable(s,a))return a.name+' are no longer available. The fans understand. Mostly.';
+  const mains=stagesOf(s).filter(p=>isMain(p.t));let spot=null;for(const p of mains)for(const d of dayRange(s).slice().reverse()){if(!spot&&!slotAt(s,p.id,d,0))spot={stage:p.id,day:d,slot:0}}
+  if(!spot)for(const p of mains)for(const d of dayRange(s).slice().reverse()){if(!spot&&!slotAt(s,p.id,d,1))spot={stage:p.id,day:d,slot:1}}
+  if(!spot)return 'Every headline slot is full. Free one up and ask again next year.';
+  const fee=Math.round(askFor(s,a,spot).fee*.85/250)*250;const b=makeOffer(s,a.id,{...spot,fee});signAct(s,b,a);s.hype=clamp(s.hype+8,0,100);award(s,'vote');return a.name+' will headline '+DAYL[spot.day]+'. The fans are ecstatic.'};
+
+/* ---------- lucky dip ---------- */
+const dipCost=s=>Math.round(40000*Math.sqrt(scaleOf(s))/1000)*1000;
+function luckyDip(s){if(!(s.phase==='booking'||s.phase==='onsale'))return 'Lucky dips are only on during booking and the on-sale.';if(s.dipY===s.year+'-'+(s.phase==='booking'?s.round:'w'+s.week))return 'One lucky dip per round.';
+  const c=dipCost(s);if(s.money<c&&!s.sandbox)return 'Not enough cash.';const r=Math.random();const band=r<.6?[18,45]:r<.9?[45,70]:r<.99?[70,86]:[86,99];
+  const pool=s.acts.filter(a=>!unavailable(s,a)&&a.fame>=band[0]&&a.fame<=band[1]);if(!pool.length)return 'The lucky dip is empty.';const a=pick(pool);
+  let best=null;for(const p of stagesOf(s))for(const d of dayRange(s))SLOTS[p.t].forEach((sd,i)=>{if(slotAt(s,p.id,d,i))return;const [lo,hi]=sd[3];const fit=Math.abs(a.fame-(lo+hi)/2);if(!best||fit<best.fit)best={stage:p.id,day:d,slot:i,fit,p}});
+  if(!best)return 'No free slots left for a lucky dip.';s.dipY=s.year+'-'+(s.phase==='booking'?s.round:'w'+s.week);
+  const b=makeOffer(s,a.id,{stage:best.stage,day:best.day,slot:best.slot,fee:c});signAct(s,b,a);s.dips=(s.dips||0)+1;
+  const big=a.fame>=86,good=a.fame>=70;if(big)award(s,'jackpot');addNews(s,'Lucky dip: '+a.name+' for '+fmt$(c)+'.','book');
+  return (big?'JACKPOT! ':good?'Big win! ':a.fame<30?'Hmm. ':'')+a.name+' (fame '+a.fame+') will play '+DAYL[best.day]+' on the '+stageName(s,best.p)+'.'}
+
+/* ---------- golden tickets (a buzz stunt during the on-sale) ---------- */
+STUNTS.golden={n:'Hide golden tickets',d:'Ten random buyers win lifetime VIP. Everyone checks their e-ticket.',c:10000,phase:'onsale',fx:s=>{s.hype=clamp(s.hype+7,0,100);s.flags.golden=s.year;return 'Golden tickets are hidden in this week’s sales. Ticket enquiries spike.'}};
+const _stuntListX=stuntList;stuntList=function(s){return _stuntListX(s).filter(([k,x])=>!x.phase||x.phase===s.phase)};
+
+/* ---------- weekend quests ---------- */
+const QUESTS={
+  mood:{n:'Crowd mood 75+ at 21:00 on Saturday',chk:null},
+  bars:{n:s=>'Take '+fmt$(questBar(s))+' at the bars',chk:(s,L)=>L.bar>=questBar(s)},
+  safe:{n:'No serious medical cases',chk:(s,L)=>!L.serious},
+  cue:{n:'Fire a show cue during a headliner',chk:(s,L)=>!!L.cueFired},
+  clip:{n:'Post two live clips',chk:(s,L)=>(L.clips||0)>=2},
+  curfew:{n:'No curfew breaches',chk:(s,L)=>!L.curfewBreach},
+  gates:{n:'Get 95% of ticket holders through the gates',chk:(s,L)=>(L.arrived+L.fenceIn)>=.95*(L.weekendIn+L.dayT.reduce((a,v)=>a+v,0))*.97}};
+const questBar=s=>Math.round(s.lic.cap*nDays(s)*13/5000)*5000;
+const questReward=s=>Math.round(15000*Math.sqrt(scaleOf(s))/1000)*1000;
+const questName=(s,k)=>typeof QUESTS[k].n==='function'?QUESTS[k].n(s):QUESTS[k].n;
+const _openGatesX=openGates;openGates=function(s){_openGatesX(s);const L=s.live;const keys=Object.keys(QUESTS).sort(()=>Math.random()-.5).slice(0,3);L.quests=keys.map(k=>({k,done:null}));logL(s,'Weekend quests: '+keys.map(k=>questName(s,k)).join(' · ')+'.','start');
+  const T=themeOf(s);if(T){const fit=themeFit(s);L.mood+=3+(fit>=.4?3:0);logL(s,'This year’s theme is '+T.n+'. '+(fit>=.4?'It suits the line-up perfectly.':'The fans have gone all out on costumes.'),'good')}};
+const _fireCueX=fireCue;fireCue=function(s,k){const L=s.live;const n0=Object.keys(L.cues||{}).length;const r=_fireCueX(s,k);if(Object.keys(L.cues||{}).length>n0)L.cueFired=1;return r};
+const _makePostX=makePost;makePost=function(s,k,b){const r=_makePostX(s,k,b);if(k==='live'&&s.live&&s.phase==='live')s.live.clips=(s.live.clips||0)+1;return r};
+const _finishWeekendX=finishWeekend;finishWeekend=function(s){const L=s.live;const was=L.done;_finishWeekendX(s);if(was||!L.quests)return;let n=0;
+  for(const q of L.quests){if(q.done==null)q.done=QUESTS[q.k].chk?!!QUESTS[q.k].chk(s,L):false;if(q.done){n++;const c=questReward(s);s.money+=c;s.rep=clamp(s.rep+1,0,100)}}
+  L.questsDone=n;logL(s,'Quests complete: '+n+' of '+L.quests.length+(n?'. Bonus '+fmt$(n*questReward(s))+'.':'.'),n?'good':'');if(n===L.quests.length)award(s,'quests')};
+
+/* ---------- Saturday afterparty, fan-vote timing, themed moments ---------- */
+const AFTER={t:'The afterparty',x:'The headliners are done but nobody wants to go to bed. What happens after hours on Saturday?',opts:[
+  {l:'Secret rave in the woods till 4am',d:'About £10k. The crowd goes wild; the neighbours won’t',log:'A secret rave in the woods until 4am. Legendary.',k:'good',fn:s=>{cashL(s,'Afterparty',10000);s.live.mood=clamp(s.live.mood+6,0,100);s.live.complaints+=40;s.council=clamp(s.council-3,0,100)}},
+  {l:'Silent disco on the main field',d:'About £6k. Fun and quiet',log:'Five thousand people in headphones singing out loud. Silent disco, in theory.',k:'good',fn:s=>{cashL(s,'Afterparty',6000);s.live.mood=clamp(s.live.mood+4,0,100)}},
+  {l:'Campfire singalong',d:'Free and lovely',log:'Guitars come out round the campfires. Wonderwall is played eleven times.',fn:s=>{s.live.mood=clamp(s.live.mood+2,0,100)}},
+  {l:'Lights out',d:'Everyone to bed',log:'Lights out at the arenas. Mostly.',fn:s=>{}}]};
+const _liveStepX=liveStep;liveStep=function(s){const L=s.live;if(!L||L.done||L.dec)return _liveStepX(s);const i0=L.i,st=STEPS[i0];_liveStepX(s);if(L.dec||L.done||L.i!==i0+1)return;
+  if(L.quests){const q=L.quests.find(q=>q.k==='mood');if(q&&q.done==null&&st.d===satIdx(s)&&st.h===21)q.done=L.mood>=75}
+  const T=themeOf(s);if(T&&st.h===17&&!L.usedEv['theme'+st.d]&&chance(.5)){L.usedEv['theme'+st.d]=1;logL(s,pick(T.lines),'good')}
+  if(s.mascot&&st.h===15&&!L.usedEv.mascot&&chance(.4)){L.usedEv.mascot=1;logL(s,s.mascot.n+' '+pick(['crowd-surfs to the front of the main stage.','leads a conga line through the campsite.','poses for about nine thousand selfies.','gets stuck in a portaloo door. Stewards free them to huge cheers.']),'good');L.mood=clamp(L.mood+1,0,100)}
+  if(s.flags.golden===s.year&&st.h===13&&!L.usedEv.golden){L.usedEv.golden=1;logL(s,'A golden-ticket winner screams at the gate when their lifetime VIP pass is handed over.','good')}
+  if(st.d===satIdx(s)&&st.h===23&&!L.usedEv.after){L.usedEv.after=1;L.i=i0;ask(s,{t:AFTER.t,x:AFTER.x,opts:AFTER.opts})}};
+const _roundExtrasX=roundExtras;roundExtras=function(s){_roundExtrasX(s);if(s.round===2&&s.year>=2&&chance(.6))voteOffer(s);voteResult(s)};
+const _costLinesX=costLines;costLines=function(s,a0){const L=_costLinesX(s,a0);if(s.ledger['Theme & decor'])L.push({g:'Production',k:'Theme & decor',v:-s.ledger['Theme & decor']});return L};
+const _migrateX=migrate;migrate=function(s){s=_migrateX(s);const L=s.live;if(L&&L.dec&&L.dec.t===AFTER.t)L.dec.opts.forEach((o,i)=>{if(typeof o.fn!=='function')o.fn=AFTER.opts[i].fn});return s};
+TROPHIES.push(['mascot','Mascot mania','Adopt a festival mascot'],['vote','People’s choice','Book the act the fans voted for'],['jackpot','Jackpot','Win a superstar in the lucky dip'],['quests','Quest master','Complete every weekend quest in one year']);
 /* ============================================================
    3D festival grounds (three.js r128) with a 2D canvas fallback
    1 world unit = 1 cell (20 m); heights are exaggerated to read
@@ -4894,7 +4991,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
-const APP_VER='202610311500';
+const APP_VER='202610311800';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
@@ -5172,6 +5269,33 @@ Object.assign(ACT,{
   stunt(k){const r=doStunt(S,k);if(r)toast(r);save();render()},
   sndtoggle(){SND.on=!soundOn();try{localStorage.setItem('festival_sound',SND.on?'1':'0')}catch(e){}if(!SND.on&&SND.bedG&&SND.ctx)SND.bedG.gain.value=0;renderSheet()},
   cue(v){_cueM(v);if(v==='fire'||v==='drone')sndPop();else sndCheer(.15)}});
+
+/* ============================================================
+   UI for themes, mascot, lucky dip, quests and the fan vote
+   ============================================================ */
+function themeCard(){if(!S||S.phase!=='booking')return '';const T=themeOf(S);const fit=themeFit(S);
+  return '<section class="card"><h2>This year’s theme<small>'+(T?esc(T.n):'Not chosen · '+fmt$(themeCost(S))+' decor')+'</small></h2><p class="small muted" style="margin-bottom:10px">'+(T?esc(T.d)+' Suits '+T.g.map(g=>GENRES[g].n).join(', ')+' acts'+(signed(S).length?' · '+Math.round(fit*100)+'% of your bill fits':'')+'.':'Pick a fancy-dress theme. Fans dress up, the mood lifts and merch sells better. It’s even better when the line-up suits it.')+'</p><div class="chips">'+
+    Object.entries(THEMES).map(([k,t])=>'<button class="chip" data-a="theme" data-v="'+k+'" aria-pressed="'+(T===t)+'">'+t.n+'</button>').join('')+'</div></section>'}
+function mascotCard(){if(!S||(S.phase!=='booking'&&S.mascot))return '';const M=S.mascot;
+  return '<section class="card"><h2>Festival mascot<small>'+(M?esc(M.n):'None yet')+'</small></h2><p class="small muted" style="margin-bottom:10px">'+(M?'Your mascot turns up at the weekend, stars in its own posts and sells merch. Swap any time in booking season.':'Every great festival needs a mascot. It wanders the site, gets its own social posts and sells T-shirts.')+'</p><div class="chips">'+
+    Object.keys(MASCOTS).map(k=>'<button class="chip" data-a="mascot" data-v="'+k+'" aria-pressed="'+(!!M&&M.k===k)+'">'+MASCOT_N[k]+'</button>').join('')+'</div>'+(M?'<button class="btn quiet sm" style="margin-top:8px" data-a="mascotname">New name</button>':'')+'</section>'}
+function dipCard(){if(!S||!(S.phase==='booking'||S.phase==='onsale'))return '';const used=S.dipY===S.year+'-'+(S.phase==='booking'?S.round:'w'+S.week);
+  return '<section class="card"><h2>Lucky dip<small>'+fmt$(dipCost(S))+'</small></h2><p class="small muted" style="margin-bottom:10px">Book a mystery act for a flat fee. Usually someone small, sometimes a big name, very rarely a superstar. They go straight into a free slot that suits them.</p><button class="btn sm" data-a="luckydip" '+(used?'disabled':'')+'>'+(used?'One dip per round':'Pull a mystery act')+'</button></section>'}
+function questHtml(){const L=S.live;if(!L||!L.quests)return '';return '<p class="small muted" style="margin:0 0 8px">Quests: '+L.quests.map(q=>(q.done===true?'✓ ':q.done===false?'✗ ':'○ ')+esc(questName(S,q.k))).join(' · ')+'</p>'}
+function wrapFunHtml(){const L=S.live;let h='';if(L&&L.quests)h+='<section class="card"><h2>Weekend quests<small>'+(L.questsDone||0)+' of '+L.quests.length+'</small></h2><ul class="list">'+L.quests.map(q=>'<li><span class="pill '+(q.done?'pos':'neg')+'">'+(q.done?'Done':'Missed')+'</span><div class="grow">'+esc(questName(S,q.k))+'</div></li>').join('')+'</ul>'+(L.questsDone?'<p class="small muted" style="margin-top:8px">Bonus: '+fmt$(L.questsDone*questReward(S))+' and +'+L.questsDone+' reputation.</p>':'')+'</section>';return h}
+const _viewPlanF=viewPlan;viewPlan=function(){return _viewPlanF().replace('<section class="card"><h2>Tickets against capacity',themeCard()+mascotCard()+'<section class="card"><h2>Tickets against capacity')};
+const _viewLineupF=viewLineup;viewLineup=function(){const h=_viewLineupF();const i=h.lastIndexOf('</main>');return i<0?h:h.slice(0,i)+dipCard()+h.slice(i)};
+const _liveExtrasF=liveExtrasHtml;liveExtrasHtml=function(){return questHtml()+_liveExtrasF()};
+const _viewWrapF=viewWrap;viewWrap=function(){return _viewWrapF().replace('<section class="card"><h2>Council debrief',wrapFunHtml()+'<section class="card"><h2>Council debrief')};
+const _guideSheetF=guideSheet;guideSheet=function(){return _guideSheetF().replace('<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>',[
+  ['Theme and mascot','Each booking season, pick a fancy-dress theme (neon jungle, space disco, Wild West and more). The crowd is happier, merch sells better and it works best when your line-up suits it. Adopt a mascot too: it wanders the site and gets its own posts.'],
+  ['Fan vote and lucky dip','Some years the fans offer to vote for a headliner: book the winner at a discount, or ignore them at your peril. On the Line-up tab, the lucky dip books a mystery act for a flat fee, once per round. Usually small, occasionally a jackpot.'],
+  ['Weekend quests','Every weekend comes with three quests, like keeping the crowd mood high on Saturday night or taking a target at the bars. Each one you complete pays a cash bonus and a little reputation. On Saturday night you also choose the afterparty.']].map(g=>'<div class="sec">'+g[0]+'</div><p class="muted">'+g[1]+'</p>').join('')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>')};
+Object.assign(ACT,{
+  theme(k){const r=setTheme(S,k);if(r)toast(r);save();render()},
+  mascot(k){if(S.mascot&&S.mascot.k===k)return;const r=setMascot(S,k);toast(r);save();render()},
+  mascotname(){if(!S.mascot)return;const L=MASCOTS[S.mascot.k];S.mascot.n=L.find(n=>n!==S.mascot.n)||L[0];toast('Your mascot is now '+S.mascot.n+'.');save();render()},
+  luckydip(){const r=luckyDip(S);toast(r);save();render()}});
 
 window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,get liveStep(){return liveStep},G3,sagChecks,projection,STEPS};
 (function boot(){render()})();
