@@ -481,7 +481,8 @@ const SLOTS={
   small:[[20,.9,'',[12,42]],[18.5,.75,'',[5,34]],[17,.75,'',[0,28]],[15.5,.75,'',[0,24]]],
 };
 const GENRES={indie:{n:'Indie',c:'#c6f24e'},rock:{n:'Rock',c:'#e6e6e6'},pop:{n:'Pop',c:'#ff8fc6'},hiphop:{n:'Hip-hop',c:'#e5a93b'},
-  electronic:{n:'Electronic',c:'#5ec4e8'},folk:{n:'Folk',c:'#b9a57b'},metal:{n:'Metal',c:'#9a9a9a'},soul:{n:'R&B / soul',c:'#ff9a6b'},punk:{n:'Punk',c:'#ff6369'},jazz:{n:'Jazz',c:'#8fd1b0'}};
+  electronic:{n:'Electronic',c:'#5ec4e8'},folk:{n:'Folk',c:'#b9a57b'},metal:{n:'Metal',c:'#9a9a9a'},soul:{n:'R&B / soul',c:'#ff9a6b'},punk:{n:'Punk',c:'#ff6369'},jazz:{n:'Jazz',c:'#8fd1b0'},
+  latin:{n:'Latin',c:'#ff7a45'},kpop:{n:'K-pop',c:'#c084fc'},afro:{n:'Afrobeats',c:'#facc15'},country:{n:'Country',c:'#e0b072'}};
 const GKEYS=Object.keys(GENRES);
 
 /* ---------- sites ---------- */
@@ -536,7 +537,7 @@ const RIVALS=[{n:'Wildwood Fields',owner:'Monolith Live'},{n:'Eastbank Weekender
 function feeOf(a,S,extra=1){
   const infl=Math.pow(1.04,(S?S.year:1)-1);
   let f=600*Math.exp(.075*a.fame)*infl*(1+Math.max(0,a.fame-90)*.25);
-  if(a.genre==='electronic')f*=.88;if(a.genre==='jazz'||a.genre==='folk')f*=.8;if(a.genre==='pop'||a.genre==='hiphop')f*=1.1;
+  if(a.genre==='electronic')f*=.88;if(a.genre==='jazz'||a.genre==='folk')f*=.8;if(a.genre==='pop'||a.genre==='hiphop'||a.genre==='latin')f*=1.1;if(a.genre==='kpop')f*=1.15;
   f*=routing(a).m;
   return Math.round(f*extra/250)*250}
 function routing(a){if(a.home==='UK')return{m:1,t:'UK act'};if(a.tour)return{m:.9,t:'On a European run'};return{m:1.35,t:'Fly-in from '+a.home}}
@@ -600,7 +601,7 @@ Harry Styles|pop|95|UK|h
 Kendrick Lamar|hiphop|95|US|
 Drake|hiphop|94|CA|
 Sabrina Carpenter|pop|94|US|+
-Bad Bunny|pop|94|EU|
+Bad Bunny|latin|94|Puerto Rico|
 The Weeknd|soul|94|CA|
 Oasis|rock|94|UK|h
 Olivia Rodrigo|pop|93|US|
@@ -625,7 +626,7 @@ Green Day|punk|88|US|
 Stormzy|hiphop|88|UK|
 Fred again..|electronic|88|UK|+
 Doja Cat|pop|88|US|
-Zach Bryan|folk|88|US|+
+Zach Bryan|country|88|US|+
 David Guetta|electronic|88|EU|
 J. Cole|hiphop|88|US|
 Robbie Williams|pop|87|UK|
@@ -633,7 +634,7 @@ Lewis Capaldi|pop|87|UK|
 Sam Fender|indie|87|UK|+
 The 1975|indie|87|UK|h
 Gorillaz|indie|87|UK|
-Burna Boy|hiphop|87|EU|
+Burna Boy|afro|87|EU|
 Pink|pop|87|US|
 Dave|hiphop|87|UK|+
 Nicki Minaj|hiphop|86|US|
@@ -658,7 +659,7 @@ Depeche Mode|electronic|85|UK|
 Megan Thee Stallion|hiphop|85|US|
 21 Savage|hiphop|85|US|
 Martin Garrix|electronic|85|EU|
-ROSÉ|pop|85|EU|+
+ROSÉ|kpop|85|EU|+
 Pulp|indie|84|UK|
 Liam Gallagher|rock|84|UK|
 Lorde|pop|84|AUS|+
@@ -669,8 +670,8 @@ Tate McRae|pop|84|CA|+
 Benson Boone|pop|84|US|+
 Skrillex|electronic|84|US|
 A$AP Rocky|hiphop|84|US|
-Wizkid|hiphop|84|EU|
-Rema|hiphop|84|EU|+
+Wizkid|afro|84|EU|
+Rema|afro|84|EU|+
 Fatboy Slim|electronic|82|UK|
 The Chemical Brothers|electronic|82|UK|
 Stereophonics|rock|80|UK|
@@ -706,7 +707,7 @@ Peggy Gou|electronic|80|EU|
 Avenged Sevenfold|metal|80|US|
 Ghost|metal|80|EU|
 Carl Cox|electronic|80|UK|
-Asake|hiphop|80|EU|+
+Asake|afro|80|EU|+
 Anyma|electronic|80|EU|+
 Royal Blood|rock|78|UK|
 Bastille|pop|78|UK|-
@@ -728,7 +729,7 @@ Bon Iver|folk|78|US|
 The Lumineers|folk|78|US|
 Laufey|jazz|78|EU|+
 Olivia Dean|soul|78|UK|++
-Ayra Starr|soul|78|EU|+
+Ayra Starr|afro|78|EU|+
 Wolf Alice|indie|76|UK|
 Jungle|soul|76|UK|
 Michael Kiwanuka|soul|76|UK|
@@ -1143,9 +1144,9 @@ Lizzy McAlpine|folk|50|US|+
 Gigi Perez|folk|56|US|++
 Alex Warren|pop|66|US|++
 Sienna Spiro|pop|40|UK|++
-Ella Langley|folk|58|US|++
+Ella Langley|country|58|US|++
 Role Model|pop|52|US|+
-Dasha|folk|46|US|+
+Dasha|country|46|US|+
 Ravyn Lenae|soul|54|US|+
 Bilmuri|metal|40|US|+
 Sleep Theory|metal|38|US|+
@@ -1269,13 +1270,13 @@ Old Crow Medicine Show|folk|42|US|
 Trampled by Turtles|folk|38|US|
 Billy Strings|folk|58|US|+
 Sierra Ferrell|folk|46|US|+
-Tyler Childers|folk|60|US|+
-Sturgill Simpson|folk|52|US|
+Tyler Childers|country|60|US|+
+Sturgill Simpson|country|52|US|
 Jason Isbell|folk|54|US|
-Kacey Musgraves|folk|66|US|
-Orville Peck|folk|48|CA|
-Charley Crockett|folk|48|US|+
-Margo Price|folk|40|US|
+Kacey Musgraves|country|66|US|
+Orville Peck|country|48|CA|
+Charley Crockett|country|48|US|+
+Margo Price|country|40|US|
 Larkin Poe|rock|42|US|
 Marcus King|rock|46|US|+
 Gary Clark Jr.|rock|52|US|
@@ -1366,9 +1367,9 @@ Christine and the Queens|pop|52|EU|
 Stromae|pop|66|EU|h
 Angèle|pop|50|EU|
 Måneskin|rock|72|EU|
-Rosalía|pop|76|EU|+
-C. Tangana|pop|50|EU|
-Bad Gyal|pop|42|EU|+
+Rosalía|latin|76|EU|+
+C. Tangana|latin|50|EU|
+Bad Gyal|latin|42|EU|+
 Kerala Dust|electronic|34|EU|+
 L'Impératrice|electronic|42|EU|+
 Parov Stelar|electronic|46|EU|
@@ -1441,15 +1442,15 @@ Nao|soul|40|UK|
 Sampha|soul|52|UK|
 Obongjayar|soul|42|UK|+
 Moonchild Sanelly|electronic|36|EU|+
-Uncle Waffles|electronic|46|EU|+
-Tyla|pop|66|EU|+
-Davido|pop|62|EU|
-Omah Lay|soul|52|EU|+
-Fireboy DML|pop|52|EU|
-Ckay|pop|50|EU|
-Libianca|pop|36|EU|
-Odumodublvck|hiphop|42|EU|+
-Shallipopi|hiphop|40|EU|+
+Uncle Waffles|afro|46|EU|+
+Tyla|afro|66|EU|+
+Davido|afro|62|EU|
+Omah Lay|afro|52|EU|+
+Fireboy DML|afro|52|EU|
+Ckay|afro|50|EU|
+Libianca|afro|36|EU|
+Odumodublvck|afro|42|EU|+
+Shallipopi|afro|40|EU|+
 Shoday|hiphop|28|UK|+
 Ama Lou|soul|28|UK|
 Kenny Beats|hiphop|32|US|
@@ -1493,7 +1494,7 @@ M Huncho|hiphop|46|UK|
 Kenny Allstar|hiphop|30|UK|
 Jim Legxacy|hiphop|38|UK|++
 Kwengface|hiphop|30|UK|+
-Joeboy|pop|40|EU|
+Joeboy|afro|40|EU|
 Kojo Funds|hiphop|36|UK|
 Not3s|hiphop|32|UK|
 Avelino|hiphop|30|UK|
@@ -1518,6 +1519,220 @@ The Streets|hiphop|60|UK|
 Lethal Bizzle|hiphop|36|UK|-
 Sugarhill Gang|hiphop|26|US|-
 Leon Thomas|soul|46|US|++
+Shakira|latin|90|Colombia|
+Karol G|latin|88|Colombia|+
+Peso Pluma|latin|82|Mexico|+
+J Balvin|latin|84|Colombia|
+Feid|latin|82|Colombia|+
+Rauw Alejandro|latin|80|Puerto Rico|+
+Maluma|latin|80|Colombia|
+Daddy Yankee|latin|76|Puerto Rico|h
+Ozuna|latin|74|Puerto Rico|
+Anuel AA|latin|72|Puerto Rico|
+Myke Towers|latin|72|Puerto Rico|
+Bizarrap|latin|70|Argentina|+
+Anitta|latin|74|Brazil|
+Kali Uchis|latin|74|US|+
+Camila Cabello|latin|74|US|
+Romeo Santos|latin|72|US|
+Marc Anthony|latin|70|US|
+Enrique Iglesias|latin|70|Spain|-
+Ricky Martin|latin|68|Puerto Rico|-
+Nicky Jam|latin|66|Puerto Rico|
+Young Miko|latin|66|Puerto Rico|+
+Grupo Frontera|latin|64|US|+
+Fuerza Regida|latin|64|US|+
+Carín León|latin|64|Mexico|+
+Becky G|latin|64|US|
+Sebastián Yatra|latin|64|Colombia|
+Aventura|latin|62|US|h
+Quevedo|latin|64|Spain|+
+Tini|latin|60|Argentina|
+Jhayco|latin|60|Puerto Rico|
+Farruko|latin|58|Puerto Rico|
+Christian Nodal|latin|60|Mexico|
+Junior H|latin|60|Mexico|+
+Natanael Cano|latin|58|Mexico|
+Eslabon Armado|latin|56|US|
+Manuel Turizo|latin|58|Colombia|
+Wisin & Yandel|latin|58|Puerto Rico|-
+Duki|latin|58|Argentina|
+María Becerra|latin|58|Argentina|+
+Aitana|latin|58|Spain|+
+Arcángel|latin|56|Puerto Rico|
+Omar Apollo|latin|56|US|+
+Sech|latin|56|Panama|
+Emilia|latin|54|Argentina|+
+Nathy Peluso|latin|54|Spain|+
+Paulo Londra|latin|54|Argentina|
+Mora|latin|54|Puerto Rico|+
+Ryan Castro|latin|54|Colombia|+
+Blessd|latin|52|Colombia|+
+Danny Ocean|latin|52|Venezuela|
+Nicki Nicole|latin|52|Argentina|
+Morat|latin|50|Colombia|
+Mon Laferte|latin|50|Chile|
+Natalia Lafourcade|latin|50|Mexico|
+Ivan Cornejo|latin|50|US|+
+Rels B|latin|50|Spain|+
+Morad|latin|50|Spain|
+Lola Indigo|latin|48|Spain|
+Juanes|latin|58|Colombia|-
+Carlos Vives|latin|54|Colombia|-
+Manu Chao|latin|54|EU|-
+Bomba Estéreo|latin|48|Colombia|
+Cazzu|latin|48|Argentina|
+Xavi|latin|48|US|+
+Ludmilla|latin|48|Brazil|
+Álvaro Díaz|latin|44|Puerto Rico|+
+Trueno|latin|44|Argentina|+
+Saiko|latin|42|Spain|+
+Kapo|latin|42|Colombia|+
+Gipsy Kings|latin|48|EU|-
+Buena Vista Social Club|latin|42|Cuba|-
+Ibeyi|latin|38|EU|
+Los Bitchos|latin|30|UK|+
+BTS|kpop|96|Korea|h
+BLACKPINK|kpop|94|Korea|h
+Stray Kids|kpop|86|Korea|+
+Jungkook|kpop|86|Korea|h
+SEVENTEEN|kpop|84|Korea|
+Jennie|kpop|82|Korea|+
+Lisa|kpop|82|Korea|+
+Jimin|kpop|80|Korea|h
+TWICE|kpop|82|Korea|
+ATEEZ|kpop|78|Korea|+
+aespa|kpop|78|Korea|+
+NewJeans|kpop|76|Korea|h
+G-Dragon|kpop|76|Korea|h
+ENHYPEN|kpop|76|Korea|
+TOMORROW X TOGETHER|kpop|76|Korea|
+V|kpop|74|Korea|h
+LE SSERAFIM|kpop|74|Korea|+
+IVE|kpop|74|Korea|+
+Jisoo|kpop|72|Korea|
+(G)I-DLE|kpop|70|Korea|
+j-hope|kpop|70|Korea|
+NCT 127|kpop|68|Korea|
+NCT Dream|kpop|68|Korea|
+EXO|kpop|68|Korea|h
+BIGBANG|kpop|66|Korea|h
+KATSEYE|kpop|66|US|++
+BABYMONSTER|kpop|66|Korea|++
+ITZY|kpop|64|Korea|
+Red Velvet|kpop|62|Korea|-
+ZEROBASEONE|kpop|62|Korea|+
+Jackson Wang|kpop|62|Korea|
+PSY|kpop|62|Korea|-
+2NE1|kpop|60|Korea|h
+DAY6|kpop|60|Korea|+
+TREASURE|kpop|58|Korea|
+RIIZE|kpop|60|Korea|+
+BOYNEXTDOOR|kpop|58|Korea|+
+ILLIT|kpop|58|Korea|+
+SHINee|kpop|58|Korea|h
+RM|kpop|60|Korea|h
+MONSTA X|kpop|56|Korea|
+NMIXX|kpop|54|Korea|+
+Taemin|kpop|56|Korea|
+Super Junior|kpop|54|Korea|-
+MAMAMOO|kpop|52|Korea|-
+Girls' Generation|kpop|54|Korea|h
+Zico|kpop|52|Korea|
+KISS OF LIFE|kpop|52|Korea|+
+TWS|kpop|52|Korea|+
+Jay Park|kpop|52|Korea|
+CORTIS|kpop|50|Korea|++
+STAYC|kpop|50|Korea|
+Taeyang|kpop|52|Korea|
+P1Harmony|kpop|50|Korea|
+Hwasa|kpop|50|Korea|
+The Rose|kpop|48|Korea|+
+Epik High|kpop|48|Korea|
+Sunmi|kpop|46|Korea|
+Kai|kpop|50|Korea|
+CL|kpop|48|Korea|
+Dreamcatcher|kpop|44|Korea|
+Hearts2Hearts|kpop|44|Korea|++
+DPR Ian|kpop|44|Korea|+
+Crush|kpop|44|Korea|
+QWER|kpop|40|Korea|+
+Xdinary Heroes|kpop|40|Korea|+
+xikers|kpop|38|Korea|+
+KARD|kpop|38|Korea|
+iKON|kpop|40|Korea|-
+Hyukoh|kpop|34|Korea|
+Jannabi|kpop|32|Korea|
+Tiwa Savage|afro|56|Nigeria|
+Olamide|afro|56|Nigeria|
+Adekunle Gold|afro|54|Nigeria|
+Kizz Daniel|afro|54|Nigeria|
+Black Sherif|afro|54|Ghana|+
+Diamond Platnumz|afro|54|Tanzania|
+Kabza De Small|afro|52|South Africa|
+Fally Ipupa|afro|50|DR Congo|
+Sarkodie|afro|50|Ghana|
+Angélique Kidjo|afro|50|Benin|
+Stonebwoy|afro|48|Ghana|
+Yemi Alade|afro|48|Nigeria|
+Mr Eazi|afro|48|Nigeria|
+DJ Maphorisa|afro|48|South Africa|
+Ruger|afro|46|Nigeria|
+Seyi Vibez|afro|46|Nigeria|+
+Victony|afro|46|Nigeria|+
+BNXN|afro|46|Nigeria|
+Wande Coal|afro|44|Nigeria|
+Major League DJz|afro|46|South Africa|+
+Simi|afro|44|Nigeria|
+Young Jonn|afro|44|Nigeria|+
+Focalistic|afro|42|South Africa|
+NSG|afro|42|UK|
+Teni|afro|40|Nigeria|
+Moliy|afro|40|Ghana|+
+Lojay|afro|38|Nigeria|
+Darkoo|afro|36|UK|
+WSTRN|afro|32|UK|
+Afro B|afro|32|UK|
+Morgan Wallen|country|90|US|
+Luke Combs|country|86|US|
+Chris Stapleton|country|82|US|
+Dolly Parton|country|80|US|h
+Shaboozey|country|74|US|+
+Shania Twain|country|74|CA|
+Lainey Wilson|country|72|US|+
+Jelly Roll|country|72|US|+
+Kane Brown|country|68|US|
+Carrie Underwood|country|64|US|
+Luke Bryan|country|64|US|-
+Cody Johnson|country|64|US|+
+Thomas Rhett|country|62|US|
+The Chicks|country|60|US|h
+Brandi Carlile|country|60|US|
+Kelsea Ballerini|country|60|US|
+Megan Moroney|country|60|US|+
+Bailey Zimmerman|country|58|US|+
+Keith Urban|country|58|AUS|
+Dan + Shay|country|58|US|
+Riley Green|country|58|US|+
+Jessie Murph|country|58|US|+
+Zac Brown Band|country|56|US|
+Jordan Davis|country|56|US|
+Parker McCollum|country|54|US|
+Old Dominion|country|54|US|
+Maren Morris|country|54|US|
+Koe Wetzel|country|52|US|+
+Brad Paisley|country|50|US|-
+Zach Top|country|50|US|+
+Carly Pearce|country|48|US|
+Lady A|country|48|US|-
+Wyatt Flores|country|46|US|+
+Sam Barber|country|46|US|+
+Tucker Wetmore|country|46|US|+
+Ashley McBryde|country|44|US|
+Treaty Oak Revival|country|42|US|+
+The Shires|country|38|UK|
+Ward Thomas|country|32|UK|
+Twinnie|country|26|UK|+
 `;
 /* agencies represent many real acts; the names here are invented */
 function genActs(){const acts=[];const r=mulberry(20270801);
@@ -1527,7 +1742,7 @@ function genActs(){const acts=[];const r=mulberry(20270801);
     acts.push({id:'a'+hash(name).toString(36),name,genre,fame,pot:Math.round(pot),mom,
       live:clamp(Math.round(62+r()*30+(fame>80?4:0)),55,98),rel:clamp(.955+r()*.04,.9,.995),diva:clamp(r()*.5*(fame/100),0,.6),
       age:tr==='++'?ri(0,2):ri(2,20),ag:AGENCIES[hash(name)%AGENCIES.length].k,agent:AGENTS[hash(name+'x')%AGENTS.length],home,
-      size:genre==='electronic'?1:genre==='pop'||genre==='hiphop'||genre==='soul'?pick([1,1,2]):pick([3,4,4,5,6]),
+      size:genre==='electronic'?1:['pop','hiphop','soul','latin','kpop','afro'].includes(genre)?pick([1,1,2]):pick([3,4,4,5,6]),
       tour:0,hist:[fame],first:0,hiatusRisk:tr==='h'?.7:0})}
   return acts}
 /* ============================================================
@@ -2538,9 +2753,9 @@ function viewSocial(){const so=S.social||(S.social=newSocial(S));const h=handleO
 /* ---------- festival identity ---------- */
 const IDENT={
   indie:{n:'Indie mecca',d:'Guitar bands, discovery and muddy boots. Indie, rock, punk and folk acts draw 15% more.',g:['indie','rock','punk','folk']},
-  rave:{n:'Rave weekend',d:'Big rigs and late nights. Electronic and hip-hop draw more, the bars take 15% more, the neighbours complain more.',g:['electronic','hiphop'],bar:1.15,noise:1.2},
-  pop:{n:'Pop party',d:'Glitter, singalongs and huge choruses. Pop, R&B and hip-hop draw more.',g:['pop','soul','hiphop']},
-  family:{n:'Family festival',d:'Kids go free, the crowd is kinder. Better mood and fewer incidents, but the bars take less.',g:['folk','pop','jazz'],bar:.85,mood:3,inc:.7},
+  rave:{n:'Rave weekend',d:'Big rigs and late nights. Electronic, hip-hop and Afrobeats draw more, the bars take 15% more, the neighbours complain more.',g:['electronic','hiphop','afro'],bar:1.15,noise:1.2},
+  pop:{n:'Pop party',d:'Glitter, singalongs and huge choruses. Pop, R&B, hip-hop, Latin and K-pop draw more.',g:['pop','soul','hiphop','latin','kpop']},
+  family:{n:'Family festival',d:'Kids go free, the crowd is kinder. Better mood and fewer incidents, but the bars take less.',g:['folk','pop','jazz','country'],bar:.85,mood:3,inc:.7},
   eco:{n:'Eco festival',d:'Solar stages and no single-use plastic. Credibility, greener reviews and cheaper green power.',g:['folk','indie','jazz'],cred:6}};
 const identOf=s=>IDENT[s.identity]||null;
 function identGenre(s,a){const I=identOf(s);return I&&I.g.includes(a.genre)?1.15:1}
@@ -2557,7 +2772,7 @@ const UN_B=['Harbours','Lanterns','Pylons','Magpies','Kites','Moths','Bonfires',
 const UN_F=['Mara','Jonah','Elsie','Ines','Kofi','Rosa','Callum','Nadia','Felix','Juno','Arlo','Priya','Esme','Wren','Noor','Ezra'];
 const UN_L=['Quill','Vale','Marrow','Ashby','Calloway','Okafor','Hart','Doyle','Fenwick','Holloway','Pryce','Larkin','Mensah','Rooke','Finch'];
 function unsignedName(used){for(let t=0;t<30;t++){const n=chance(.5)?pick(UN_A)+' '+pick(UN_B):pick(UN_F)+' '+pick(UN_L);if(!used.has(n))return n}return 'Demo '+ri(10,99)}
-function discoveryDemos(s){const used=new Set(s.acts.map(a=>a.name));s.demos=[];for(let i=0;i<6;i++){const g=pick(GKEYS);const pot=Math.round(clamp(20+Math.pow(Math.random(),1.6)*78,20,95));
+function discoveryDemos(s){const used=new Set(s.acts.map(a=>a.name));s.demos=[];for(let i=0;i<6;i++){const g=pick(GKEYS.filter(k=>k!=='kpop'));const pot=Math.round(clamp(20+Math.pow(Math.random(),1.6)*78,20,95));
     s.demos.push({id:'u'+uid(),name:unsignedName(used),genre:g,pot,city:pick(['Leeds','Glasgow','Bristol','Cardiff','Belfast','Brighton','Manchester','Margate','Peckham','Sheffield','Hull','Norwich']),hint:pot>70?pick(['Their demo has 40,000 plays and no label yet','Two A&Rs were at their last gig','Everyone at the open mic stopped talking']):pot>45?pick(['Tight live band, a couple of good songs','A local radio DJ keeps playing them']):pick(['Lots of heart','Their mum runs the fan page'])})}}
 function discStage(s){return s.pl.find(p=>p.t==='disc')}
 function bookDemo(s,id){const d=(s.demos||[]).find(x=>x.id===id);const st=discStage(s);if(!d||!st)return 'Build a Discovery stage first.';
@@ -3906,7 +4121,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
-const APP_VER='202610310500';
+const APP_VER='202610310700';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
@@ -4105,7 +4320,7 @@ const _marketSheet=marketSheet;marketSheet=function(o){const h=_marketSheet(o).r
   const box='<label class="field" style="margin-bottom:10px"><span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search acts</span><input class="input" type="search" data-in="msearch" placeholder="Search '+fmtN(S.acts.length)+' acts by name" value="'+esc(UI.mkt.q||'')+'" autocomplete="off" spellcheck="false" enterkeyhint="search"></label>';
   return i<0?box+h:h.slice(0,i)+box+h.slice(i)};
 document.addEventListener('input',e=>{if(!e.target.dataset||e.target.dataset.in!=='msearch')return;UI.mkt.q=e.target.value;if(typeof UI.sheet!=='function')return;const tmp=document.createElement('div');tmp.innerHTML=UI.sheet();const nl=tmp.querySelector('#mktlist'),ol=document.getElementById('mktlist');if(nl&&ol)ol.innerHTML=nl.innerHTML});
-const _migrateA=migrate;migrate=function(s){s=_migrateA(s);if(s.acts){const have=new Set(s.acts.map(a=>a.id));for(const a of genActs())if(!have.has(a.id))s.acts.push(a)}return s};
+const _migrateA=migrate;migrate=function(s){s=_migrateA(s);if(s.acts){const have=new Set(s.acts.map(a=>a.id));const base=new Map();for(const a of genActs()){base.set(a.id,a);if(!have.has(a.id))s.acts.push(a)}for(const a of s.acts){const b=base.get(a.id);if(b&&(b.genre!==a.genre||b.home!==a.home)){a.genre=b.genre;a.home=b.home}}}return s};
 /* ---------- rename the festival: two changes per festival year ---------- */
 const renamesLeft=s=>2-((s.renames&&s.renames.y===s.year)?s.renames.n:0);
 function renameSheet(){const n=renamesLeft(S);return '<h2>Rename festival</h2><p class="sub">'+(n?'You can change the name '+n+' more time'+(n>1?'s':'')+' this year. Your social handle changes with it.':'You’ve used both name changes for '+(START_YEAR+S.year-1)+'. You get two more next year.')+'</p>'+
@@ -4117,6 +4332,7 @@ Object.assign(ACT,{
   renamego(){if(!S||renamesLeft(S)<=0)return;const v=(($('#rname')||{}).value||'').trim().replace(/\s+/g,' ').slice(0,28);if(!v){toast('Pick a name first.');return}if(v===S.name){closeSheet();return}
     const old=S.name;S.name=v;S.renames={y:S.year,n:(S.renames&&S.renames.y===S.year?S.renames.n:0)+1};addNews(S,old+' is now '+v+'.','book');UI.sheet=null;save();render();toast('You’re now '+v+'. '+(renamesLeft(S)?'One more change left this year.':'No more changes this year.'))}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='rname'){e.preventDefault();ACT.renamego()}});
+const _renderSheetC=renderSheet;renderSheet=function(){_renderSheetC();document.querySelectorAll('#layer .chips').forEach(r=>{const c=r.querySelector('[aria-pressed="true"]');if(c&&r.scrollWidth>r.clientWidth)r.scrollLeft=Math.max(0,c.offsetLeft-r.offsetLeft-16)})};
 window.FT={get S(){return S},set S(v){S=v},UI,analyse,render,ACT,get liveStep(){return liveStep},G3,sagChecks,projection,STEPS};
 (function boot(){render()})();
 </script>
