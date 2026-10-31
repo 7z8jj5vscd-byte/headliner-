@@ -2709,13 +2709,13 @@ function pools(s,announced){
   const site=SITES[s.site],{m}=demandMods(s);const L=announced?lineupStrength(s):lineupStrength(s)*.25;
   const repBase=300*s.rep+Math.max(3000,s.lic.cap*.1);
   const pool=(repBase+.33*L)*m;const P=refPrice(s);
-  const days=[0,1,2].map(d=>((repBase*.35)+.3*(announced?lineupStrength(s,d):0))*m*(site.camping?.6:.9));
+  const days=dayRange(s).map(d=>((repBase*.35)+.3*(announced?lineupStrength(s,d):0))*m*(site.camping?.6:.9));
   return {pool,P,days}}
 const willWk=(s,pl,p)=>pl.pool*Math.min(1.5,Math.pow(pl.P/p,2.2));
 const willDay=(s,pl,d,p)=>pl.days[d]*Math.min(1.5,Math.pow(pl.P*.47/p,2));
 function capWeekend(s){return Math.max(0,s.lic.cap-(s.tix.day.a||0))}
 function curTier(s){const sl=s.sales;let used=0;for(const t of s.tix.wk){if(sl.tier[t.k]<t.a)return t;used+=t.a}return s.tix.wk[s.tix.wk.length-1]}
-function newSales(){return{wkSold:0,vipSold:0,daySold:[0,0,0],tier:{early:0,t1:0,t2:0,final:0},rev:0,revDay:0,revVip:0,glamp:0,vans:0,touts:0,weeks:[],soldOut:null,resale:0,announced:false}}
+function newSales(){return{wkSold:0,vipSold:0,daySold:[0,0,0,0,0,0,0],tier:{early:0,t1:0,t2:0,final:0},rev:0,revDay:0,revVip:0,glamp:0,vans:0,touts:0,weeks:[],soldOut:null,resale:0,announced:false}}
 const SALE_CURVE=[.32,.14,.1,.08,.07,.07,.07,.08,.1,.12,.15,.22];
 function sellWeek(s,w,early){
   const sl=s.sales||(s.sales=newSales());const A=analyse(s);
@@ -2729,7 +2729,7 @@ function sellWeek(s,w,early){
   // VIP
   let vipN=0;if(!early&&A.vipCap>0){const wv=.075*pl.pool*Math.pow(pl.P*2.3/s.tix.vip.p,2);vipN=Math.floor(Math.max(0,Math.min(wv-sl.vipSold,A.vipCap-sl.vipSold,s.lic.cap-sl.wkSold-sl.vipSold-Math.max(...sl.daySold)))*rate*1.1);sl.vipSold+=vipN;sl.revVip+=vipN*s.tix.vip.p}
   // day tickets
-  let dayN=0,dayRev=0;if(!early){for(let d=0;d<3;d++){const cap=Math.min(s.tix.day.a,s.lic.cap-sl.wkSold-sl.vipSold);const want=Math.max(0,willDay(s,pl,d,s.tix.day.p)-sl.daySold[d])*rate;const n=Math.floor(Math.max(0,Math.min(want,cap-sl.daySold[d])));sl.daySold[d]+=n;dayN+=n;dayRev+=n*s.tix.day.p}sl.revDay+=dayRev}
+  let dayN=0,dayRev=0;if(!early){for(let d=0;d<nDays(s);d++){const cap=Math.min(s.tix.day.a,s.lic.cap-sl.wkSold-sl.vipSold);const want=Math.max(0,willDay(s,pl,d,s.tix.day.p)-sl.daySold[d])*rate;const n=Math.floor(Math.max(0,Math.min(want,cap-sl.daySold[d])));sl.daySold[d]+=n;dayN+=n;dayRev+=n*s.tix.day.p}sl.revDay+=dayRev}
   // add-ons
   if(!early){const gw=Math.min(A.glampCap-sl.glamp,Math.floor((sl.wkSold*.018*Math.pow(420/s.tix.glamp.p,1.5)-sl.glamp)*.5));if(gw>0)sl.glamp+=gw;const vw=Math.min(A.vanCap-sl.vans,Math.floor((sl.wkSold*.03*Math.pow(95/s.tix.vans.p,1.5)-sl.vans)*.5));if(vw>0)sl.vans+=vw}
   sl.rev+=revW;
@@ -2751,14 +2751,14 @@ function needSec(s){return Math.ceil(attendancePlan(s).peak/100)}
 function syncStaff(s){if(s.ops.autoStaff!==false){s.ops.sec=needSec(s);s.ops.stew=needStew(s)}}
 function needStew(s){return Math.ceil(attendancePlan(s).peak/250)}
 function opsAuto(s){if(!s.ops.sec)s.ops.sec=needSec(s);if(!s.ops.stew)s.ops.stew=needStew(s)}
-function attendancePlan(s){const sl=s.sales;if(sl&&sl.wkSold)return{wk:sl.wkSold+sl.vipSold,day:sl.daySold.slice(),peak:sl.wkSold+sl.vipSold+Math.max(...sl.daySold)};const c=s.lic.cap;const day=Math.round(s.tix.day.a*.8);const wk=Math.round(capWeekend(s)*.85);return{wk,day:[day,day,day],peak:wk+day}}
+function attendancePlan(s){const sl=s.sales;if(sl&&sl.wkSold)return{wk:sl.wkSold+sl.vipSold,day:sl.daySold.slice(),peak:sl.wkSold+sl.vipSold+Math.max(...sl.daySold)};const c=s.lic.cap;const day=Math.round(s.tix.day.a*.8);const wk=Math.round(capWeekend(s)*.85);return{wk,day:[0,1,2,3,4,5,6].map(i=>i<nDays(s)?day:0),peak:wk+day}}
 function costLines(s,act0){
   if(!act0)syncStaff(s);
   const A=analyse(s),att=attendancePlan(s),N=att.peak,y=s.year,infl=Math.pow(1.03,y-1);
   const L=[];const cm=SITES[s.site].costMul||1,dc=DF(s).cost;const add=(g,k,v,n)=>L.push({g,k,v:Math.round((['Site','Staff','Licensing'].includes(g)&&k!=='Land rent'?v*cm:v)*(g==='Talent'||g==='Finance'||g==='Weekend'?1:dc)),n});
   const fees=signed(s).reduce((a,b)=>a+b.fee,0);
   add('Talent','Artist fees',fees,signed(s).length+' acts');
-  if(!act0&&(s.phase==='booking'||s.phase==='onsale')){let est=0,n=0;for(const p of stagesOf(s))for(const d of activeDays(s))SLOTS[p.t].forEach((sd,i)=>{if(!slotAt(s,p.id,d,i)){est+=feeOf({fame:(sd[3][0]+sd[3][1])/2-4,genre:'indie',home:'UK'},s);n++}});if(n)add('Talent','Open slots (estimate)',est,n+' slots still to book')}
+  if(!act0&&(s.phase==='booking'||s.phase==='onsale')){let est=0,n=0;for(const p of stagesOf(s))for(const d of dayRange(s))SLOTS[p.t].forEach((sd,i)=>{if(!slotAt(s,p.id,d,i)){est+=feeOf({fame:(sd[3][0]+sd[3][1])/2-4,genre:'indie',home:'UK'},s);n++}});if(n)add('Talent','Open slots (estimate)',est,n+' slots still to book')}
   add('Talent','Riders, hospitality & backline',signed(s).reduce((a,b)=>a+b.fee*.08+1500+300*act(b.actId).size,0));
   if(s.ledger['Kill fees'])add('Talent','Kill fees',-s.ledger['Kill fees']);
   if(s.ledger['Artist requests'])add('Talent','Artist requests',-s.ledger['Artist requests']);
@@ -2796,7 +2796,7 @@ function costLines(s,act0){
   return L}
 function revenueLines(s,act0){
   const A=analyse(s),att=attendancePlan(s),sl=s.sales;const L=[];const add=(g,k,v,n)=>L.push({g,k,v:Math.round(v),n});
-  const tick=sl?sl.rev+sl.revDay+sl.revVip:capWeekend(s)*.85*165+s.tix.day.a*.8*3*s.tix.day.p;
+  const tick=sl?sl.rev+sl.revDay+sl.revVip:capWeekend(s)*.85*165+s.tix.day.a*.8*nDays(s)*s.tix.day.p;
   add('Tickets','Tickets (net of 20% VAT)',tick/1.2,sl?fmtN(sl.wkSold+sl.vipSold)+' weekend · '+fmtN(sl.daySold.reduce((a,v)=>a+v,0))+' day':'Projected');
   if(sl&&(sl.glamp||sl.vans))add('Tickets','Glamping & campervans',(sl.glamp*s.tix.glamp.p+sl.vans*s.tix.vans.p)/1.2);
   const days=att.wk*nDays(s)+att.day.reduce((a,v)=>a+v,0);
@@ -2890,7 +2890,7 @@ function startBuild(s){s.phase='build';opsAuto(s);
   s.forecast=makeForecast(s);buildExtras(s);
   addNews(s,'Build week. Trucks, trackway and 4 km of fencing arrive on site. The safety advisory group inspects on Thursday.','build');save()}
 const WX=[{k:'hot',n:'Heatwave',t:[29,34],rain:0,wind:[2,6],p:.17},{k:'sun',n:'Sunny',t:[22,27],rain:0,wind:[2,7],p:.3},{k:'mixed',n:'Sunny spells, showers',t:[18,23],rain:1.2,wind:[4,10],p:.26},{k:'wet',n:'Heavy rain',t:[14,18],rain:4.5,wind:[6,13],p:.17},{k:'storm',n:'Thunderstorms, gales',t:[17,22],rain:6,wind:[7,13],p:.1}];
-function makeForecast(s){return [0,1,2].map(()=>{let r=Math.random(),w=WX[0];for(const x of WX){if(r<x.p){w=x;break}r-=x.p}const conf=ri(45,80);return{k:w.k,conf}})}
+function makeForecast(s){return dayRange(s).map(()=>{let r=Math.random(),w=WX[0];for(const x of WX){if(r<x.p){w=x;break}r-=x.p}const conf=ri(45,80);return{k:w.k,conf}})}
 function actualWeather(s){return s.forecast.map(f=>{if(chance(f.conf/100))return f.k;const i=WX.findIndex(w=>w.k===f.k);const j=clamp(i+(chance(.5)?1:-1),0,WX.length-1);return WX[j].k})}
 function sagChecks(s){
   syncStaff(s);
@@ -3002,12 +3002,12 @@ function creditLimit(s){const rev=s.hist.length?s.hist[s.hist.length-1].rev:1.8e
 /* ============================================================
    The weekend, hour by hour
    ============================================================ */
-function liveSteps(){const out=[];for(let d=0;d<3;d++){for(let h=11;h<=23;h++)out.push({d,h});if(d<2)out.push({d,h:24})}return out}
+function liveSteps(n){n=n||3;const out=[];for(let d=0;d<n;d++){for(let h=11;h<=23;h++)out.push({d,h});if(d<n-1)out.push({d,h:24})}return out}
 const STEPS=liveSteps();
 function openGates(s){
   const A=analyse(s),att=attendancePlan(s);prePay(s);
   const wx=actualWeather(s);
-  s.live={i:0,wx,windFrom:pick(['west','south-west','south','north']),onsite:0,queue:0,gateWait:0,arrived:0,dayIn:[0,0,0],
+  s.live={i:0,wx,windFrom:pick(['west','south-west','south','north']),onsite:0,queue:0,gateWait:0,arrived:0,dayIn:[0,0,0,0,0,0,0],
     mood:62+A.vibe+PROD[s.ops.prod].vibe,moodSum:0,moodN:0,moodAvg:60,mud:0,bar:0,food:0,barQ:0,qN:0,queue2:0,lostLoo:0,
     pres:0,serious:0,complaints:0,overNoise:0,curfewBreach:0,perf:0,perfN:0,best:null,bestScore:-9,
     log:[],dec:null,extra:{},inc:{},contUsed:0,stopped:{},viral:'',disaster:'',moment:'',firstCredit:0,
@@ -3015,7 +3015,7 @@ function openGates(s){
     done:false,speed:1,dist:null,cur:null,usedEv:{},hourBar:[],medCap:0,sold:att};
   s.phase='live';s.live.mud=(s.scar||0)*.5;s.live.areaMood=s.pl.reduce((a,p)=>a+(B[p.t].mood||0),0)+((identOf(s)||{}).mood||0)+barMods(s).mood;
   if(s.scar>15)logL(s,'The fields still haven’t recovered from last year. It’s muddy before it’s even rained.','warn');
-  logL(s,'Gates open on '+s.name+'. '+fmtN(att.wk)+(nDays(s)===1?' ticket holders':' weekend and '+fmtN(att.day[firstDay(s)])+' '+DAYL[firstDay(s)]+' ticket holders')+' expected.','start');
+  logL(s,'Gates open on '+s.name+'. '+fmtN(att.wk)+' weekend and '+fmtN(att.day[0])+' '+DAYL[0]+' ticket holders expected.','start');
   const wf=WX.find(w=>w.k===wx[0]);logL(s,'Weather today: '+wf.n.toLowerCase()+'.','wx');
   save()}
 function logL(s,t,k){const L=s.live;const st=STEPS[Math.min(L.i,STEPS.length-1)];L.log.unshift({t:DAYS[st.d]+' '+(st.h>=24?'night':hhmm(st.h)),x:t,k:k||''});if(L.log.length>120)L.log.length=120}
@@ -3112,7 +3112,7 @@ function liveStep(s){
   const wxm=wx.k==='sun'?6:wx.k==='hot'?(L.heatAid?4:-2):wx.k==='mixed'?0:wx.k==='wet'?-9:-13;
   const target=58+A.vibe+PROD[s.ops.prod].vibe+wxm+L.perf*10-Math.max(0,bq-1)*10-Math.max(0,fq-1)*5-Math.max(0,loo-1)*9-L.mud*.14-Math.min(20,wait*6)-crowd*14-(A.campNearStage&&h<13?2:0)+(L.boost||0)+(L.areaMood||0);
   L.mood=clamp(L.mood*.75+target*.25,0,100);L.moodSum+=L.mood;L.moodN++;L.moodAvg=L.moodSum/L.moodN;
-  if(h===16&&d===1&&L.mood>75)L.moment=L.moment||'Saturday afternoon in the sun with '+fmtN(N)+' people';
+  if(h===16&&d===satIdx(s)&&L.mood>75)L.moment=L.moment||'Saturday afternoon in the sun with '+fmtN(N)+' people';
   for(const k in L.stopped){if(--L.stopped[k]<=0)delete L.stopped[k]}
   if(!pend&&chance(.45)){const x=play.find(x=>L.played[x.b.id]!=null);fanPost(s,{wx,bq,loo,act:x&&x.a.name,perf:x?L.played[x.b.id]:0})}
   if(pend)ask(s,pend);else advance(s)}
@@ -3179,7 +3179,7 @@ function randomEvent(s,A,d,h,wx){const L=s.live;const N=L.onsite;
   const pool=[];
   if(!L.usedEv.drugs&&h>=18)pool.push('drugs');
   if(!L.usedEv.fence&&(L.gateWait>1||chance(.4))&&h>=16)pool.push('fence');
-  if(!L.usedEv.secret&&d===1&&h>=13&&h<=16)pool.push('secret');
+  if(!L.usedEv.secret&&d===satIdx(s)&&h>=13&&h<=16)pool.push('secret');
   if(!L.usedEv.power&&h>=15)pool.push('power');
   if(!L.usedEv.beer&&s.ops.stock!=='high'&&(wx.temp>24||(s.ops.stock==='low'&&wx.temp>18))&&h>=15)pool.push('beer');if(s.ops.stock==='low'&&!L.usedEv.beer&&wx.temp>22&&h>=15)pool.push('beer','beer');
   if(!L.usedEv.celeb)pool.push('celeb');
@@ -3274,12 +3274,12 @@ function riderAnswer(s,id,yes){const q=(s.requests||[]).find(x=>x.id===id);if(!q
     toast(a.name+' are happy. Their agent owes you one.')}
   else{s.agRel[a.ag]=clamp((s.agRel[a.ag]||50)-Math.ceil(q.rel/2),0,100);if(chance(.12)){addNews(s,a.name+' posted a sulky story about '+s.name+'’s hospitality.','rider');s.hype=clamp(s.hype-2,0,100)}toast('Request declined.')}}
 /* ---------- line-up poster ---------- */
-function posterSheet(){const st=stagesOf(S);const y=START_YEAR+S.year-1;const days=[0,1,2].map(d=>{const acts=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);if(b&&b.st==='signed')acts.push({a:act(b.actId),w:(isMain(p.t)?10:p.t==='tent'?6:p.t==='dance'?5:3)-i})});return acts.sort((a,b)=>b.w-a.w)});
+function posterSheet(){const st=stagesOf(S);const y=START_YEAR+S.year-1;const days=dayRange(S).map(d=>{const acts=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);if(b&&b.st==='signed')acts.push({a:act(b.actId),w:(isMain(p.t)?10:p.t==='tent'?6:p.t==='dance'?5:3)-i})});return acts.sort((a,b)=>b.w-a.w)});
   const sz=w=>w>=10?26:w>=9?19:w>=7?15:w>=5?13:11;
   const col=['#c6f24e','#ff8fc6','#5ec4e8'];
   return '<div style="background:#0b0f08;border-radius:18px;padding:22px 18px;text-align:center;margin-bottom:12px" role="img" aria-label="Line-up poster">'+
     '<div style="font-size:12px;letter-spacing:.2em;color:#b4b4b4">'+esc(SITES[S.site].n.toUpperCase())+' · AUGUST '+y+'</div><div style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin:6px 0 16px;color:#fff">'+esc(S.name)+'</div>'+
-    days.map((acts,d)=>'<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:'+col[d]+';margin-bottom:6px">'+DAYL[d].toUpperCase()+'</div>'+(acts.length?acts.map((x,i)=>'<span style="display:inline-block;font-size:'+sz(x.w)+'px;font-weight:'+(x.w>=9?600:500)+';color:'+(x.w>=9?'#fff':'#d8d8d8')+';margin:0 6px;line-height:1.35">'+esc(x.a.name)+'</span>'+(i<acts.length-1&&x.w<9?'<span style="color:#555">·</span>':'')).join(''):'<span class="faint small">To be announced</span>')+'</div>').join('')+
+    days.map((acts,d)=>'<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:'+col[d%3]+';margin-bottom:6px">'+DAYL[d].toUpperCase()+'</div>'+(acts.length?acts.map((x,i)=>'<span style="display:inline-block;font-size:'+sz(x.w)+'px;font-weight:'+(x.w>=9?600:500)+';color:'+(x.w>=9?'#fff':'#d8d8d8')+';margin:0 6px;line-height:1.35">'+esc(x.a.name)+'</span>'+(i<acts.length-1&&x.w<9?'<span style="color:#555">·</span>':'')).join(''):'<span class="faint small">To be announced</span>')+'</div>').join('')+
     '<div style="font-size:11px;color:#949494;margin-top:6px">'+fmtN(S.lic.cap)+' capacity · '+(SITES[S.site].camping?'camping weekend':'day tickets')+'</div></div><p class="small faint" style="text-align:center;margin-bottom:12px">Screenshot it and share your bill.</p><button class="btn ghost wide" data-a="closesheet">Close</button>'}
 /* ---------- the ticket drop ---------- */
 function dropSheet(){const D=UI.drop;if(!D)return '';const pctSold=Math.min(1,D.shown/Math.max(1,D.total));
@@ -3407,14 +3407,14 @@ function discoveryDemos(s){const used=new Set(s.acts.map(a=>a.name));s.demos=[];
     s.demos.push({id:'u'+uid(),name:unsignedName(used),genre:g,pot,city:pick(['Leeds','Glasgow','Bristol','Cardiff','Belfast','Brighton','Manchester','Margate','Peckham','Sheffield','Hull','Norwich']),hint:pot>70?pick(['Their demo has 40,000 plays and no label yet','Two A&Rs were at their last gig','Everyone at the open mic stopped talking']):pot>45?pick(['Tight live band, a couple of good songs','A local radio DJ keeps playing them']):pick(['Lots of heart','Their mum runs the fan page'])})}}
 function discStage(s){return s.pl.find(p=>p.t==='disc')}
 function bookDemo(s,id){const d=(s.demos||[]).find(x=>x.id===id);const st=discStage(s);if(!d||!st)return 'Build a Discovery stage first.';
-  for(let day=0;day<3;day++)for(let i=0;i<SLOTS.disc.length;i++){if(slotAt(s,st.id,day,i))continue;
+  for(let day=0;day<nDays(s);day++)for(let i=0;i<SLOTS.disc.length;i++){if(slotAt(s,st.id,day,i))continue;
     const a={id:d.id,name:d.name,genre:d.genre,fame:ri(2,9),pot:d.pot,mom:d.pot>65?rnd(6,10):rnd(1,4),live:clamp(Math.round(50+d.pot*.4+rnd(-8,8)),40,95),rel:.97,diva:0,age:0,ag:pick(AGENCIES).k,agent:'(unsigned)',home:'UK',size:pick([3,4,5]),tour:0,hist:[2],first:s.year,unsigned:1,disc:s.year};
     s.acts.push(a);const b={id:uid(),actId:a.id,stage:st.id,day,slot:i,fee:300,excl:false,opt:false,st:'signed',ask:300,r:s.round,dep:300};s.bk.push(b);cash(s,-300);s.demos=s.demos.filter(x=>x.id!==id);
     return a.name+' will open the Discovery stage on '+DAYL[day]+'.'}
   return 'The Discovery stage is full.'}
 
 /* ---------- clashes and moving sets ---------- */
-function clashes(s){const out=[];const st=stagesOf(s);for(let d=0;d<3;d++){const sets=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(s,p.id,d,i);if(!b||b.st!=='signed')return;const a=act(b.actId);if(a.fame<58)return;const t=slotTime(s,p,i,d);sets.push({b,a,p,t,en:t+sd[1]})});
+function clashes(s){const out=[];const st=stagesOf(s);for(let d=0;d<nDays(s);d++){const sets=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(s,p.id,d,i);if(!b||b.st!=='signed')return;const a=act(b.actId);if(a.fame<58)return;const t=slotTime(s,p,i,d);sets.push({b,a,p,t,en:t+sd[1]})});
   for(let i=0;i<sets.length;i++)for(let j=i+1;j<sets.length;j++){const x=sets[i],y=sets[j];if(x.p===y.p)continue;const ov=Math.min(x.en,y.en)-Math.max(x.t,y.t);if(ov>=.5)out.push({d,x,y})}}return out}
 function freeSlots(s,day){const out=[];for(const p of stagesOf(s))SLOTS[p.t].forEach((sd,i)=>{if(!slotAt(s,p.id,day,i))out.push({p,i,t:slotTime(s,p,i,day)})});return out}
 function moveSet(s,bid,stageId,slot){const b=s.bk.find(x=>x.id===bid);const p=s.pl.find(q=>q.id===stageId);if(!b||!p||slotAt(s,stageId,b.day,slot))return;const a=act(b.actId);
@@ -3436,7 +3436,7 @@ function liveExtras(s,ctx){const L=s.live,{A,d,h,wx,play,P}=ctx;const I=identOf(
   // encore
   const cur=s.lic.curfew[d];for(const x of play){if(x.slot===0&&isMain(x.p.t)&&!L.usedEv['enc'+d]&&!L.usedEv['cur'+d]&&h===Math.floor(x.en-.01)&&x.en<=cur+.01){L.usedEv['enc'+d]=1;P(DEC.encore(s,x,cur))}}
   // landmark ritual on the last night
-  const lm=s.pl.find(p=>p.t==='landmark');if(lm&&d===2&&h===21&&!L.usedEv.lm){L.usedEv.lm=1;const k=LANDMARKS[(lm.k||0)%LANDMARKS.length];L.boost=(L.boost||0)+5;logL(s,k.ritual,'good');if(!L.viral&&chance(.3)){L.viral='The '+k.n+' '+k.verb+' went viral ('+ri(5,20)+'m views)';L.moment=L.viral}g3burst('fire',lm)}
+  const lm=s.pl.find(p=>p.t==='landmark');if(lm&&d===lastDay(s)&&h===21&&!L.usedEv.lm){L.usedEv.lm=1;const k=LANDMARKS[(lm.k||0)%LANDMARKS.length];L.boost=(L.boost||0)+5;logL(s,k.ritual,'good');if(!L.viral&&chance(.3)){L.viral='The '+k.n+' '+k.verb+' went viral ('+ri(5,20)+'m views)';L.moment=L.viral}g3burst('fire',lm)}
   // the regulars
   if(chance(.3))regularPost(s,ctx);
   if(UI.follow!=null)followLine(s,ctx)}
@@ -3492,7 +3492,7 @@ function docResult(s,w){if(!s.doc||s.doc.y!==s.year)return null;const good=w.rec
   if(good){s.hype=clamp(s.hype+12,0,100);s.rep=clamp(s.rep+2,1,100)}else if(bad){s.hype=clamp(s.hype+15,0,100);s.rep=clamp(s.rep-3,1,100)}else s.hype=clamp(s.hype+5,0,100);
   s.flags.docs=(s.flags.docs||0)+1;return {title,tone:good?'a love letter':bad?'a cult disaster classic':'a quiet hit'}}
 CARD_FX.reunion=(s,v,c)=>{if(v!=='yes')return 'Maybe they’ll call again.';const a=act(c.ref);const main=stagesOf(s).find(p=>isMain(p.t));if(!main)return 'You need a main stage.';
-  let day=[0,1,2].find(d=>!slotAt(s,main.id,d,0));if(day==null)return 'Free up a headline slot first, then ask again.';
+  let day=dayRange(s).find(d=>!slotAt(s,main.id,d,0));if(day==null)return 'Free up a headline slot first, then ask again.';
   const fee=Math.round(feeOf(a,s)*1.8/1000)*1000;const b={id:uid(),actId:a.id,stage:main.id,day,slot:0,fee,excl:true,opt:false,st:'pending',ask:fee,r:s.round};s.bk.push(b);signAct(s,b,a);a.hiatus=0;s.hype=clamp(s.hype+25,0,100);
   addNews(s,'REUNION: '+a.name+' will play their only show of the year at '+s.name+'. The internet melts.','book');return a.name+' signed for '+fmt$(fee)+'!'};
 function reunionRumour(s){if(s.flags.reunionY===s.year||chance(.55))return;const c=s.acts.filter(a=>(a.hiatusRisk||a.hiatus)&&a.fame>=78&&!bkOf(s,a.id)&&!rivalHas(s,a.id)).sort(()=>Math.random()-.5)[0];if(!c)return;s.flags.reunionY=s.year;
@@ -3711,9 +3711,9 @@ STORY.splice(STORY.findIndex(x=>x.id==='finale')+1,0,
     {l:'Send a card',fx:s=>{}}]},
  {id:'storm9',ch:9,who:'glen',when:s=>P2(s)&&s.year>=9&&s.phase==='build'&&!!s.forecast,title:'Chapter 9: The storm',
   text:s=>'Glen Pike, older now and still in the same hi-vis vest, calls with the Met Office warning: a named storm, due to arrive on Saturday afternoon. Winds of fifty miles an hour.\n\n“I’m not telling you to cancel,” he says. “I’m telling you I’ll be there.”',
-  choices:[{l:'Storm-proof everything',d:'About '+'£150k: extra ballast, wind walls, a second power grid. Saturday becomes heavy rain',fx:s=>{const c=Math.round(150000*Math.sqrt(scaleOf(s)));cash(s,-c);ledger(s,'Storm-proofing',-c);s.forecast[1]={k:'wet',conf:92}}},
-    {l:'Buy weather insurance and hope',d:'Cancellation cover is on. The storm is still coming',fx:s=>{s.ops.ins.cancel=true;s.forecast[1]={k:'storm',conf:95}}},
-    {l:'Carry on as planned',d:'It might miss us',fx:s=>{s.forecast[1]={k:'storm',conf:70}}}]},
+  choices:[{l:'Storm-proof everything',d:'About '+'£150k: extra ballast, wind walls, a second power grid. Saturday becomes heavy rain',fx:s=>{const c=Math.round(150000*Math.sqrt(scaleOf(s)));cash(s,-c);ledger(s,'Storm-proofing',-c);s.forecast[satIdx(s)]={k:'wet',conf:92}}},
+    {l:'Buy weather insurance and hope',d:'Cancellation cover is on. The storm is still coming',fx:s=>{s.ops.ins.cancel=true;s.forecast[satIdx(s)]={k:'storm',conf:95}}},
+    {l:'Carry on as planned',d:'It might miss us',fx:s=>{s.forecast[satIdx(s)]={k:'storm',conf:70}}}]},
  {id:'finale2',ch:10,who:'jess',when:s=>P2(s)&&s.year>=10&&s.phase==='wrap',title:'Chapter 10: Ten summers',
   text:s=>{const g=SF(s).p2goal,ok=p2Done(s);const v=(SF(s).venues||[s.site]).map(k=>SITES[k].n);
     const goal={rank:ok?'You are one of the five best festivals in the world. Priya’s documentary gets a sequel.':'The top five stayed just out of reach. You are still on the list everyone reads.',love:ok?'Four stars, five years running. People propose in your fields.':'Not every year was a four-star year. Every year was yours.',empire:ok?'Two festivals, fifty thousand people in a weekend, and a brand on a million wristbands.':'The empire is smaller than the plan. It is still an empire.'}[g]||'Ten summers.';
@@ -3897,9 +3897,9 @@ const _liveStep=liveStep;liveStep=function(s){const L=s.live;if(!L||L.done||L.de
   if(L.dec||L.done||L.i!==i0+1||!legacy().mg)return;L.mg=L.mg||{};
   if(crewLvl(s,'site'))L.mud=Math.max(0,L.mud-.25*crewLvl(s,'site'));
   let dec=null;
-  const hb=L.mg['mixd'+st.d]?null:signed(s).find(b=>b.day===st.d&&b.slot===0&&isMain(stageType(s,b.stage))&&L.played[b.id]!=null&&L.mg['mix'+b.id]==null);
+  const hb=L.mg['mixd'+st.d]||st.d<nDays(s)-3?null:signed(s).find(b=>b.day===st.d&&b.slot===0&&isMain(stageType(s,b.stage))&&L.played[b.id]!=null&&L.mg['mix'+b.id]==null);
   if(hb){dec=miniDec(s,'mix',hb.id);L.mg['mixd'+st.d]=1}
-  else if(st.d===1&&st.h>=19&&st.h<=22&&L.mg.surge==null&&L.onsite>500)dec=miniDec(s,'surge','');
+  else if(st.d===satIdx(s)&&st.h>=19&&st.h<=22&&L.mg.surge==null&&L.onsite>500)dec=miniDec(s,'surge','');
   else if(st.d===lastDay(s)&&st.h>=21&&st.h<=23&&L.mg.pyro==null)dec=miniDec(s,'pyro','');
   if(dec){if(dec.mini==='mix'){const a=act(hb.actId);dec.x=a.name+' just walked on. '+dec.x.split('. ').slice(1).join('. ')}L.i=i0;ask(s,dec)}};
 /* decisions keep their effects as functions, which a save can't hold: rebuild safe ones after a reload */
@@ -3942,22 +3942,26 @@ TROPHIES.push(['rank10','World top ten','Reach the top ten of the World Festival
    pop-culture moments and more things happening on site
    ============================================================ */
 
-/* ---------- festival length: 1, 2 or 3 days ---------- */
-const nDays=s=>(s&&s.days)||3;
-const activeDays=s=>nDays(s)===3?[0,1,2]:nDays(s)===2?[1,2]:[1];
-const isActiveDay=(s,d)=>activeDays(s).includes(d);
-const firstDay=s=>activeDays(s)[0];
-const lastDay=s=>{const a=activeDays(s);return a[a.length-1]};
-const LEN_PRICE={1:.45,2:.72,3:1};
-function setLength(s,n){const old=nDays(s);if(n===old)return '';const keep=new Set(nDays({days:n})===3?[0,1,2]:n===2?[1,2]:[1]);
-  const stuck=s.bk.filter(b=>['signed','pending','counter'].includes(b.st)&&!keep.has(b.day));if(stuck.length)return 'Move or drop the '+stuck.length+' act'+(stuck.length>1?'s':'')+' booked on '+[...new Set(stuck.map(b=>DAYL[b.day]))].join(' and ')+' first.';
-  const f=LEN_PRICE[n]/LEN_PRICE[old];for(const t of s.tix.wk)t.p=Math.round(t.p*f);s.tix.vip.p=Math.round(s.tix.vip.p*f);s.days=n;return ''}
-const _autofillPlanD=autofillPlan;autofillPlan=function(){return _autofillPlanD().filter(x=>isActiveDay(S,x.d))};
-const _poolsD=pools;pools=function(s,an){const r=_poolsD(s,an);if(nDays(s)<3){r.days=r.days.map((v,d)=>isActiveDay(s,d)?v:0);r.pool*=nDays(s)===2?.94:.86;r.P*=LEN_PRICE[nDays(s)]}return r};
-const _refPriceD=refPrice;refPrice=function(s){return _refPriceD(s)*LEN_PRICE[nDays(s)]};
-const _costLinesD=costLines;costLines=function(s,a0){const L=_costLinesD(s,a0);const n=nDays(s);if(n<3){const f=.45+.55*n/3;for(const l of L)if(l.g==='Staff'||l.g==='Production'||/^(Power|Waste|Riders)/.test(l.k))l.v=Math.round(l.v*f)}return L};
-const _liveStepD=liveStep;liveStep=function(s){const L=s.live;if(L&&!L.done&&!L.dec&&nDays(s)<3){while(L.i<STEPS.length&&!isActiveDay(s,STEPS[L.i].d))L.i++;if(L.i>=STEPS.length){finishWeekend(s);save();return}}return _liveStepD(s)};
-const _posterSheetD=posterSheet;posterSheet=function(){let h=_posterSheetD();if(nDays(S)<3)for(const d of [0,1,2])if(!isActiveDay(S,d))h=h.replace(new RegExp('<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:[^"]+;margin-bottom:6px">'+DAYL[d].toUpperCase()+'</div>.*?</div>(?=<div style="margin-bottom:16px">|<div style="font-size:11px)'),'');return h};
+/* ---------- festival length: 2 to 7 days, always ending on Sunday ---------- */
+const WEEK=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],WEEKL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const nDays=s=>clamp((s&&s.days)||3,2,7);
+const dayRange=s=>Array.from({length:nDays(s)},(_,i)=>i);
+const firstDay=s=>0,lastDay=s=>nDays(s)-1,satIdx=s=>nDays(s)-2;
+const LEN_PRICE=n=>n<=2?.72:1+.2*(n-3);
+let DAYS_N=3;
+function applyDays(s){const n=nDays(s);if(n!==DAYS_N||DAYS.length!==n){DAYS.length=0;DAYL.length=0;for(let i=7-n;i<7;i++){DAYS.push(WEEK[i]);DAYL.push(WEEKL[i])}const st=liveSteps(n);STEPS.length=0;for(const x of st)STEPS.push(x);DAYS_N=n}
+  if(s&&s.lic&&s.lic.curfew&&s.lic.curfew.length!==n){const c=s.lic.curfew,base=SITES[s.site].curfew;const sat=c.length>=2?c[c.length-2]:c[0],sun=c[c.length-1];const wk=c.length>=3?c[0]:sat+(base[0]-base[1]);s.lic.curfew=[...Array(Math.max(0,n-2)).fill(wk),sat,sun]}}
+function setLength(s,n){n=clamp(n,2,7);const old=nDays(s);if(n===old)return '';const sh=n-old;
+  const stuck=s.bk.filter(b=>['signed','pending','counter'].includes(b.st)&&b.day+sh<0);if(stuck.length)return 'Move or drop the '+stuck.length+' act'+(stuck.length>1?'s':'')+' booked on '+[...new Set(stuck.map(b=>DAYL[b.day]))].join(' and ')+' first.';
+  for(const b of s.bk)b.day=Math.max(0,b.day+sh);for(const e of s.events||[])if(e.d!=null)e.d=Math.max(0,e.d+sh);
+  const f=LEN_PRICE(n)/LEN_PRICE(old);for(const t of s.tix.wk)t.p=Math.round(t.p*f);s.tix.vip.p=Math.round(s.tix.vip.p*f);s.days=n;if(s.forecast)s.forecast=null;applyDays(s);return ''}
+/* saves from the short-lived 1-day option used day indexes 1 (Sat) and 2 (Sun) out of three */
+function migrateDays(s){if(s.dayV===2)return;if(s.days===1||s.days===2){const sh=s.days===1?-1:-1;for(const b of s.bk)b.day=Math.max(0,b.day+sh);if(s.sales&&s.sales.daySold)s.sales.daySold=s.sales.daySold.slice(1).concat([0]);s.days=2;if(s.lic&&s.lic.curfew&&s.lic.curfew.length===3)s.lic.curfew=s.lic.curfew.slice(1)}s.dayV=2}
+const _poolsD=pools;pools=function(s,an){const r=_poolsD(s,an);const n=nDays(s);if(n!==3){r.pool*=n===2?.94:1-.025*(n-3);r.P*=LEN_PRICE(n)}return r};
+const _refPriceD=refPrice;refPrice=function(s){return _refPriceD(s)*LEN_PRICE(nDays(s))};
+const _costLinesD=costLines;costLines=function(s,a0){const L=_costLinesD(s,a0);const n=nDays(s);if(n!==3){const f=.45+.55*n/3;for(const l of L)if(l.g==='Staff'||l.g==='Production'||/^(Power|Waste|Riders)/.test(l.k))l.v=Math.round(l.v*f)}return L};
+const _migrateDays=migrate;migrate=function(s){s=_migrateDays(s);migrateDays(s);applyDays(s);return s};
+const _openGatesD=openGates;openGates=function(s){applyDays(s);return _openGatesD(s)};
 
 /* ---------- sandbox ---------- */
 const _saveSB=save;save=function(){if(S&&S.sandbox&&S.money<20e6){S.money=50e6}return _saveSB()};
@@ -3988,7 +3992,7 @@ const _nextYearE=nextYear;nextYear=function(s){_nextYearE(s);if(s.over)return;ST
 const ERA_TXT=[[/went viral/g,'made the TV news'],[/m views\)/g,'m TV viewers)'],[/ views\b/g,' viewers'],[/phone torches/g,'lighters']];
 const eraTxt=(s,t)=>{if(!preSocial(s)||typeof t!=='string')return t;for(const [a,b] of ERA_TXT)t=t.replace(a,b);return t};
 const _addNewsE=addNews;addNews=function(s,t,k){return _addNewsE(s,eraTxt(s,t),k)};
-const _logLE=logL;logL=function(s,t,k){const r=_logLE(s,eraTxt(s,t),k);const L=s.live;if(L&&nDays(s)<3&&L.log[0]){const d=STEPS[Math.min(L.i,STEPS.length-1)].d;if(!isActiveDay(s,d)){const nd=d<firstDay(s)?firstDay(s):lastDay(s);L.log[0].t=L.log[0].t.replace(DAYS[d],DAYS[nd]).replace(/ \d\d:\d\d$/,d<firstDay(s)?' 11:00':' night')}}return r};
+const _logLE=logL;logL=function(s,t,k){return _logLE(s,eraTxt(s,t),k)};
 const OLD_POSTS={tease:['Flyer drop','Flyers in every record shop in the county.'],announce:['Press release','Send the music papers your next big name.'],tickets:['Radio ad','Ads on local radio this week.'],
   bts:['Fanzine interview','The crew talk to a photocopied fanzine.'],meme:['Pirate radio stunt','Take over a pirate station for an hour. Could backfire.'],hint:['Rumour in the music papers','“Very special guest, Saturday.”'],
   reply:['Letter to the local paper','Own last year’s problems in print.'],countdown:['Poster campaign','Fly-posters across the city.'],live:['TV news clip','Get a clip on the regional news.']};
@@ -4064,10 +4068,10 @@ const FUN_EV=[
   {k:'food',w:s=>s.live.onsite>2000,log:s=>{s.live.bar+=ri(3,8)*1000;return 'A cheese toastie van has gone viral online. The queue is a hundred people long.'}},
   {k:'rainbow',w:s=>{const c=s.live.cur;return c&&c.rain>0&&c.rain<2},log:s=>{s.live.mood=clamp(s.live.mood+4,0,100);return 'The rain stops and a double rainbow appears over the main stage. Everyone takes the same photo.'}},
   {k:'celebs',w:s=>s.flags.celebGuest===s.year||s.flags.starGuest===s.year,log:s=>{s.hype=clamp(s.hype+4,0,100);return s.flags.starGuest===s.year&&chance(.6)?'The superstar who name-checked you on TV actually turned up and watched from the side of the stage.':'Your celebrity ambassador does the rounds of the VIP area. The photos are everywhere.'}},
-  {k:'wedding',w:s=>s.flags.wedding===s.year&&STEPS[s.live.i].d===1,log:s=>{s.live.mood=clamp(s.live.mood+3,0,100);return 'The celebrity wedding on the main stage: confetti cannons, a choir and a field full of gatecrashers.'}},
+  {k:'wedding',w:s=>s.flags.wedding===s.year&&STEPS[s.live.i].d===satIdx(s),log:s=>{s.live.mood=clamp(s.live.mood+3,0,100);return 'The celebrity wedding on the main stage: confetti cannons, a choir and a field full of gatecrashers.'}},
   {k:'film',w:s=>s.flags.film===s.year,log:s=>'The film crew shoot their big scene in the main field. Thousands of extras, unpaid.'},
   {k:'royal',w:s=>s.flags.royal===s.year&&STEPS[s.live.i].d===lastDay(s),log:s=>{s.live.mood=clamp(s.live.mood+2,0,100);return 'The royal visitor tours the site in wellies and tries the cider.'}},
-  {k:'final',w:s=>(s.flags.screens===s.year||s.flags.noScreens===s.year)&&STEPS[s.live.i].d===1,log:s=>{if(s.flags.screens===s.year){s.live.mood=clamp(s.live.mood+(chance(.55)?8:-3),0,100);return s.live.mood>60?'The whole field watches the final on the big screens. When the winner goes in, the noise is heard three miles away.':'Heartbreak on the big screens. The field sings anyway.'}s.live.onsite=Math.max(0,s.live.onsite-ri(500,2000));return 'Hundreds slip off to the village pub to watch the final.'}},
+  {k:'final',w:s=>(s.flags.screens===s.year||s.flags.noScreens===s.year)&&STEPS[s.live.i].d===satIdx(s),log:s=>{if(s.flags.screens===s.year){s.live.mood=clamp(s.live.mood+(chance(.55)?8:-3),0,100);return s.live.mood>60?'The whole field watches the final on the big screens. When the winner goes in, the noise is heard three miles away.':'Heartbreak on the big screens. The field sings anyway.'}s.live.onsite=Math.max(0,s.live.onsite-ri(500,2000));return 'Hundreds slip off to the village pub to watch the final.'}},
   {k:'reunion',w:s=>s.flags.reunion===s.year&&STEPS[s.live.i].h>=20,log:s=>{s.live.mood=clamp(s.live.mood+10,0,100);s.live.boost=(s.live.boost||0)+4;s.live.moment=s.live.moment||'The one-night-only reunion';if(!s.live.viral)s.live.viral='The reunion set went viral ('+ri(10,30)+'m views)';return 'The reunion. Grown adults in tears. One night only, and you were there.'}}];
 const _randomEventF=randomEvent;randomEvent=function(s,A,d,h,wx){const L=s.live;L.usedEv=L.usedEv||{};
   if(chance(.55)){const pool=FUN_EV.filter(e=>!L.usedEv['f_'+e.k]&&e.w(s));if(pool.length){const e=pick(pool);L.usedEv['f_'+e.k]=1;if(e.dec)return e.dec(s);const t=e.log(s);if(t)logL(s,t,'good');return null}}
@@ -4457,7 +4461,7 @@ function finding(){const A=analyse(S);const bad=A.issues.find(i=>i.sev==='bad');
   const cancels=S.events.filter(e=>e.k==='cancel'&&!e.done);if(cancels.length){const e=cancels[0];return['bad',act(e.actId).name+' cancelled. Their '+DAYL[e.day]+' slot on the '+stageName(S,S.pl.find(p=>p.id===e.stage))+' is empty.']}
   const ctr=S.bk.filter(b=>b.st==='counter');if(ctr.length)return['warn',ctr.length+' agent'+(ctr.length>1?'s have':' has')+' come back with a counter-offer. Answer before the round ends.'];
   if(bad)return['bad',bad.t];
-  if(S.phase==='booking'){const hl=activeDays(S).filter(d=>{const m=stagesOf(S).find(p=>isMain(p.t));return m&&!S.bk.find(b=>b.stage===m.id&&b.day===d&&b.slot===0&&['signed','pending','counter'].includes(b.st))});if(hl.length)return['warn','No headliner yet for '+hl.map(d=>DAYL[d]).join(', ')+'. Big acts get booked early.']}
+  if(S.phase==='booking'){const hl=dayRange(S).filter(d=>{const m=stagesOf(S).find(p=>isMain(p.t));return m&&!S.bk.find(b=>b.stage===m.id&&b.day===d&&b.slot===0&&['signed','pending','counter'].includes(b.st))});if(hl.length)return['warn','No headliner yet for '+hl.map(d=>DAYL[d]).join(', ')+'. Big acts get booked early.']}
   if(S.phase==='onsale'&&sl){const t=curTier(S),pl=pools(S,sl.announced);const w=willWk(S,pl,t.p);const left=capWeekend(S)-sl.wkSold;if(left>0&&w-sl.wkSold<left*.6)return['warn','At '+fmt$(t.p)+' only about '+fmtN(Math.max(0,w-sl.wkSold))+' more people want weekend tickets, and '+fmtN(left)+' are left.'];if(sl.touts>200)return['warn','Touts hold about '+fmtN(sl.touts)+' tickets, reselling at '+fmt$(sl.resale)+'.']}
   const w=A.issues[0];if(w)return['warn',w.t];return['good','Nothing urgent. The site, the bill and the budget all hold up.']}
 function primary(){if(S.phase==='booking')return '<button class="btn sm" data-a="endround">'+(S.round>=BOOK_ROUNDS?'Close booking':'End round')+'</button>';
@@ -4487,7 +4491,7 @@ function viewPlan(){const ph=PHASES[phaseIdx(S)];const [fk,ft]=finding();
 function fmtSub(){const y=START_YEAR+S.year-1;if(S.phase==='booking')return 'Year '+S.year+' · '+y+' · Round '+S.round+' of '+BOOK_ROUNDS+'. Agents reply at the end of each round.';if(S.phase==='onsale')return 'Year '+S.year+' · Week '+S.week+' of '+SALE_WEEKS+' before build week.';if(S.phase==='build')return 'Year '+S.year+' · The festival opens on Friday.';return ''}
 function startGuide(){const A=analyse(S);const st=[
   ['Fix the site',A.issues.filter(i=>i.sev==='bad').length===0,'site','Clear the red issues: campsites, toilets, entrances.'],
-  ['Book a headliner for each night',[0,1,2].every(d=>S.bk.find(b=>b.day===d&&b.slot===0&&isMain(stageType(S,b.stage))&&['signed','pending','counter'].includes(b.st))),'lineup','Main stage, last slot, Friday to Sunday.'],
+  ['Book a headliner for each night',dayRange(S).every(d=>S.bk.find(b=>b.day===d&&b.slot===0&&isMain(stageType(S,b.stage))&&['signed','pending','counter'].includes(b.st))),'lineup','Main stage, last slot, Friday to Sunday.'],
   ['Fill the undercard',S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).length>=15,'lineup','Use “Fill the rest” or pick rising acts yourself.'],
   ['Check your ticket prices',!!S.flags.tixSeen,'tickets','Early birds go on sale after round 2.'],
   ['End the round',S.round>1,null,'Agents answer your offers; the rival moves too.']];
@@ -4654,9 +4658,9 @@ function softRender(){// re-render the site HUD without remounting the 3D view
 function afterSiteChange(){A_CACHE={k:'',a:null};g3rebuild();overlayPaint(UI.overlay,S,ghostCone());save();softRender()}
 
 /* ---------- line-up ---------- */
-function viewLineup(){if(!isActiveDay(S,UI.lineDay))UI.lineDay=firstDay(S);const d=UI.lineDay;const stg=stagesOf(S);const fees=signed(S).reduce((a,b)=>a+b.fee,0);const total=stg.reduce((a,p)=>a+SLOTS[p.t].length*nDays(S),0);const filled=S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).length;
+function viewLineup(){if(UI.lineDay>=nDays(S))UI.lineDay=0;const d=UI.lineDay;const stg=stagesOf(S);const fees=signed(S).reduce((a,b)=>a+b.fee,0);const total=stg.reduce((a,p)=>a+SLOTS[p.t].length*nDays(S),0);const filled=S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).length;
   let h='<main><div class="title-row"><h1>Line-up</h1><div class="row" style="flex-wrap:nowrap"><button class="btn ghost sm" data-a="poster">Poster</button><button class="btn sm" data-a="market">Browse acts</button></div></div><p class="sub">'+filled+' of '+total+' slots filled · '+fmt$(fees)+' signed · bill strength '+fmtK(lineupStrength(S))+'</p>';
-  h+=nDays(S)>1?seg('day',String(d),activeDays(S).map(i=>[String(i),DAYL[i]])):'<p class="small muted" style="margin:-6px 0 10px">A one-day festival: Saturday only.</p>';
+  h+=seg('day',String(d),dayRange(S).map(i=>[String(i),nDays(S)>3?DAYS[i]:DAYL[i]]));
   if(!stg.length)h+='<div class="empty">No stages on the site yet. Place a main stage on the Site tab.</div>';
   for(const p of stg){h+='<section class="card lineup-day"><h2>'+esc(stageName(S,p))+'<small>'+(B[p.t].tentCap?fmtN(B[p.t].tentCap)+' capacity':fmtN((analyse(S).arenas.find(a=>a.p===p)||{cap:0}).cap)+' in the field')+'</small></h2>';
     SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);const a=b?act(b.actId):null;const t=slotTime(S,p,i,d);
@@ -4698,7 +4702,7 @@ function slotSheet(){const o=UI.slotSel;const b=slotAt(S,o.p.id,o.day,o.slot);if
     slotExtrasHtml(b)+(b.st==='signed'&&S.phase!=='wrap'?'<button class="btn ghost wide" style="margin-top:12px" data-a="drop" data-v="'+b.id+'">Drop them · pay the full fee as a kill fee</button>':'')}
 function oddsTxt(r){return r<.68?'They will refuse, and take it as an insult.':r<.88?'Expect a counter-offer.':r<.97?'Could go either way.':r<1.08?'Better than even.':'Very likely yes.'}
 function autofillPlan(){const out=[];const used=new Set(S.bk.filter(b=>['signed','pending','counter'].includes(b.st)).map(b=>b.actId));
-  for(const p of stagesOf(S))for(let d=0;d<3;d++)SLOTS[p.t].forEach((sd,i)=>{if(i===0&&(isMain(p.t)||p.t==='tent')&&!UI.autoHead)return;if(slotAt(S,p.id,d,i))return;
+  for(const p of stagesOf(S))for(let d=0;d<nDays(S);d++)SLOTS[p.t].forEach((sd,i)=>{if(i===0&&(isMain(p.t)||p.t==='tent')&&!UI.autoHead)return;if(slotAt(S,p.id,d,i))return;
     const head=i===0&&(isMain(p.t)||p.t==='tent');const budget=Math.max(60000,S.money*(isMain(p.t)?.14:.05));const c=head?S.acts.filter(a=>!used.has(a.id)&&!unavailable(S,a)&&a.fame>=sd[3][0]-8&&feeOf(a,S)<=budget).sort((a,b)=>b.fame-a.fame)[0]:S.acts.filter(a=>!used.has(a.id)&&!unavailable(S,a)&&fitsSlot(a,p,i)&&a.fame<=Math.max((sd[3][0]+sd[3][1])/2,sd[3][1]-4)).sort((a,b)=>appeal(b)/feeOf(b,S)-appeal(a)/feeOf(a,S))[0];if(c){used.add(c.id);out.push({a:c,p,d,i,fee:askFor(S,c,{stage:p.id,slot:i}).fee})}});
   return out}
 function autofillSheet(){const L=autofillPlan();UI.auto=L;const tot=L.reduce((a,x)=>a+x.fee,0);
@@ -4890,7 +4894,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&UI.place&&!document.activeElement.closest('button'))ACT.pok();
   if((e.key==='+'||e.key==='=')&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*.85,8,80);G3.idle=0}if(e.key==='-'&&G3.ok){G3.cam0.d=clamp(G3.cam0.d*1.18,8,80);G3.idle=0}});
 function afterRender(){if(!S||S.over||UI.sheet)return;const sc=nextScene(S);if(sc){UI.lock=true;UI.sheet=storySheet;clearTimeout(LT);renderSheet()}}
-const APP_VER='202610311200';
+const APP_VER='202610311500';
 function checkUpdate(){if(!/^https?:/.test(location.protocol))return;if(S&&S.phase==='live')return;fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APP_VER='(\d+)'/);if(m&&m[1]!==APP_VER){try{save()}catch(e){}location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}
 setTimeout(checkUpdate,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
@@ -5020,17 +5024,17 @@ function mgMount(){const box=$('#mgbox');if(!box)return;const k=S.live.dec.mini;
     tap(box.querySelector('#mgbtn'),()=>{if(!alive())return;const t=now();let bi=-1,bd=1e9;beats.forEach((b,i)=>{const d=Math.abs(t-b);if(d<bd&&got[i]==null){bd=d;bi=i}});if(bi<0||bd>380)return;const sc=bd<70?1:bd<160?.6:bd<260?.25:0;got[bi]=sc;fb.textContent=sc>=1?'Perfect':sc>=.6?'Good':sc>0?'Late':'Miss';fb.className=sc>=.6?'pos':'neg';box.querySelector('.mg-pyro').classList.remove('boom');void box.offsetWidth;if(sc>0)box.querySelector('.mg-pyro').classList.add('boom')})}}
 
 /* ---------- a shareable poster image ---------- */
-function posterBlob(cb){const st=stagesOf(S);const y=START_YEAR+S.year-1;const days=[0,1,2].map(d=>{const acts=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);if(b&&b.st==='signed'&&!b.secret)acts.push({a:act(b.actId),w:(isMain(p.t)?10:p.t==='tent'?6:p.t==='dance'?5:3)-i})});return acts.sort((a,b)=>b.w-a.w)});
+function posterBlob(cb){const st=stagesOf(S);const y=START_YEAR+S.year-1;const days=dayRange(S).map(d=>{const acts=[];for(const p of st)SLOTS[p.t].forEach((sd,i)=>{const b=slotAt(S,p.id,d,i);if(b&&b.st==='signed'&&!b.secret)acts.push({a:act(b.actId),w:(isMain(p.t)?10:p.t==='tent'?6:p.t==='dance'?5:3)-i})});return acts.sort((a,b)=>b.w-a.w)});
   const c=document.createElement('canvas');c.width=1080;c.height=1350;const x=c.getContext('2d');const F='Inter, -apple-system, system-ui, sans-serif';
   x.fillStyle='#0b0f08';x.fillRect(0,0,1080,1350);x.textAlign='center';x.textBaseline='alphabetic';
   x.fillStyle='#b4b4b4';x.font='500 30px '+F;x.fillText((SITES[S.site].n+' · August '+y).toUpperCase(),540,110);
   let fs=96;x.font='700 '+fs+'px '+F;while(x.measureText(S.name).width>960&&fs>40){fs-=4;x.font='700 '+fs+'px '+F}x.fillStyle='#fff';x.fillText(S.name,540,110+fs+20);
   let yy=110+fs+110;const col=['#c6f24e','#ff8fc6','#5ec4e8'];
-  days.forEach((acts,d)=>{x.fillStyle=col[d];x.font='700 30px '+F;x.fillText(DAYL[d].toUpperCase(),540,yy);yy+=58;
+  days.forEach((acts,d)=>{x.fillStyle=col[d%3];x.font='700 30px '+F;x.fillText(DAYL[d].toUpperCase(),540,yy);yy+=58;
     const hl=acts.filter(a=>a.w>=9),rest=acts.filter(a=>a.w<9);
-    for(const a of hl){let s=a.w>=10?64:46;x.font='700 '+s+'px '+F;while(x.measureText(a.a.name).width>980&&s>26){s-=2;x.font='700 '+s+'px '+F}x.fillStyle='#fff';x.fillText(a.a.name,540,yy);yy+=s+12}
+    const big=nDays(S)>4;for(const a of hl){let s=Math.round((a.w>=10?64:46)*(big?.62:1));x.font='700 '+s+'px '+F;while(x.measureText(a.a.name).width>980&&s>26){s-=2;x.font='700 '+s+'px '+F}x.fillStyle='#fff';x.fillText(a.a.name,540,yy);yy+=s+12}
     x.font='500 30px '+F;x.fillStyle='#d8d8d8';let line='';const lines=[];for(const a of rest.slice(0,14)){const t=line?line+'  ·  '+a.a.name:a.a.name;if(x.measureText(t).width>960){lines.push(line);line=a.a.name}else line=t}if(line)lines.push(line);
-    for(const l of lines.slice(0,3)){x.fillText(l,540,yy);yy+=42}if(!acts.length){x.fillStyle='#777';x.fillText('To be announced',540,yy);yy+=42}yy+=46});
+    for(const l of lines.slice(0,big?1:3)){x.fillText(l,540,yy);yy+=42}if(!acts.length){x.fillStyle='#777';x.fillText('To be announced',540,yy);yy+=42}yy+=big?18:46});
   x.fillStyle='#949494';x.font='500 26px '+F;x.fillText(handleOf(S)+' · '+fmtN(S.lic.cap)+' capacity',540,1300);
   c.toBlob(cb,'image/png')}
 function sharePoster(){posterBlob(b=>{if(!b){toast('Could not draw the poster.');return}const name=S.name.replace(/[^\w]+/g,'-').toLowerCase()+'-'+(START_YEAR+S.year-1)+'.png';let f=null;try{f=new File([b],name,{type:'image/png'})}catch(e){}
@@ -5106,11 +5110,12 @@ const _renderSheetC=renderSheet;renderSheet=function(){_renderSheetC();document.
    UI: setup options (sandbox, length, start year), buzz stunts,
    festival length, period promo, and a live soundtrack
    ============================================================ */
+function lenText(n){return n===2?'Saturday and Sunday.':n===3?'Friday to Sunday, the classic weekend.':'From '+WEEKL[7-n]+' to Sunday.'}
 function stuntCard(){if(!S||!stuntsOK(S))return '';const left=stuntLeft(S);const L=stuntList(S);
   return '<section class="card"><h2>Make some noise<small>'+(left?'One stunt this '+(S.phase==='booking'?'round':'week'):'Done this '+(S.phase==='booking'?'round':'week'))+'</small></h2><p class="small muted" style="margin-bottom:6px">Stunts and pop-culture moves that get people talking. Hype sells tickets.</p><ul class="list">'+
     L.map(([k,x])=>{const c=stuntCost(S,k);return '<li><div class="grow"><b>'+x.n+'</b><div class="meta" style="white-space:normal">'+x.d+'</div></div><button class="btn '+(c<0?'':'ghost ')+'sm" data-a="stunt" data-v="'+k+'" '+(left?'':'disabled')+'>'+(c>0?fmt$(c):c<0?'+'+fmt$(-c):'Free')+'</button></li>'}).join('')+'</ul></section>'}
 function lengthCard(){if(!S||S.chal)return '';const can=S.phase==='booking'||S.phase==='wrap';const n=nDays(S);
-  return '<section class="card"><h2>Festival length<small>'+(n===1?'One day':n+' days')+'</small></h2><p class="small muted" style="margin-bottom:10px">Shorter festivals cost less to run and charge less per ticket. A one-day festival is Saturday only; two days is Saturday and Sunday.</p>'+(can?seg('flen',String(n),[['1','1 day'],['2','2 days'],['3','3 days']]):'<p class="small faint">You can change the length in booking season.</p>')+'</section>'}
+  return '<section class="card"><h2>Festival length<small>'+n+' days</small></h2><p class="small muted" style="margin-bottom:10px">'+lenText(n)+' Longer festivals charge more per ticket and cost more to run. Moving the start keeps your acts on the same weekday.</p>'+(can?seg('flen',String(n),[2,3,4,5,6,7].map(k=>[String(k),String(k)])):'<p class="small faint">You can change the length in booking season.</p>')+'</section>'}
 
 /* ---------- a live soundtrack (Web Audio, starts on your first tap) ---------- */
 const SND={ctx:null,on:null,bed:null,bedG:null,master:null,timer:0,step:0,next:0,lastLog:'',bpm:120};
@@ -5135,10 +5140,10 @@ function sndTick(){const c=SND.ctx;if(!c||!S||S.phase!=='live'||!S.live||S.live.
 document.addEventListener('pointerdown',()=>{if(S&&S.phase==='live'&&soundOn()){sndInit();if(SND.ctx&&SND.ctx.state==='suspended')SND.ctx.resume();if(!SND.timer)SND.timer=setInterval(sndTick,100)}},{capture:true});
 
 /* ---------- wiring ---------- */
-const _renderM=render;render=function(){if(S){START_YEAR=S.startYear||2027;TABS[4][1]=preSocial(S)?'Promo':'Social'}else START_YEAR=2027;return _renderM()};
+const _renderM=render;render=function(){if(S){applyDays(S);START_YEAR=S.startYear||2027;TABS[4][1]=preSocial(S)?'Promo':'Social'}else START_YEAR=2027;return _renderM()};
 const _topbarM=topbar;topbar=function(){let h=_topbarM();if(S&&S.sandbox)h=h.replace('<div class="tb-cash">','<span class="pill pos" style="margin-right:4px">Sandbox</span><div class="tb-cash">');return h};
 const _viewSetupM=viewSetup;viewSetup=function(){const u=UI.setup;if(u.chal)return _viewSetupM();u.days=u.days||3;u.start=u.start||2027;let h=_viewSetupM();
-  const extra='<div class="sec">Festival length</div>'+seg('sdays',String(u.days),[['1','1 day'],['2','2 days'],['3','3 days']])+'<p class="small muted" style="margin:-4px 0 4px">'+(u.days===1?'One big Saturday. Cheaper to run, cheaper tickets.':u.days===2?'Saturday and Sunday.':'Friday to Sunday, the classic weekend.')+'</p>'+
+  const extra='<div class="sec">Festival length<small>Days</small></div>'+seg('sdays',String(u.days),[2,3,4,5,6,7].map(n=>[String(n),String(n)]))+'<p class="small muted" style="margin:-4px 0 4px">'+lenText(u.days)+'</p>'+
     (u.mode==='story'?'':'<div class="sec">Start year<small>Artists of the time</small></div>'+seg('sstart',String(u.start),ERA_STARTS.map(([y,n])=>[String(y),n]))+'<p class="small muted" style="margin:-4px 0 4px">'+(u.start<2027?'Start in '+u.start+' with the real acts of that decade. Each year moves the calendar on: new names break through, old ones split up, and social media arrives in the 2000s. Money stays in today’s pounds.':'Today’s artists and prices.')+'</p>');
   return h.replace('<div class="sec">Site<small>',extra+'<div class="sec">Site<small>')};
 const _viewPlanM=viewPlan;viewPlan=function(){const h=_viewPlanM();return h.replace('<section class="card"><h2>Tickets against capacity',stuntCard()+'<section class="card"><h2>Tickets against capacity')};
@@ -5150,7 +5155,7 @@ const _menuSheetM=menuSheet;menuSheet=function(){return _menuSheetM().replace('<
 const _renderLiveM=renderLive;renderLive=function(app){_renderLiveM(app);if(SND.ctx&&soundOn()&&!SND.timer)SND.timer=setInterval(sndTick,100)};
 const _guideSheetM=guideSheet;guideSheet=function(){return _guideSheetM().replace('<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>',[
   ['Modes and difficulty','Chill is the easiest difficulty: lots of money, cheap costs and fans who love everything. Sandbox gives you unlimited money, unlocks every venue and never lets you go bust.'],
-  ['Festival length','Run a one-day (Saturday), two-day (Saturday and Sunday) or three-day festival. Pick it when you start and change it in booking season on the Tickets tab.'],
+  ['Festival length','Run a festival of 2 to 7 days, always ending on Sunday: 2 days is Saturday and Sunday, 7 days runs from Monday. Pick it when you start and change it in booking season on the Tickets tab. Longer festivals charge more per ticket and cost more to run.'],
   ['Start year','Start in 1980, 1990, 2000 or 2010 with the real acts of that decade. Every year moves the calendar on; at each new decade, new names arrive and some old ones split up. Before 2006 your social account is a press office: flyers, radio and the music papers.'],
   ['Buzz','The Plan tab has one buzz stunt per booking round or sale week: billboards, pop-up gigs, a celebrity ambassador, a fashion collab, a dance challenge and more. Pop-culture moments (a film shoot, a celebrity wedding, a royal visit, the big match, a reunion) arrive as choices and play out at the festival.'],
   ['Sound','During the weekend you hear the crowd and a beat that follows whoever is playing. Tap anywhere to start it; switch it off in the menu.']].map(g=>'<div class="sec">'+g[0]+'</div><p class="muted">'+g[1]+'</p>').join('')+'<button class="btn ghost wide" style="margin-top:16px" data-a="closesheet">Close</button>')};
@@ -5158,12 +5163,12 @@ const _startM=ACT.start;const _cueM=ACT.cue;
 Object.assign(ACT,{
   start(){const u=UI.setup;if(!u)return;const sandbox=u.mode==='sandbox';const days=u.chal?3:(u.days||3);const start=u.chal||u.mode==='story'?2027:(u.start||2027);if(sandbox)u.mode='free';START_YEAR=start;
     _startM();if(!S||UI.setup){if(sandbox&&UI.setup)UI.setup.mode='sandbox';return}
-    S.startYear=start;if(days!==3)setLength(S,days);
+    S.startYear=start;S.dayV=2;if(days!==3)setLength(S,days);applyDays(S);
     if(start<2027){S.acts=eraActs(start);S.rival.bk=[];marketYear(S,true);discoveryDemos(S);makeGoals(S);addNews(S,'It’s '+start+'. The scene is yours.','book')}
     if(sandbox){S.sandbox=true;S.money=50e6;S.perks=[]}save();render()},
   sdays(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.days=+v;render();drawThumbs()},
   sstart(v){UI.setup.name=$('#fname').value||UI.setup.name;UI.setup.start=+v;render();drawThumbs()},
-  flen(v){const r=setLength(S,+v);if(r){toast(r);return}toast('Your festival now runs for '+(+v===1?'one day':v+' days')+'.');save();render()},
+  flen(v){const r=setLength(S,+v);if(r){toast(r);return}toast('Your festival now runs for '+v+' days, '+DAYL[0]+' to Sunday.');save();render()},
   stunt(k){const r=doStunt(S,k);if(r)toast(r);save();render()},
   sndtoggle(){SND.on=!soundOn();try{localStorage.setItem('festival_sound',SND.on?'1':'0')}catch(e){}if(!SND.on&&SND.bedG&&SND.ctx)SND.bedG.gain.value=0;renderSheet()},
   cue(v){_cueM(v);if(v==='fire'||v==='drone')sndPop();else sndCheer(.15)}});
