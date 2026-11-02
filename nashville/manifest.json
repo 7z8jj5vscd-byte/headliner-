@@ -1,0 +1,1 @@
+{"name":"Music City","short_name":"Music City","description":"A Nashville music-industry drama sim.","start_url":"./","scope":"./","display":"standalone","orientation":"portrait","background_color":"#0c0f1c","theme_color":"#0c0f1c","icons":[{"src":"icon.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"apple-touch-icon.png","sizes":"180x180","type":"image/png"}]}
