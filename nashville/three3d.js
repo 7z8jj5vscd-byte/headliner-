@@ -106,7 +106,7 @@ function view3D(el,spec,slot){if(!el||!t3ok())return false;slot=slot||'page';let
    if(st.flash)sc.add(st.flash);s.scene=sc;s.root=root;s.set=st;s.key=key;s.rotY=0;
    const C={bust:[[0,1.5,2.4],[0,1.42,0]],duo:[[0,1.38,3.6],[0,1.22,0]],full:[[0,1.15,4.2],[0,.95,0]],line:[[0,1.3,7.6],[0,1.05,0]],stage:[[.4,1.3,4.4],[0,1.1,0]]}[spec.cam||'bust'];s.camC=C;s.cam.position.set(...C[0]);s.cam.lookAt(...C[1]);s.lastAsp=0}
   t3loop();return true}catch(e){console.warn('3D unavailable',e);T3.ok=false;el.classList.remove('has3d');return false}}
-function disposeScene(sc){if(!sc)return;sc.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){[].concat(o.material).forEach(m=>{if(m.map)m.map.dispose();m.dispose()})}})}
+function disposeScene(sc){if(!sc)return;sc.traverse(o=>{if(o.isLight&&o.shadow&&o.shadow.map){o.shadow.map.dispose();o.shadow.map=null}if(o.geometry)o.geometry.dispose();if(o.material){[].concat(o.material).forEach(m=>{if(m.map)m.map.dispose();m.dispose()})}})}
 function t3loop(){if(T3.raf)return;const step=()=>{T3.raf=requestAnimationFrame(step);const t=performance.now()/1000;let any=false;
  for(const k in T3.slots){const s=T3.slots[k];if(!s.el||!s.el.isConnected||!s.scene)continue;any=true;const w=s.el.clientWidth,h=s.el.clientHeight;if(!w||!h)continue;const cv=s.r.domElement;if(cv.width!==Math.round(w*s.r.getPixelRatio())||cv.height!==Math.round(h*s.r.getPixelRatio())){s.r.setSize(w,h,false);s.cam.aspect=w/h;s.cam.updateProjectionMatrix()}
   if(s.camC&&s.lastAsp!==s.cam.aspect){s.lastAsp=s.cam.aspect;const C=s.camC,need=s.spec.cam==='line'?2.1:s.spec.cam==='duo'?1.25:0,k=need?Math.max(1,need/s.cam.aspect):1;s.cam.position.set(C[0][0],C[0][1],C[0][2]*k);s.cam.lookAt(...C[1])}
