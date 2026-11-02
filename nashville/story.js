@@ -48,7 +48,7 @@ function seasonEnd(s){const g=seasonGoals(s);let n=0;const lines=g.map(([t,f])=>
  const last=s>=SEASONS;
  return{id:'season_end_'+s,sys:1,tag:last?'Series finale':'Season finale',who:'me',mood:n>=2?'happy':'sad',title:last?'The end of the story':`End of Season ${s}: ${SEASON_NAMES[s-1]}`,
   text:`<b>${'★'.repeat(n)}${'☆'.repeat(3-n)}</b><br>${lines.join('<br>')}<br><br><b>The season in headlines</b><br>${heads.map(h=>'• '+esc(h.t)).join('<br>')||'A quiet season.'}${n===3?'<br><br>All three goals met: a bonus from your team.':''}${last?`<br><br>Total: ${S.story.stars.reduce((a,b)=>a+b,0)} of ${SEASONS*3} stars. Legacy score ${legacy()}.`:''}`,
-  ch:[c(last?'Keep playing in free play':'Previously on Music City…','',()=>{S.story.start=seasonSnap();if(last){S.story.done=1;return 'The cameras stop rolling, but the music doesn\'t. Your career continues.'}const ns=s+1;return `<b>Season ${ns}: ${esc(SEASON_NAMES[ns-1])}</b><br><br>Your goals this season:<br>${seasonGoals(ns).map(g=>'☆ '+esc(g[0])).join('<br>')}`})]}}
+  ch:[c(last?'Keep playing in free play':'Previously on Nashville…','',()=>{S.story.start=seasonSnap();if(last){S.story.done=1;return 'The cameras stop rolling, but the music doesn\'t. Your career continues.'}const ns=s+1;return `<b>Season ${ns}: ${esc(SEASON_NAMES[ns-1])}</b><br><br>Your goals this season:<br>${seasonGoals(ns).map(g=>'☆ '+esc(g[0])).join('<br>')}`})]}}
 
 // ---------- the show's timeline (world events) ----------
 // subj: characters this happens to (if you ARE one, pev gives your version or it's skipped). need: must be present in your world.
