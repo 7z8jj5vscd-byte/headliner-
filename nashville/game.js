@@ -67,7 +67,7 @@ function diffChips(o){const c=[];const add=(lab,d,good,fmt)=>{if(Math.round(d)==
 function blankState(){return{v:1,week:0,char:null,name:'',handle:'',g:'f',look:{},genre:'Country',age:24,money:0,fans:0,rep:55,cred:40,heat:0,health:90,stress:20,sk:{vocals:50,writing:50,guitar:40,stage:40},
  add:{sub:null,dep:0,sober:0,used:0,rehabs:0,aa:0,od:0},traits:[],ap:4,label:null,staff:{},manager:null,house:'apt',rel:{},partner:null,married:0,
  songs:[],albums:[],nextId:1,chart:[],npcSongs:[],news:[],feed:[],wlog:[],lastLog:[],flags:{},seen:{},ach:{},awards:[],noms:[],tour:null,offers:[],
- stats:{gigs:0,ones:0,top10:0,earned:0,written:0,opry:0,bluebird:0,ryman:0,goodGigs:0,therapy:0,tours:0,peakFans:0},opryInvite:0,promo:0,weekYear:0,over:null}}
+ stats:{gigs:0,ones:0,top10:0,earned:0,written:0,opry:0,bluebird:0,ryman:0,goodGigs:0,therapy:0,tours:0,peakFans:0},opryInvite:0,promo:0,weekYear:0,over:null,auth:70,secrets:[]}}
 function newGame(cfg){
  S=blankState();
  if(cfg.legend){const L=LEGENDS[cfg.legend],st=L.start,C=CHARS[cfg.legend];S.char=cfg.legend;S.name=C.n;S.g=C.look.g;S.look=Object.assign({},C.look);S.genre=st.genre;S.age=st.age;S.fans=st.fans;S.money=st.money;S.rep=st.rep;S.cred=st.cred;
