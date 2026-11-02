@@ -13,7 +13,7 @@ function dealEvent(id){const L=LABELS[id],f=fame();const adv=Math.round(id==='ed
    c('Push for better terms','Risky',()=>{if(chance(.5)){const a2=Math.round(adv*1.35);sign(id,a2,Math.min(.5,roy+.04),push);return `Your lawyer earned their fee. They came back with ${money(a2)} and a better royalty.`}FX.a(L.boss||'jeff',-8);return 'They pulled the offer. "We have a hundred kids who\'d sign today."'},{req:()=>!S.label||S.label.id==='indie'}),
    c('Turn it down','Stay free',()=>{FX.cred(2);return 'You walked out into the sunshine on 16th Avenue, free and broke.'})]}}
 function queueDeal(id){if(UI.queue.find(q=>q.id==='deal_'+id))return;UI.queue.push({id:'deal_'+id,ev:dealEvent(id)})}
-function coTour(id,weeks,flat,fansPer,name){S.tour={n:name||`On tour with ${fullnm(id)}`,id:'opener',left:weeks,weeks,flat,fansPer,head:id,gross:0,net:0,fans:0};S.ap=Math.min(S.ap,2);S.stats.tours++;ach('tour')}
+function coTour(id,weeks,flat,fansPer,name){S.tour={n:name||`On tour with ${fullnm(id)}`,id:'opener',left:weeks,weeks,flat,fansPer,head:id,gross:0,net:0,fans:0};S.ap=Math.min(S.ap,apMax());S.stats.tours++;ach('tour')}
 function awardShow(show,cats){const yr=yearOf(S.week);const res=[];const recent=S.songs.filter(s=>s.rel!==null&&S.week-s.rel<=56&&s.peak);const al=S.albums.filter(a=>S.week-a.rel<=56);const f=fame();
  for(const cat of cats){let sc=0;
   if(cat.k==='new'){if(S.awards.some(a=>a.cat.includes('New Artist')&&a.won)||f>80||!S.songs.some(s=>s.peak))continue;sc=f*.8+S.cred*.3}

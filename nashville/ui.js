@@ -24,7 +24,7 @@ home(){const ch=charting().sort((a,b)=>(a.pos||99)-(b.pos||99));const ms=milesto
  ${S.lastLog.length?`<section class="card"><h3>Last week</h3>${S.lastLog.slice(0,8).map(i=>`<p class="logline ${i.k}">${esc(i.t)}</p>`).join('')}</section>`:''}
  <section class="card"><h3>Career goals</h3><ol class="goals">${ms.map((x,i)=>`<li class="${x[1]?'done':i===nextI?'next':''}">${x[1]?'✓':'○'} ${esc(x[0])}</li>`).join('')}</ol></section>`},
 music(){const sub=UI.sub.music;let h=subtabs('music',[['write','Write'],['studio','Studio'],['release','Release'],['catalog','Catalog']]);
- if(sub==='write'){const co=Object.keys(CHARS).filter(k=>has(k)&&(CHARS[k].writer||CHARS[k].singer)&&R(k).met);h+=`<section class="card"><h3>Write alone</h3><p class="muted small">Your songwriting: ${S.sk.writing}/100. Pain helps: high stress makes for better sad songs.</p><button class="primary" data-act="write">✍️ Start writing (1 action)</button></section>
+ if(sub==='write'){const co=Object.keys(CHARS).filter(k=>has(k)&&(CHARS[k].writer||CHARS[k].singer)&&R(k).met);h+=`<section class="card"><h3>Write alone</h3><p class="muted small">Your songwriting: ${S.sk.writing}/100. Pain helps: high stress makes for better sad songs.</p><button class="primary" data-act="write">✍️ Start writing ⚡20</button></section>
   <section class="card"><h3>Co-write</h3><p class="muted small">Great co-writers make better songs and bring you closer.</p><div class="plist">${co.length?co.map(k=>`<button class="pcard sm" data-cowrite="${k}">${pt(k)}<b>${esc(nm(k))}</b><small>${CHARS[k].writer?'Writer':'Artist'} · ${R(k).a>=0?'+':''}${R(k).a}</small></button>`).join(''):'<p class="muted">Meet some songwriters first (People tab).</p>'}</div></section>`}
  if(sub==='studio'){const w=S.songs.filter(s=>s.st==='written');h+=`<section class="card"><h3>Unrecorded songs</h3>${w.length?w.map(s=>`<div class="songrow"><div><b>"${esc(s.title)}"</b><small>${THEMES[s.theme]?THEMES[s.theme].n:''}${s.co?' · with '+esc(nm(s.co)):''} · ${stars(s.q)}</small></div><button class="mini" data-record="${s.id}">Record</button></div>`).join(''):'<p class="muted">Nothing to record. Write something first.</p>'}</section>`}
  if(sub==='release'){const r=S.songs.filter(s=>s.st==='recorded');h+=`<section class="card"><h3>Ready to release</h3>${r.length?r.map(s=>`<div class="songrow"><div><b>"${esc(s.title)}"</b><small>${stars(fq(s))}${s.duet?' · duet with '+esc(nm(s.duet)):''}${s.album?' · on album':''}</small></div><button class="mini" data-release="${s.id}">Single</button></div>`).join(''):'<p class="muted">Record a song first.</p>'}</section>
@@ -72,7 +72,7 @@ life(){const sub=UI.sub.life;let h=subtabs('life',[['health','Health'],['team','
 function openPerson(id){const c=CHARS[id],r=R(id);const acts=personActions(id);
  modal(`<div class="person"><div class="person-pt">${pt(id,r.a<-20?'angry':r.a>30?'happy':'neutral')}</div><div><span class="eyebrow">${esc(c.role)}</span><h2>${esc(c.n)}</h2><p class="muted small">${esc(c.bio)}</p></div></div>
  <div class="relbars">${meter('Friendship',(r.a+100)/2,r.a<0?'bad':'good')}${canRomance(id)?meter('Romance',r.r,'love'):''}</div><p class="small faint">${r.married?'Married':r.dating?'Dating':esc(r.tag||'')}${r.ex?' · Your ex':''}</p>
- <div class="grid2">${acts.map(([k,n])=>`<button class="qa" data-pa="${k}">${esc(n)}</button>`).join('')}</div><p class="faint small">Each costs 1 action. ${S.ap} left this week.</p><div class="mfoot"><button class="ghost" data-x>Close</button></div>`,{onClick:e=>{if(e.target.closest('[data-x]'))return closeModal();const b=e.target.closest('[data-pa]');if(b)personAct(id,b.dataset.pa)}})}
+ <div class="grid2">${acts.map(([k,n])=>`<button class="qa" data-pa="${k}">${esc(n)}</button>`).join('')}</div><p class="faint small">Each costs energy. ⚡${S.ap} left this week.</p><div class="mfoot"><button class="ghost" data-x>Close</button></div>`,{onClick:e=>{if(e.target.closest('[data-x]'))return closeModal();const b=e.target.closest('[data-pa]');if(b)personAct(id,b.dataset.pa)}})}
 function doPR(k){if(!useAP(1))return;const o=snap();let t='';
  if(k==='apologize'){FX.heat(-20);FX.rep(3);FX.cred(-2);t='You posted a heartfelt apology video. Most people accepted it. Some called it fake.'}
  if(k==='interview'){if(perfScore(null)>55){FX.heat(-25);FX.rep(7);t='You sat down with a morning-show host and told the truth. America cried with you.'}else{FX.heat(6);FX.rep(-3);t='You got defensive on camera. The clip of you snapping at the host is everywhere.'}}
@@ -138,7 +138,7 @@ document.addEventListener('click',e=>{const t=e.target;
  if(el=g('data-cowrite'))return startWrite(el.dataset.cowrite);
  if(el=g('data-record'))return startRecord(+el.dataset.record);
  if(el=g('data-release'))return startRelease(+el.dataset.release);
- if(el=g('data-play')){const s=S.songs.find(x=>x.id===+el.dataset.play);if(s)playTune(s.title,4);return}
+ 
  if(el=g('data-gig'))return startGig(el.dataset.gig);
  if(el=g('data-tour'))return startTour(el.dataset.tour);
  if(el=g('data-person'))return openPerson(el.dataset.person);

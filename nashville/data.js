@@ -114,7 +114,7 @@ const STAFF=[
  {id:'manager',n:'Manager',wk:0,d:'Takes 15% of gig and deal money. Better gig pay, more offers.'},
  {id:'publicist',n:'Publicist',wk:1500,d:'Scandals cool down twice as fast.'},
  {id:'band',n:'Touring band',wk:2200,d:'Live shows score higher.'},
- {id:'assistant',n:'Assistant',wk:700,d:'+1 action every week.'},
+ {id:'assistant',n:'Assistant',wk:700,d:'+15 energy every week.'},
  {id:'coach',n:'Vocal coach',wk:500,d:'Vocals improve a little every week.'}
 ];
 const NPC_ART=[
