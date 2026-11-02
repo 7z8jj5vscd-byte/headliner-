@@ -16,7 +16,7 @@ let S=null;const UI={tab:'home',sub:{music:'write',media:'news',life:'health',st
 const fame=()=>clamp(Math.round((Math.log10(S.fans+1)-2)/5*100),0,100);
 const fameTitle=()=>{const f=fame();return f>=95?'Legend':f>=85?'Superstar':f>=72?'Star':f>=58?'Headliner':f>=42?'Rising star':f>=25?'Local name':f>=10?'Unknown':'Nobody'};
 const isMe=id=>S.char===id;
-const has=id=>!!CHARS[id]&&S.char!==id&&(!CHARS[id].teen||['rayna','deacon'].includes(S.char));
+const has=id=>!!CHARS[id]&&S.char!==id&&!(S.gone&&S.gone[id])&&(!CHARS[id].teen||['rayna','deacon'].includes(S.char))&&(!CHARS[id].fam||CHARS[id].fam.includes(S.char));
 const R=id=>S.rel[id]||(S.rel[id]={a:0,r:0,tag:'',met:0});
 const nm=id=>id==='me'?S.name:(CHARS[id]?CHARS[id].short:id);
 const fullnm=id=>CHARS[id]?CHARS[id].n:id;
@@ -26,7 +26,7 @@ const pt=(id,mood,ring)=>portrait(lookOf(id),{mood,ring,label:id==='me'?S.name:f
 const apMax=()=>S.tour?2:(4+(S.staff.assistant?1:0));
 const skillAvg=()=>(S.sk.vocals+S.sk.stage+S.sk.guitar*.5+S.sk.writing*.3)/2.8;
 const label=()=>S.label?LABELS[S.label.id]:LABELS.indie;
-const family=id=>(FAMILY[S.char]||[]).includes(id)||(R(id).tag||'').match(/Daughter|Father|Mother|Uncle|Niece|Sister|Son/);
+const family=id=>(FAMILY[S.char]||[]).includes(id)||!!(CHARS[id]&&CHARS[id].fam)||(R(id).tag||'').match(/Daughter|Father|Mother|Uncle|Niece|Sister|Son/);
 const canRomance=id=>CHARS[id]&&CHARS[id].adult&&!CHARS[id].teen&&!family(id)&&id!=='marcus';
 const dateOf=w=>{const d=new Date(2012,9,8);d.setDate(d.getDate()+w*7);return d};
 const dateStr=w=>dateOf(w).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
@@ -34,13 +34,13 @@ const monthOf=w=>dateOf(w).getMonth();
 const yearOf=w=>dateOf(w).getFullYear();
 const latestSong=()=>S.songs.filter(s=>s.st!=='written').slice(-1)[0]||S.songs.slice(-1)[0];
 const charting=()=>S.songs.filter(s=>s.pts>0);
-const npcFame=id=>({rayna:82,juliette:92,luke:96,layla:58,will:55,sadie:72,deacon:45,scarlett:22,gunnar:22,avery:26,zoey:15}[id]||10);
+const npcFame=id=>clamp(((S&&S.npcF&&S.npcF[id])||0)+({rayna:82,juliette:92,luke:96,layla:58,will:55,sadie:72,deacon:45,scarlett:22,gunnar:22,avery:26,zoey:15}[id]||10),1,100);
 
 // ---------- effects ----------
 const FX={
  m:v=>{S.money+=v;if(v>0)S.stats.earned+=v},
- f:v=>{S.fans=Math.max(0,Math.round(S.fans+v))},
- fp:p=>{S.fans=Math.max(0,Math.round(S.fans*(1+p/100)))},
+ f:v=>{if(v>0)v/=1+S.fans/3e6;S.fans=Math.max(0,Math.round(S.fans+v))},
+ fp:p=>{if(p>0)p/=1+S.fans/3e6;S.fans=Math.max(0,Math.round(S.fans*(1+p/100)))},
  rep:v=>S.rep=clamp(S.rep+v,0,100),
  cred:v=>S.cred=clamp(S.cred+v,0,100),
  heat:v=>S.heat=clamp(S.heat+v,0,100),
@@ -168,7 +168,7 @@ function startRelease(sid){const s=S.songs.find(x=>x.id===sid);if(!s)return;cons
  <div class="mfoot"><button class="ghost" data-x>Cancel</button><button class="primary" data-go>Send it to radio</button></div>`;
  modal(body(),{onClick:e=>{const t=e.target;if(t.closest('[data-x]'))return closeModal();const a=t.closest('[data-pr]');if(a&&!a.disabled){pr=+a.dataset.pr;$('#mbody').innerHTML=body()}const b=t.closest('[data-mv]');if(b){mv=+b.dataset.mv;$('#mbody').innerHTML=body()}
   if(t.closest('[data-go]')){const cost=(paid?0:promos[pr][0])+(paid?Math.max(0,mvs[mv][0]-40000):mvs[mv][0]);if(S.money<cost)return toast('Not enough money.');if(!useAP(1))return closeModal();const o=snap();FX.m(-cost);
-   let push=(S.label?S.label.push:L.push)*promos[pr][1]*(1+S.promo*.06);if(s.duet)push*=1+npcFame(s.duet)/140;if(S.heat>60)push*=.85;if(S.char==='rayna'&&!F('h65')&&S.label&&S.label.id==='edgehill'&&F('jeffcold'))push*=.8;
+   let push=(S.label?S.label.push:L.push)*promos[pr][1]*(1+S.promo*.06)*(typeof labelMult==='function'?labelMult():1);if(s.duet)push*=1+npcFame(s.duet)/140;if(S.heat>60)push*=.85;if(S.char==='rayna'&&!F('h65')&&S.label&&S.label.id==='edgehill'&&F('jeffcold'))push*=.8;
    const q=fq(s);s.base=Math.pow(q/100,2)*125*(.33+.67*fame()/100)*push*(.8+S.rep/250)*rnd(.85,1.15);s.w=0;s.pts=0.1;s.st='single';s.rel=S.week;s.mv=mvs[mv][2];
    if(s.mv){s.mvViews=Math.round((S.fans*.4+5000)*s.mv*rnd(.5,1.5)*(q/70));FX.f(s.mvViews*.004)}
    ach('release');news(`${S.name} releases new single "${s.title}"`);post('me',`"${s.title}" is out now. Request it at your local station!`);fanPost(q>=75?`"${s.title}" by ${S.name} is on repeat. Chills.`:`New ${S.name} single is… okay I guess`);
@@ -304,7 +304,7 @@ function endWeek(silent){
  S.week++;const L=label();S.add.usedThis=S.add.used;
  // costs
  const h=HOUSES.find(x=>x.id===S.house)||HOUSES[1];let cost=h.rent+(h.upkeep||0);STAFF.forEach(st=>{if(S.staff[st.id])cost+=st.wk});
- const lifestyle=fame()>70?3000:fame()>50?800:0;cost+=lifestyle;FX.m(-cost);
+ const lifestyle=fame()>88?15000:fame()>70?4000:fame()>50?800:0;if(S.fans>1e6)S.fans=Math.round(S.fans*.997);cost+=lifestyle;FX.m(-cost);
  // chart + royalties
  S.songs.forEach(s=>{if(s.st==='single'&&s.base>0&&s.pts>0||s.st==='single'&&s.w===0&&s.base>0){s.w++;s.pts=curve(s.base,s.w);if(s.pts<1||s.w>32){s.pts=0}}});
  updateChart();

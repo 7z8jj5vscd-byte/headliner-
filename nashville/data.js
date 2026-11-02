@@ -24,6 +24,9 @@ const CHARS={
  watty:{n:'Watty White',short:'Watty',role:'Legendary producer',bio:'He produced records you grew up on. These days he only works with people he believes in.',look:{g:'m',skin:'#ecc8a8',hair:'#e0e0e0',style:'short',eyes:'#4a5a6a',outfit:'#6a5a46',top:'shirt',hat:'#4a3a2a',beard:2,age:2,bg:'#3a3426'},adult:1},
  kevin:{n:'Kevin Bicks',short:'Kevin',role:'Songwriter',bio:'A sharp, warm songwriter who doesn\'t play the industry\'s games.',look:{g:'m',skin:'#efcfb4',hair:'#a37a4a',style:'short',eyes:'#4a6a8a',outfit:'#7a8a6a',top:'henley',bg:'#2e3a2e'},adult:1,writer:1},
  sadie:{n:'Sadie Stone',short:'Sadie',role:'Country star with a past',bio:'Big hits, a big heart and an ex-husband she can\'t seem to escape.',look:{g:'f',skin:'#ecc4a2',hair:'#2a1a10',style:'longwave',eyes:'#4a3020',lips:'#b04a52',outfit:'#7a2a2a',top:'vneck',earrings:1,bg:'#3a2020'},singer:1,adult:1},
+ mama:{n:'Mama',short:'Mama',role:'Your mother, back home',bio:'Calls every Sunday after church. Keeps every newspaper clipping in a shoebox. Worries.',look:{g:'f',skin:'#efc9a8',hair:'#8a6a4a',style:'bob',eyes:'#5a4030',outfit:'#7a8ab0',top:'blouse',age:2,glasses:1,bg:'#3a3a48'},adult:1,fam:['me','gunnar','avery','will','scarlett']},
+ daddy:{n:'Daddy',short:'Daddy',role:'Your father, back home',bio:'A man of few words who taught you your first three chords on a porch.',look:{g:'m',skin:'#dcaa84',hair:'#9a9a9a',style:'short',eyes:'#4a4a3a',outfit:'#5a4a3a',top:'flannel',hat:'#6a5a3a',beard:1,age:2,bg:'#3a3426'},adult:1,fam:['me','avery','will']},
+ zach:{n:'Zach Welles',short:'Zach',role:'Tech billionaire and investor',bio:'Made a fortune in software and wants to buy a piece of Music Row. Says he loves country music. Owns one vinyl record.',look:{g:'m',skin:'#ecc6a4',hair:'#4a3020',style:'short',eyes:'#4a6a8a',outfit:'#2a2a2a',top:'tee',bg:'#22303a'},adult:1},
  marcus:{n:'Marcus Keen',short:'Marcus',role:'Tabloid reporter',bio:'Writes for Music Row Insider. Friendly smile, notebook always open.',look:{g:'m',skin:'#8a5a3c',hair:'#151010',style:'buzz',eyes:'#2a1a10',outfit:'#4a4a4a',top:'jacket',glasses:1,bg:'#2a2a2a'},adult:1}
 };
 // Family/no-romance pairs from each legend's point of view
@@ -83,10 +86,10 @@ const VENUES=[
 ];
 const TOURS=[
  {id:'club',n:'Southern club run',fame:20,weeks:4,cap:400,price:20,cost:2500,desc:'Vans, motels and 400-capacity rooms.'},
- {id:'theater',n:'Theater tour',fame:45,weeks:6,cap:2500,price:48,cost:16000,desc:'Proper venues, a bus and a crew.'},
- {id:'amph',n:'Summer amphitheater tour',fame:62,weeks:8,cap:12000,price:62,cost:70000,desc:'Sheds and lawns under the stars.'},
- {id:'arena',n:'Headlining arena tour',fame:76,weeks:10,cap:16000,price:85,cost:160000,desc:'Pyro, a catwalk and five trucks.'},
- {id:'stadium',n:'Stadium tour',fame:90,weeks:12,cap:50000,price:105,cost:520000,desc:'The biggest show in country music.'}
+ {id:'theater',n:'Theater tour',fame:45,weeks:6,cap:2500,price:48,cost:40000,desc:'Proper venues, a bus and a crew.'},
+ {id:'amph',n:'Summer amphitheater tour',fame:62,weeks:8,cap:12000,price:62,cost:250000,desc:'Sheds and lawns under the stars.'},
+ {id:'arena',n:'Headlining arena tour',fame:76,weeks:10,cap:16000,price:85,cost:600000,desc:'Pyro, a catwalk and five trucks.'},
+ {id:'stadium',n:'Stadium tour',fame:90,weeks:12,cap:50000,price:105,cost:2400000,desc:'The biggest show in country music.'}
 ];
 const LABELS={
  edgehill:{n:'Edgehill Republic',boss:'jeff',push:1.3,royalty:.16,desc:'A major. Huge radio push, but they own your masters and your image.'},

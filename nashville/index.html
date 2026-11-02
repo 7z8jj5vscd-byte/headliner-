@@ -141,6 +141,16 @@ svg.pt{display:block;width:100%;height:auto;border-radius:inherit}
 .rg-tip{position:absolute;left:0;right:0;top:44%;text-align:center;font-size:12px;color:rgba(255,255,255,.55);pointer-events:none;animation:fade 6s forwards}.rg-tip kbd{background:#222;border:1px solid #444;border-radius:4px;padding:1px 6px;font-family:inherit}
 @keyframes fade{0%,70%{opacity:1}100%{opacity:0}}
 .rg-skip{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom,0) + 12px);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#ccc;border-radius:99px;padding:6px 14px;font-size:12px}
+/* story, label, circle, social */
+.storycard{background:linear-gradient(135deg,#3a2438,#1a1f36);border:1px solid #4a3450}.storycard h3{font-family:var(--serif);font-size:18px;font-weight:600;margin:2px 0}
+.sgoals{list-style:none;margin:8px 0 4px;padding:0;font-size:13px}.sgoals li{padding:3px 0;color:var(--muted)}.sgoals li.done{color:var(--gold2)}
+.circ{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule)}.circ:last-child{border:0}.circ-ic{width:40px;height:40px;border-radius:50%;background:var(--raised);display:grid;place-items:center;font-size:20px;flex:none;overflow:hidden}.circ-pt{display:block;width:40px;height:40px}.circ-main{flex:1;min-width:0}.circ-main b{font-size:13px}.circ-main .meter{margin:4px 0}.circ-main .meter span{display:none}.circ-btns{display:flex;flex-wrap:wrap;gap:6px}.circ-btns .mini{padding:5px 10px;font-size:11px}
+.act{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule)}.act:last-child{border:0}.act-pt{width:64px;height:64px;border-radius:14px;overflow:hidden;flex:none}.act-info{flex:1;min-width:0}.act-info b{display:block}.act-info small{display:block;color:var(--faint);font-size:12px}.act-info .meter{margin:4px 0}.act-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.act-btns .mini{padding:5px 10px;font-size:11px}
+.labhead{background:linear-gradient(135deg,#2a2a1e,var(--surface));border:1px solid #4a4026}
+.trend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.trend span{font-size:12px;color:var(--blue);background:#17223a;padding:3px 9px;border-radius:99px}
+.cmts{margin:6px 0;padding-left:10px;border-left:2px solid var(--rule)}.cmts p{font-size:12px;color:var(--muted);margin:2px 0}.post-body{flex:1;min-width:0}
+.labtag{font-style:normal;font-size:10px;color:var(--gold);border:1px solid #5a4a22;border-radius:99px;padding:0 6px;margin-left:4px}
+.card.inset{background:var(--sunk);margin:14px 0 0}.newcard.alt{background:linear-gradient(135deg,#232a44,var(--surface))}
 @media (max-width:380px){.goals{columns:1}.top-stats{gap:10px}.meter span{width:52px}}
 @media (prefers-reduced-motion:reduce){.neon{animation:none}#mbody{animation:none}}
 </style>
@@ -155,5 +165,6 @@ svg.pt{display:block;width:100%;height:auto;border-radius:inherit}
 <script src="game.js"></script>
 <script src="events.js"></script>
 <script src="ui.js"></script>
+<script src="story.js"></script>
 </body>
 </html>
