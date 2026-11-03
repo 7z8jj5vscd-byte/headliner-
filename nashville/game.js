@@ -16,14 +16,14 @@ let S=null;const UI={tab:'home',sub:{music:'write',media:'news',life:'health',st
 const fame=()=>clamp(Math.round((Math.log10(S.fans+1)-2)/5*100),0,100);
 const fameTitle=()=>{const f=fame();return f>=95?'Legend':f>=85?'Superstar':f>=72?'Star':f>=58?'Headliner':f>=42?'Rising star':f>=25?'Local name':f>=10?'Unknown':'Nobody'};
 const isMe=id=>S.char===id;
-const has=id=>!!CHARS[id]&&S.char!==id&&!(S.gone&&S.gone[id])&&(!CHARS[id].teen||['rayna','deacon'].includes(S.char))&&(!CHARS[id].fam||CHARS[id].fam.includes(S.char));
+const has=id=>!!CHARS[id]&&S.char!==id&&!(S.gone&&S.gone[id])&&(!CHARS[id].teen||['rayna','deacon'].includes(S.char))&&(!CHARS[id].fam||CHARS[id].fam.includes(S.char))&&(!CHARS[id].from||S.week>=CHARS[id].from)&&(!CHARS[id].until||S.week<CHARS[id].until);
 const R=id=>S.rel[id]||(S.rel[id]={a:0,r:0,tag:'',met:0});
 const nm=id=>id==='me'?S.name:(CHARS[id]?CHARS[id].short:id);
 const fullnm=id=>CHARS[id]?CHARS[id].n:id;
 const myLook=()=>S.look;
 const lookOf=id=>id==='me'?S.look:CHARS[id]?CHARS[id].look:{};
 const pt=(id,mood,ring)=>portrait(lookOf(id),{mood,ring,label:id==='me'?S.name:fullnm(id)});
-const apMax=()=>Math.max(30,Math.round((S.tour?65:100)+(S.staff.assistant?15:0)+(S.perks&&S.perks.workhorse?15:0)+((S.lvl||1)-1)*2-(S.health<50?(50-S.health)/2:0)-(S.stress>70?(S.stress-70)/2:0)-(S.flags&&S.flags.hangover?15:0)));
+const apMax=()=>Math.max(30,Math.round((S.tour?65:100)+(S.diff==='easy'?25:S.diff==='hard'?-10:0)+(S.staff.assistant?15:0)+(S.perks&&S.perks.workhorse?15:0)+((S.lvl||1)-1)*2-(S.health<50?(50-S.health)/2:0)-(S.stress>70?(S.stress-70)/2:0)-(S.flags&&S.flags.hangover?15:0)));
 const skillAvg=()=>(S.sk.vocals+S.sk.stage+S.sk.guitar*.5+S.sk.writing*.3)/2.8;
 const label=()=>S.label?LABELS[S.label.id]:LABELS.indie;
 const family=id=>(FAMILY[S.char]||[]).includes(id)||!!(CHARS[id]&&CHARS[id].fam)||(R(id).tag||'').match(/Daughter|Father|Mother|Uncle|Niece|Sister|Son/);
@@ -363,8 +363,8 @@ function showWeekSummary(o){const ch=S.chart.findIndex(c=>c.me);const items=S.la
 function queueEvent(id,ctx){if(UI.queue.find(q=>q.id===id))return;UI.queue.push({id,ctx:ctx||{}})}
 function queueBluebird(){queueEvent(pick(['bb_watty','bb_label','bb_cowrite','bb_rayna']))}
 function evList(){return EVENTS}
-function storyCheck(){for(const e of EVENTS){if(!e.story||S.seen[e.id])continue;try{if(e.when(S)){queueEvent(e.id);S.seen[e.id]=S.week;break}}catch(err){}}}
-function randomEvents(){const n=S.tour?(chance(.7)?1:0):(chance(.62)?1:0)+(chance(.15)?1:0);for(let i=0;i<n;i++){const pool=EVENTS.filter(e=>!e.story&&!e.sys&&(!e.once||!S.seen[e.id])&&(!S.seen[e.id]||S.week-S.seen[e.id]>(e.cool||20))&&safeWhen(e)&&!UI.queue.find(q=>q.id===e.id));if(!pool.length)return;let tot=pool.reduce((a,e)=>a+(e.w||1),0),r=Math.random()*tot;for(const e of pool){r-=(e.w||1);if(r<=0){queueEvent(e.id);S.seen[e.id]=S.week;break}}}}
+function storyCheck(){for(const e of EVENTS){if(!e.story||S.seen[e.id]!=null)continue;try{if(e.when(S)){queueEvent(e.id);S.seen[e.id]=S.week;break}}catch(err){}}}
+function randomEvents(){const canon=S.story&&S.story.on;const n=S.tour?(chance(canon?.4:.7)?1:0):(chance(canon?.38:.62)?1:0)+(chance(canon?.05:.15)?1:0);for(let i=0;i<n;i++){const pool=EVENTS.filter(e=>!e.story&&!e.sys&&(!e.once||S.seen[e.id]==null)&&(S.seen[e.id]==null||S.week-S.seen[e.id]>(e.cool||(canon?30:20)))&&safeWhen(e)&&!UI.queue.find(q=>q.id===e.id));if(!pool.length)return;let tot=pool.reduce((a,e)=>a+(e.w||1),0),r=Math.random()*tot;for(const e of pool){r-=(e.w||1);if(r<=0){queueEvent(e.id);S.seen[e.id]=S.week;break}}}}
 function safeWhen(e){try{return !e.when||e.when(S)}catch(err){return false}}
 function runQueue(){if(UI.busy||$('#modal').classList.contains('open'))return;const q=UI.queue.shift();if(!q)return;const e=q.ev||EVENTS.find(x=>x.id===q.id);if(!e)return runQueue();if(e.when&&e.sys&&!safeWhen(e))return runQueue();S.seen[e.id]=S.week;showEvent(e,q.ctx)}
 function fill(t,ctx){const s=latestSong();const who=ctx&&ctx.who?ctx.who:(S.flags.dw||S.flags.ow||'');return String(t).replace(/\{name\}/g,esc(S.name)).replace(/\{song\}/g,esc(s?s.title:'your new song')).replace(/\{partner\}/g,esc(S.partner?nm(S.partner):'your partner')).replace(/\{label\}/g,label().n).replace(/\{who\}/g,who?esc(nm(who)):'').replace(/\{rival\}/g,nm(rivalId()))}

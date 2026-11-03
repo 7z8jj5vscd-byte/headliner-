@@ -66,7 +66,7 @@ function openPhone(id){ensureWorld();if(!id){const ids=Object.keys(S.texts.th).f
 const STRANGERS=['Lacey Pruitt','Dale Whitcomb','Marisol Vega','Hank Ellery','Tess Ballard'];
 const DELIV=[['stripped','🕯 Stripped and honest','Just you and a guitar. The room rewards real.'],['showy','🎆 Big and showy','Belt it. Risky in a listening room.'],['story','📖 Tell the story behind it','Charm them with where it came from.'],['confess','💔 Confess something first','Say something true and raw before you play.']];
 function startRound(){if(S.tour)return toast('You\'re on tour.');const songs=S.songs.filter(s=>s.st!=='sold').sort((a,b)=>fq(b)-fq(a)).slice(0,8);if(songs.length<1)return toast('Write a song first.');if(!useAP(1))return;
- const pool=['gunnar','scarlett','kevin','deacon','jessie','will','zoey','brent','avery'].filter(has);const writers=shuffle(pool).slice(0,2).map(id=>({id,name:fullnm(id),look:CHARS[id].look,skill:(CHARS[id].writer?72:62)+(id==='deacon'?8:0)}));const sn=pick(STRANGERS);writers.push({id:null,name:sn,look:randLook(),skill:ri(50,80)});
+ const pool=['gunnar','scarlett','kevin','deacon','jessie','will','zoey','avery'].filter(has);const writers=shuffle(pool).slice(0,2).map(id=>({id,name:fullnm(id),look:CHARS[id].look,skill:(CHARS[id].writer?72:62)+(id==='deacon'?8:0)}));const sn=pick(STRANGERS);writers.push({id:null,name:sn,look:randLook(),skill:ri(50,80)});
  const R3={round:0,me:0,them:writers.map(()=>0),used:new Set(),room:50,log:[],writers,songs};roundStep(R3)}
 function roundStep(R3){const W=R3.writers;if(R3.round>=3)return roundEnd(R3);const nw=W[R3.round%W.length];const ns=Math.round(nw.skill+rnd(-10,14));R3.them=R3.them.map((v,i)=>v+(i===R3.round%W.length?ns:Math.round(W[i].skill*.3+rnd(-5,5))));const react=ns>82?'The room went silent, then roared.':ns>70?'Warm applause. A few nods.':'Polite claps. Someone checked their phone.';
  const sel={song:null,del:null};const body=()=>`${sceneBox('wide',W.map(w=>w.id?pt(w.id):portrait(w.look)).join(''),`<div class="lower3"><b>The Bluebird Cafe</b><span>Writers' round · song ${R3.round+1} of 3</span></div>`)}
@@ -90,7 +90,7 @@ function roundEnd(R3){const o=snap();const tot=[R3.me].concat(R3.them);const ran
 
 // ---------- 5: studio sessions ----------
 window.startRecord=function(sid){const s=S.songs.find(x=>x.id===sid);if(!s)return;if(S.ap<1)return toast('No actions left this week.');const st={p:null,band:null,takes:[],od:new Set()};
- const BANDS=[{id:'cheap',n:'Cheap pickers from the classifieds',c:0,b:-5},{id:'ateam',n:'The Music Row A-team',c:4000,b:8},{id:'own',n:'Your touring band',c:0,b:4,req:()=>S.staff.band},{id:'deacon',n:'Deacon Claybourne on lead guitar',c:0,b:11,req:()=>has('deacon')&&R('deacon').a>=30,who:'deacon'},{id:'brent',n:'Brent McKinney on fiddle',c:500,b:6,req:()=>has('brent')&&R('brent').a>=0,who:'brent'}];
+ const BANDS=[{id:'cheap',n:'Cheap pickers from the classifieds',c:0,b:-5},{id:'ateam',n:'The Music Row A-team',c:4000,b:8},{id:'own',n:'Your touring band',c:0,b:4,req:()=>S.staff.band},{id:'deacon',n:'Deacon Claybourne on lead guitar',c:0,b:11,req:()=>has('deacon')&&R('deacon').a>=30,who:'deacon'}];
  const harmony=Object.keys(CHARS).filter(k=>has(k)&&CHARS[k].singer&&R(k).a>=30)[0];
  const OD=[{id:'steel',n:'Pedal steel',c:2000,b:4},{id:'fiddle',n:'Fiddle',c:1500,b:3},{id:'strings',n:'String section',c:6000,b:5,cred:1},{id:'choir',n:'Gospel choir',c:4000,b:4},...(harmony?[{id:'harm',n:`Harmony vocals from ${fullnm(harmony)}`,c:0,b:6,who:harmony}]:[])];
  const step=()=>{
