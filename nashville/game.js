@@ -16,7 +16,7 @@ let S=null;const UI={tab:'home',sub:{music:'write',media:'news',life:'health',st
 const fame=()=>clamp(Math.round((Math.log10(S.fans+1)-2)/5*100),0,100);
 const fameTitle=()=>{const f=fame();return f>=95?'Legend':f>=85?'Superstar':f>=72?'Star':f>=58?'Headliner':f>=42?'Rising star':f>=25?'Local name':f>=10?'Unknown':'Nobody'};
 const isMe=id=>S.char===id;
-const has=id=>!!CHARS[id]&&S.char!==id&&!(S.gone&&S.gone[id])&&(!CHARS[id].teen||['rayna','deacon'].includes(S.char))&&(!CHARS[id].fam||CHARS[id].fam.includes(S.char))&&(!CHARS[id].from||S.week>=CHARS[id].from)&&(!CHARS[id].until||S.week<CHARS[id].until);
+const has=id=>!!CHARS[id]&&S.char!==id&&!(S.gone&&S.gone[id])&&(!CHARS[id].teen||['rayna','deacon'].includes(S.char)||(['maddie','daphne'].includes(id)&&typeof W==='function'&&S.week>=W(4,1)))&&(!CHARS[id].fam||CHARS[id].fam.includes(S.char))&&(!CHARS[id].from||S.week>=CHARS[id].from)&&(!CHARS[id].until||S.week<CHARS[id].until);
 const R=id=>S.rel[id]||(S.rel[id]={a:0,r:0,tag:'',met:0});
 const nm=id=>id==='me'?S.name:(CHARS[id]?CHARS[id].short:id);
 const fullnm=id=>CHARS[id]?CHARS[id].n:id;
@@ -335,7 +335,7 @@ function endWeek(silent){
   else{FX.hp(-A.dep/18);if(A.dep>70&&chance(.12))queueEvent('rockbottom')}}
  A.used=0;
  // relationships drift
- for(const k in S.rel){const r=S.rel[k];if((r.dating||r.married)&&chance(.5))r.r=clamp(r.r-1,0,100);if(r.dating&&r.r<15&&!silent){queueEvent('partner_leaves',{who:k})}}
+ for(const k in S.rel){const r=S.rel[k];if((r.dating||r.married)&&chance(.5))r.r=clamp(r.r-1,0,100);if(r.dating&&r.r<15&&!silent&&has(k)){queueEvent('partner_leaves',{who:k})}}
  // label
  if(S.label){S.label.wk=(S.label.wk||0)+1;if(S.label.owed>0&&S.label.wk>60&&S.label.id==='edgehill'&&!F('dropWarn')){FX.fl('dropWarn');queueEvent('label_deadline')}}
  // money trouble
