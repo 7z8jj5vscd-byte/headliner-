@@ -407,6 +407,21 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 .call{text-align:center}.call-av{width:96px;height:96px;margin:6px auto 10px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 4px rgba(122,212,138,.5),0 0 0 10px rgba(122,212,138,.18);animation:ring 1.2s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--sunk)}.call-av svg{width:100%;height:100%}
 @keyframes ring{50%{box-shadow:0 0 0 6px rgba(122,212,138,.6),0 0 0 16px rgba(122,212,138,.1)}}
 .rehbox{height:200px}.runthru{display:flex;flex-direction:column;gap:6px;margin:10px 0}.runthru div{display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.25);opacity:0;animation:fadeup .4s forwards;animation-delay:var(--d)}
+
+/* ---- songcraft, stage life, city, power ---- */
+.dna{list-style:none;padding:0;margin:10px 0;border-left:2px solid var(--brass)}.dna li{display:flex;gap:10px;padding:6px 0 6px 12px;position:relative}.dna li i{font-style:normal;width:22px}.dna li small{display:block;color:var(--faint);font-size:11.5px}
+.dnabtn{background:none;border:0;font-size:16px;cursor:pointer;padding:0 6px 0 0}
+.napkin textarea,#plq,#ltr{width:100%;box-sizing:border-box;min-height:80px;background:#f4ecd8;color:#2a2016;border:0;border-radius:6px;padding:12px;font:16px/1.4 'Courier New',monospace;transform:rotate(-1deg);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.wings{text-align:center;padding:10px 0}.heart{font-size:54px;animation:beat var(--b) infinite}.bpm{display:block;font:800 26px var(--serif);color:var(--gold2)}@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.18)}30%{transform:scale(1)}}
+.lookbtn{position:absolute;left:8px;bottom:8px;z-index:3;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);font-size:16px;cursor:pointer;padding:0}
+.websvg{width:100%;height:auto;max-height:320px;display:block}.web-key{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--faint)}.web-key span:before{content:'';display:inline-block;width:14px;height:3px;background:var(--c);margin-right:4px;vertical-align:middle}
+.coinrow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.coin{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10.5px;font-weight:700;background:rgba(255,255,255,.06);color:var(--faint);border:2px dashed rgba(255,255,255,.15)}.coin.on{background:radial-gradient(circle at 35% 30%,#ffe9a0,#b8861a);color:#2a1a06;border:2px solid #8a6a1a}
+.sepia canvas{filter:sepia(.7) contrast(1.05)}.chili{display:flex;align-items:center;gap:10px;margin:14px 0}.chili i{flex:1;height:14px;border-radius:7px;background:rgba(255,255,255,.1);overflow:hidden}.chili b{display:block;height:100%;background:linear-gradient(90deg,#e8b04b,#e45a5a,#ff2a2a)}
+.anchors{margin-top:6px}.gz-tv{margin:10px 0 4px;font-size:12px;text-transform:uppercase;border-bottom:1px solid #1d1a14}
+.tabwall{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.tab{background:#fff8e0;color:#1a1206;padding:8px;border-radius:4px;transform:rotate(-1deg);font-family:Georgia,serif}.tab b{display:block;font-size:12.5px;line-height:1.2}.tab small{color:#7a6a5a;font-size:10px}.tab.framed{border:4px solid #8a6a1a}.tab .mini{color:#1a1206}
+.diary .dentry{border-bottom:1px dashed var(--rule);padding:8px 0}.diary .dentry p{margin:2px 0 0;font:italic 14px/1.45 var(--serif)}
+.pin i.hot{box-shadow:0 0 0 3px rgba(255,80,80,.6),0 0 16px rgba(255,80,80,.7)}.rt-note{font:800 40px var(--serif);text-align:center;color:var(--gold2);margin:10px 0}
+.letter{font:italic 15px/1.5 var(--serif);white-space:pre-wrap}.plaque-q{margin:8px 0;padding:12px;border-radius:8px;background:linear-gradient(160deg,#6b5418,#2d2410);font:italic 15px/1.4 var(--serif);color:#ffe9a0}.plaque-q small{display:block;margin-top:6px;font-style:normal;color:var(--faint)}
 </style>
 </head>
 <body>
@@ -439,6 +454,10 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 <script src="stage2.js?v=2026.11.04-4"></script>
 <script src="show2.js?v=2026.11.04-4"></script>
 <script src="rules.js?v=2026.11.04-4"></script>
+<script src="songcraft.js?v=2026.11.04-4"></script>
+<script src="stagelife.js?v=2026.11.04-4"></script>
+<script src="citymeta.js?v=2026.11.04-4"></script>
+<script src="power.js?v=2026.11.04-4"></script>
 <script src="update.js?v=2026.11.04-4"></script>
 </body>
 </html>
