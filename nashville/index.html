@@ -361,6 +361,32 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 .guide{border:1px solid var(--brass)}.whatif summary{cursor:pointer;padding:4px 0}.whatif .stack{margin-top:10px}
 .hof-l{font-size:13.5px;margin:6px 0}.cine{height:240px}
 .barcard h3{margin:2px 0}
+
+/* ---- studio + live show ---- */
+.studiobox{height:190px;margin-bottom:8px}.studio-fb{font-size:54px;display:flex;align-items:center;justify-content:center;height:100%}
+.talkback{font-size:13px;background:rgba(232,194,74,.1);border-left:3px solid var(--gold2);padding:8px 10px;border-radius:6px;margin:6px 0 10px}
+.wave{width:100%;height:56px;display:block;background:#0c0a08;border-radius:8px;margin:6px 0}
+.studiocut .cine{height:300px}.cut-cap{font:italic 600 17px/1.35 var(--serif);text-align:center;margin:12px 4px;animation:fadeup .6s both}
+.ls{position:fixed;inset:0;z-index:9000;background:#07040c;color:#fff;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.ls-stage{position:absolute;inset:0;height:auto!important}.ls-stage canvas{width:100%!important;height:100%!important}
+.ls-crowd{position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(0deg,#000 40%,transparent);pointer-events:none}
+.ls-crowd i{position:absolute;bottom:0;width:22px;height:calc(var(--h) + 40px);background:#05030a;border-radius:11px 11px 0 0;animation:bob 1s ease-in-out infinite;animation-delay:var(--d)}
+.ls-crowd i:after{content:'';position:absolute;top:-6px;left:8px;width:5px;height:5px;border-radius:50%;background:#ffe9a0;opacity:calc(var(--hype,.4) * .9);box-shadow:0 0 8px #ffd27a}
+.ls-crowd.wild i{animation-duration:.45s}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.ls-hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;gap:10px;padding:14px 16px;background:linear-gradient(180deg,rgba(0,0,0,.75),transparent)}
+.ls-hud b{display:block;font:700 15px/1.2 var(--serif)}.ls-hud span{font-size:11px;opacity:.75}
+.ls-hype{min-width:120px;text-align:right}.ls-hype i{display:block;height:9px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:4px}.ls-hype b{height:100%;background:linear-gradient(90deg,#e8b04b,#ff4fa0);transition:width .3s}
+.ls-card{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);width:min(340px,calc(100% - 32px));background:rgba(12,8,20,.82);border:1px solid rgba(232,194,74,.5);border-radius:18px;padding:14px;text-align:center;backdrop-filter:blur(6px)}
+.ls-card.pop{animation:lspop .35s}@keyframes lspop{from{transform:translateX(-50%) scale(.85);opacity:.3}}
+.ls-card h3{margin:0 0 2px;font:700 18px/1.2 var(--serif);color:var(--gold2)}.ls-tip{margin:0 0 8px;font-size:12.5px;opacity:.85}
+.ls-pad{position:relative;height:150px}.ls-target,.ls-ring{position:absolute;left:50%;top:50%;width:110px;height:110px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.ls-target{border:3px dashed rgba(232,194,74,.7)}.ls-ring{border:4px solid #ff4fa0;box-shadow:0 0 14px #ff4fa0}
+.ls-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:92px;height:92px;border-radius:50%;border:0;font:800 16px var(--font);color:#1a1206;background:radial-gradient(circle at 50% 100%,#c9a227 calc(var(--fill,0)*100%),#ffe3a0 calc(var(--fill,0)*100% + 1%));box-shadow:0 6px 20px rgba(0,0,0,.5);cursor:pointer;touch-action:none}
+.ls-btn.wide{position:static;transform:none;width:auto;height:auto;border-radius:12px;padding:12px 18px;margin-top:8px}
+.ls-choices{display:flex;flex-direction:column;gap:6px}.ls-choices button{padding:11px;border-radius:12px;border:1px solid rgba(232,194,74,.5);background:rgba(232,194,74,.12);color:#fff;font:600 14px var(--font);cursor:pointer}
+.ls-fb{position:absolute;left:0;right:0;top:15%;text-align:center;font:900 30px/1 var(--serif);letter-spacing:.06em;opacity:0;transform:scale(.8);transition:.2s;pointer-events:none;text-shadow:0 2px 12px #000}.ls-fb.show{opacity:1;transform:scale(1)}.ls-fb.good{color:#ffe3a0}.ls-fb.bad{color:#ff8a9a}
+.ls-big{font:900 54px/1 var(--serif);color:var(--gold2);margin:4px 0}.ls-skip{z-index:2}
 </style>
 </head>
 <body>
@@ -368,26 +394,27 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 <div id="modal" role="dialog" aria-modal="true"><div id="mbody"></div></div>
 <div id="toasts" aria-live="polite"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="portraits.js?v=2026.11.04-1"></script>
-<script src="data.js?v=2026.11.04-1"></script>
-<script src="stage.js?v=2026.11.04-1"></script>
-<script src="game.js?v=2026.11.04-1"></script>
-<script src="events.js?v=2026.11.04-1"></script>
-<script src="ui.js?v=2026.11.04-1"></script>
-<script src="story.js?v=2026.11.04-1"></script>
-<script src="three3d.js?v=2026.11.04-1"></script>
-<script src="makeit.js?v=2026.11.04-1"></script>
-<script src="world.js?v=2026.11.04-1"></script>
-<script src="week.js?v=2026.11.04-1"></script>
-<script src="canon.js?v=2026.11.04-1"></script>
-<script src="nav.js?v=2026.11.04-1"></script>
-<script src="business.js?v=2026.11.04-1"></script>
-<script src="social.js?v=2026.11.04-1"></script>
-<script src="nextlevel.js?v=2026.11.04-1"></script>
-<script src="showtime.js?v=2026.11.04-1"></script>
-<script src="production.js?v=2026.11.04-1"></script>
-<script src="life2.js?v=2026.11.04-1"></script>
-<script src="legacy2.js?v=2026.11.04-1"></script>
-<script src="update.js?v=2026.11.04-1"></script>
+<script src="portraits.js?v=2026.11.04-2"></script>
+<script src="data.js?v=2026.11.04-2"></script>
+<script src="stage.js?v=2026.11.04-2"></script>
+<script src="game.js?v=2026.11.04-2"></script>
+<script src="events.js?v=2026.11.04-2"></script>
+<script src="ui.js?v=2026.11.04-2"></script>
+<script src="story.js?v=2026.11.04-2"></script>
+<script src="three3d.js?v=2026.11.04-2"></script>
+<script src="makeit.js?v=2026.11.04-2"></script>
+<script src="world.js?v=2026.11.04-2"></script>
+<script src="week.js?v=2026.11.04-2"></script>
+<script src="canon.js?v=2026.11.04-2"></script>
+<script src="nav.js?v=2026.11.04-2"></script>
+<script src="business.js?v=2026.11.04-2"></script>
+<script src="social.js?v=2026.11.04-2"></script>
+<script src="nextlevel.js?v=2026.11.04-2"></script>
+<script src="showtime.js?v=2026.11.04-2"></script>
+<script src="production.js?v=2026.11.04-2"></script>
+<script src="life2.js?v=2026.11.04-2"></script>
+<script src="legacy2.js?v=2026.11.04-2"></script>
+<script src="studio.js?v=2026.11.04-2"></script>
+<script src="update.js?v=2026.11.04-2"></script>
 </body>
 </html>
