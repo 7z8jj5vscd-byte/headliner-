@@ -3,7 +3,7 @@
 
 // ======================= DUET LIVE SHOWS =======================
 const duetPartners=()=>Object.keys(S.rel).filter(k=>has(k)&&CHARS[k].singer&&R(k).a>=30&&k!==S.char).sort((a,b)=>((S.chem||{})[b]||0)-((S.chem||{})[a]||0)).slice(0,3);
-(function(){const _m=window.modal;window.modal=function(html,o){if(typeof html==='string'&&html.includes('data-crowd>')&&!html.includes('data-duet')){const ps=duetPartners();if(ps.length)html=html.replace(/(<button class="opt" data-live>)/,`<div class="duet-row">${ps.map(k=>`<button class="opt duetbtn" data-duet="${k}"><span class="mini-pt">${pt(k)}</span><span><b>🎶 Duet with ${esc(nm(k))}</b><small>Work the crowd together · chemistry ${Math.round((S.chem||{})[k]||0)}</small></span></button>`).join('')}</div>$1`)}return _m(html,o)}})();
+(function(){const _m=window.modal;window.modal=function(html,o){const r=_m(html,o);const cb=$('#mbody [data-crowd]');if(cb&&!$('#mbody [data-duet]')){const ps=duetPartners();if(ps.length)cb.insertAdjacentHTML('afterend',`<div class="duet-row">${ps.map(k=>`<button class="opt duetbtn" data-duet="${k}"><span class="mini-pt">${pt(k)}</span><span><b>🎶 Duet with ${esc(nm(k))}</b><small>Work the crowd together · chemistry ${Math.round((S.chem||{})[k]||0)}</small></span></button>`).join('')}</div>`)}return r}})();
 document.addEventListener('click',e=>{const b=e.target.closest('#modal [data-duet]');if(!b)return;e.stopPropagation();UI.duetWith=b.dataset.duet;UI.useCrowd=1;const l=$('#mbody [data-live]');if(l)l.click();else{UI.useCrowd=0;UI.duetWith=null}},true);
 
 // ======================= THE BLUEBIRD IN 3D =======================

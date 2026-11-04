@@ -86,6 +86,8 @@ If you own a label (Rayna's Highway 65, or your own once you can afford one) a *
 
 **Live and in the studio.** Work the crowd is a 3D live-show mini game: hit the beat, start a clap-along, hold the mic out for a sing-along and pick big moments while a crowd hype meter decides your score (and whether you get an encore). Recording sessions take place in a 3D studio with a control room, mixing desk and vocal booth, with producer talkback after each take, a live waveform and a short cutscene before the playback.
 
+**Publishing deals and the writing room.** On top of record deals, publishers can sign you as a staff songwriter, the way Scarlett and Gunnar were signed. You get an advance against songwriting royalties and a yearly song quota, and the publisher books co-writes, pitches your songs to stars and reviews you every year. You can also co-write in a 3D writing room, trading lines and arranging the song's structure. Other additions: producer arguments, raw demos, session work, duets and on-stage mishaps in Work the crowd, crowd requests, a 3D Bluebird, opening-slot nerves, international tours, music video shoots, late-night TV, episode titles drawn from your week, season trailers, cold opens, confessionals, fan theories, group chats, family dinners, characters who age over the seasons, a career timeline and stats page, challenge runs and genre-specific sound.
+
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/nashville/
 
 ## Updates go live automatically
