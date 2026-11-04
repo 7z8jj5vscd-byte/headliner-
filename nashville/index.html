@@ -387,6 +387,19 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 .ls-choices{display:flex;flex-direction:column;gap:6px}.ls-choices button{padding:11px;border-radius:12px;border:1px solid rgba(232,194,74,.5);background:rgba(232,194,74,.12);color:#fff;font:600 14px var(--font);cursor:pointer}
 .ls-fb{position:absolute;left:0;right:0;top:15%;text-align:center;font:900 30px/1 var(--serif);letter-spacing:.06em;opacity:0;transform:scale(.8);transition:.2s;pointer-events:none;text-shadow:0 2px 12px #000}.ls-fb.show{opacity:1;transform:scale(1)}.ls-fb.good{color:#ffe3a0}.ls-fb.bad{color:#ff8a9a}
 .ls-big{font:900 54px/1 var(--serif);color:var(--gold2);margin:4px 0}.ls-skip{z-index:2}
+
+/* ---- writing room, publishing, show feel ---- */
+.cwbox{height:180px}.cw-lines{background:#f4ecd8;color:#2a2016;border-radius:8px;padding:8px 12px;margin:8px 0;font-family:'Courier New',monospace;font-size:13px;box-shadow:inset 0 0 0 1px #d8cba8}.cw-lines p{margin:3px 0}
+.struct{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0;min-height:40px}.sp{border:0;border-radius:6px;padding:8px 10px;font:700 12px var(--font);color:#1a1206;cursor:pointer}.sp-V{background:#9bbbd9}.sp-P{background:#c9b8e8}.sp-C{background:var(--gold2)}.sp-B{background:#e88aa8}.sp-O{background:#9ad0a8}
+.pubdeal .terms{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin:8px 0}.pubdeal .terms div{background:rgba(0,0,0,.25);border-radius:10px;padding:6px 2px}.pubdeal .terms b{display:block;color:var(--gold2)}.pubdeal .terms span{font-size:10px;color:var(--faint)}
+.duet-row{display:flex;flex-direction:column;gap:6px;margin:6px 0}.duetbtn{display:flex;gap:10px;align-items:center;text-align:left}
+.ep-title{margin:2px 0 0;font:italic 600 16px/1.2 var(--serif);color:var(--gold2)}
+.coldopen{background:#000;border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;margin-bottom:10px;font-size:14px}.coldopen p{margin:4px 0}
+.trailer .tr-big{font:900 clamp(34px,11vw,60px)/1 var(--serif);letter-spacing:.16em;text-align:center;color:var(--gold2);margin:60px 0 10px;animation:fadeup 1s both}
+.confess{display:flex;gap:10px;align-items:center;background:rgba(0,0,0,.35);border-left:3px solid #e88aa8;border-radius:8px;padding:8px 10px;margin:10px 0;font-style:italic;font-size:13.5px}.confess p{margin:0}
+.gchat{display:flex;flex-direction:column;gap:8px;margin:10px 0;padding:10px;border-radius:12px;background:rgba(0,0,0,.3)}.gmsg{display:flex;gap:8px;align-items:flex-start;opacity:0;animation:fadeup .4s forwards;animation-delay:var(--d)}.gmsg b{font-size:11px;color:var(--faint)}.gmsg p{margin:2px 0 0;background:#2a3a5a;padding:7px 10px;border-radius:4px 14px 14px 14px;font-size:13.5px}.mini-av.gen{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#5a4a3a;font-weight:700}
+.spark{margin:10px 0}.spark figcaption{display:flex;justify-content:space-between;font-size:13px}.spark figcaption span{color:var(--gold2);font-weight:700}.spark svg{width:100%;height:90px;display:block;background:rgba(0,0,0,.2);border-radius:8px}.spark-ax{display:flex;justify-content:space-between;font-size:10px;color:var(--faint);margin-top:2px}
+.mus-stats.st6{grid-template-columns:repeat(3,1fr)}.tl-list{list-style:none;padding:0;margin:0;border-left:2px solid var(--brass)}.tl-list li{padding:4px 0 8px 12px;position:relative}.tl-list li:before{content:'';position:absolute;left:-6px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--gold2)}.tl-list p{margin:2px 0 0;font-size:13px}.tl-list small{color:var(--faint);font-size:11px}
 </style>
 </head>
 <body>
@@ -415,6 +428,9 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 <script src="life2.js?v=2026.11.04-2"></script>
 <script src="legacy2.js?v=2026.11.04-2"></script>
 <script src="studio.js?v=2026.11.04-2"></script>
+<script src="writing2.js?v=2026.11.04-2"></script>
+<script src="stage2.js?v=2026.11.04-2"></script>
+<script src="show2.js?v=2026.11.04-2"></script>
 <script src="update.js?v=2026.11.04-2"></script>
 </body>
 </html>
