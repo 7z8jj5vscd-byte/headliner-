@@ -94,6 +94,8 @@ If you own a label (Rayna's Highway 65, or your own once you can afford one) a *
 
 **Inspired by the show, not a TV show.** The story uses chapters and weeks of your life instead of seasons and episodes, highlights instead of "Previously on", and inner thoughts instead of talking to camera, with no ratings or network meta. Every big moment from the show still happens.
 
+**The big rebalance.** This update rebalances charts and money and adds an inbox for smaller events, with a drama setting. It also adds show breakdowns, weekly goals, a career card, synthesized country instruments that play each song in its own key and tempo, ten-step character arcs, choices that come back, real conversations, relationship histories, lifestyle-based endings, the chart race, album sequencing, three kinds of fans, a walkable 3D Lower Broadway, livelier characters and save codes for moving between devices.
+
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/nashville/
 
 ## Updates go live automatically
