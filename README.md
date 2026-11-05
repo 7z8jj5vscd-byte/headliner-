@@ -105,3 +105,21 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/nashville/
 ## Updates go live automatically
 
 Any push to a `claude/...` branch is merged into `main` by `.github/workflows/auto-publish.yml`, and GitHub Pages publishes `main`. No pull request is needed. If an automatic merge ever conflicts, GitHub emails the repo owner and that branch can be merged with a normal pull request instead.
+
+## The Eras Life
+
+A week-by-week career game through Taylor Swift's documented public career, from the first demo tapes in 2001 to the end of 2026. After that, the story is yours to carry on with invented songs, eras and drama. It is an unofficial fan project: it uses no lyrics, audio, album art or photos, and event cards stick to the public record, with no invented private dialogue or quotes.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/eras/
+
+**How it plays.** Each week you get Time Blocks (6, 5 or 4 depending on difficulty) to spend on required and optional tasks. Working past your blocks costs Energy. Every album moves through stages: Writing, Recording, Finishing, Pre-release, Release, Promotion, Tour prep, On tour and Rest. Stages overlap, so you might be writing Speak Now while touring Fearless. Real release dates never move: if you fall behind, the album still comes out on time, but with lower quality and weaker first-week numbers. Real events interrupt the week with a decision. Your choice changes your stats and strategy, but never whether the event happened. Each card ends with "What really happened", and your Canon Score measures how close you stayed to her real choices. Sensitive events are told briefly and factually, and you can respond only with support, safety or a statement. Fast-forward skips quiet weeks but stops at every real event and deadline.
+
+**Modes.** Story Mode starts with a short prologue and plays every week from 2001 on. Era Start drops you into any era Story Mode has reached, with that moment's catalog and team. The event track is off, and you can move release dates. From January 2027 the real track ends and free play begins, with a Drama Engine of invented leaks, backlash, rival pop stars and tabloids. It never invents misconduct or personal crises for real people.
+
+**The 13 tabs**, each unlocking when it would in her real career: This Week, Life, Songbook (only the current era's real songs; vault songs stay locked until their Taylor's Version), Studio (producers, editions, re-recording), Rollout (singles, videos, sponsors, approvals), Cover Studio (an original cover for every album from palettes, abstract images, layouts and finishes, or your own image, which stays on your device), Tour Desk (venues, nights, prices, staging, openers and setlist, approved or sent back by your manager and publicist, and measured against each real tour's gross), Team Inbox, Easter Eggs (plant clues, watch invented fan accounts decode them, and collect the real eggs in an Egg Log), Fandom, Press and People, Charts and Awards (Beyoncé and Lady Gaga appear as chart rivals on their real release dates), and Legacy (era gallery, goals, achievements, ownership and your timeline beside hers).
+
+**3D.** You design a stylised toon performer (hair colour, style and skin tone). It is not a likeness of anyone. It appears on a 3D set that follows your stage: a bedroom, a writers' room, the studio, a video set, a TV studio, the press wall, rehearsal, and a theatre, arena or stadium on tour. Event cards are staged in 3D with generic team figures. Drag to spin.
+
+**Saves.** Three slots, autosave every week, and export and import of save files.
+
+Beyoncé's and Lady Gaga's stories are mapped and can be previewed from the title screen. They become playable once Taylor's story has proved the systems. Dates and figures come from the design report and still need a card-by-card fact-check.

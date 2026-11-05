@@ -1,0 +1,659 @@
+/* The Eras Life: game engine. Week-by-week loop, stages, requirements, stats, saves. */
+(function () {
+const ER = window.ER;
+const G = window.G = {};
+const W = ER.ds;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+G.clamp = clamp; G.rnd = rnd; G.pick = pick;
+let S = null;
+G.S = () => S;
+G.set = s => { S = s; };
+const DIFF = { easy:{ blocks:6, pen:.5, l:'Easy' }, standard:{ blocks:5, pen:1, l:'Standard' }, hard:{ blocks:4, pen:1.5, l:'Hard' } };
+G.DIFF = DIFF;
+const FREE_START = W('2027-01-01');
+G.FREE_START = FREE_START;
+
+/* ---------- Helpers ---------- */
+G.art = () => ER.artists[S.artist];
+G.allProjects = () => {
+  const A = G.art();
+  const real = S.mode === 'story' ? A.projects : A.projects.filter(p => S.started.includes(p.id));
+  return real.concat(S.custom || []);
+};
+G.proj = id => G.art().projects.find(p => p.id === id) || (S.custom || []).find(p => p.id === id);
+G.pj = id => (S.pj[id] = S.pj[id] || { fin:{}, pre:{}, rel:{}, tp:{}, missed:0, hype:0, singles:[], edition:'standard', shift:0 });
+G.win = p => {
+  const sh = (S.pj[p.id] && S.pj[p.id].shift) || 0, f = v => v == null ? null : v + sh;
+  const w = { ws:f(p.ws), rs:f(p.rs), fs:f(p.fs), ps:f(p.ps), rel:f(p.rel) };
+  if (p.type === 'demos') { w.we = W('2006-10-01'); return w; }
+  const t = p.tour;
+  if (t && t.kind !== 'cancelled') { w.ts = f(t.ts); w.te = f(t.te); w.tps = Math.max(w.rel + 1, w.ts - 8); }
+  return w;
+};
+G.stageOf = (p, a) => {
+  const w = G.win(p);
+  if (p.type === 'demos') return a >= w.ws && a < w.we ? 'write' : 'none';
+  if (w.ws != null && a >= w.ws && a < w.rs) return 'write';
+  if (a >= w.rs && a < w.fs) return 'record';
+  if (a >= w.fs && a < w.ps) return 'finish';
+  if (a >= w.ps && a < w.rel) return 'pre';
+  if (a === w.rel) return 'release';
+  if (w.ts != null) {
+    if (a > w.rel && a < w.tps) return 'promo';
+    if (a >= w.tps && a < w.ts) return 'tourprep';
+    if (a >= w.ts && a <= w.te) return 'tour';
+    if (a > w.te && a <= w.te + 10) return 'rest';
+  } else {
+    if (a > w.rel && a <= w.rel + 20) return 'promo';
+    if (a > w.rel + 20 && a <= w.rel + 30) return 'rest';
+  }
+  return 'none';
+};
+G.active = (a) => {
+  a = a == null ? S.abs : a;
+  return G.allProjects().map(p => ({ p, st:G.stageOf(p, a) })).filter(x => x.st !== 'none');
+};
+// The current era: the latest project whose announcement (or release) has come.
+G.currentEra = () => {
+  let best = null;
+  G.allProjects().forEach(p => { if (p.type === 'demos' || p.type === 'edition') return; const w = G.win(p); if (S.abs >= (w.ps != null ? w.ps : w.rel) && (!best || G.win(best).rel <= w.rel)) best = p; });
+  return best;
+};
+G.age = () => { const born = G.art().born; return Math.floor((S.abs - born) / 52); };
+G.yw = () => ER.yw(S.abs);
+G.fmtDate = abs => { const d = ER.dateOf(abs); return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric', timeZone:'UTC' }); };
+G.fmtN = n => { n = Math.round(n); const a = Math.abs(n); if (a >= 1e9) return (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + 'B'; if (a >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'; if (a >= 1e4) return Math.round(n / 1e3) + 'K'; if (a >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K'; return String(n); };
+G.fmtM = n => (n < 0 ? '−$' : '$') + G.fmtN(Math.abs(n));
+G.blocks = () => { if (S.week.forcedRest) return 1; return DIFF[S.diff].blocks + (S.flags.easyBlocks || 0); };
+G.canon = () => S.canon.total ? Math.round(S.canon.hit / S.canon.total * 100) : 100;
+G.unlocked = tab => {
+  if (S.mode !== 'story') return true;
+  if (tab === 'eggs' && S.flags.eggs) return true;
+  const u = G.art().tabUnlock[tab]; return u == null || S.abs >= u;
+};
+G.uid = () => Math.random().toString(36).slice(2, 9);
+
+/* ---------- New game ---------- */
+G.newGame = function (o) {
+  const A = ER.artists[o.artist || 'taylor'];
+  S = {
+    capCache:20000, v:1, artist:A.id, mode:o.mode || 'story', diff:o.diff || 'standard', slot:o.slot || 1, look:o.look,
+    abs:A.startAbs, created:Date.now(),
+    stats:{ fans:60, rep:50, heat:0, write:12, clout:0, own:0, energy:100, money:2000, team:60, genre:5 },
+    canon:{ hit:0, total:0 }, songs:{}, pj:{}, custom:[], started:[], released:[],
+    week:{ used:0, done:{}, pending:[], forcedRest:false }, seen:{}, log:[], inbox:[], duties:[], sponsors:[],
+    eggs:{ planted:[], log:[], fatigue:0, decoded:0 }, feed:[], awards:[], charts:{ albums:[], singles:[] },
+    recap:null, years:{}, routine:[], ach:{}, goals:{}, flags:{}, priorities:[], recovery:null, history:[],
+    rivalsSeen:{}, modal:[], ffStop:'' };
+  if (o.prologue) o.prologue.forEach((ci, i) => { const c = A.prologue[i].ch[ci]; applyFx(c.fx); scoreCanon(!!c.c); S.log.push({ abs:A.born + i * 200, id:'pro' + i, t:A.prologue[i].t, l:c.l, canon:!!c.c, truth:A.prologue[i].truth }); });
+  if (S.mode === 'era') setupEra(o.era);
+  inbox('family', 'A new start', S.mode === 'story' ? 'Every week you get Time Blocks to spend. Required tasks come first. Real events interrupt with a decision. Press Advance Week when you are done.' : 'Era Start: the event track is off, and you control the calendar for this era.');
+  startWeek();
+  return S;
+};
+// Era Start: begin at a chosen era with that moment's catalog and team.
+const ERA_PRESET = { ts1:[2e3,45,8,25,6,0,4e4,5], fearless:[9e5,62,30,45,30,0,2e6,15], speaknow:[8e6,72,45,55,55,0,1.5e7,22], red:[1.4e7,74,50,60,65,0,4e7,25],
+  '1989':[2e7,70,60,65,72,0,8e7,40], rep:[3e7,40,75,72,80,0,1.6e8,55], lover:[4e7,60,55,74,82,40,2.5e8,60], folklore:[4.5e7,68,50,75,84,40,3e8,55],
+  evermore:[5e7,74,45,78,86,40,3.2e8,85], midnights:[6e7,76,50,80,90,45,4e8,85], ttpd:[9e7,80,70,82,95,60,8e8,58], showgirl:[1e8,82,70,84,97,70,1.2e9,70] };
+function setupEra(id) {
+  const A = G.art(); const p = A.projects.find(x => x.id === id) || A.projects[1];
+  // Stats come from the latest album with a preset that starts on or before this one.
+  const first = p.ws != null ? p.ws : p.rs;
+  const prior = A.projects.filter(q => ERA_PRESET[q.id] && (q.ws != null ? q.ws : q.rs) <= first).pop();
+  const ps = ERA_PRESET[prior ? prior.id : 'ts1'];
+  Object.assign(S.stats, { fans:ps[0], rep:ps[1], heat:ps[2], write:ps[3], clout:ps[4], own:ps[5], money:ps[6], genre:ps[7] });
+  S.started = [p.id];
+  S.abs = p.ws != null ? p.ws : p.rs;
+  // Earlier albums' songs are already out.
+  A.projects.filter(q => q.rel != null && q.rel < S.abs && q.type !== 'rerecord').forEach(q => {
+    q.tracks.forEach(t => S.songs[t] = { p:q.id, st:'released', q:70, co:'', abs:q.rel });
+    (q.vault || []).forEach(t => S.songs[t] = { p:q.id, st:'vault', q:68, co:'', vault:true, abs:q.rel });
+    S.released.push({ pid:q.id, abs:q.rel, fw:q.units || 0, total:(q.units || 0) * 4, q:70, peak:1, wk:0, real:q.units });
+  });
+  if (S.abs >= W('2019-08-19')) S.flags.rerecords = true;
+  if (S.abs >= W('2014-09-22')) S.flags.secretsessions = true;
+  if (S.abs >= W('2023-07-10')) S.flags.bracelets = true;
+  const rr = A.projects.find(q => q.type === 'rerecord' && q.of && S.abs >= q.rel);
+  A.projects.filter(q => q.type === 'rerecord' && q.rel < S.abs).forEach(q => { S.stats.own = Math.max(S.stats.own, 70); q.tracks.concat(q.vaultSongs || []).forEach(t => S.songs[t + " (Taylor's Version)"] = { p:q.id, st:'released', q:72, tv:true, of:t, abs:q.rel }); });
+  S.flags.eggs = true;
+}
+
+/* ---------- Effects ---------- */
+function applyFx(fx, mult) {
+  if (!fx) return;
+  mult = mult || 1; const s = S.stats;
+  for (const k in fx) {
+    const v = fx[k] * (k === 'money' ? 1 : mult);
+    if (k === 'fans') { const g = v > 0 ? s.fans * v / 100 * clamp(1 - s.fans / G.fanCap(), .01, 1) : s.fans * v / 100; s.fans = Math.max(10, s.fans + g); }
+    else if (k === 'money') s.money += v;
+    else if (k === 'hype') { const e = G.currentEra() || G.active()[0] && G.active()[0].p; if (e) G.pj(e.id).hype = clamp(G.pj(e.id).hype + v, 0, 100); }
+    else if (k === 'quality') { G.active().forEach(x => { G.pj(x.p.id).qmod = (G.pj(x.p.id).qmod || 0) + v; }); }
+    else if (k === 'genre') s.genre = clamp(s.genre + v, 0, 100);
+    else if (s[k] != null) s[k] = clamp(s[k] + v, 0, 100);
+  }
+}
+G.applyFx = applyFx;
+// Fan boosts saturate: how many fans you can reach depends on what you have released and played.
+G.fanCap = () => S.capCache || 20000;
+function updateCap() {
+  const units = S.released.reduce((a, r) => a + r.total, 0);
+  const tix = Object.values(S.pj).reduce((a, x) => a + (x.tour ? x.tour.tickets : 0), 0) + (S.openFans || 0);
+  S.capCache = 20000 + S.stats.clout * 1000 + units * 2.2 + tix * 1.2;
+}
+function scoreCanon(hit) { S.canon.total++; if (hit) S.canon.hit++; }
+
+/* ---------- Inbox and duties ---------- */
+const FROM = { manager:'Your manager', publicist:'Your publicist', label:'The label', family:'Mom', collab:'A collaborator', promoter:'The promoter', fans:'Fan club' };
+function inbox(from, subj, x, extra) { S.inbox.unshift(Object.assign({ id:G.uid(), abs:S.abs, from, subj, x, read:false }, extra || {})); if (S.inbox.length > 80) S.inbox.length = 80; }
+G.inbox = inbox;
+function duty(from, l, cost, due, pen, src) { S.duties.push({ id:'d' + G.uid(), from, l, cost, due, pen:pen || { team:-4, clout:-2 }, src:src || '' }); }
+G.duty = duty;
+function feed(x, h) { S.feed.unshift({ abs:S.abs, h:h || pick(ER.FAN_HANDLES), x }); if (S.feed.length > 60) S.feed.length = 60; }
+G.feed = feed;
+
+/* ---------- Songs ---------- */
+G.writable = () => {
+  const out = [];
+  G.active().forEach(({ p, st }) => {
+    if (!(st === 'write' || st === 'record' || (p.type === 'demos' && st === 'write'))) return;
+    if (p.type === 'rerecord') return;
+    const list = p.tracks.map(t => [t, 'album']).concat((p.extras || []).map(t => [t, 'bonus'])).concat((p.vault || []).map(t => [t, 'vault']));
+    list.forEach(([t, kind]) => { if (!S.songs[t]) out.push({ t, p, kind }); });
+  });
+  return out;
+};
+G.writeSong = function (t, co) {
+  const item = G.writable().find(x => x.t === t); if (!item) return null;
+  const cw = G.art().cowriters[co] || { bonus:0 };
+  let q = rnd(32, 52) + S.stats.write * .42 + cw.bonus + (item.p.solo && co === 'Solo' ? 5 : 0);
+  q = clamp(Math.round(q), 10, 100);
+  S.songs[t] = { p:item.p.id, st:'written', q, co, abs:S.abs, vault:item.kind === 'vault', kind:item.kind };
+  if (item.p.solo && co !== 'Solo') G.pj(item.p.id).notSolo = true;
+  S.stats.write = clamp(S.stats.write + .6, 0, 100);
+  if (!S.ach.firstsong) ach('firstsong');
+  return S.songs[t];
+};
+G.recordable = () => {
+  const out = [];
+  G.active().forEach(({ p, st }) => {
+    if (st !== 'record' && st !== 'finish') return;
+    if (p.type === 'rerecord') {
+      p.tracks.concat(p.vaultSongs || []).forEach(t => { const tv = t + " (Taylor's Version)"; if (!S.songs[tv]) out.push({ t, tv, p, vault:(p.vaultSongs || []).includes(t) }); });
+    } else {
+      p.tracks.concat(p.extras || []).concat(p.vault || []).forEach(t => { const s = S.songs[t]; if (s && s.st === 'written' && s.p === p.id) out.push({ t, p, vault:s.vault }); });
+    }
+  });
+  return out;
+};
+G.recordSong = function (t, prod, pid) {
+  const item = G.recordable().find(x => x.t === t && (!pid || x.p.id === pid)); if (!item) return null;
+  const pb = rnd(0, 6) + (item.p.producers && item.p.producers[0] === prod ? 2 : 0);
+  if (item.p.type === 'rerecord') {
+    const orig = S.songs[t]; const base = orig ? orig.q : 62;
+    S.songs[item.tv] = { p:item.p.id, st:'recorded', q:clamp(Math.round(base + pb + 4), 10, 100), co:orig ? orig.co : '', prod, abs:S.abs, vault:item.vault, tv:true, of:t };
+  } else {
+    const s = S.songs[t]; s.st = 'recorded'; s.prod = prod; s.q = clamp(Math.round(s.q + pb), 10, 100); s.rabs = S.abs;
+  }
+  return true;
+};
+function counts(p) {
+  if (p.type === 'rerecord') {
+    const all = p.tracks.concat(p.vaultSongs || []);
+    const rec = all.filter(t => S.songs[t + " (Taylor's Version)"]).length;
+    return { target:all.length, written:all.length, recorded:rec };
+  }
+  const written = p.tracks.filter(t => S.songs[t]).length;
+  const recorded = p.tracks.filter(t => S.songs[t] && S.songs[t].st !== 'written').length;
+  return { target:p.tracks.length, written, recorded };
+}
+G.counts = counts;
+
+/* ---------- Tasks ---------- */
+const T = (id, l, cost, o) => Object.assign({ id, l, cost, req:false, kind:'opt' }, o || {});
+G.tasks = function () {
+  const a = S.abs, out = [], yw = ER.yw(a), age = G.age();
+  // School: a fixed block during school weeks, until she finishes through homeschooling.
+  if (S.mode === 'story' && S.artist === 'taylor' && age >= 11 && a < W('2007-06-04') && !(yw.w >= 23 && yw.w <= 34))
+    out.push(T('school', 'School', 1, { kind:'school', fixed:true, desc:'Keep up with school. This block is fixed.' }));
+  G.active().forEach(({ p, st }) => {
+    const w = G.win(p), c = counts(p), pid = p.id, pj = G.pj(pid), nm = p.short || p.title;
+    if (p.type === 'demos') { if (G.writable().some(x => x.p.id === pid)) out.push(T('write:' + pid, 'Write an early song', 2, { kind:'write', p:pid, tab:'songbook' })); return; }
+    if ((st === 'write' || st === 'record') && p.type !== 'rerecord') {
+      const span = Math.max(1, (w.fs - 2) - (w.ws != null ? w.ws : w.rs)), el = a - (w.ws != null ? w.ws : w.rs);
+      const need = Math.min(c.target, Math.floor(c.target * clamp(el / span, 0, 1)) + (a >= w.fs - 3 ? c.target : 0));
+      const behind = c.written < Math.min(c.target, need);
+      if (G.writable().some(x => x.p.id === pid)) out.push(T('write:' + pid, `Write a song for ${nm}`, 2, { req:behind && c.written < c.target, kind:'write', p:pid, tab:'songbook', desc:`${c.written} of ${c.target} album songs written.` }));
+    }
+    if (st === 'record' || (st === 'finish' && c.recorded < c.target)) {
+      const span = Math.max(1, w.fs - w.rs), el = a - w.rs;
+      const need = Math.floor(c.target * clamp(el / span, 0, 1));
+      const avail = G.recordable().some(x => x.p.id === pid);
+      if (avail) out.push(T('record:' + pid, p.type === 'rerecord' ? `Record a Taylor's Version track` : `Record a track for ${nm}`, 1, { req:c.recorded < Math.min(c.target, need) || st === 'finish', kind:'record', p:pid, tab:'studio', desc:`${c.recorded} of ${c.target} tracks recorded.` }));
+    }
+    if (st === 'finish') { const nx = ER.FINISH.find(f => !pj.fin[f[0]]); if (nx) out.push(T('fin:' + pid + ':' + nx[0], `${nx[1]} (${nm})`, nx[2], { req:true, kind:'fin', p:pid, item:nx[0], tab:nx[0] === 'cover' ? 'cover' : 'studio' }));
+      ER.FINISH.filter(f => !pj.fin[f[0]] && f !== nx).slice(0, 2).forEach(f => out.push(T('fin:' + pid + ':' + f[0], `${f[1]} (${nm})`, f[2], { kind:'fin', p:pid, item:f[0], tab:f[0] === 'cover' ? 'cover' : 'studio' }))); }
+    if (st === 'pre') {
+      const list = p.type === 'rerecord' ? ER.PRE_TV : p.surprise ? ER.PRE_SURPRISE : ER.PRE;
+      const left = list.filter(f => !pj.pre[f[0]]), weeks = w.rel - a;
+      left.forEach((f, i) => out.push(T('pre:' + pid + ':' + f[0], `${f[1]} (${nm})`, f[2], { req:i === 0 || left.length >= weeks, kind:'pre', p:pid, item:f[0], tab:'rollout' })));
+      if (!pj.egg && G.unlocked('eggs')) out.push(T('egg:' + pid, `Plant an Easter egg for ${nm}`, 1, { kind:'egg', p:pid, tab:'eggs' }));
+    }
+    if (st === 'release') ER.RELEASE.forEach(f => { if (!pj.rel[f[0]]) out.push(T('rel:' + pid + ':' + f[0], `${f[1]} (${nm})`, f[2], { req:true, kind:'rel', p:pid, item:f[0] })); });
+    if (st === 'promo') {
+      const since = a - w.rel, recd = p.tracks.filter(t => S.songs[t] && (S.songs[t].st === 'released' || S.songs[t].tv)).length;
+      if ([6, 14, 22, 30].includes(since) && pj.singles.length < 5 && p.type !== 'edition') out.push(T('single:' + pid + ':' + since, `Release the next single from ${nm}`, 1, { req:true, kind:'single', p:pid, tab:'rollout' }));
+      out.push(T('awards:' + pid, `Run an awards campaign for ${nm}`, 1, { kind:'campaign', p:pid }));
+    }
+    if (st === 'tourprep') {
+      const tp = pj.tp, left = ER.TOURPREP.filter(f => !tp[f[0]]), weeks = w.ts - a;
+      left.forEach((f, i) => out.push(T('tp:' + pid + ':' + f[0], `${f[1]} (${p.tour.name})`, f[2], { req:i === 0 || left.length >= weeks || f[0] === 'rehearse' && weeks <= 1, kind:'tp', p:pid, item:f[0], tab:'tour' })));
+    }
+    if (st === 'tour') {
+      out.push(T('shows:' + pid, `Play this week's ${p.tour.name} shows`, 2, { req:true, kind:'shows', p:pid }));
+      out.push(T('recover:' + pid, 'Recovery day on the road', 1, { kind:'recover' }));
+      if (p.tour.surprise || S.flags.surpriseGuests) out.push(T('surprise:' + pid, 'Plan a surprise moment', 1, { kind:'surprise', p:pid }));
+    }
+  });
+  // Duties from the team and sponsors.
+  S.duties.forEach(d => { if (d.due >= a) out.push(T('duty:' + d.id, d.l, d.cost, { req:d.due === a, kind:'duty', duty:d.id, desc:`From ${FROM[d.from] || d.from}. Due ${G.fmtDate(d.due)}.` })); });
+  // Optional, always available.
+  const e = G.unlocked('songbook') && G.writable().length;
+  out.push(T('rest', 'Rest', 1, { kind:'rest', desc:'+15 Energy' }));
+  out.push(T('practice', 'Practise songwriting', 1, { kind:'practice', desc:'+2 Songwriting' }));
+  if (a >= W('2005-11-01')) out.push(T('social', 'Post for fans', 1, { kind:'social', desc:'Fans up, Press Heat up' }));
+  if (a >= W('2006-06-01')) out.push(T('fanevent', 'Hold a fan event', 2, { kind:'fanevent', desc:'Fans up, Energy down' }));
+  if (a >= W('2006-06-01')) out.push(T('interview', 'Do an interview', 1, { kind:'interview', tab:'press' }));
+  out.push(T('network', 'Network in the industry', 1, { kind:'network', desc:'+Industry Clout' }));
+  if (S.stats.money > 5000) out.push(T('charity', 'Support a cause', 1, { kind:'charity', desc:'+Reputation, costs money' }));
+  out.push(T('private', 'Private time with friends and family', 1, { kind:'private', desc:'+Energy, +Team mood' }));
+  if (a < W('2006-01-01')) out.push(T('gig', 'Play a local gig', 1, { kind:'gig', desc:'Fans up, a little money' }));
+  if (S.flags.free && !G.active().some(x => ['write','record','finish','pre'].includes(x.st))) out.push(T('newera', 'Start a new era', 0, { kind:'newera', tab:'studio' }));
+  return out;
+};
+G.taskDone = id => !!S.week.done[id];
+G.requiredLeft = () => G.tasks().filter(t => t.req && !S.week.done[t.id]);
+G.canSpend = cost => S.week.used + cost <= G.blocks() + 3;
+
+G.doTask = function (id, arg) {
+  const t = G.tasks().find(x => x.id === id); if (!t || S.week.done[id]) return { err:'Already done.' };
+  if (!G.canSpend(t.cost)) return { err:'No Time Blocks left this week, even with overtime.' };
+  const over = Math.max(0, S.week.used + t.cost - G.blocks()) - Math.max(0, S.week.used - G.blocks());
+  let msg = '';
+  const pri = k => S.priorities.includes(k) ? 1.25 : 1;
+  const p = t.p ? G.proj(t.p) : null, pj = p ? G.pj(p.id) : null;
+  switch (t.kind) {
+    case 'school': msg = 'Homework done.'; break;
+    case 'write': { const opts = G.writable().filter(x => x.p.id === t.p); const s = arg && opts.find(x => x.t === arg.t) || opts.find(x => x.kind === 'album') || opts[0];
+      if (!s) return { err:'No songs left to write here.' }; const co = arg && arg.co || (p.cowriters || ['Solo'])[0]; const r = G.writeSong(s.t, co); msg = `You wrote "${s.t}" (${co === 'Solo' ? 'alone' : 'with ' + co}). Quality ${r.q}.`; break; }
+    case 'record': { const opts = G.recordable().filter(x => x.p.id === t.p); const s = arg && opts.find(x => x.t === arg.t) || opts.find(x => !x.vault) || opts[0];
+      if (!s) return { err:'Nothing ready to record.' }; G.recordSong(s.t, arg && arg.prod || (p.producers || ['Producer'])[0], t.p); msg = `Recorded "${s.tv || s.t}".`; break; }
+    case 'fin': pj.fin[t.item] = true; if (t.item === 'cover' && !pj.cover) pj.cover = G.autoCover(p); if (t.item === 'edition' && arg) pj.edition = arg; msg = 'Done.'; break;
+    case 'pre': pj.pre[t.item] = true; if (t.item === 'single' && !pj.singles.length) { const s = arg || G.defaultSingle(p); if (s) G.releaseSingle(p, s); } if (t.item === 'announce') { pj.hype = clamp(pj.hype + 12, 0, 100); feed(`${p.title} is coming. I'm not okay.`); } pj.hype = clamp(pj.hype + 5, 0, 100); msg = 'Done.'; break;
+    case 'rel': pj.rel[t.item] = true; pj.hype = clamp(pj.hype + 4, 0, 100); applyFx({ energy:-4 }); msg = 'Done.'; break;
+    case 'single': { const s = arg || G.defaultSingle(p); if (s) { G.releaseSingle(p, s); msg = `"${s}" goes to radio.`; } break; }
+    case 'campaign': applyFx({ clout:2, energy:-3 }); pj.campaign = (pj.campaign || 0) + 1; msg = 'Your team pitches the album to voters.'; break;
+    case 'tp': if (t.item === 'route' && !(pj.tour && pj.tour.approved)) { G.autoTour(p); } pj.tp[t.item] = true; applyFx({ energy:-3 }); msg = t.item === 'rehearse' ? 'Final rehearsal passes.' : 'Done.'; break;
+    case 'shows': msg = G.playShows(p); break;
+    case 'recover': applyFx({ energy:12 }); msg = 'You sleep on the bus all day.'; break;
+    case 'surprise': applyFx({ fans:1.5 * pri('fans'), heat:3 }); feed('the surprise tonight!!! I am on the floor'); msg = 'The crowd loses it.'; break;
+    case 'duty': { const d = S.duties.find(x => x.id === t.duty); if (d) { S.duties = S.duties.filter(x => x !== d); applyFx({ team:2, clout:1 }); msg = `${d.l}: done.`; } break; }
+    case 'rest': applyFx({ energy:15 * pri('rest') }); msg = 'You rest.'; break;
+    case 'practice': applyFx({ write:2 * pri('writing') }); msg = 'Your craft improves.'; break;
+    case 'social': if (S.flags.wiped && S.abs < (S.flags.wiped + 1)) { msg = 'Your accounts are wiped.'; break; } applyFx({ fans:1.2 * pri('fans'), heat:2 }); feed(pick(['she posted!!','new post, decoding now','the caption... it means something','okay but the outfit']), null); msg = 'Fans react.'; break;
+    case 'fanevent': applyFx({ fans:2.5 * pri('fans'), energy:-8, rep:1 }); msg = S.flags.secretsessions ? 'A Secret Session. Nobody leaks a note.' : 'A meet-up with fans.'; break;
+    case 'interview': { const o = arg ? ER.OUTLETS.find(x => x.id === arg) : ER.OUTLETS.filter(x => ER.ds(x.from + '-01-01') <= S.abs).pop(); applyFx({ heat:o.heat, rep:(S.stats.heat > 70 ? -2 : o.rep) * pri('press'), fans:o.fans }); msg = `${o.n}: done.`; break; }
+    case 'network': applyFx({ clout:2 * pri('business') }); msg = 'Useful conversations.'; break;
+    case 'charity': { const g = Math.max(1000, Math.round(S.stats.money * .01)); S.stats.money -= g; applyFx({ rep:3 }); msg = `You gave ${G.fmtM(g)}.`; break; }
+    case 'private': applyFx({ energy:8, team:3 }); msg = 'A quiet day.'; break;
+    case 'gig': applyFx({ fans:6, energy:-5 }); S.stats.money += 150; msg = 'You play a local fair.'; break;
+    case 'newera': return { goto:'studio' };
+  }
+  S.week.used += t.cost; S.week.done[id] = true;
+  if (over > 0) { applyFx({ energy:-8 * over }); msg += ` Overtime cost ${8 * over} Energy.`; }
+  return { ok:true, msg };
+};
+
+/* ---------- Singles ---------- */
+G.defaultSingle = p => { const pj = G.pj(p.id); const pool = (p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => t + " (Taylor's Version)") : p.tracks.concat(p.extras || [])).filter(t => S.songs[t] && S.songs[t].st !== 'written' && !pj.singles.includes(t));
+  pool.sort((a, b) => S.songs[b].q - S.songs[a].q); return pool[0]; };
+G.releaseSingle = function (p, t) {
+  const pj = G.pj(p.id); if (pj.singles.includes(t)) return;
+  pj.singles.push(t);
+  const s = S.songs[t]; const perf = (s.q / 100) * .5 + (S.stats.fans > 1e6 ? .2 : .05) + S.stats.clout / 400 + pj.hype / 500;
+  const pos = clamp(Math.round(100 - perf * 120 + rnd(-10, 10)), 1, 100);
+  S.charts.singles.unshift({ t, pid:p.id, abs:S.abs, debut:pos, peak:pos, pos, wk:0 });
+  s.single = true; if (s.st === 'recorded' && S.abs >= G.win(p).rel) s.st = 'released';
+  if (pos === 1 && !S.ach.no1) ach('no1');
+  if (pos === 1) G.pj(p.id).no1 = true;
+  feed(`"${t}" is out and I have listened 40 times`);
+};
+
+/* ---------- Tours ---------- */
+const CAP = { theater:2500, arena:14000, stadium:55000 };
+G.CAP = CAP;
+G.priceOf = (lvl, abs) => { const y = ER.yw(abs).y; return Math.round([0, 48, 85, 140][lvl] * Math.pow(1.033, y - 2006)); };
+G.tourDemand = (plan) => 230 * Math.pow(Math.max(1, S.stats.fans), .55) * [0, 1.15, 1, .78][plan.price] * (.65 + S.stats.rep / 140) * (1 + plan.prod * .05);
+G.suggestTour = function (p) {
+  const tier = S.stats.fans > 1.5e7 ? 'stadium' : S.stats.fans > 1.2e6 ? 'arena' : 'theater';
+  const plan = { tier, price:2, prod:2, regions:['North America'], openers:(p.tour.openers || []).slice(0, 2), setlist:[], nights:0, name:p.tour.name };
+  plan.nights = clamp(Math.round(G.tourDemand(plan) * .9 / CAP[tier]), 6, 160);
+  if (S.stats.fans > 5e6) plan.regions.push('Europe'); if (S.stats.fans > 2e7) plan.regions.push('Asia and Oceania'); if (S.stats.fans > 5e7) plan.regions.push('Latin America');
+  // Two or three of the best songs from each album, with more from the newest era.
+  const by = {}; G.catalog().forEach(t => { const k = S.songs[t].p; (by[k] = by[k] || []).push(t); });
+  const keys = Object.keys(by); plan.setlist = [];
+  keys.forEach((k, i) => { by[k].sort((a, b) => S.songs[b].q - S.songs[a].q); plan.setlist.push(...by[k].slice(0, i === keys.length - 1 ? 5 : keys.length > 8 ? 2 : 3)); });
+  plan.setlist = plan.setlist.slice(-24);
+  return plan;
+};
+G.catalog = () => Object.keys(S.songs).filter(t => S.songs[t].st === 'released' || (S.songs[t].tv && S.songs[t].st === 'released'));
+G.reviewTour = function (p, plan) {
+  const obj = [], dem = G.tourDemand(plan), sell = dem / (plan.nights * CAP[plan.tier]);
+  if (sell < .75) obj.push({ from:'manager', x:`Too many ${plan.tier} nights for your current numbers. About ${Math.max(4, Math.floor(dem * .85 / CAP[plan.tier]))} nights would sell.` });
+  const cost = plan.nights * CAP[plan.tier] * plan.prod * 3 * Math.pow(1.03, ER.yw(S.abs).y - 2006);
+  if (S.stats.money < cost * .05) obj.push({ from:'manager', x:`The production deposit is ${G.fmtM(cost * .05)}, and you cannot cover it yet. Lower the production level or the number of nights.` });
+  if (plan.price === 3 && S.stats.rep < 55) obj.push({ from:'publicist', x:'Top-tier prices with your reputation where it is would be a press risk. Bring prices down.' });
+  if (S.stats.heat > 85 && plan.prod === 3) obj.push({ from:'publicist', x:'The press will call a maximum-production show excessive right now.' });
+  if (!plan.setlist || plan.setlist.length < 10) obj.push({ from:'manager', x:'The setlist needs at least 10 songs.' });
+  return { ok:!obj.length, obj, sell:Math.min(1, sell), cost };
+};
+G.submitTour = function (p, plan) {
+  const pj = G.pj(p.id), r = G.reviewTour(p, plan);
+  pj.tour = Object.assign({}, plan, { submitted:S.abs, approved:r.ok, objections:r.obj, played:0, gross:0, tickets:0, acc:0, cost:r.cost });
+  if (r.ok) { inbox('manager', `${plan.name}: approved`, `The plan works: ${plan.nights} ${plan.tier} nights. Expected sell-through ${Math.round(r.sell * 100)}%.`); inbox('publicist', `${plan.name}: no press concerns`, 'I can work with this.'); pj.tp.route = true; }
+  else r.obj.forEach(o => inbox(o.from, `${plan.name}: sent back`, o.x));
+  return r;
+};
+G.autoTour = function (p) {
+  const plan = G.suggestTour(p); let r = G.submitTour(p, plan), n = 0;
+  while (!r.ok && n++ < 6) { plan.nights = Math.max(4, Math.floor(plan.nights * .8)); if (plan.price === 3) plan.price = 2; if (plan.prod > 1) plan.prod--; r = G.submitTour(p, plan); }
+  if (!r.ok) { plan.tier = plan.tier === 'stadium' ? 'arena' : 'theater'; plan.nights = 10; plan.prod = 1; plan.price = 1; G.submitTour(p, plan); G.pj(p.id).tour.approved = true; }
+};
+G.playShows = function (p) {
+  const pj = G.pj(p.id), w = G.win(p);
+  if (p.tour.kind === 'opening') { const fans = S.stats.fans * .004 + 8000; S.stats.fans += fans; S.openFans = (S.openFans || 0) + fans; S.stats.money += 6000; applyFx({ energy:-8, clout:1 }); return `You open for a headliner. About ${G.fmtN(fans)} new fans.`; }
+  if (!pj.tour || !pj.tour.approved) G.autoTour(p);
+  const tr = pj.tour, weeks = Math.max(1, w.te - w.ts + 1);
+  tr.acc += tr.nights / weeks; const n = Math.floor(tr.acc); tr.acc -= n;
+  if (!n) return 'A travel week between shows.';
+  const dem = G.tourDemand(tr), sell = clamp(dem / (tr.nights * CAP[tr.tier]) * rnd(.95, 1.04), .3, 1);
+  const price = G.priceOf(tr.price, S.abs), tix = Math.round(n * CAP[tr.tier] * sell), gross = tix * price;
+  tr.played += n; tr.tickets += tix; tr.gross += gross;
+  const net = gross * (.36 - tr.prod * .04) * (S.stats.own > 30 ? 1.05 : 1);
+  S.stats.money += net; S.stats.fans += tix * .12 * (S.flags.bracelets ? 1.2 : 1);
+  applyFx({ energy:-(5 + n * 1.6), clout:.4 });
+  let x = `${n} show${n > 1 ? 's' : ''}, ${G.fmtN(tix)} tickets, ${G.fmtM(gross)} gross.`;
+  const r = Math.random();
+  if (r < .08) { applyFx({ fans:1.5, heat:4 }); x += ' A moment from one show goes viral.'; feed('the clip from last night has 20 million views'); }
+  else if (r < .12) { tr.gross -= gross / n; S.stats.money -= net / n; x += ' Weather cancels one night.'; }
+  else if (r < .15 && sell >= .99) { tr.nights += 3; x += ' Demand is so high the promoter adds three nights.'; inbox('promoter', 'Added nights', 'Every show sold out, so we added three more.'); }
+  return x;
+};
+
+/* ---------- Covers ---------- */
+G.autoCover = p => { const mood = ER.ERA_MOOD[p.id] || 'pop'; const pals = ER.PALETTES.filter(x => x.mood === mood); return { pal:(pick(pals.length ? pals : ER.PALETTES)).id, sym:pick(ER.SYMBOLS), lay:pick(ER.LAYOUTS), fin:pick(ER.FINISHES), variants:0, auto:true }; };
+G.coverScore = (p, c) => { if (!c) return 0; const pal = ER.PALETTES.find(x => x.id === c.pal) || ER.PALETTES[0]; let sc = 55;
+  if (pal.mood === (ER.ERA_MOOD[p.id] || 'pop')) sc += 18; if (c.fin === 'foil' || c.fin === 'grain') sc += 4; if (c.lay === 'full-bleed' || c.lay === 'framed') sc += 3; if (c.auto) sc -= 8; if (c.upload) sc = 72;
+  sc -= Math.max(0, (c.variants || 0) - 3) * 6; return clamp(sc, 20, 98); };
+
+/* ---------- Easter eggs ---------- */
+G.eggTargets = () => {
+  const out = []; G.allProjects().forEach(p => { const w = G.win(p); if (p.type === 'demos') return; if (w.rel > S.abs) out.push({ id:'album:' + p.id, l:`The title of ${p.title}`, at:w.ps || w.rel });
+    (p.vault || []).forEach(v => { const tv = G.allProjects().find(q => q.id === p.vaultFor); if (tv && G.win(tv).rel > S.abs) out.push({ id:'vault:' + v, l:`Vault track "${v}"`, at:G.win(tv).rel }); }); });
+  if (S.flags.rerecords) G.allProjects().filter(p => p.type === 'rerecord' && G.win(p).rel > S.abs).forEach(p => out.push({ id:'tv:' + p.id, l:`The next re-record: ${p.title}`, at:G.win(p).ps }));
+  out.push({ id:'false', l:'Nothing (a false lead)', at:0 });
+  return out.slice(0, 14);
+};
+G.plantEgg = function (type, target, pid) {
+  const et = ER.EGG_TYPES.find(x => x.id === type) || ER.EGG_TYPES[0];
+  S.eggs.planted.push({ id:G.uid(), type:et.id, n:et.n, target:target.id, tl:target.l, diff:et.diff, abs:S.abs, prog:0, need:et.diff * 2 + 1, done:false, pid });
+  if (pid) G.pj(pid).egg = true;
+  feed(`wait. ${et.n.toLowerCase()}... this has to mean something`);
+};
+function eggsWeek() {
+  const E = S.eggs; E.fatigue = Math.max(0, E.fatigue - 1);
+  E.planted.filter(e => !e.done).forEach(e => {
+    e.prog += 1 + Math.log10(Math.max(10, S.stats.fans)) / 6;
+    if (e.prog >= e.need) { e.done = true; E.decoded++;
+      if (e.target === 'false') { E.fatigue += 12; feed('this was a false lead and i am exhausted'); e.res = 'Decoded, but it led nowhere. Fan fatigue rose.'; applyFx({ fans:-.5 }); }
+      else { const f = E.fatigue > 40 ? .4 : 1; applyFx({ fans:e.diff * 1.2 * f, hype:e.diff * 3 * f }); feed(`WE CRACKED IT. ${e.tl}.`); e.res = `Fans decoded it: ${e.tl}.`; } } });
+  if (S.stats.heat > 60 && Math.random() < .08) feed(pick(['she wore green on a tuesday, album 13 confirmed','the clock in that photo says 1:13. it is happening','counting the stairs in the video. there are 13.']), null);
+}
+
+/* ---------- Week cycle ---------- */
+function startWeek() {
+  S.week = { used:0, done:{}, pending:[], forcedRest:S.flags.exhausted || false };
+  S.flags.exhausted = false;
+  const a = S.abs, A = G.art();
+  if (G.tasks().some(t => t.kind === 'school')) { S.week.used = 1; S.week.done.school = true; }
+  if (S.mode === 'story' && !S.flags.free) A.events.forEach(e => { if (e.abs === a && S.seen[e.id] == null) S.week.pending.push(e.id); });
+  // Missed events after a load or an Era Start skip are not replayed.
+  if (S.flags.free && Math.random() < .07) { const d = pick(ER.DRAMA); S.week.pending.push('drama:' + d.id); }
+  const yw = ER.yw(a);
+  if (yw.w === 1 && S.abs > A.startAbs) S.modal.push({ k:'plan' });
+  if (S.mode === 'story' && a === FREE_START && !S.flags.free) S.modal.push({ k:'free' });
+  // Team assignments.
+  const act = G.active().filter(x => !['none','rest'].includes(x.st));
+  if (act.length && Math.random() < .22 && a >= W('2005-07-01')) {
+    const x = pick(act), nm = x.p.short || x.p.title, r = Math.random();
+    if (r < .35) duty('manager', `Approve the ${nm} budget`, 1, a + 2);
+    else if (r < .7) duty('publicist', `Magazine shoot for ${nm}`, 1, a + 3, { rep:-2, team:-3 });
+    else duty('label', `Label meeting about ${nm}`, 1, a + 2, { clout:-3, team:-2 });
+    const d = S.duties[S.duties.length - 1]; inbox(d.from, d.l, `Please get this done by the week of ${G.fmtDate(d.due)}.`);
+  }
+  // Crossover rivals.
+  ER.rivals.forEach(r => { if (r.abs === a && r.who !== S.artist && !S.rivalsSeen[r.title]) { S.rivalsSeen[r.title] = 1;
+    S.charts.albums.unshift({ t:r.title, by:ER.artists[r.who].name, rival:true, abs:a, fw:r.units, wk:0 });
+    inbox('label', `${ER.artists[r.who].name} releases ${r.title}`, `Expect ${G.fmtN(r.units)} in its first week. Plan around it.`); } });
+  G.save(true);
+}
+G.startWeek = startWeek;
+
+G.answer = function (id, ci) {
+  if (id.startsWith('drama:')) {
+    const d = ER.DRAMA.find(x => x.id === id.slice(6)); const c = d.ch[ci]; applyFx(c.fx, DIFF[S.diff].pen > 1 ? 1.2 : 1);
+    S.log.push({ abs:S.abs, id, t:d.t, l:c.l, drama:true }); S.week.pending = S.week.pending.filter(x => x !== id); return { r:'The story moves on.' };
+  }
+  const e = G.art().events.find(x => x.id === id); const c = e.ch[ci];
+  applyFx(c.fx); S.seen[id] = ci;
+  if (!e.s && e.ch.some(x => x.c)) scoreCanon(!!c.c);
+  if (e.award) { S.awards.push({ n:e.award, abs:S.abs, y:e.year }); if (e.award === 'Album of the Year' && !S.ach.aoty) ach('aoty'); }
+  if (e.egg) S.eggs.log.push({ n:e.egg, abs:S.abs });
+  if (e.unlock) S.flags[e.unlock] = true;
+  if (e.id === 'wipe') S.flags.wiped = S.abs;
+  if (e.id === 'surpriseguests') S.flags.surpriseGuests = true;
+  S.log.push({ abs:S.abs, id, t:e.t, l:c.l, canon:!!c.c, s:!!e.s, truth:e.truth, real:(e.ch.find(x => x.c) || {}).l });
+  S.week.pending = S.week.pending.filter(x => x !== id);
+  return { r:c.r, truth:e.truth };
+};
+G.dramaText = d => d.x.replace('{rival}', S.flags.rival || (S.flags.rival = pick(ER.RIVAL_STARS))).replace('{exec}', pick(ER.EXECS)).replace('{tabloid}', pick(ER.TABLOIDS));
+
+G.advance = function (force) {
+  if (S.week.pending.length) return { blocked:'event' };
+  const left = G.requiredLeft();
+  if (left.length && !force) return { confirm:left };
+  const pen = DIFF[S.diff].pen * (S.recovery ? 1.3 : 1);
+  left.forEach(t => {
+    if (t.kind === 'school') applyFx({ team:-3 }, pen);
+    else if (t.kind === 'duty') { const d = S.duties.find(x => x.id === t.duty); if (d) { applyFx(d.pen, pen); S.duties = S.duties.filter(x => x !== d); if (d.src) loseSponsor(d.src); } }
+    else if (t.kind === 'shows') { applyFx({ rep:-8, fans:-3, money:-200000 * pen }, pen); inbox('promoter', 'Cancelled shows', 'Shows were cancelled at short notice. Refunds are going out.'); }
+    else if (t.kind === 'tp' && t.item === 'rehearse') { G.pj(t.p).underRehearsed = true; }
+    else if (t.p) { G.pj(t.p).missed++; applyFx({ team:-2, energy:-2 }, pen); }
+  });
+  endWeek();
+  return { ok:true, missed:left.length };
+};
+function loseSponsor(id) { const s = S.sponsors.find(x => x.id === id && !x.lost); if (s) { s.lost = true; applyFx({ rep:-3, money:-s.paid * .5 }); inbox('manager', `${s.n} pulled out`, 'You missed a sponsor duty, so the deal is gone and part of the fee has to be paid back.'); } }
+
+function endWeek() {
+  const a = S.abs, s = S.stats, R = { abs:a, lines:[], fans0:s.fans, money0:s.money };
+  const yr = ER.yw(a).y, Y = S.years[yr] = S.years[yr] || { units:0, money0:s.money, fans0:s.fans, gross:0, shows:0, awards:0, releases:[] };
+  // Releases.
+  G.allProjects().forEach(p => { if (G.stageOf(p, a) === 'release') { const r = doRelease(p); R.lines.push(r); Y.releases.push(p.title); } });
+  // Weekly album sales.
+  let units = 0;
+  S.released.forEach(r => { if (r.abs >= a) return; r.wk++; const w = r.fw * Math.pow(.62, r.wk) + r.fw * .012 + (r.fw * .002 * Math.max(0, 1 - r.wk / 300)); units += w; r.total += w; });
+  const per = s.own >= 30 ? 5 : 1.6, inc = units * per;
+  s.money += inc; s.fans += units * .55; Y.units += units;
+  // Singles chart movement.
+  S.charts.singles.forEach(c => { if (c.abs >= a || c.out) return; c.wk++; c.pos = clamp(Math.round(c.pos + rnd(-6, 9) + c.wk * .6), 1, 101); if (c.pos < c.peak) c.peak = c.pos; if (c.pos > 100) c.out = true; });
+  S.charts.albums.forEach(c => { c.wk++; });
+  // Natural drift.
+  s.heat = Math.max(0, s.heat - 2.5);
+  updateCap();
+  { const gr = .0015 * ((s.rep - 50) / 50) + s.heat * .00004 - (S.flags.silence ? .001 : 0); s.fans *= 1 + (gr > 0 ? gr * clamp(1 - s.fans / G.fanCap(), 0, 1) : gr); }
+  if (S.flags.silence) s.heat = Math.max(0, s.heat - 2);
+  s.energy = clamp(s.energy + Math.max(0, G.blocks() - S.week.used) * 4 + 6, 0, 100);
+  if (G.active(a).some(x => x.st === 'tour')) s.energy = clamp(s.energy - 4, 0, 100);
+  s.team = clamp(s.team + (s.team < 60 ? .6 : -.2), 0, 100);
+  const costs = yr < 2006 ? 25 : (300 + s.clout * 45) * Math.pow(1.03, yr - 2005) * (s.fans > 1e7 ? 5 : s.fans > 1e6 ? 2.5 : 1);
+  s.money -= costs;
+  G.allProjects().forEach(p => { const pj = S.pj[p.id]; if (pj && pj.hype > 0 && G.stageOf(p, a) !== 'pre') pj.hype = Math.max(0, pj.hype - 1.5); });
+  eggsWeek();
+  // Exhaustion and collapse.
+  if (s.energy <= 0) { S.flags.exhausted = true; inbox('family', 'You need to stop', 'You have nothing left. Next week is a forced rest week.'); }
+  if (!S.recovery && (s.rep < 15 || s.team < 15)) { const k = s.rep < 15 ? 'rep' : 'team'; S.recovery = { k, until:a + 12 }; inbox('manager', 'Recovery plan', `Your ${k === 'rep' ? 'Public Reputation' : 'team mood'} has collapsed. Get it back above 30 within 12 weeks. Weeks are harder until then.`); }
+  if (S.recovery) { if (s[S.recovery.k] >= 30) { inbox('manager', 'You recovered', 'The comeback is real.'); applyFx({ fans:3 }); S.recovery = null; ach('comeback'); } else if (a >= S.recovery.until) { S.recovery.until = a + 12; } }
+  // Duties expire.
+  S.duties = S.duties.filter(d => d.due > a);
+  // Tour wrap-ups and era goals.
+  G.allProjects().forEach(p => { const w = G.win(p); if (w.te === a) wrapTour(p); if ((w.te != null ? w.te + 1 : w.rel + 21) === a + 1) checkGoals(p); });
+  // Track.
+  R.fans = s.fans - R.fans0; R.money = s.money - R.money0; R.units = units;
+  R.team = S.inbox.filter(m => m.abs === a).slice(0, 3).map(m => `${FROM[m.from] || m.from}: ${m.subj}`);
+  S.recap = R;
+  S.history.push({ abs:a, fans:Math.round(s.fans), money:Math.round(s.money), rep:Math.round(s.rep), canon:G.canon() }); if (S.history.length > 1500) S.history.shift();
+  if (ER.yw(a).w === 52) { Y.fans1 = s.fans; Y.money1 = s.money; Y.canon = G.canon(); Y.awards = S.awards.filter(x => x.y === yr).length; S.modal.push({ k:'year', y:yr }); }
+  achievements();
+  S.abs++;
+  if (S.mode === 'story') { const u = JSON.parse(lsGet('eras-unlocked') || '["ts1"]'); G.allProjects().forEach(p => { const w = G.win(p), st = w.ws != null ? w.ws : w.rs; if (p.type !== 'demos' && p.type !== 'edition' && st != null && S.abs >= st && !u.includes(p.id) && G.art().projects.includes(p)) u.push(p.id); }); lsSet('eras-unlocked', JSON.stringify(u)); }
+  startWeek();
+}
+function doRelease(p) {
+  const pj = G.pj(p.id), c = counts(p);
+  const songs = p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => S.songs[t + " (Taylor's Version)"]).filter(Boolean) : p.tracks.map(t => S.songs[t]).filter(x => x && x.st !== 'written');
+  let q = songs.length ? songs.reduce((a, x) => a + x.q, 0) / songs.length : 30;
+  q *= .6 + .4 * (c.recorded / Math.max(1, c.target));
+  q -= pj.missed * 3; q += (pj.qmod || 0);
+  if (p.solo && !pj.notSolo) q += 3;
+  q = clamp(q, 5, 100);
+  const cover = G.coverScore(p, pj.cover || (pj.cover = G.autoCover(p)));
+  const genreGap = Math.abs(S.stats.genre - (p.genre || S.stats.genre));
+  const perf = .36 * q / 100 + .22 * clamp(pj.hype + cover / 5, 0, 100) / 100 + .2 * S.stats.rep / 100 + .1 * S.stats.team / 100 + .12 * (1 - genreGap / 100);
+  const f = clamp(.4 + .9 * (perf - .15), .4, 1.4);
+  const fw = Math.round(p.units ? p.units * f : p.type === 'edition' ? S.stats.fans * .002 * f : Math.max(5000, S.stats.fans * .025 * f));
+  const pos = fw > 150000 ? 1 : fw > 60000 ? clamp(Math.round(8 - fw / 20000), 1, 8) : clamp(Math.round(40 - fw / 2000), 2, 40);
+  // Songs come out.
+  songs.forEach(x => { x.st = 'released'; });
+  (p.extras || []).forEach(t => { const x = S.songs[t]; if (x && x.st === 'recorded') x.st = 'released'; });
+  if (p.type === 'rerecord') { S.stats.own = clamp(S.stats.own + 6, 0, 100); }
+  const rec = { pid:p.id, abs:S.abs, fw, total:fw, q:Math.round(q), peak:pos, wk:0, real:p.units, cover };
+  S.released.push(rec);
+  S.charts.albums.unshift({ t:p.title, by:G.art().name, abs:S.abs, fw, pos, wk:0 });
+  S.stats.fans += fw * 1.2; S.stats.money += fw * (S.stats.own >= 30 ? 5 : 1.6);
+  if (S.mode === 'story' && p.units) { const close = Math.abs(fw / p.units - 1) < .2; scoreCanon(close); }
+  pj.released = true; pj.fw = fw;
+  if (fw >= 1e6 && !S.ach.million) ach('million');
+  if (!pj.singles.length) { const sg = G.defaultSingle(p); if (sg) G.releaseSingle(p, sg); }
+  S.modal.push({ k:'release', pid:p.id });
+  inbox('label', `${p.title}: first week`, `${G.fmtN(fw)} units${p.units ? ` (the real figure was ${G.fmtN(p.units)})` : ''}. Debut at No. ${pos}.`);
+  return `${p.title} is out: ${G.fmtN(fw)} first week.`;
+}
+function wrapTour(p) {
+  const pj = G.pj(p.id), tr = pj.tour; if (!tr || pj.tourDone) return; pj.tourDone = true;
+  const t = p.tour.target; let note = '';
+  if (t && S.mode === 'story') { const close = Math.abs(tr.gross / t - 1) < .25; scoreCanon(close); note = ` The real tour grossed about ${G.fmtM(t)}.${close ? ' Canon bonus: you matched its scale.' : ''}`;
+    if (tr.gross > t * 1.25) applyFx({ energy:-20, team:-5 }); }
+  if (tr.tier === 'stadium') ach('stadium');
+  const yr = ER.yw(S.abs).y; S.years[yr] && (S.years[yr].gross += tr.gross, S.years[yr].shows += tr.played);
+  inbox('manager', `${p.tour.name} is over`, `${tr.played} shows, ${G.fmtN(tr.tickets)} tickets, ${G.fmtM(tr.gross)} gross.${note}`);
+}
+function checkGoals(p) {
+  if (!p.goals || S.goals[p.id]) return; const pj = G.pj(p.id);
+  S.goals[p.id] = p.goals.map(g => {
+    if (g.k === 'units') return (pj.fw || 0) >= g.v;
+    if (g.k === 'award') return S.awards.some(a => a.n === g.v && a.abs >= (G.win(p).rel || 0));
+    if (g.k === 'no1') return !!pj.no1;
+    if (g.k === 'solo') return !pj.notSolo;
+    if (g.k === 'own') return S.stats.own >= g.v;
+    if (g.k === 'tourgross') return pj.tour && pj.tour.gross >= g.v;
+    if (g.k === 'film') return S.seen.atwfilm === 0;
+    if (g.k === 'written') return p.tracks.every(t => S.songs[t]);
+    return false; });
+  const n = S.goals[p.id].filter(Boolean).length; if (n) { applyFx({ clout:n * 2, fans:n }); S.stats.money += n * 50000; }
+}
+const ACH = { firstsong:'First song', no1:'Hot 100 No. 1', million:'A million in a week', aoty:'Album of the Year', stadium:'Stadium tour', masters:'Own your masters', canon90:'Canon Score 90+', eggs10:'Ten eggs decoded', comeback:'The comeback', billion:'Billion-dollar tour', free:'The story is yours' };
+G.ACH = ACH;
+function ach(k) { if (S.ach[k]) return; S.ach[k] = S.abs; inbox('fans', `Achievement: ${ACH[k]}`, 'Added to your Legacy.'); }
+function achievements() {
+  if (S.stats.own >= 95) ach('masters'); if (S.canon.total >= 20 && G.canon() >= 90) ach('canon90'); if (S.eggs.decoded >= 10) ach('eggs10');
+  if (Object.values(S.pj).some(x => x.tour && x.tour.gross >= 1e9)) ach('billion'); if (S.flags.free) ach('free');
+}
+
+/* ---------- Fast-forward ---------- */
+G.quietWeek = () => !S.week.pending.length && !G.requiredLeft().length && !S.modal.length;
+G.fastForward = function (max) {
+  let n = 0; const st0 = JSON.stringify(G.active().map(x => x.p.id + x.st));
+  while (n < (max || 52) && G.quietWeek()) { endWeek(); n++; if (JSON.stringify(G.active().map(x => x.p.id + x.st)) !== st0) break; }
+  return n;
+};
+/* Routines: save the optional tasks you did, apply them in one tap. */
+G.saveRoutine = () => { S.routine = G.tasks().filter(t => !t.req && S.week.done[t.id]).map(t => t.kind); return S.routine.length; };
+G.applyRoutine = () => { let n = 0; S.routine.forEach(k => { const t = G.tasks().find(x => x.kind === k && !x.req && !S.week.done[x.id]); if (t && S.week.used + t.cost <= G.blocks()) { G.doTask(t.id); n++; } }); return n; };
+
+/* ---------- Free play ---------- */
+G.songTitle = () => { const w = ER.TITLE_WORDS; const r = Math.random(); return r < .4 ? `${pick(w.a)} ${pick(w.b)}` : r < .75 ? pick(w.c) : `The ${pick(w.b)}`; };
+G.newEra = function (title, n, weeks, tour) {
+  const a = S.abs, rel = a + clamp(weeks, 16, 80), id = 'c' + (S.custom.length + 1);
+  const used = new Set(Object.keys(S.songs)), tracks = [];
+  while (tracks.length < n) { const t = G.songTitle(); if (!used.has(t) && !tracks.includes(t)) tracks.push(t); }
+  const t0 = title || pick(ER.ALBUM_WORDS.filter(x => !S.custom.some(c => c.title === x))) || G.songTitle(), pal = pick(ER.PALETTES.filter(x => x.mood !== 'dark' && x.id !== 'parchment'));
+  const p = { id, title:t0, short:t0, type:'album', custom:true, color:pal.c[0], ink:'#ffffff', genre:S.stats.genre,
+    ws:a, rs:a + Math.round((rel - a) * .35), fs:rel - 8, ps:rel - 4, rel, tracks, extras:[], units:null, cowriters:['Solo','Jack Antonoff','Aaron Dessner','Max Martin','Shellback'], producers:['Jack Antonoff','Aaron Dessner','Max Martin'],
+    goals:[{ k:'units', v:Math.round(S.stats.fans * .03), l:`First week above ${G.fmtN(S.stats.fans * .03)}` }] };
+  if (tour) p.tour = { name:G.tourName(p), kind:'headline', ts:rel + 14, te:rel + 14 + tour, openers:['Vesper Lane','Juno Marlowe'], target:null, tier:'stadium' };
+  S.custom.push(p); inbox('label', `${p.title} is on the calendar`, `Release set for the week of ${G.fmtDate(rel)}.`);
+  return p;
+};
+G.startNextReal = function (id) {
+  const p = G.art().projects.find(x => x.id === id); if (!p || S.started.includes(id)) return;
+  const first = p.ws != null ? p.ws : p.rs; G.pj(id).shift = S.abs - first; S.started.push(id);
+};
+G.moveRelease = function (id, delta) {
+  const p = G.proj(id), pj = G.pj(id), w = G.win(p);
+  if (S.abs >= w.fs) return { err:'Too late to move: finishing has started.' };
+  if (w.rel + delta < S.abs + 6) return { err:'The release needs at least six weeks of runway.' };
+  // Moving keeps writing where it is and stretches the later stages.
+  if (p.custom) { p.rel += delta; p.ps += delta; p.fs += delta; if (p.tour) { p.tour.ts += delta; p.tour.te += delta; } }
+  else pj.shift += delta;
+  return { ok:true };
+};
+G.tourName = p => /^the /i.test(p.title) ? `${p.title} Tour` : `The ${p.title} Tour`;
+G.planCustomTour = function (p, weeks) { p.tour = { name:G.tourName(p), kind:'headline', ts:S.abs + 8, te:S.abs + 8 + weeks, openers:['Vesper Lane','Nova Kincaid'], target:null, tier:'stadium' }; };
+G.enterFree = function () { S.flags.free = true; ach('free'); inbox('manager', 'The story is yours', 'From here on, the calendar, the songs and the drama are invented. Start a new era from the Studio.'); };
+
+/* ---------- Sponsors ---------- */
+G.signSponsor = function (id) {
+  const sp = ER.SPONSORS.find(x => x.id === id); if (!sp || S.sponsors.some(x => x.id === id && !x.lost && !x.done)) return;
+  const fee = Math.round(sp.pay * (20000 + S.stats.fans * .35) * (1 + S.stats.clout / 100));
+  S.stats.money += fee;
+  S.sponsors.push({ id, n:sp.n, paid:fee, abs:S.abs });
+  duty('manager', `${sp.n}: ${sp.duties[0]}`, 1, S.abs + 3, { rep:-3, team:-3 }, id);
+  duty('manager', `${sp.n}: ${sp.duties[1]}`, 1, S.abs + 6, { rep:-3, team:-3 }, id);
+  inbox('manager', `Signed: ${sp.n}`, `${G.fmtM(fee)} up front. Two duties are on your calendar.`);
+  return fee;
+};
+
+/* ---------- Saves ---------- */
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+G.lsGet = lsGet; G.lsSet = lsSet;
+G.save = function (auto) { if (!S) return; S.saved = Date.now(); lsSet('eras-slot-' + S.slot, JSON.stringify(S)); };
+G.load = function (slot) { const v = lsGet('eras-slot-' + slot); if (!v) return null; try { S = JSON.parse(v); S.slot = slot; return S; } catch (e) { return null; } };
+G.slotInfo = slot => { const v = lsGet('eras-slot-' + slot); if (!v) return null; try { const s = JSON.parse(v); return { y:ER.yw(s.abs).y, w:ER.yw(s.abs).w, mode:s.mode, artist:s.artist, saved:s.saved, canon:s.canon }; } catch (e) { return null; } };
+G.del = slot => { try { localStorage.removeItem('eras-slot-' + slot); } catch (e) {} };
+G.exportSave = () => JSON.stringify(S);
+G.importSave = (txt, slot) => { const s = JSON.parse(txt); if (!s || !s.stats || s.abs == null) throw new Error('Not an Eras Life save'); s.slot = slot; S = s; G.save(); return S; };
+G.unlockedEras = () => { try { return JSON.parse(lsGet('eras-unlocked') || '["ts1"]'); } catch (e) { return ['ts1']; } };
+})();
