@@ -418,10 +418,21 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 .coinrow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.coin{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10.5px;font-weight:700;background:rgba(255,255,255,.06);color:var(--faint);border:2px dashed rgba(255,255,255,.15)}.coin.on{background:radial-gradient(circle at 35% 30%,#ffe9a0,#b8861a);color:#2a1a06;border:2px solid #8a6a1a}
 .sepia canvas{filter:sepia(.7) contrast(1.05)}.chili{display:flex;align-items:center;gap:10px;margin:14px 0}.chili i{flex:1;height:14px;border-radius:7px;background:rgba(255,255,255,.1);overflow:hidden}.chili b{display:block;height:100%;background:linear-gradient(90deg,#e8b04b,#e45a5a,#ff2a2a)}
 .anchors{margin-top:6px}.gz-tv{margin:10px 0 4px;font-size:12px;text-transform:uppercase;border-bottom:1px solid #1d1a14}
-.tabwall{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.tab{background:#fff8e0;color:#1a1206;padding:8px;border-radius:4px;transform:rotate(-1deg);font-family:Georgia,serif}.tab b{display:block;font-size:12.5px;line-height:1.2}.tab small{color:#7a6a5a;font-size:10px}.tab.framed{border:4px solid #8a6a1a}.tab .mini{color:#1a1206}
+.tabwall{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.tabcard{background:#fff8e0;color:#1a1206;padding:8px;border-radius:4px;transform:rotate(-1deg);font-family:Georgia,serif}.tabcard b{display:block;font-size:12.5px;line-height:1.2}.tabcard small{color:#7a6a5a;font-size:10px}.tabcard.framed{border:4px solid #8a6a1a}.tabcard .mini{color:#1a1206}
 .diary .dentry{border-bottom:1px dashed var(--rule);padding:8px 0}.diary .dentry p{margin:2px 0 0;font:italic 14px/1.45 var(--serif)}
 .pin i.hot{box-shadow:0 0 0 3px rgba(255,80,80,.6),0 0 16px rgba(255,80,80,.7)}.rt-note{font:800 40px var(--serif);text-align:center;color:var(--gold2);margin:10px 0}
 .letter{font:italic 15px/1.5 var(--serif);white-space:pre-wrap}.plaque-q{margin:8px 0;padding:12px;border-radius:8px;background:linear-gradient(160deg,#6b5418,#2d2410);font:italic 15px/1.4 var(--serif);color:#ffe9a0}.plaque-q small{display:block;margin-top:6px;font-style:normal;color:var(--faint)}
+
+/* ---- less scrolling ---- */
+.hp-hidden,.hp-x{display:none!important}
+.seg.hpanes{margin-bottom:10px}
+.dosecs{margin:0 0 8px;display:flex;flex-wrap:wrap;gap:6px}
+.card.acc{padding-top:12px;padding-bottom:12px}.card.acc>.acc-h{cursor:pointer;position:relative;padding-right:30px;-webkit-tap-highlight-color:transparent}
+.card.acc>.acc-h:after{content:'';position:absolute;right:6px;top:50%;width:9px;height:9px;border-right:2px solid var(--gold2);border-bottom:2px solid var(--gold2);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+.card.acc.closed>.acc-h:after{transform:translateY(-30%) rotate(-45deg)}
+.card.acc.closed>:not(.acc-h){display:none!important}
+.card.acc.closed>.acc-h h2{font-size:17px;margin:2px 0}.card.acc.closed>.acc-h h3{margin:2px 0}.card.acc.closed>.acc-h p{display:none}
+.card.acc.closed{margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -429,35 +440,36 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 <div id="modal" role="dialog" aria-modal="true"><div id="mbody"></div></div>
 <div id="toasts" aria-live="polite"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="portraits.js?v=2026.11.04-5"></script>
-<script src="data.js?v=2026.11.04-5"></script>
-<script src="stage.js?v=2026.11.04-5"></script>
-<script src="game.js?v=2026.11.04-5"></script>
-<script src="events.js?v=2026.11.04-5"></script>
-<script src="ui.js?v=2026.11.04-5"></script>
-<script src="story.js?v=2026.11.04-5"></script>
-<script src="three3d.js?v=2026.11.04-5"></script>
-<script src="makeit.js?v=2026.11.04-5"></script>
-<script src="world.js?v=2026.11.04-5"></script>
-<script src="week.js?v=2026.11.04-5"></script>
-<script src="canon.js?v=2026.11.04-5"></script>
-<script src="nav.js?v=2026.11.04-5"></script>
-<script src="business.js?v=2026.11.04-5"></script>
-<script src="social.js?v=2026.11.04-5"></script>
-<script src="nextlevel.js?v=2026.11.04-5"></script>
-<script src="showtime.js?v=2026.11.04-5"></script>
-<script src="production.js?v=2026.11.04-5"></script>
-<script src="life2.js?v=2026.11.04-5"></script>
-<script src="legacy2.js?v=2026.11.04-5"></script>
-<script src="studio.js?v=2026.11.04-5"></script>
-<script src="writing2.js?v=2026.11.04-5"></script>
-<script src="stage2.js?v=2026.11.04-5"></script>
-<script src="show2.js?v=2026.11.04-5"></script>
-<script src="rules.js?v=2026.11.04-5"></script>
-<script src="songcraft.js?v=2026.11.04-5"></script>
-<script src="stagelife.js?v=2026.11.04-5"></script>
-<script src="citymeta.js?v=2026.11.04-5"></script>
-<script src="power.js?v=2026.11.04-5"></script>
-<script src="update.js?v=2026.11.04-5"></script>
+<script src="portraits.js?v=2026.11.05-1"></script>
+<script src="data.js?v=2026.11.05-1"></script>
+<script src="stage.js?v=2026.11.05-1"></script>
+<script src="game.js?v=2026.11.05-1"></script>
+<script src="events.js?v=2026.11.05-1"></script>
+<script src="ui.js?v=2026.11.05-1"></script>
+<script src="story.js?v=2026.11.05-1"></script>
+<script src="three3d.js?v=2026.11.05-1"></script>
+<script src="makeit.js?v=2026.11.05-1"></script>
+<script src="world.js?v=2026.11.05-1"></script>
+<script src="week.js?v=2026.11.05-1"></script>
+<script src="canon.js?v=2026.11.05-1"></script>
+<script src="nav.js?v=2026.11.05-1"></script>
+<script src="business.js?v=2026.11.05-1"></script>
+<script src="social.js?v=2026.11.05-1"></script>
+<script src="nextlevel.js?v=2026.11.05-1"></script>
+<script src="showtime.js?v=2026.11.05-1"></script>
+<script src="production.js?v=2026.11.05-1"></script>
+<script src="life2.js?v=2026.11.05-1"></script>
+<script src="legacy2.js?v=2026.11.05-1"></script>
+<script src="studio.js?v=2026.11.05-1"></script>
+<script src="writing2.js?v=2026.11.05-1"></script>
+<script src="stage2.js?v=2026.11.05-1"></script>
+<script src="show2.js?v=2026.11.05-1"></script>
+<script src="rules.js?v=2026.11.05-1"></script>
+<script src="songcraft.js?v=2026.11.05-1"></script>
+<script src="stagelife.js?v=2026.11.05-1"></script>
+<script src="citymeta.js?v=2026.11.05-1"></script>
+<script src="power.js?v=2026.11.05-1"></script>
+<script src="layout.js?v=2026.11.05-1"></script>
+<script src="update.js?v=2026.11.05-1"></script>
 </body>
 </html>

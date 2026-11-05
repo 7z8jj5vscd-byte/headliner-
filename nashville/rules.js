@@ -22,7 +22,7 @@ const REQ={
  fyc:()=>[['A single released this year',S.songs.some(s=>s.st==='single'&&s.rel!=null&&yearOf(Math.max(0,s.rel))===yearOf(S.week)),'']],
  rehearse:()=>[['A setlist of 3+ songs or a band',(S.setlist||[]).length>=3||!!S.staff.band||LG('gigs')>=100,`${(S.setlist||[]).length} songs${S.staff.band?' · band':''}`]],
  duetlive:()=>[['A friend who sings (friendship 30+)',typeof duetPartners==='function'&&duetPartners().length>0,'']],
- cowrite:()=>[['Write at least one song on your own first',S.stats.written>=1,`${S.stats.written}/1`]]};
+ cowrite:()=>[['Write at least one song on your own first',nWritten()>=1,`${Math.min(1,nWritten())}/1`]]};
 function gigReq(v){const L=[];if(!v||!v.cap)return L;if(v.id==='bluebird')L.push(['2 songs for the listening room',nWritten()>=2,`${nWritten()}/2`]);if(v.price&&v.cap>=400)L.push(['3 songs to fill a set',nWritten()>=3,`${nWritten()}/3`]);if(v.cap>=2000&&v.price)L.push(['A released single people know',nRel()>=1,`${nRel()}/1`]);if(v.cap>=15000)L.push(['An album out',nAlb()>=1,`${nAlb()}/1`]);return L}
 function tourReq(t){const L=[['Play 3 shows first',nGigs()>=3,`${nGigs()}/3`],['5 songs recorded or released',nRec()>=5,`${nRec()}/5`]];if(!t)return L;if(t.cap>=2000){L.push(['A manager or booking agent',hasMgr()||!!S.staff.agent,hasMgr()||S.staff.agent?'yes':'no'],['A released single',nRel()>=1,`${nRel()}/1`])}if(t.cap>=10000){L.push(['An album out',nAlb()>=1,`${nAlb()}/1`],['A Top 10 single',nTop10()>0,`${nTop10()}/1`])}if(t.intl)L.push(['A Top 10 single',nTop10()>0,`${nTop10()}/1`]);return L}
 const locked=L=>L.some(x=>!x[1]);
