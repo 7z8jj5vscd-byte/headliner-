@@ -4,59 +4,83 @@
 (function () {
 const ER = window.ER, W = ER.ds;
 
-const TS = { skin:'#f3d3bd', hair:'#e2bd73', eyes:'#3d6488', brow:'#a07a40' };
+// Taylor: bright blonde throughout, lightest in the Reputation years. The hair stays bright under coloured stage light.
+const TS = { skin:'#f6d9c4', hair:'#f3db94', eyes:'#4a7aa8', brow:'#b8945a', hairGlow:1 };
 const T = (o) => Object.assign({}, TS, o);
-// Each era: base (hair and face), stage (performing), casual (writing, studio, press).
+// Each era: base (hair and make-up), stage (performing that era), casual (writing, studio, press),
+// and eras (that era's act on the 2023–2024 Eras Tour).
 ER.LOOKS = ER.LOOKS || {};
 ER.LOOKS.taylor = {
- early:{ base:T({ style:'curly', hairLen:.5 }),
-   stage:{ top:'dress', outfit:'#7fb3d5', accent:'#ffffff', boots:'tall', bootColor:'#7a4a24', guitar:1 },
-   casual:{ top:'tee', outfit:'#9bc49a', accent:'#ffffff', boots:'tall', bootColor:'#7a4a24', pants:'#4a6fa5' } },
- ts1:{ base:T({ style:'curly', hairLen:.62 }),
-   stage:{ top:'dress', outfit:'#2fa3a0', accent:'#bff3ec', boots:'tall', bootColor:'#6b3e1f', guitar:1, guitarColor:'#c98a3a', necklace:'#d8d8e0' },
-   casual:{ top:'tee', outfit:'#e6f2ee', accent:'#2f8f7c', boots:'tall', bootColor:'#6b3e1f', pants:'#3c5a8a', guitar:1 } },
- fearless:{ base:T({ style:'curly', hairLen:.66, lips:'#d76a7a' }),
-   stage:{ top:'sequin', outfit:'#e0b545', accent:'#fff1b8', fringe:'#f3d27a', boots:'tall', bootColor:'#e6c05a', bootSparkle:1, guitar:1, guitarColor:'#e6c05a', guitarSparkle:1 },
-   casual:{ top:'dress', outfit:'#f1e2b6', accent:'#d6a93a', boots:'tall', bootColor:'#6b3e1f', guitar:1 } },
- speaknow:{ base:T({ style:'curly', hairLen:.66, lips:'#c95a7a' }),
-   stage:{ top:'gown', outfit:'#7b3fa0', accent:'#e8d2ff', sparkle:1, necklace:'#e8e8f0', mic:1 },
-   casual:{ top:'dress', outfit:'#b58ad6', accent:'#ffffff', boots:'tall', bootColor:'#3a2414', guitar:1 } },
- red:{ base:T({ style:'straight', bangs:1, hairLen:.58, lips:'#c3112b' }),
-   stage:{ top:'suit', outfit:'#b3202b', accent:'#1a1a1a', hat:'fedora', hatColor:'#111111', pants:'#111111', boots:'tall', bootColor:'#111111', mic:1 },
-   casual:{ top:'tee', outfit:'#f4f1ea', accent:'#1a2b5a', stripes:'#1a2b5a', hat:'fedora', hatColor:'#111111', pants:'#b3202b' } },
- '1989':{ base:T({ style:'bob', bangs:0, lips:'#c3112b' }),
-   stage:{ top:'bodysuit', outfit:'#4fa3e3', accent:'#e8f6ff', sparkle:1, boots:'tall', bootColor:'#e8f6ff', bootSparkle:1, mic:1 },
-   casual:{ top:'tee', outfit:'#ffffff', accent:'#6fa8d6', pants:'#2a3b63' } },
- rep:{ base:T({ style:'straight', hairLen:.42, lips:'#7a1022', liner:1, hair:'#e8cf98' }),
-   stage:{ top:'bodysuit', outfit:'#1c1c20', accent:'#7cff9a', sparkle:1, boots:'tall', bootColor:'#111', bootSparkle:1, sleeves:1, mic:1 },
-   casual:{ top:'jacket', outfit:'#1e1e21', accent:'#3a3a40', pants:'#111', boots:'tall', bootColor:'#111' } },
- lover:{ base:T({ style:'waves', bangs:1, hairLen:.56, tips:'#f2a3c7', lips:'#d94d78', liner:1 }),
-   stage:{ top:'bodysuit', outfit:'#f28ab8', accent:'#9fd8ff', sparkle:1, boots:'tall', bootColor:'#f7b6d6', bootSparkle:1, mic:1 },
-   casual:{ top:'jacket', outfit:'#bfe3ff', accent:'#f6a8c8', pants:'#f6a8c8' } },
- folklore:{ base:T({ style:'braid', bangs:1, lips:'#b86a6a' }),
-   stage:{ top:'gown', outfit:'#ece8de', accent:'#ffffff', guitar:1, guitarColor:'#d8c7a4' },
-   casual:{ top:'cardigan', outfit:'#8f9093', accent:'#efefec', pants:'#4a4a4c' } },
- evermore:{ base:T({ style:'braid', bangs:1, lips:'#a34b3b' }),
-   stage:{ top:'gown', outfit:'#c9793a', accent:'#f1dfcf', sparkle:1, guitar:1 },
-   casual:{ top:'coat', outfit:'#8a4a2a', plaid:'#2a1a12', accent:'#e9d8bd', pants:'#3d2416' } },
- midnights:{ base:T({ style:'waves', bangs:1, hairLen:.6, lips:'#a8143a', liner:1 }),
-   stage:{ top:'sequin', outfit:'#2c3e8a', accent:'#bcd0ff', sleeves:1, mic:1 },
-   casual:{ top:'jacket', outfit:'#2c3e70', accent:'#b8c4ea', pants:'#0d132b' } },
- ttpd:{ base:T({ style:'waves', bangs:1, hairLen:.6, lips:'#a8143a' }),
-   stage:{ top:'gown', outfit:'#f4f1ea', accent:'#ffffff', sparkle:1, mic:1 },
-   casual:{ top:'jacket', outfit:'#d9d2c5', accent:'#2a2622', pants:'#2a2622', glasses:'#2a2622' } },
- showgirl:{ base:T({ style:'waves', bangs:1, hairLen:.62, lips:'#c3112b', liner:1 }),
-   stage:{ top:'bodysuit', outfit:'#e2762f', accent:'#ffe6a8', sparkle:1, feathers:'#f4a15a', boots:'tall', bootColor:'#2bb3a3', bootSparkle:1, mic:1 },
-   casual:{ top:'dress', outfit:'#2bb3a3', accent:'#e2762f' } }
+ // Childhood: blonde curls, jeans, boots.
+ early:{ base:T({ style:'curly', hairLen:.5, lips:'#e39a9a' }),
+   stage:{ top:'dress', outfit:'#9cc7e6', accent:'#ffffff', boots:'tall', bootColor:'#8a5a2b', guitar:1 },
+   casual:{ top:'tee', outfit:'#f4c9d6', accent:'#ffffff', boots:'tall', bootColor:'#8a5a2b', pants:'#4a6fa5' } },
+ // 2006–2007: long tight ringlets, sundresses and cowboy boots, natural make-up.
+ ts1:{ base:T({ style:'curly', hairLen:.68, lips:'#e08c94' }),
+   stage:{ top:'dress', outfit:'#3fb6b0', accent:'#d8fbf6', boots:'tall', bootColor:'#7a4a24', guitar:1, guitarColor:'#d9a35a', necklace:'#e6e6ee' },
+   casual:{ top:'dress', outfit:'#f2e6c9', accent:'#3fb6b0', boots:'tall', bootColor:'#7a4a24', guitar:1, guitarColor:'#d9a35a' } },
+ // 2008–2010: big curls, sparkly gold and silver fringe dresses, glitter guitar, marching-band jacket on tour.
+ fearless:{ base:T({ style:'curly', hairLen:.72, lips:'#e07a8a', liner:1 }),
+   stage:{ top:'sequin', outfit:'#e3be55', accent:'#fff4c4', fringe:'#f6dc84', boots:'tall', bootColor:'#e9c766', bootSparkle:1, guitar:1, guitarColor:'#f0d27a', guitarSparkle:1 },
+   casual:{ top:'dress', outfit:'#f6e9bf', accent:'#d6a93a', boots:'tall', bootColor:'#7a4a24', guitar:1, guitarColor:'#c98a3a' },
+   eras:{ top:'sequin', outfit:'#e3be55', accent:'#fff4c4', fringe:'#f6dc84', boots:'tall', bootColor:'#e9c766', bootSparkle:1, guitar:1, guitarColor:'#f0d27a', guitarSparkle:1 } },
+ // 2010–2012: curls, sweeping ball gowns in purple, berry lips.
+ speaknow:{ base:T({ style:'curly', hairLen:.72, lips:'#b9476e', liner:1 }),
+   stage:{ top:'gown', outfit:'#7d3fb0', accent:'#ecd6ff', sparkle:1, necklace:'#e8e8f0', mic:1 },
+   casual:{ top:'dress', outfit:'#c7a3e6', accent:'#ffffff', boots:'tall', bootColor:'#3a2414', guitar:1 },
+   eras:{ top:'gown', outfit:'#c9a2e8', accent:'#ffffff', sparkle:1, mic:1 } },
+ // 2012–2014: straight hair with full bangs, red lips, cat-eye; ringmaster on tour; stripes and a black hat off duty.
+ red:{ base:T({ style:'straight', bangs:1, hairLen:.6, lips:'#c8102e', liner:1 }),
+   stage:{ top:'jacket', outfit:'#c8102e', accent:'#111111', hat:'top', hatColor:'#111111', shorts:'#f4f1ea', boots:'tall', bootColor:'#111111', sleeves:1, mic:1 },
+   casual:{ top:'tee', outfit:'#f6f3ec', accent:'#1a2b5a', stripes:'#1a2b5a', hat:'fedora', hatColor:'#111111', shorts:'#c8102e' },
+   eras:{ top:'tee', outfit:'#111111', accent:'#f4f1ea', hat:'fedora', hatColor:'#111111', shorts:'#111111', boots:'tall', bootColor:'#111111', mic:1 } },
+ // 2014–2016: the short bob, red lips, cat-eye; crop tops and skirts; sequinned two-pieces on tour.
+ '1989':{ base:T({ style:'bob', lips:'#c8102e', liner:1 }),
+   stage:{ top:'crop', outfit:'#3f9be0', accent:'#e8f6ff', sparkle:1, boots:'tall', bootColor:'#e8f6ff', bootSparkle:1, mic:1 },
+   casual:{ top:'crop', outfit:'#f6f3ec', accent:'#6fa8d6', boots:'tall', bootColor:'#2a2a2a' },
+   eras:{ top:'crop', outfit:'#f06fb4', accent:'#ffe1f2', sparkle:1, boots:'tall', bootColor:'#f06fb4', bootSparkle:1, mic:1 } },
+ // 2017–2018: lighter, near-platinum straight hair, dark burgundy lips, smoky eyes; black sequins, snakes, thigh-high boots.
+ rep:{ base:T({ style:'straight', hairLen:.44, lips:'#6d0f24', liner:1, hair:'#f6e7bd' }),
+   stage:{ top:'bodysuit', outfit:'#18181b', accent:'#5ee08a', sparkle:1, snake:'#3fbf6a', boots:'tall', bootColor:'#111', bootSparkle:1, sleeves:1, mic:1 },
+   casual:{ top:'jacket', outfit:'#1e1e21', accent:'#3a3a40', pants:'#111', boots:'tall', bootColor:'#111' },
+   eras:{ top:'bodysuit', outfit:'#18181b', accent:'#e0283a', sparkle:1, snake:'#e0283a', boots:'tall', bootColor:'#111', bootSparkle:1, mic:1 } },
+ // 2019–2020: bangs with pink and blue tips, a pink heart drawn around one eye, pastels and glitter.
+ lover:{ base:T({ style:'waves', bangs:1, hairLen:.58, tips:'#f49ac8', lips:'#e0457e', heartEye:'#f06fb4', glitterEye:'#9fd8ff' }),
+   stage:{ top:'bodysuit', outfit:'#f39ac4', accent:'#a8dcff', sparkle:1, boots:'tall', bootColor:'#f8c0dc', bootSparkle:1, mic:1 },
+   casual:{ top:'jacket', outfit:'#bfe3ff', accent:'#f6a8c8', pants:'#f6a8c8' },
+   eras:{ top:'bodysuit', outfit:'#a8c8f0', accent:'#f6b6d8', sparkle:1, boots:'tall', bootColor:'#a8c8f0', bootSparkle:1, mic:1 } },
+ // 2020: braids and a low bun, bangs, natural make-up, oversized cardigans, a cream dress for the cabin.
+ folklore:{ base:T({ style:'braid', bangs:1, lips:'#c98080' }),
+   stage:{ top:'gown', outfit:'#efe9dc', accent:'#ffffff', guitar:1, guitarColor:'#d8c7a4' },
+   casual:{ top:'cardigan', outfit:'#e7e2d6', accent:'#8f9093', pants:'#4a4a4c' },
+   eras:{ top:'gown', outfit:'#e6f0d8', accent:'#ffffff', mic:1 } },
+ // 2020–2021: braid with bangs, brown and black plaid coats, an ochre gown on stage.
+ evermore:{ base:T({ style:'braid', bangs:1, lips:'#b05a4a' }),
+   stage:{ top:'gown', outfit:'#c8862e', accent:'#f6e2b0', guitar:1, guitarColor:'#a87a4a' },
+   casual:{ top:'coat', outfit:'#7a4a2a', plaid:'#1e140e', accent:'#e9d8bd', pants:'#3d2416' },
+   eras:{ top:'gown', outfit:'#c8862e', accent:'#f6e2b0', fringe:'#e2a94a', guitar:1, guitarColor:'#a87a4a' } },
+ // 2022–2023: wavy hair with bangs, deep red lips, glitter around the eyes; navy sequins and a purple faux-fur coat.
+ midnights:{ base:T({ style:'waves', bangs:1, hairLen:.62, lips:'#a3123a', liner:1, glitterEye:'#c9b8ff' }),
+   stage:{ top:'sequin', outfit:'#28337a', accent:'#c3cffe', overcoat:'#8a6bc4', sleeves:1, mic:1 },
+   casual:{ top:'jacket', outfit:'#2c3e70', accent:'#b8c4ea', pants:'#0d132b' },
+   eras:{ top:'sequin', outfit:'#28337a', accent:'#c3cffe', overcoat:'#8a6bc4', boots:'tall', bootColor:'#28337a', bootSparkle:1, mic:1 } },
+ // 2024: waves with bangs, red lips; flowing white and cream, black and white for the poets.
+ ttpd:{ base:T({ style:'waves', bangs:1, hairLen:.62, lips:'#b3102e', liner:1 }),
+   stage:{ top:'gown', outfit:'#f6f3ec', accent:'#ffffff', sparkle:1, mic:1 },
+   casual:{ top:'jacket', outfit:'#e9e3d6', accent:'#2a2622', pants:'#2a2622' },
+   eras:{ top:'gown', outfit:'#f6f3ec', accent:'#ffffff', sparkle:1, mic:1 } },
+ // 2025–2026: waves with bangs, red lips, showgirl orange and mint, sequins and feathers.
+ showgirl:{ base:T({ style:'waves', bangs:1, hairLen:.64, lips:'#c8102e', liner:1, glitterEye:'#ffd08a' }),
+   stage:{ top:'bodysuit', outfit:'#ec7a2c', accent:'#ffe6a8', sparkle:1, feathers:'#f6b16a', boots:'tall', bootColor:'#3fc2b2', bootSparkle:1, mic:1 },
+   casual:{ top:'dress', outfit:'#3fc2b2', accent:'#ec7a2c' } }
 };
-// Re-records and the Encore wear the current look with the original era's colours.
-ER.LOOKS.taylor.fearlesstv = { base:T({ style:'waves', bangs:1, hairLen:.6, lips:'#c3112b' }), stage:ER.LOOKS.taylor.fearless.stage, casual:ER.LOOKS.taylor.fearless.casual };
-ER.LOOKS.taylor.redtv = { base:ER.LOOKS.taylor.red.base, stage:ER.LOOKS.taylor.red.stage, casual:ER.LOOKS.taylor.red.casual };
-ER.LOOKS.taylor.speaknowtv = { base:T({ style:'waves', bangs:1, hairLen:.6, lips:'#c3112b' }), stage:ER.LOOKS.taylor.speaknow.stage, casual:ER.LOOKS.taylor.speaknow.casual };
-ER.LOOKS.taylor['1989tv'] = { base:T({ style:'waves', bangs:1, hairLen:.58, lips:'#c3112b' }), stage:ER.LOOKS.taylor['1989'].stage, casual:ER.LOOKS.taylor['1989'].casual };
-ER.LOOKS.taylor.encore = ER.LOOKS.taylor.showgirl;
-// The Eras Tour cycles through era costumes; this is the Lover-act opener.
-ER.LOOKS.taylor.eras = ER.LOOKS.taylor.lover;
+// Re-records: the look she had when each Taylor's Version came out, in the original era's colours.
+const L = ER.LOOKS.taylor, NOW21 = T({ style:'waves', bangs:1, hairLen:.6, lips:'#c8102e', liner:1 });
+L.fearlesstv = { base:NOW21, stage:L.fearless.stage, casual:{ top:'cardigan', outfit:'#f1e2b6', accent:'#d6a93a', pants:'#4a4a4c' } };
+L.redtv = { base:L.red.base, stage:L.red.stage, casual:L.red.casual };
+L.speaknowtv = { base:L.midnights.base, stage:L.speaknow.stage, casual:L.speaknow.casual };
+L['1989tv'] = { base:L.midnights.base, stage:L['1989'].stage, casual:L['1989'].casual };
+L.encore = L.showgirl;
 
 const BY = { skin:'#9a6644', hair:'#c9954f', eyes:'#3a2416', brow:'#3a2416' };
 const B = o => Object.assign({}, BY, o);

@@ -38,12 +38,15 @@ function eraKey(era) {
 }
 function lookFor(ctx, era, key) {
   const L = ER.LOOKS.taylor, s = S();
-  let k = key || eraKey(era);
+  let k = key || eraKey(era), erasAct = false;
+  if (k && k.startsWith('eras:')) { k = k.slice(5); erasAct = true; }
   if (!key && s && G.age() < 15) k = 'early';
   // On the Eras Tour, each week's show is a different act.
-  if (!key && ctx === 'tour' && s && era && era.id === 'midnights') { const tp = G.active().find(x => x.st === 'tour' && x.p.id === 'midnights'); if (tp) k = ERAS_CYCLE[s.abs % ERAS_CYCLE.length]; }
+  if (!key && ctx === 'tour' && s && era && era.id === 'midnights') { const tp = G.active().find(x => x.st === 'tour' && x.p.id === 'midnights'); if (tp) { k = ERAS_CYCLE[s.abs % ERAS_CYCLE.length]; erasAct = true; } }
   const e = L[k] || L.early, stage = ['tour','awards','release'].includes(ctx);
-  const o = Object.assign({}, e.base, stage ? e.stage : e.casual);
+  const o = Object.assign({}, e.base, erasAct && e.eras ? e.eras : stage ? e.stage : e.casual);
+  // By the Eras Tour her hair and make-up were the 2023 look in every act.
+  if (erasAct) Object.assign(o, { style:'waves', bangs:1, hairLen:.62, tips:0, heartEye:0, hair:L.midnights.base.hair, lips:L.midnights.base.lips }, k === 'lover' ? { heartEye:'#f06fb4' } : {}, ['folklore','evermore'].includes(k) ? { style:'braid' } : {});
   if (era && era.custom) { o.outfit = era.color; o.accent = T3.shade(era.color, .55); }
   if (ctx === 'awards' && !e.stage.top.match(/gown|sequin/)) { o.top = 'gown'; o.sparkle = 1; o.guitar = 0; o.hat = 0; }
   if (ctx === 'awards') o.guitar = 0;
@@ -147,10 +150,13 @@ function newGameFlow() {
     ${card(`<h2>Difficulty</h2><div class="chips">${Object.keys(G.DIFF).map(k => `<button class="chip ${n.diff === k ? 'on' : ''}" data-act="ndiff" data-v="${k}">${G.DIFF[k].l} · ${G.DIFF[k].blocks} blocks</button>`).join('')}</div><p class="small muted">Difficulty changes Time Blocks, penalties and deadlines.</p>`)}
     ${card(`<h2>Era looks</h2><p class="small muted">The 3D performer changes with every era: hair, make-up and stage costumes. Tap an era to preview it.</p>
       <div class="stage3d" id="t3look"></div>
-      <div class="chips">${['early','ts1','fearless','speaknow','red','1989','rep','lover','folklore','evermore','fearlesstv','redtv','midnights','speaknowtv','1989tv','ttpd','showgirl'].map(k => { const pr = ER.artists.taylor.projects.find(q => q.id === k); return `<button class="chip ${n.lookEra === k ? 'on' : ''}" data-act="lookera" data-v="${k}">${pr ? `<i class="dot" style="background:${pr.color}"></i>` + h(pr.short) : 'Childhood'}</button>`; }).join('')}</div>`)}
+      <div class="chips">${['early','ts1','fearless','speaknow','red','1989','rep','lover','folklore','evermore','fearlesstv','redtv','midnights','speaknowtv','1989tv','ttpd','showgirl'].map(k => { const pr = ER.artists.taylor.projects.find(q => q.id === k); return `<button class="chip ${n.lookEra === k ? 'on' : ''}" data-act="lookera" data-v="${k}">${pr ? `<i class="dot" style="background:${pr.color}"></i>` + h(pr.short) : 'Childhood'}</button>`; }).join('')}</div>
+      <h3>Eras Tour acts</h3><div class="chips">${ERAS_CYCLE.map(k => { const pr = ER.artists.taylor.projects.find(q => q.id === k); return `<button class="chip ${n.lookEra === 'eras:' + k ? 'on' : ''}" data-act="lookera" data-v="eras:${k}"><i class="dot" style="background:${pr.color}"></i>${h(pr.short)}</button>`; }).join('')}</div>`)}
     <button class="btn big" data-act="begin">${n.mode === 'story' ? 'Begin the prologue' : 'Start this era'}</button></div>`;
-  { const k = n.lookEra || 'fearless', pr = ER.artists.taylor.projects.find(q => q.id === k);
-    mount3D('#t3look', { set:'stadium', color:pr ? pr.color : '#7a9a4a', figs:[{ look:lookFor('tour', null, k), anim:'sing', mic:!ER.LOOKS.taylor[k].stage.guitar, s:k === 'early' ? .78 : 1 }, { look:lookFor('', null, k), x:1.05, z:-.35, ry:-.5, anim:'idle', s:k === 'early' ? .72 : .92 }] }, 'look'); }
+  { const k = n.lookEra || 'fearless', base = k.replace('eras:', ''), pr = ER.artists.taylor.projects.find(q => q.id === base), LK = ER.LOOKS.taylor[base];
+    const figs = [{ look:lookFor('tour', null, k), anim:'sing', mic:!(k.startsWith('eras:') ? (LK.eras || LK.stage) : LK.stage).guitar, s:k === 'early' ? .78 : 1 }];
+    if (!k.startsWith('eras:')) figs.push({ look:lookFor('', null, k), x:1.05, z:-.35, ry:-.5, anim:'idle', s:k === 'early' ? .72 : .92 });
+    mount3D('#t3look', { set:k.startsWith('eras:') ? 'stadium' : 'theater', color:pr ? pr.color : '#7a9a4a', figs }, 'look'); }
 }
 function prologue() {
   const n = UI.newg, A = ER.artists.taylor, i = n.pro.length, pr = A.prologue[i];
