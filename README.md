@@ -98,6 +98,8 @@ If you own a label (Rayna's Highway 65, or your own once you can afford one) a *
 
 **The music sim update.** This update adds a streaming dashboard and listener cities, playlist pitching, a radio airplay map, four charts, weekly numbers reports and viral clips. Every song now has lyrics, melody, hook, production and performance scores, and you get an A&R session with hit potential, a melody-building game that the song then plays, a rhyme game, market trends, and remixes and features. It also adds practice and new instruments, a gear shop, a home studio, session players, release planning, album rollouts, release-day reveals, a fan map, live ticket sales, festival season, a milestone track and a discography.
 
+**Show mode.** A third way to play: the show itself, episode by episode through all six seasons. Each episode gives you a main challenge and side challenges that mirror what happens in it, in your own character's version and involving the show's characters when the timeline allows. You earn up to three stars an episode, see credits and "Next time on Nashville", and get a report card each season. Missed challenges have soft consequences.
+
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/nashville/
 
 ## Updates go live automatically
