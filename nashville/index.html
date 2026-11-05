@@ -453,6 +453,24 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 .town-pad{position:absolute;left:14px;bottom:calc(16px + env(safe-area-inset-bottom,0));display:flex;flex-direction:column;align-items:center;gap:4px}.town-pad div{display:flex;gap:4px}.town-pad button{width:52px;height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:18px;touch-action:none}
 .town-act{position:absolute;right:14px;bottom:calc(20px + env(safe-area-inset-bottom,0));display:flex;flex-direction:column;gap:6px;max-width:56%}.town-tip{position:absolute;left:0;right:0;top:46px;text-align:center;color:rgba(255,255,255,.6);font-size:11.5px;margin:0;padding:0 14px}
 .lyr p.sing,.karaoke p.sing{color:var(--gold2);transform:scale(1.03);transition:.2s}
+
+/* ---- music sim ---- */
+.stream .bars{display:flex;align-items:flex-end;gap:2px;height:60px;margin:10px 0;background:rgba(0,0,0,.2);border-radius:8px;padding:4px}.stream .bars i{flex:1;background:linear-gradient(0deg,#1db954aa,#7ad48a);border-radius:2px 2px 0 0}
+.stream h4,.c4 h4{margin:10px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint)}.rk{width:18px;color:var(--gold2)}
+.cityrow{display:grid;grid-template-columns:90px 1fr 34px;gap:8px;align-items:center;font-size:12.5px;margin:4px 0}.cityrow small{text-align:right;color:var(--faint)}
+.c4list{list-style:none;padding:0;margin:8px 0}.c4list li{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--rule);font-size:13px}.c4list li.me{color:var(--gold2);font-weight:700}.c4list small{display:block;color:var(--faint);font-size:11px;font-weight:400}.c4list em{font-style:normal;font-size:11.5px;color:var(--faint)}
+.salesrep{background:rgba(0,0,0,.3);border:1px solid rgba(29,185,84,.35);border-radius:10px;padding:8px 10px;margin:8px 0;font-size:13px}.salesrep .between{margin:3px 0}
+.milerow{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.mile{font-size:11px;padding:4px 8px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--faint)}.mile.on{background:rgba(122,212,138,.2);color:#9af0b8}
+.discalb{padding:6px 0;border-bottom:1px solid var(--rule)}.discalb small{display:block;color:var(--faint);font-size:11.5px}
+.qbreak{margin:8px 0}.qbreak>div{display:grid;grid-template-columns:86px 1fr 28px;gap:8px;align-items:center;font-size:12.5px;margin:4px 0}.qbreak>div>b{text-align:right;color:var(--gold2)}.qbreak .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.arlist{display:flex;flex-direction:column;gap:6px;margin:8px 0}.arline{display:flex;gap:8px;align-items:flex-start}.arline p{margin:0;background:rgba(0,0,0,.3);padding:7px 10px;border-radius:4px 12px 12px 12px;font-size:13px}.arline p b{display:block;font-size:11px;color:var(--faint)}
+.hitp{text-align:center;margin:8px 0}.hitp b{display:block;font:800 34px var(--serif);color:var(--gold2)}.hitp span{font-size:11px;color:var(--faint)}
+.mslots{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;align-items:end;height:110px;margin:10px 0;background:rgba(0,0,0,.25);border-radius:10px;padding:8px}.mslots span{height:calc(var(--h) + 18px);border-radius:6px;background:rgba(255,255,255,.06);font-size:10px;display:flex;align-items:flex-start;justify-content:center;padding-top:3px}.mslots span.on{background:linear-gradient(0deg,var(--brass),var(--gold2));color:#1a1206;font-weight:700}
+.mkeys{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.mkeys button{padding:14px 0;border-radius:10px;border:1px solid var(--rule);background:#efe9dc;color:#1a1206;font-weight:800;cursor:pointer}.mkeys button:disabled{opacity:.4}
+.trendc b{color:var(--gold2)}
+.reveal{text-align:center;padding:10px 0}.rv-l{margin:14px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint)}.rv-n{display:block;font:900 44px var(--serif);color:var(--gold2)}.rv-msg{margin-top:12px}
+.rollout .steps{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}.rollout .steps span{font-size:11px;padding:4px 8px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--faint)}.rollout .steps span.on{background:rgba(232,194,74,.2);color:var(--gold2)}
+.usmap svg{width:100%;height:auto;display:block;background:radial-gradient(circle at 60% 40%,#1f2b47,#0f1424);border-radius:10px}
 </style>
 </head>
 <body>
@@ -496,6 +514,9 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 <script src="story3.js?v=2026.11.05-5"></script>
 <script src="career.js?v=2026.11.05-5"></script>
 <script src="world3d.js?v=2026.11.05-5"></script>
+<script src="heard.js?v=2026.11.05-5"></script>
+<script src="craft.js?v=2026.11.05-5"></script>
+<script src="gear.js?v=2026.11.05-5"></script>
 <script src="update.js?v=2026.11.05-5"></script>
 </body>
 </html>

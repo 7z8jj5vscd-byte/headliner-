@@ -31,7 +31,7 @@ window.playTune=function(seed,bars){const c=actx();if(!c)return;stopTune();AUD.t
   // drums: brushes for sad songs, kick and snare otherwise
   for(let k=0;k<4;k++){const tk=t+k*b;if(k%2===0)drum(tk,'kick',sad?.25:rock?.6:.45);else drum(tk,'snare',sad?.07:rock?.26:.18);drum(tk+b/2+swing*b,'hat',sad?.03:.05)}
   // melody: a stepwise line over the chord, fiddle or square-lead for pop
-  const notes=sad?2:4;for(let k=0;k<notes;k++){if(r()<.25)continue;const step=Math.floor(r()*3)-1;const deg=scale.indexOf(((mel-root)%12+12)%12);mel=root+12+scale[clamp((deg<0?2:deg)+step,0,4)]+(r()<.15?12:0);if(i%4===3&&k===notes-1)mel=ch[0]+12;const tk=t+k*(4/notes)*b;if(pop)pluck(tk,mel+12,b*(4/notes)*.9,.05,'square');else if(folk||st==='trad')fiddle(tk,mel+12,b*(4/notes)*.95,.045);else pluck(tk,mel+12,b*(4/notes)*.9,.06,'sawtooth')}
+  const notes=sad?2:4;for(let k=0;k<notes;k++){if(r()<.25)continue;const step=Math.floor(r()*3)-1;const deg=scale.indexOf(((mel-root)%12+12)%12);mel=root+12+scale[clamp((deg<0?2:deg)+step,0,4)]+(r()<.15?12:0);if(i%4===3&&k===notes-1)mel=ch[0]+12;if(s&&s.melody&&s.melody.length===8)mel=root+12+[0,2,4,7,9,12][s.melody[(i*notes+k)%8]];const tk=t+k*(4/notes)*b;if(pop)pluck(tk,mel+12,b*(4/notes)*.9,.05,'square');else if(folk||st==='trad')fiddle(tk,mel+12,b*(4/notes)*.95,.045);else pluck(tk,mel+12,b*(4/notes)*.9,.06,'sawtooth')}
   // pedal steel swells on the turnaround (not on pop songs)
   if(!pop&&(i%2===1||sad))steel(t+2*b,ch[2]+12,b*2.2,.05)}
  AUD.cur=AUD.track;AUD.track=null};
