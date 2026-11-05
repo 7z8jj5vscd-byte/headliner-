@@ -29,7 +29,7 @@ G.win = p => {
   const w = { ws:f(p.ws), rs:f(p.rs), fs:f(p.fs), ps:f(p.ps), rel:f(p.rel) };
   if (p.type === 'demos') { w.we = W('2006-10-01'); return w; }
   const t = p.tour;
-  if (t && t.kind !== 'cancelled') { w.ts = f(t.ts); w.te = f(t.te); w.tps = Math.max(w.rel + 1, w.ts - 8); }
+  if (t && t.kind !== 'cancelled' && !(S.pj[p.id] && S.pj[p.id].tourCancelled)) { w.ts = f(t.ts); w.te = f(t.te); w.tps = Math.max(w.rel + 1, w.ts - 8); }
   return w;
 };
 G.stageOf = (p, a) => {
@@ -61,6 +61,10 @@ G.currentEra = () => {
   G.allProjects().forEach(p => { if (p.type === 'demos' || p.type === 'edition') return; const w = G.win(p); if (S.abs >= (w.ps != null ? w.ps : w.rel) && (!best || G.win(best).rel <= w.rel)) best = p; });
   return best;
 };
+// Real-world conditions on today's date (never in free play, which is after 2026).
+G.world = k => !S.flags.free && !!ER.inWorld && ER.inWorld(k, S.abs);
+G.worldNotes = () => Object.keys(ER.WORLD_NOTES || {}).filter(k => G.world(k)).map(k => ER.WORLD_NOTES[k]);
+G.findEvent = id => G.art().events.find(x => x.id === id) || (ER.WORLD || []).find(x => x.id === id);
 G.age = () => { const born = G.art().born; return Math.floor((S.abs - born) / 52); };
 G.yw = () => ER.yw(S.abs);
 G.fmtDate = abs => { const d = ER.dateOf(abs); return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric', timeZone:'UTC' }); };
@@ -113,6 +117,8 @@ function setupEra(id) {
     S.released.push({ pid:q.id, abs:q.rel, fw:q.units || 0, total:(q.units || 0) * 4, q:70, peak:1, wk:0, real:q.units });
   });
   if (S.abs >= W('2019-08-19')) S.flags.rerecords = true;
+  if (S.artist === 'taylor' && S.abs >= W('2016-09-12') && S.abs < W('2017-08-18')) S.flags.hidden = true;
+  if (S.abs >= W('2017-08-18')) S.flags.hiddenDone = true;
   if (S.abs >= W('2014-09-22')) S.flags.secretsessions = true;
   if (S.abs >= W('2023-07-10')) S.flags.bracelets = true;
   const rr = A.projects.find(q => q.type === 'rerecord' && q.of && S.abs >= q.rel);
@@ -179,7 +185,8 @@ G.writable = () => {
 G.writeSong = function (t, co) {
   const item = G.writable().find(x => x.t === t); if (!item) return null;
   const cw = G.art().cowriters[co] || { bonus:0 };
-  let q = rnd(32, 52) + S.stats.write * .42 + cw.bonus + (item.p.solo && co === 'Solo' ? 5 : 0);
+  let q = rnd(32, 52) + S.stats.write * .42 + cw.bonus + (item.p.solo && co === 'Solo' ? 5 : 0) + (S.flags.hidden ? 4 : 0) + (G.world('lockdown') ? 3 : 0) + (S.flags.focus ? 3 : 0);
+  S.flags.focus = false;
   q = clamp(Math.round(q), 10, 100);
   S.songs[t] = { p:item.p.id, st:'written', q, co, abs:S.abs, vault:item.kind === 'vault', kind:item.kind };
   if (item.p.solo && co !== 'Solo') G.pj(item.p.id).notSolo = true;
@@ -252,7 +259,8 @@ G.tasks = function () {
       left.forEach((f, i) => out.push(T('pre:' + pid + ':' + f[0], `${f[1]} (${nm})`, f[2], { req:i === 0 || left.length >= weeks, kind:'pre', p:pid, item:f[0], tab:'rollout' })));
       if (!pj.egg && G.unlocked('eggs')) out.push(T('egg:' + pid, `Plant an Easter egg for ${nm}`, 1, { kind:'egg', p:pid, tab:'eggs' }));
     }
-    if (st === 'release') ER.RELEASE.forEach(f => { if (!pj.rel[f[0]]) out.push(T('rel:' + pid + ':' + f[0], `${f[1]} (${nm})`, f[2], { req:true, kind:'rel', p:pid, item:f[0] })); });
+    if (st === 'release') ER.RELEASE.forEach(f => { const lbl = G.world('lockdown') ? ({ tv:'Remote TV performance', radio:'Radio and streaming push from home', signing:'Virtual fan event', posts:'Release-night posts' })[f[0]] : f[1];
+      if (!pj.rel[f[0]]) out.push(T('rel:' + pid + ':' + f[0], `${lbl} (${nm})`, f[2], { req:true, kind:'rel', p:pid, item:f[0] })); });
     if (st === 'promo') {
       const since = a - w.rel, recd = p.tracks.filter(t => S.songs[t] && (S.songs[t].st === 'released' || S.songs[t].tv)).length;
       if ([6, 14, 22, 30].includes(since) && pj.singles.length < 5 && p.type !== 'edition') out.push(T('single:' + pid + ':' + since, `Release the next single from ${nm}`, 1, { req:true, kind:'single', p:pid, tab:'rollout' }));
@@ -274,13 +282,19 @@ G.tasks = function () {
   const e = G.unlocked('songbook') && G.writable().length;
   out.push(T('rest', 'Rest', 1, { kind:'rest', desc:'+15 Energy' }));
   out.push(T('practice', 'Practise songwriting', 1, { kind:'practice', desc:'+2 Songwriting' }));
-  if (a >= W('2005-11-01')) out.push(T('social', 'Post for fans', 1, { kind:'social', desc:'Fans up, Press Heat up' }));
-  if (a >= W('2006-06-01')) out.push(T('fanevent', 'Hold a fan event', 2, { kind:'fanevent', desc:'Fans up, Energy down' }));
-  if (a >= W('2006-06-01')) out.push(T('interview', 'Do an interview', 1, { kind:'interview', tab:'press' }));
-  out.push(T('network', 'Network in the industry', 1, { kind:'network', desc:'+Industry Clout' }));
+  const lock = G.world('lockdown'), hid = S.flags.hidden;
+  if (hid) {
+    out.push(T('secretsession', 'Secret writing session with a collaborator', 2, { kind:'secretsession', desc:'Nobody knows you are working. +Songwriting, and your next song is better.' }));
+    out.push(T('ghostwrite', 'Write a song for another artist, under another name', 2, { kind:'ghostwrite', desc:'Money and Industry Clout, with no press' }));
+    out.push(T('readfans', 'Quietly read what fans are saying', 1, { kind:'readfans', desc:'Ideas for the comeback. +Hype' }));
+  }
+  if (a >= W('2005-11-01') && !hid) out.push(T('social', lock ? 'Post for fans from home' : 'Post for fans', 1, { kind:'social', desc:'Fans up, Press Heat up' }));
+  if (a >= W('2006-06-01') && !hid) out.push(lock ? T('livestream', 'Livestream for fans', 1, { kind:'livestream', desc:'Fans up, from home' }) : T('fanevent', 'Hold a fan event', 2, { kind:'fanevent', desc:'Fans up, Energy down' }));
+  if (a >= W('2006-06-01') && !hid) out.push(T('interview', lock ? 'Do a video interview' : 'Do an interview', 1, { kind:'interview', tab:'press' }));
+  out.push(T('network', lock ? 'Video calls with the industry' : hid ? 'Private meetings with your team' : 'Network in the industry', 1, { kind:'network', desc:'+Industry Clout' }));
   if (S.stats.money > 5000) out.push(T('charity', 'Support a cause', 1, { kind:'charity', desc:'+Reputation, costs money' }));
   out.push(T('private', 'Private time with friends and family', 1, { kind:'private', desc:'+Energy, +Team mood' }));
-  if (a < W('2006-01-01')) out.push(T('gig', 'Play a local gig', 1, { kind:'gig', desc:'Fans up, a little money' }));
+  if (a < W('2006-01-01') && !lock) out.push(T('gig', 'Play a local gig', 1, { kind:'gig', desc:'Fans up, a little money' }));
   if (S.flags.free && !G.active().some(x => ['write','record','finish','pre'].includes(x.st))) out.push(T('newera', 'Start a new era', 0, { kind:'newera', tab:'studio' }));
   return out;
 };
@@ -319,6 +333,10 @@ G.doTask = function (id, arg) {
     case 'network': applyFx({ clout:2 * pri('business') }); msg = 'Useful conversations.'; break;
     case 'charity': { const g = Math.max(1000, Math.round(S.stats.money * .01)); S.stats.money -= g; applyFx({ rep:3 }); msg = `You gave ${G.fmtM(g)}.`; break; }
     case 'private': applyFx({ energy:8, team:3 }); msg = 'A quiet day.'; break;
+    case 'livestream': applyFx({ fans:1.6 * pri('fans'), energy:-3 }); feed('she went live from her kitchen and i am not okay'); msg = 'Fans tune in from their homes.'; break;
+    case 'secretsession': applyFx({ write:3, energy:-4 }); S.flags.focus = true; msg = 'A secret session. Your next song will be stronger.'; break;
+    case 'ghostwrite': applyFx({ clout:3, write:1 }); S.stats.money += 50000 + S.stats.clout * 4000; msg = 'You write a song for someone else. Your name stays off the press release.'; break;
+    case 'readfans': { const e = G.currentEra(); applyFx({ hype:3 }); msg = 'Fans have not gone anywhere.'; break; }
     case 'gig': applyFx({ fans:6, energy:-5 }); S.stats.money += 150; msg = 'You play a local fair.'; break;
     case 'newera': return { goto:'studio' };
   }
@@ -356,13 +374,14 @@ G.tourDemand = (plan, p) => {
   const pf = [0, 1.15, 1, .78][plan.price], prod = (1 + plan.prod * .05) / 1.1;
   // Real tours: the real ticket count, scaled by momentum. Invented tours: from fan size and reputation.
   if (p && p.tour && p.tour.target && G.curveMode()) return p.tour.target / G.priceOf(2, G.win(p).ts) * G.momentum() * pf * prod;
-  return 230 * Math.pow(Math.max(1, S.stats.fans), .55) * pf * (.65 + S.stats.rep / 140) * prod;
+  const wf = (G.world('recession') ? .9 : 1) * (G.world('limits') ? .8 : 1);
+  return wf * 230 * Math.pow(Math.max(1, S.stats.fans), .55) * pf * (.65 + S.stats.rep / 140) * prod;
 };
 G.suggestTour = function (p) {
   let tier = S.stats.fans > 1.5e7 ? 'stadium' : S.stats.fans > 1.2e6 ? 'arena' : 'theater';
   if (p.tour.target && G.curveMode() && p.tour.tier) tier = p.tour.tier;
   const plan = { tier, price:2, prod:2, regions:['North America'], openers:(p.tour.openers || []).slice(0, 2), setlist:[], nights:0, name:p.tour.name };
-  plan.nights = clamp(Math.round(G.tourDemand(plan, p) * .92 / CAP[tier]), 6, 200);
+  plan.nights = clamp(Math.round(G.tourDemand(plan, p) * .92 / CAP[tier]), 6, p.tour.maxNights || 200);
   if (S.stats.fans > 5e6) plan.regions.push('Europe'); if (S.stats.fans > 2e7) plan.regions.push('Asia and Oceania'); if (S.stats.fans > 5e7) plan.regions.push('Latin America');
   // Two or three of the best songs from each album, with more from the newest era.
   const by = {}; G.catalog().forEach(t => { const k = S.songs[t].p; (by[k] = by[k] || []).push(t); });
@@ -375,7 +394,9 @@ G.catalog = () => Object.keys(S.songs).filter(t => S.songs[t].st === 'released' 
 G.reviewTour = function (p, plan) {
   const obj = [], dem = G.tourDemand(plan, p), sell = dem / (plan.nights * CAP[plan.tier]);
   if (sell < .75) obj.push({ from:'manager', x:`Too many ${plan.tier} nights for your current numbers. About ${Math.max(4, Math.floor(dem * .85 / CAP[plan.tier]))} nights would sell.` });
-  const cost = plan.nights * CAP[plan.tier] * plan.prod * 3 * Math.pow(1.03, ER.yw(S.abs).y - 2006);
+  const cost = plan.nights * CAP[plan.tier] * plan.prod * 3 * Math.pow(1.03, ER.yw(S.abs).y - 2006) * (G.world('security') ? 1.08 : 1) * (G.world('inflation') ? 1.15 : 1);
+  if (G.world('lockdown')) obj.push({ from:'manager', x:'Venues are closed because of the pandemic. Nothing can go on sale until live music returns.' });
+  if (p.tour.maxNights && plan.nights > p.tour.maxNights + 6) obj.push({ from:'manager', x:`${p.tour.name} is meant to be a short run. Keep it to about ${p.tour.maxNights} dates.` });
   if (S.stats.money < cost * .02) obj.push({ from:'manager', x:`The production deposit is ${G.fmtM(cost * .02)}, and you cannot cover it yet. Lower the production level or the number of nights.` });
   if (plan.price === 3 && S.stats.rep < 55) obj.push({ from:'publicist', x:'Top-tier prices with your reputation where it is would be a press risk. Bring prices down.' });
   if (S.stats.heat > 85 && plan.prod === 3) obj.push({ from:'publicist', x:'The press will call a maximum-production show excessive right now.' });
@@ -385,6 +406,8 @@ G.reviewTour = function (p, plan) {
 G.submitTour = function (p, plan) {
   const pj = G.pj(p.id), r = G.reviewTour(p, plan);
   pj.tour = Object.assign({}, plan, { submitted:S.abs, approved:r.ok, objections:r.obj, played:0, gross:0, tickets:0, acc:0, cost:r.cost });
+  // Tickets go on sale as soon as the plan is approved.
+  if (r.ok) pj.tour.presold = Math.round(Math.min(G.tourDemand(plan, p), plan.nights * CAP[plan.tier]) * .85);
   if (r.ok) { inbox('manager', `${plan.name}: approved`, `The plan works: ${plan.nights} ${plan.tier} nights. Expected sell-through ${Math.round(r.sell * 100)}%.`); inbox('publicist', `${plan.name}: no press concerns`, 'I can work with this.'); pj.tp.route = true; }
   else r.obj.forEach(o => inbox(o.from, `${plan.name}: sent back`, o.x));
   return r;
@@ -393,6 +416,14 @@ G.autoTour = function (p) {
   const plan = G.suggestTour(p); let r = G.submitTour(p, plan), n = 0;
   while (!r.ok && n++ < 6) { plan.nights = Math.max(4, Math.floor(plan.nights * .8)); if (plan.price === 3) plan.price = 2; if (plan.prod > 1) plan.prod--; r = G.submitTour(p, plan); }
   if (!r.ok) { plan.prod = 1; plan.price = 2; plan.nights = clamp(Math.round(G.tourDemand(plan, p) * .85 / CAP[plan.tier]), 6, 200); G.submitTour(p, plan); G.pj(p.id).tour.approved = true; G.pj(p.id).tour.objections = []; }
+};
+G.cancelTour = function (p, why) {
+  if (!p || !p.tour) return; const pj = G.pj(p.id); if (pj.tourCancelled || pj.tourDone) return;
+  const tr = pj.tour, sold = tr ? (tr.presold || 0) : 0, lost = tr && tr.approved ? Math.round((tr.cost || 0) * .02) : 0;
+  pj.tourCancelled = true; pj.cancelled = { name:p.tour.name, why, abs:S.abs, sold, lost, planned:!!(tr && tr.approved) };
+  S.stats.money -= lost; applyFx({ team:-3 });
+  inbox('promoter', `${p.tour.name} is cancelled`, why === 'pandemic' ? `Live music has been shut down by the COVID-19 pandemic.${sold ? ` All ${G.fmtN(sold)} tickets sold so far are being refunded.` : ''}${lost ? ` The ${G.fmtM(lost)} production deposit is lost.` : ''}` : 'The tour cannot go ahead.');
+  feed(`${p.tour.name} is cancelled. I had my outfit planned for months.`);
 };
 G.playShows = function (p) {
   const pj = G.pj(p.id), w = G.win(p);
@@ -452,6 +483,14 @@ function startWeek() {
   const a = S.abs, A = G.art();
   if (G.tasks().some(t => t.kind === 'school')) { S.week.used = 1; S.week.done.school = true; }
   if (S.mode === 'story' && !S.flags.free) A.events.forEach(e => { if (e.abs === a && S.seen[e.id] == null) S.week.pending.push(e.id); });
+  // Real-world events happen in every save, whichever artist or mode.
+  if (!S.flags.free) (ER.WORLD || []).forEach(e => { if (e.abs === a && S.seen[e.id] == null) S.week.pending.push(e.id); });
+  // The pandemic cancels any tour that would run during the lockdown.
+  if (ER.WORLD_STATE && !S.flags.free) { const [l0, l1] = ER.WORLD_STATE.lockdown;
+    G.allProjects().forEach(p => { if (!p.tour || p.tour.kind !== 'headline') return; const w = G.win(p); if (w.ts == null) return;
+      if (a >= l0 && w.ts < l1 && w.te >= l0 && (w.ts - a <= 8)) G.cancelTour(p, 'pandemic'); }); }
+  if (S.mode === 'era' && S.artist === 'taylor' && !S.flags.hidden && !S.flags.hiddenDone && a >= W('2016-09-12') && a < W('2017-08-18')) { S.flags.hidden = true; S.duties = S.duties.filter(d => d.from !== 'publicist'); inbox('publicist', 'Out of public view', 'After the summer of 2016 you step out of sight. You can still write, record and plan in private.'); }
+  if (S.flags.hidden && (S.abs >= W('2017-09-04') || (S.mode === 'era' && S.abs >= W('2017-08-18')))) { S.flags.hidden = false; S.flags.hiddenDone = true; inbox('publicist', 'Back in public view', 'Your time out of sight is over.'); }
   // Missed events after a load or an Era Start skip are not replayed.
   if (S.flags.free && Math.random() < .07) { const d = pick(ER.DRAMA); S.week.pending.push('drama:' + d.id); }
   const yw = ER.yw(a);
@@ -461,7 +500,7 @@ function startWeek() {
   const act = G.active().filter(x => !['none','rest'].includes(x.st));
   if (act.length && Math.random() < .22 && a >= W('2005-07-01')) {
     const x = pick(act), nm = x.p.short || x.p.title, r = Math.random();
-    if (r < .35) duty('manager', `Approve the ${nm} budget`, 1, a + 2);
+    if (r < .35 || S.flags.hidden || G.world('lockdown')) duty('manager', `Approve the ${nm} budget`, 1, a + 2);
     else if (r < .7) duty('publicist', `Magazine shoot for ${nm}`, 1, a + 3, { rep:-2, team:-3 });
     else duty('label', `Label meeting about ${nm}`, 1, a + 2, { clout:-3, team:-2 });
     const d = S.duties[S.duties.length - 1]; inbox(d.from, d.l, `Please get this done by the week of ${G.fmtDate(d.due)}.`);
@@ -479,15 +518,17 @@ G.answer = function (id, ci) {
     const d = ER.DRAMA.find(x => x.id === id.slice(6)); const c = d.ch[ci]; applyFx(c.fx, DIFF[S.diff].pen > 1 ? 1.2 : 1);
     S.log.push({ abs:S.abs, id, t:d.t, l:c.l, drama:true }); S.week.pending = S.week.pending.filter(x => x !== id); return { r:'The story moves on.' };
   }
-  const e = G.art().events.find(x => x.id === id); const c = e.ch[ci];
+  const e = G.findEvent(id); const c = e.ch[ci];
+  if (e.cancelTour) G.cancelTour(G.proj(e.cancelTour), 'pandemic');
+  if (c.hide) { S.flags.hidden = true; S.duties = S.duties.filter(d => d.from !== 'publicist'); inbox('publicist', 'Out of public view', 'No interviews, posts or appearances. You can still write, record and plan in private.'); }
   applyFx(c.fx); S.seen[id] = ci;
   if (!e.s && e.ch.some(x => x.c)) scoreCanon(!!c.c);
   if (e.award) { S.awards.push({ n:e.award, abs:S.abs, y:e.year }); if (e.award === 'Album of the Year' && !S.ach.aoty) ach('aoty'); }
   if (e.egg) S.eggs.log.push({ n:e.egg, abs:S.abs });
   if (e.unlock) S.flags[e.unlock] = true;
-  if (e.id === 'wipe') S.flags.wiped = S.abs;
+  if (e.id === 'wipe') { S.flags.wiped = S.abs; S.flags.hidden = false; S.flags.hiddenDone = true; }
   if (e.id === 'surpriseguests') S.flags.surpriseGuests = true;
-  S.log.push({ abs:S.abs, id, t:e.t, l:c.l, canon:!!c.c, s:!!e.s, truth:e.truth, real:(e.ch.find(x => x.c) || {}).l });
+  S.log.push({ abs:S.abs, id, t:e.t, l:c.l, canon:!!c.c, s:!!e.s, world:!!e.world, truth:e.truth, real:(e.ch.find(x => x.c) || {}).l });
   S.week.pending = S.week.pending.filter(x => x !== id);
   return { r:c.r, truth:e.truth };
 };
@@ -526,7 +567,7 @@ function endWeek() {
     if (c.pos < c.peak) c.peak = c.pos; if (c.peak === 1) { G.pj(c.pid).no1 = true; if (!S.ach.no1) ach('no1'); } if (c.pos > 100) c.out = true; });
   S.charts.albums.forEach(c => { c.wk++; });
   // Natural drift.
-  s.heat = Math.max(0, s.heat - 2.5);
+  s.heat = Math.max(0, s.heat - 2.5 - (S.flags.hidden ? 3 : 0));
   updateCap();
   if (G.curveMode()) {
     const base = clamp(1 + (s.rep - 65) / 400 + (s.team - 60) / 800 + (S.recovery ? -.12 : 0), .65, 1.12);
@@ -623,6 +664,7 @@ function achievements() {
   if (Object.values(S.pj).some(x => x.tour && x.tour.gross >= 1e9)) ach('billion'); if (S.flags.free) ach('free');
 }
 
+G.returnToPublic = function () { if (!S.flags.hidden) return; S.flags.hidden = false; S.flags.hiddenDone = true; applyFx({ heat:15, hype:10 }); inbox('publicist', 'You are back', 'You stepped back into public view early. The press noticed.'); };
 /* ---------- Fast-forward ---------- */
 G.quietWeek = () => !S.week.pending.length && !G.requiredLeft().length && !S.modal.length;
 G.fastForward = function (max) {
@@ -668,7 +710,7 @@ G.enterFree = function () { S.flags.free = true; ach('free'); inbox('manager', '
 /* ---------- Sponsors ---------- */
 G.signSponsor = function (id) {
   const sp = ER.SPONSORS.find(x => x.id === id); if (!sp || S.sponsors.some(x => x.id === id && !x.lost && !x.done)) return;
-  const fee = Math.round(sp.pay * (20000 + S.stats.fans * .35) * (1 + S.stats.clout / 100));
+  const fee = Math.round(sp.pay * (20000 + S.stats.fans * .35) * (1 + S.stats.clout / 100) * (G.world('recession') ? .8 : 1));
   S.stats.money += fee;
   S.sponsors.push({ id, n:sp.n, paid:fee, abs:S.abs });
   duty('manager', `${sp.n}: ${sp.duties[0]}`, 1, S.abs + 3, { rep:-3, team:-3 }, id);

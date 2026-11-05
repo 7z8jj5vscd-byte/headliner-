@@ -199,6 +199,8 @@ VIEWS.week = function () {
     ${done ? '<span class="pill ok">Done</span>' : t.fixed ? '' : `<div class="row">${t.tab && t.tab !== 'week' ? `<button class="btn ghost sm" data-act="tab" data-v="${t.tab}">Open</button>` : ''}<button class="btn sm" data-act="do" data-id="${h(t.id)}" ${G.canSpend(t.cost) ? '' : 'disabled'}>Do</button></div>`}</div>`; };
   const r = s.recap;
   return `${s.recovery ? card(`<b>Recovery goal:</b> raise your ${s.recovery.k === 'rep' ? 'Public Reputation' : 'team mood'} to 30. Weeks are harder until you do.`, 'warn') : ''}
+  ${G.worldNotes().map(n => card(`<span class="eyebrow">The world right now</span><p class="small">${h(n)}</p>`, 'world')).join('')}
+  ${s.flags.hidden ? card('<span class="eyebrow">Out of public view</span><p class="small">No interviews, posts or appearances. You can still write, record, plan your comeback and work with your team in private.</p>', 'world') : ''}
   ${s.week.forcedRest ? card('<b>Forced rest.</b> Energy hit zero, so you only have 1 Time Block this week.', 'warn') : ''}
   <div class="stagewrap"><div class="stage3d" id="t3stage"></div><div class="caption">${x ? `<b>${h(x.p.title)}</b> · ${h(stageName(x.st))}<div class="small">Done when: ${h(ER.STAGES[x.st].need)}</div>` : '<b>Between eras</b>'}</div></div>
   ${act.length > 1 ? card(`<h3>Your stages</h3><div class="chips">${act.map(y => pill(`${y.p.short || y.p.title}: ${stageName(y.st)}`)).join('')}</div><p class="small muted">Stages overlap, and your Time Blocks have to cover all of them.</p>`) : ''}
@@ -221,7 +223,7 @@ VIEWS.life = function () {
    <p class="small muted">Moving the genre meter fast costs radio support and old fans in exchange for new ones.</p>`)}
   ${card(`<h3>Family</h3>${fam.map(p => `<div class="between small"><b>${h(p.n)}</b><span class="muted">${h(p.role)}</span></div>`).join('')}<h3>School</h3><p class="small">${h(school)}</p>`)}
   ${card(`<h2>Event cards</h2><p class="small muted">Your choices beside what really happened.</p>${s.log.slice().reverse().map(l => `<div class="logrow ${l.s ? 'sens' : ''}"><div class="between"><b>${h(l.t)}</b><span class="small muted">${h(G.fmtDate(l.abs))}</span></div>
-     <div class="small">You: ${h(l.l)} ${l.s || l.drama ? '' : l.canon ? pill('Canon', 'ok') : pill('What-if')}</div>${l.truth ? `<div class="small muted">What really happened: ${h(l.truth)}</div>` : ''}</div>`).join('') || '<p class="muted small">No cards yet.</p>'}`)}`;
+     <div class="small">You: ${h(l.l)} ${l.world ? pill('World') : l.s || l.drama ? '' : l.canon ? pill('Canon', 'ok') : pill('What-if')}</div>${l.truth ? `<div class="small muted">What really happened: ${h(l.truth)}</div>` : ''}</div>`).join('') || '<p class="muted small">No cards yet.</p>'}`)}`;
 };
 VIEWS.songbook = function () {
   const s = S(), A = G.art(), groups = {};
@@ -310,8 +312,14 @@ VIEWS.tour = function () {
   tps.forEach(p => {
     const pj = G.pj(p.id), st = G.stageOf(p, s.abs), w = G.win(p);
     if (p.tour.kind === 'opening') { out.push(card(`<h2>${h(p.tour.name)}</h2><p class="small muted">${h(G.fmtDate(w.ts))} to ${h(G.fmtDate(w.te))}. You open for bigger acts. Each week of shows brings new fans.</p>`)); return; }
-    if (p.tour.kind === 'cancelled') { out.push(card(`<h2>${h(p.tour.name)}</h2><p class="muted">Planned for 2020. The pandemic forced its cancellation.</p>`)); return; }
+    if (p.tour.kind === 'cancelled') { out.push(card(`<h2>${h(p.tour.name)}</h2><p class="muted">Cancelled.</p>`)); return; }
     const tr = pj.tour;
+    if (tr && tr.approved && s.abs < w.ts) {
+      out.push(card(`<div class="between"><h2>${h(tr.name)}</h2>${pill('On sale')}</div>${p.tour.note ? `<p class="small muted">${h(p.tour.note)}</p>` : ''}
+        <p class="small">${tr.nights} ${tr.tier} dates from ${h(G.fmtDate(w.ts))}. <b>${G.fmtN(tr.presold || 0)}</b> tickets sold so far.</p>
+        <p class="small">Openers: ${h((tr.openers || []).join(', ') || 'To be announced')}</p><p class="small muted">Setlist: ${h((tr.setlist || []).join(' · '))}</p>`));
+      return;
+    }
     if (tr && tr.approved) {
       out.push(card(`<div class="between"><h2>${h(tr.name)}</h2>${pill(stageName(st))}</div><p class="small muted">${h(G.fmtDate(w.ts))} to ${h(G.fmtDate(w.te))} · ${tr.nights} ${tr.tier} nights · ${h(tr.regions.join(', '))}</p>
         <div class="grid3"><div><b>${tr.played}</b><div class="small muted">Shows</div></div><div><b>${G.fmtN(tr.tickets)}</b><div class="small muted">Tickets</div></div><div><b>${G.fmtM(tr.gross)}</b><div class="small muted">Gross</div></div></div>
@@ -323,7 +331,7 @@ VIEWS.tour = function () {
     const plan = UI.sel.plan && UI.sel.plan.pid === p.id ? UI.sel.plan : (UI.sel.plan = Object.assign({ pid:p.id }, G.suggestTour(p)));
     UI.sel.tier = plan.tier;
     const rv = G.reviewTour(p, plan), cat = G.catalog();
-    out.push(card(`<div class="between"><h2>${h(p.tour.name)}</h2>${pill(stageName(st))}</div><p class="small muted">Starts ${h(G.fmtDate(w.ts))}. Plan it, then send it to your manager and publicist.</p>
+    out.push(card(`<div class="between"><h2>${h(p.tour.name)}</h2>${pill(stageName(st))}</div>${p.tour.note ? `<p class="small muted">${h(p.tour.note)}</p>` : ''}<p class="small muted">Starts ${h(G.fmtDate(w.ts))}. Plan it, then send it to your manager and publicist.</p>
       <div class="stage3d short" id="t3venue"></div>
       <label class="field"><span>Show concept</span><select data-act="tp" data-k="concept">${['Told in acts, one per era','A single story, start to finish','Greatest hits, fast and loud'].map(c => `<option ${plan.concept === c ? 'selected' : ''}>${c}</option>`).join('')}</select></label>
       <label class="field"><span>Venues</span><select data-act="tp" data-k="tier">${['theater','arena','stadium'].map(t => `<option ${plan.tier === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
@@ -338,6 +346,9 @@ VIEWS.tour = function () {
       <div class="row"><button class="btn" data-act="submittour" data-p="${p.id}">Send for approval</button><button class="btn ghost sm" data-act="suggest" data-p="${p.id}">Use the manager's suggestion</button></div>`));
   });
   freeNoTour.forEach(p => out.push(card(`<h2>Tour ${h(p.title)}</h2><label class="field"><span>Length</span><select id="ct-w"><option value="20">20 weeks</option><option value="40" selected>40 weeks</option><option value="70">70 weeks</option></select></label><button class="btn" data-act="customtour" data-p="${p.id}">Put a tour on the calendar</button>`)));
+  const canc = Object.keys(s.pj).filter(id => s.pj[id].cancelled);
+  if (canc.length) out.push(card(`<h3>Cancelled tours</h3>${canc.map(id => { const c = s.pj[id].cancelled; return `<div class="logrow"><div class="between"><b>${h(c.name)}</b><span class="small muted">${h(G.fmtDate(c.abs))}</span></div><div class="small">${c.why === 'pandemic' ? 'Cancelled by the COVID-19 pandemic.' : 'Cancelled.'}${c.planned ? ` ${G.fmtN(c.sold)} tickets refunded.` : ' It was never planned.'}</div></div>`; }).join('')}`));
+  if (G.world('lockdown')) out.unshift(card(`<span class="eyebrow">Live music is shut down</span><p class="small">Because of the COVID-19 pandemic, venues are closed. No tours can go on sale until live music returns.</p>`, 'world'));
   const past = Object.keys(s.pj).filter(id => s.pj[id].tour && s.pj[id].tourDone);
   if (past.length) out.push(card(`<h3>Past tours</h3>${past.map(id => { const t = s.pj[id].tour; return `<div class="between small"><span>${h(t.name)}</span><span class="muted">${t.played} shows · ${G.fmtM(t.gross)}</span></div>`; }).join('')}`));
   if (!tps.length && !freeNoTour.length) out.unshift(card(`<h2>Tour Desk</h2><p class="muted">No tour is being planned. Tours open here in an era's promotion stage.</p>`));
@@ -366,7 +377,9 @@ VIEWS.fandom = function () {
   if (y < 2010 && y >= 2005) ev.push(['myspace', 'Reply to fans on MySpace', 1]);
   if (s.flags.secretsessions) ev.push(['secret', 'Host a Secret Session', 2]);
   if (s.flags.bracelets) ev.push(['bracelets', 'Trade friendship bracelets at a show', 1]);
-  ev.push(['meet', 'Surprise fans at a meet-up', 2]);
+  if (G.world('lockdown')) { ev.length = 0; ev.push(['livestream', 'Livestream for fans from home', 1]); if (s.flags.secretsessions) ev.push(['zoom', 'Surprise fans on a video call', 1]); }
+  else if (!s.flags.hidden) ev.push(['meet', 'Surprise fans at a meet-up', 2]);
+  if (s.flags.hidden) { ev.length = 0; ev.push(['readfans', 'Quietly read the fan theories', 1]); }
   return card(`<h2>${h(A.fanName)}</h2><div class="grid3"><div><b>${G.fmtN(s.stats.fans)}</b><div class="small muted">Fans</div></div><div><b>${G.fmtN(hard)}</b><div class="small muted">Hardcore</div></div><div><b>${s.eggs.decoded}</b><div class="small muted">Eggs decoded</div></div></div>
     ${G.curveMode() ? `<div class="statrow"><span>Momentum vs reality</span>${bar(G.momentum() * 50, 80)}<b>${Math.round(G.momentum() * 100)}%</b></div><p class="small faint">Your fan base follows her real growth in each era. Above 100% you are doing better than she did, and below it worse.</p>` : ''}
     <h3>Fan events</h3>${ev.map(([k, l, c]) => `<div class="between small"><span>${h(l)}</span><button class="btn sm" data-act="fan" data-k="${k}" data-c="${c}" ${G.canSpend(c) ? '' : 'disabled'}>Do · ${c}</button></div>`).join('')}`)
@@ -376,12 +389,19 @@ VIEWS.press = function () {
   const s = S(), A = G.art(), y = G.yw().y;
   const outs = ER.OUTLETS.filter(o => y >= o.from);
   const groups = {}; A.people.forEach(p => { if (p.from <= y) (groups[p.g] = groups[p.g] || []).push(p); });
+  if (s.flags.hidden) return card(`<h2>Press</h2><p class="small">You are out of public view. No interviews, statements or posts until you come back. Press Heat is cooling fast.</p>
+    <div class="statrow"><span>Press Heat</span>${bar(s.stats.heat)}<b>${Math.round(s.stats.heat)}</b></div>
+    <button class="btn ghost sm" data-act="unhide">Return to public view early</button>`) + VIEWS.people();
   return card(`<h2>Press</h2><div class="statrow"><span>Press Heat</span>${bar(s.stats.heat)}<b>${Math.round(s.stats.heat)}</b></div>
     <label class="field"><span>Interview</span><select data-act="selout">${outs.map(o => `<option value="${o.id}" ${UI.sel.out === o.id ? 'selected' : ''}>${h(o.n)}</option>`).join('')}</select></label>
     <div class="row"><button class="btn sm" data-act="press" data-k="interview" ${G.canSpend(1) ? '' : 'disabled'}>Do the interview · 1</button><button class="btn sm" data-act="press" data-k="statement" ${G.canSpend(1) ? '' : 'disabled'}>Issue a statement · 1</button>
     <button class="btn sm" data-act="press" data-k="social" ${G.canSpend(1) ? '' : 'disabled'}>Post · 1</button><button class="btn ghost sm" data-act="press" data-k="silence">${s.flags.silence ? 'End the silence' : 'Go silent'}</button></div>
     <p class="small faint">Silence cools Press Heat faster but slows fan growth.</p>`)
-  + card(`<h2>People</h2><p class="small muted">People arrive in the year they enter her public story. Relationship cards use only what was publicly reported.</p>${Object.keys(groups).map(g => `<h3>${h(g)}</h3>${groups[g].map(p => `<div class="between small ${p.to && p.to < y ? 'past' : ''}"><b>${h(p.n)}</b><span class="muted">${h(p.role)}</span></div>`).join('')}`).join('')}`);
+  + VIEWS.people();
+};
+VIEWS.people = function () {
+  const s = S(), A = G.art(), y = G.yw().y; const groups = {}; A.people.forEach(p => { if (p.from <= y) (groups[p.g] = groups[p.g] || []).push(p); });
+  return card(`<h2>People</h2><p class="small muted">People arrive in the year they enter her public story. Relationship cards use only what was publicly reported.</p>${Object.keys(groups).map(g => `<h3>${h(g)}</h3>${groups[g].map(p => `<div class="between small ${p.to && p.to < y ? 'past' : ''}"><b>${h(p.n)}</b><span class="muted">${h(p.role)}</span></div>`).join('')}`).join('')}`);
 };
 VIEWS.charts = function () {
   const s = S();
@@ -441,9 +461,9 @@ function modals() {
 }
 function eventModal(id) {
   const s = S(), drama = id.startsWith('drama:');
-  const e = drama ? ER.DRAMA.find(x => x.id === id.slice(6)) : G.art().events.find(x => x.id === id);
+  const e = drama ? ER.DRAMA.find(x => x.id === id.slice(6)) : G.findEvent(id);
   const txt = drama ? G.dramaText(e) : e.x;
-  modal(`<span class="eyebrow">${drama ? 'Drama' : e.s ? 'Sensitive' : 'Real event'} · ${h(G.fmtDate(s.abs))}</span><h2>${h(e.t)}</h2>${e.s ? '' : '<div class="stage3d short" id="t3event"></div>'}
+  modal(`<span class="eyebrow">${drama ? 'Drama' : e.s ? (e.world ? 'World event · Sensitive' : 'Sensitive') : e.world ? 'World event' : 'Real event'} · ${h(G.fmtDate(s.abs))}</span><h2>${h(e.t)}</h2>${e.s ? '' : '<div class="stage3d short" id="t3event"></div>'}
     <p>${h(txt)}</p>${e.s ? '<p class="small muted">This is told factually and briefly. You can respond only with support, safety or a public statement.</p>' : ''}
     <div class="stack tight" id="evch">${e.ch.map((c, i) => `<button class="choice" data-act="answer" data-id="${h(id)}" data-i="${i}">${h(c.l)}</button>`).join('')}</div>`, e.s ? 'sens' : '');
   if (!e.s) mount3D('#t3event', eventSpec(e), 'event');
@@ -484,7 +504,8 @@ const ACT = {
   eggt:(d, el) => { UI.sel.eggType = el.value; }, eggg:(d, el) => { UI.sel.eggTarget = el.value; },
   plant:() => { if (!G.canSpend(1)) return toast('No blocks left.'); const tg = G.eggTargets(), t = tg.find(x => x.id === (UI.sel.eggTarget || tg[0].id)) || tg[0];
     const pre = G.tasks().find(x => x.kind === 'egg' && !G.taskDone(x.id)); G.plantEgg(UI.sel.eggType || 'caps', t, pre && pre.p); if (pre) G.S().week.done[pre.id] = true; G.S().week.used++; toast('Clue planted. Fans are on it.'); render(); },
-  fan:d => { if (!G.canSpend(+d.c)) return toast('No blocks left.'); G.S().week.used += +d.c; const fx = { myspace:{ fans:2 }, secret:{ fans:3, hype:8, energy:-6 }, bracelets:{ fans:2, rep:1 }, meet:{ fans:2.5, energy:-6, rep:1 } }[d.k]; G.applyFx(fx); G.feed(d.k === 'secret' ? 'i went to a secret session and cannot say anything except: crying' : 'she showed up!!! i cannot believe it'); toast('Fans will remember that.'); render(); },
+  fan:d => { if (!G.canSpend(+d.c)) return toast('No blocks left.'); G.S().week.used += +d.c; const fx = { myspace:{ fans:2 }, secret:{ fans:3, hype:8, energy:-6 }, bracelets:{ fans:2, rep:1 }, meet:{ fans:2.5, energy:-6, rep:1 }, livestream:{ fans:1.6, energy:-3 }, zoom:{ fans:1, rep:2 }, readfans:{ hype:3 } }[d.k]; G.applyFx(fx); G.feed(d.k === 'secret' ? 'i went to a secret session and cannot say anything except: crying' : 'she showed up!!! i cannot believe it'); toast('Fans will remember that.'); render(); },
+  unhide:() => { G.returnToPublic(); toast('You are back in public view.'); render(); },
   selout:(d, el) => { UI.sel.out = el.value; },
   press:d => { const s = G.S();
     if (d.k === 'silence') { s.flags.silence = !s.flags.silence; toast(s.flags.silence ? 'You go quiet.' : 'You are back.'); return render(); }
