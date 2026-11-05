@@ -29,17 +29,28 @@ const PRI = ['tour','release','tourprep','pre','finish','record','write','promo'
 function primary() { const a = G.active(); a.sort((x, y) => PRI.indexOf(x.st) - PRI.indexOf(y.st)); return a.find(x => x.p.type !== 'demos') || a[0] || null; }
 
 /* ---------- 3D helpers ---------- */
-function lookFor(ctx, era) {
-  const s = S(), L = Object.assign({ skin:'#d3a07a', hair:'#3a2417', style:'curly' }, s ? s.look : UI.newg && UI.newg.look);
-  const c = era ? era.color : '#2f8f7c', acc = era && era.accent || T3.shade(c, .5);
-  const country = era && ['ts1','fearless','early'].includes(era.id);
-  const o = { skin:L.skin, hair:L.hair, style:L.style, outfit:c, accent:acc, top:'dress', boots:country ? '#6b3e1f' : '#1f1f1f' };
-  if (ctx === 'tour' || ctx === 'awards' || ctx === 'release') o.top = 'sequin';
-  if (ctx === 'studio') o.top = 'tee';
-  if (ctx === 'press') o.top = 'jacket';
-  if (country && ctx !== 'awards') o.guitar = true;
+// The performer's look follows the eras: each era's hair, make-up and costumes.
+const ERAS_CYCLE = ['lover','fearless','evermore','rep','speaknow','red','folklore','1989','ttpd','midnights'];
+function eraKey(era) {
+  const L = ER.LOOKS.taylor; if (!era) return 'early';
+  if (L[era.id]) return era.id;
+  return era.custom ? 'showgirl' : 'early';
+}
+function lookFor(ctx, era, key) {
+  const L = ER.LOOKS.taylor, s = S();
+  let k = key || eraKey(era);
+  if (!key && s && G.age() < 15) k = 'early';
+  // On the Eras Tour, each week's show is a different act.
+  if (!key && ctx === 'tour' && s && era && era.id === 'midnights') { const tp = G.active().find(x => x.st === 'tour' && x.p.id === 'midnights'); if (tp) k = ERAS_CYCLE[s.abs % ERAS_CYCLE.length]; }
+  const e = L[k] || L.early, stage = ['tour','awards','release'].includes(ctx);
+  const o = Object.assign({}, e.base, stage ? e.stage : e.casual);
+  if (era && era.custom) { o.outfit = era.color; o.accent = T3.shade(era.color, .55); }
+  if (ctx === 'awards' && !e.stage.top.match(/gown|sequin/)) { o.top = 'gown'; o.sparkle = 1; o.guitar = 0; o.hat = 0; }
+  if (ctx === 'awards') o.guitar = 0;
   return o;
 }
+function ageScale() { const s = S(); if (!s) return 1; const a = G.age(); return a < 13 ? .74 : a < 15 ? .84 : a < 17 ? .93 : 1; }
+function otherLook(who, y, stage) { const l = ER.lookAtYear(who, y); return Object.assign({}, l.base, l.stage); }
 function sceneFor(x) {
   const s = S(); if (!x) return G.age() < 13 ? 'farm' : 'home';
   const st = x.st, age = G.age();
@@ -54,7 +65,7 @@ const ANIM = { write:'write', bedroom:'strum', writers:'strum', studio:'sing', v
 function stageSpec() {
   const x = primary(), set = sceneFor(x), era = x ? x.p : G.currentEra();
   const ctx = x && x.st === 'tour' ? 'tour' : set === 'studio' ? 'studio' : set === 'press' ? 'press' : set === 'tv' ? 'release' : '';
-  const figs = [{ look:lookFor(ctx, era), x:0, z:0, anim:ANIM[set] || 'idle', mic:['arena','stadium','theater','studio','tv'].includes(set) }];
+  const figs = [{ look:lookFor(ctx, era), x:0, z:0, anim:ANIM[set] || 'idle', mic:['arena','stadium','theater','studio','tv'].includes(set), s:ageScale() }];
   if (set === 'studio') figs.push({ look:T3.TEAM.producer, x:-1.2, z:-.4, ry:.5, anim:'talk', s:.92 });
   if (set === 'tv') figs.push({ look:T3.TEAM.publicist, x:1.15, z:-.2, ry:-.6, anim:'talk', s:.95 });
   if (set === 'rehearsal') figs.push({ look:T3.TEAM.manager, x:-1.3, z:-.3, ry:.5, anim:'idle', s:.95 });
@@ -72,7 +83,9 @@ function eventSpec(e) {
   else if (/move|school|family|farm|friend|summer|nashville|tennessee/.test(t)) set = 'home';
   const era = G.currentEra();
   const figs = [{ look:lookFor(set === 'awards' ? 'awards' : set === 'stadium' ? 'tour' : '', era), x:-.35, anim:set === 'awards' ? 'bow' : set === 'stadium' ? 'sing' : 'talk', mic:set === 'stadium' }];
-  figs.push({ look:set === 'home' ? T3.TEAM.family : set === 'tv' ? T3.TEAM.publicist : T3.TEAM.manager, x:.9, z:-.3, ry:-.5, anim:'talk', s:.94 });
+  figs[0].s = ageScale();
+  if (e.with && e.with.length) { const y = G.yw().y; e.with.forEach((w, i) => figs.push({ look:otherLook(w, y), x:.75 + i * .75, z:-.25 - i * .2, ry:-.45, anim:set === 'awards' ? 'wave' : 'talk', s:.98 })); }
+  else figs.push({ look:set === 'home' ? T3.TEAM.family : set === 'tv' ? T3.TEAM.publicist : T3.TEAM.manager, x:.9, z:-.3, ry:-.5, anim:'talk', s:.94 });
   return { set, color:era ? era.color : '#7a9a4a', figs };
 }
 function mount3D(sel, spec, slot) { requestAnimationFrame(() => { const el = $(sel); if (!el) return; if (!T3.view(el, spec, slot)) el.classList.add('no3d'); }); }
@@ -118,7 +131,7 @@ function title() {
     ${card(`<h2>Saves</h2><div class="stack tight">${slots}</div><div class="row"><label class="btn ghost sm">Import a save<input type="file" accept=".json,application/json" data-act="import" hidden></label></div>`)}
     ${card(`<h2>Stories</h2><div class="stack tight">${artists}</div>`)}
     <p class="small faint">An unofficial fan project. No lyrics, audio, album art or photos of real people are used. Figures are stylised and are not likenesses. Event cards stick to the public record.</p></div>`;
-  mount3D('#t3title', { set:'stadium', color:'#d6a93a', figs:[{ look:lookFor('tour', ER.artists.taylor.projects[2]), anim:'sing', mic:true }] }, 'title');
+  mount3D('#t3title', { set:'stadium', color:'#d6a93a', figs:[{ look:lookFor('tour', null, 'fearless'), anim:'strum' }] }, 'title');
 }
 function newGameFlow() {
   const n = UI.newg; const L = n.look;
@@ -132,18 +145,19 @@ function newGameFlow() {
       <p class="small muted">${n.mode === 'story' ? 'Start at the beginning of her life. Weeks advance in order, and real events happen on their real dates.' : 'Start from any unlocked era, with the catalog and team of that moment. The event track is off and you control the calendar.'}</p>
       ${n.mode === 'era' ? `<div class="chips">${P.map(p => { const ok = eras.includes(p.id); return `<button class="chip ${n.era === p.id ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="nera" data-v="${p.id}"><i class="dot" style="background:${p.color}"></i>${h(p.short)}${ok ? '' : ' (locked)'}</button>`; }).join('')}</div><p class="small faint">Eras unlock when Story Mode reaches them.</p>` : ''}`)}
     ${card(`<h2>Difficulty</h2><div class="chips">${Object.keys(G.DIFF).map(k => `<button class="chip ${n.diff === k ? 'on' : ''}" data-act="ndiff" data-v="${k}">${G.DIFF[k].l} · ${G.DIFF[k].blocks} blocks</button>`).join('')}</div><p class="small muted">Difficulty changes Time Blocks, penalties and deadlines.</p>`)}
-    ${card(`<h2>Your performer</h2><p class="small muted">A stylised 3D figure you design. It is not meant to look like anyone real.</p>
+    ${card(`<h2>Era looks</h2><p class="small muted">The 3D performer changes with every era: hair, make-up and stage costumes. Tap an era to preview it.</p>
       <div class="stage3d" id="t3look"></div>
-      <h3>Hair colour</h3>${opt('hair', LOOKS.hair)}<h3>Hair style</h3>${opt('style', LOOKS.style)}<h3>Skin tone</h3>${opt('skin', LOOKS.skin)}`)}
+      <div class="chips">${['early','ts1','fearless','speaknow','red','1989','rep','lover','folklore','evermore','fearlesstv','redtv','midnights','speaknowtv','1989tv','ttpd','showgirl'].map(k => { const pr = ER.artists.taylor.projects.find(q => q.id === k); return `<button class="chip ${n.lookEra === k ? 'on' : ''}" data-act="lookera" data-v="${k}">${pr ? `<i class="dot" style="background:${pr.color}"></i>` + h(pr.short) : 'Childhood'}</button>`; }).join('')}</div>`)}
     <button class="btn big" data-act="begin">${n.mode === 'story' ? 'Begin the prologue' : 'Start this era'}</button></div>`;
-  mount3D('#t3look', { set:'theater', color:'#7b3fa0', figs:[{ look:Object.assign(lookFor('tour', ER.artists.taylor.projects[3]), { skin:L.skin, hair:L.hair, style:L.style }), anim:'wave' }] }, 'look');
+  { const k = n.lookEra || 'fearless', pr = ER.artists.taylor.projects.find(q => q.id === k);
+    mount3D('#t3look', { set:'stadium', color:pr ? pr.color : '#7a9a4a', figs:[{ look:lookFor('tour', null, k), anim:'sing', mic:!ER.LOOKS.taylor[k].stage.guitar, s:k === 'early' ? .78 : 1 }, { look:lookFor('', null, k), x:1.05, z:-.35, ry:-.5, anim:'idle', s:k === 'early' ? .72 : .92 }] }, 'look'); }
 }
 function prologue() {
   const n = UI.newg, A = ER.artists.taylor, i = n.pro.length, pr = A.prologue[i];
   $('#app').innerHTML = `<div class="title"><span class="eyebrow">Prologue · ${i + 1} of ${A.prologue.length}</span><h1>${h(pr.t)}</h1>
     <div class="stage3d" id="t3pro"></div>
     ${card(`<p>${h(pr.x)}</p><div class="stack tight">${pr.ch.map((c, k) => `<button class="choice" data-act="pro" data-i="${k}">${h(c.l)}</button>`).join('')}</div>`)}</div>`;
-  mount3D('#t3pro', { set:i === 0 ? 'farm' : i === 1 ? 'bedroom' : 'home', color:'#7a9a4a', figs:[{ look:Object.assign(lookFor('', A.projects[0]), n.look), anim:i === 1 ? 'strum' : 'wave', guitar:i > 0, s:.85 }, { look:T3.TEAM.family, x:1, z:-.3, ry:-.5, s:.98 }] }, 'pro');
+  mount3D('#t3pro', { set:i === 0 ? 'farm' : i === 1 ? 'bedroom' : 'home', color:'#7a9a4a', figs:[{ look:lookFor('', null, 'early'), anim:i === 1 ? 'strum' : 'wave', guitar:i > 0, s:.62 + i * .06 }, { look:T3.TEAM.family, x:1, z:-.3, ry:-.5, s:.98 }] }, 'pro');
 }
 
 /* ---------- Shell ---------- */
@@ -295,6 +309,7 @@ VIEWS.tour = function () {
     if (tr && tr.approved) {
       out.push(card(`<div class="between"><h2>${h(tr.name)}</h2>${pill(stageName(st))}</div><p class="small muted">${h(G.fmtDate(w.ts))} to ${h(G.fmtDate(w.te))} · ${tr.nights} ${tr.tier} nights · ${h(tr.regions.join(', '))}</p>
         <div class="grid3"><div><b>${tr.played}</b><div class="small muted">Shows</div></div><div><b>${G.fmtN(tr.tickets)}</b><div class="small muted">Tickets</div></div><div><b>${G.fmtM(tr.gross)}</b><div class="small muted">Gross</div></div></div>
+        ${ER.TOUR_SHOWS[p.id] ? `<p class="small muted">The real tour played about ${ER.TOUR_SHOWS[p.id]} shows.</p>` : ''}
         ${p.tour.target ? `<p class="small">Real tour target: about ${G.fmtM(p.tour.target)}. Matching its scale gives a Canon bonus. Going far past it costs Energy.</p>${bar(tr.gross, p.tour.target)}` : ''}
         <p class="small">Openers: ${h((tr.openers || []).join(', ') || 'None')}</p><p class="small muted">Setlist: ${h((tr.setlist || []).join(' · '))}</p>${p.tour.surprise ? '<p class="small">Surprise-song slots: two acoustic songs a night, changing every show.</p>' : ''}`));
       return;
@@ -347,6 +362,7 @@ VIEWS.fandom = function () {
   if (s.flags.bracelets) ev.push(['bracelets', 'Trade friendship bracelets at a show', 1]);
   ev.push(['meet', 'Surprise fans at a meet-up', 2]);
   return card(`<h2>${h(A.fanName)}</h2><div class="grid3"><div><b>${G.fmtN(s.stats.fans)}</b><div class="small muted">Fans</div></div><div><b>${G.fmtN(hard)}</b><div class="small muted">Hardcore</div></div><div><b>${s.eggs.decoded}</b><div class="small muted">Eggs decoded</div></div></div>
+    ${G.curveMode() ? `<div class="statrow"><span>Momentum vs reality</span>${bar(G.momentum() * 50, 80)}<b>${Math.round(G.momentum() * 100)}%</b></div><p class="small faint">Your fan base follows her real growth in each era. Above 100% you are doing better than she did, and below it worse.</p>` : ''}
     <h3>Fan events</h3>${ev.map(([k, l, c]) => `<div class="between small"><span>${h(l)}</span><button class="btn sm" data-act="fan" data-k="${k}" data-c="${c}" ${G.canSpend(c) ? '' : 'disabled'}>Do · ${c}</button></div>`).join('')}`)
   + card(`<h3>Fan theories</h3><p class="small faint">Simulated posts from invented usernames only, never real accounts.</p>${s.feed.slice(0, 20).map(f => `<div class="post"><b>@${h(f.h)}</b> <span class="small">${h(f.x)}</span><div class="small faint">${h(G.fmtDate(f.abs))}</div></div>`).join('') || '<p class="small muted">Quiet so far.</p>'}`);
 };
@@ -369,7 +385,7 @@ VIEWS.charts = function () {
   const list = albums.concat(fill).sort((a, b) => b.u - a.u).slice(0, 10);
   const singles = s.charts.singles.filter(c => !c.out).slice(0, 10).sort((a, b) => a.pos - b.pos);
   return card(`<h2>Billboard 200 this week</h2><p class="small faint">Simulated chart. Rival albums appear on their real release dates.</p>${list.map((c, i) => `<div class="chart ${c.you ? 'you' : c.rival ? 'rival' : ''}"><b>${i + 1}</b><div><b>${h(c.t)}</b><div class="small muted">${h(c.by)}</div></div><span class="small">${G.fmtN(c.u)}</span></div>`).join('')}`)
-  + card(`<h2>Hot 100: your singles</h2>${singles.map(c => `<div class="chart you"><b>${c.pos}</b><div><b>${h(c.t)}</b><div class="small muted">Peak ${c.peak} · ${c.wk} weeks</div></div></div>`).join('') || '<p class="small muted">No singles on the chart.</p>'}`)
+  + card(`<h2>Hot 100: your singles</h2>${singles.map(c => `<div class="chart you"><b>${c.pos}</b><div><b>${h(c.t)}</b><div class="small muted">Peak ${c.peak}${c.real ? ` (real peak ${c.real})` : ''} · ${c.wk} weeks</div></div></div>`).join('') || '<p class="small muted">No singles on the chart.</p>'}`)
   + card(`<h2>Awards</h2>${s.awards.map(a => `<div class="between small"><span>🏆 ${h(a.n)}</span><span class="muted">${a.y}</span></div>`).join('') || '<p class="small muted">None yet.</p>'}`)
   + card(`<h2>First weeks</h2>${s.released.map(r => { const p = G.proj(r.pid); return `<div class="between small"><span>${h(p.title)}</span><span>${G.fmtN(r.fw)}${r.real ? ` <span class="muted">(real ${G.fmtN(r.real)})</span>` : ''}</span></div>`; }).join('') || '<p class="small muted">Nothing released yet.</p>'}`);
 };
@@ -497,16 +513,21 @@ const ACT = {
   title:() => { UI.newg = null; title(); },
   load:d => { if (G.load(+d.n)) { UI.tab = 'week'; render(); } else toast('That save could not be read.'); },
   delslot:d => { if (confirm(`Delete slot ${d.n}?`)) { G.del(+d.n); title(); } },
-  newgame:d => { UI.newg = { slot:+d.n, mode:'story', diff:'standard', era:'ts1', look:{ hair:LOOKS.hair[3][1], style:'curly', skin:LOOKS.skin[2][1] }, pro:[] }; newGameFlow(); },
+  newgame:d => { UI.newg = { slot:+d.n, mode:'story', diff:'standard', era:'ts1', look:{ hair:LOOKS.hair[3][1], style:'curly', skin:LOOKS.skin[2][1] }, pro:[], lookEra:'fearless' }; newGameFlow(); },
   nmode:d => { UI.newg.mode = d.v; newGameFlow(); }, nera:d => { UI.newg.era = d.v; newGameFlow(); }, ndiff:d => { UI.newg.diff = d.v; newGameFlow(); },
   look:d => { UI.newg.look[d.k] = d.v; newGameFlow(); },
+  lookera:d => { UI.newg.lookEra = d.v; newGameFlow(); },
+  pera:d => { UI.sel.pera = +d.i; const a = ER.artists[d.id]; const l = ER.LOOKS[d.id][+d.i]; document.querySelectorAll('.modal [data-act=pera]').forEach(b => b.classList.toggle('on', b.dataset.i === d.i));
+    mount3D('#t3prev', { set:'stadium', color:a.color, figs:[{ look:Object.assign({}, l.base, l.stage), anim:'sing' }] }, 'prev'); },
   begin:() => { const n = UI.newg; if (n.mode === 'story') return prologue(); G.newGame({ artist:'taylor', mode:'era', era:n.era, diff:n.diff, slot:n.slot, look:n.look }); UI.tab = 'week'; render(); },
   pro:d => { const n = UI.newg; n.pro.push(+d.i); if (n.pro.length < ER.artists.taylor.prologue.length) return prologue();
     G.newGame({ artist:'taylor', mode:'story', diff:n.diff, slot:n.slot, look:n.look, prologue:n.pro }); UI.tab = 'week'; render(); },
-  preview:d => { const a = ER.artists[d.id]; modal(`<span class="eyebrow">Coming next</span><h2>${h(a.name)}</h2><p>${h(a.core)}</p><p class="small muted">${h(a.eggStyle)} ${h(a.songbook)}</p>
+  preview:d => { const a = ER.artists[d.id], LK = ER.LOOKS[d.id]; modal(`<span class="eyebrow">Coming next</span><h2>${h(a.name)}</h2>
+      <div class="stage3d" id="t3prev"></div><div class="chips">${LK.map((l, i) => `<button class="chip ${i === LK.length - 1 ? 'on' : ''}" data-act="pera" data-id="${d.id}" data-i="${i}">${h(l.n)}</button>`).join('')}</div><p>${h(a.core)}</p><p class="small muted">${h(a.eggStyle)} ${h(a.songbook)}</p>
       <div class="ptable">${a.periods.map(r => `<div class="logrow"><div class="between"><b>${h(r[1])}</b><span class="small muted">${h(r[0])}</span></div><div class="small">${h(r[2])}</div><div class="small faint">System: ${h(r[3])}</div></div>`).join('')}</div>
       <h3>Catalog</h3><p class="small">${a.catalog.map(h).join(' · ')}</p><h3>People</h3><p class="small">${a.people.map(h).join(' · ')}</p>${a.note ? `<p class="small muted">${h(a.note)}</p>` : ''}
-      <p class="small faint">Built after Taylor's story proves the systems. In Taylor's game, ${h(a.name)} already appears as a real chart rival and awards competitor.</p><button class="btn" data-act="closem">Close</button>`); }
+      <p class="small faint">Built after Taylor's story proves the systems. In Taylor's game, ${h(a.name)} already appears as a real chart rival and awards competitor.</p><button class="btn" data-act="closem">Close</button>`);
+      const l = LK[LK.length - 1]; mount3D('#t3prev', { set:'stadium', color:a.color, figs:[{ look:Object.assign({}, l.base, l.stage), anim:'sing' }] }, 'prev'); }
 };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT' || el.tagName === 'INPUT') return;

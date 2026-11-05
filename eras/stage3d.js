@@ -26,74 +26,111 @@ const mat = (c, o) => { o = Object.assign({}, o || {}); if (o.emissive) o.emissi
 function canvasTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t; }
 
 /* ---------- Figure ---------- */
-// look: { skin, hair, style: long|bob|curly|ponytail|short|bun, outfit, accent, top: dress|suit|jacket|tee|sequin, guitar, mic, boots }
+// look: { skin, hair, style: long|curly|straight|bob|braid|bun|ponytail|short|waves, bangs, tips, lips, outfit, accent,
+//   top: dress|gown|sequin|bodysuit|suit|jacket|tee|cardigan|coat, fringe, feathers, plaid, hat: cowboy|fedora|beret|wide, glove,
+//   boots, guitar, guitarColor, mic }
+function plaidTex(base, line) { return canvasTex(64, 64, (g, w, h) => { g.fillStyle = base; g.fillRect(0, 0, w, h); g.globalAlpha = .5; g.fillStyle = line || shade(base, -.45);
+  for (let i = 0; i < 64; i += 16) { g.fillRect(i, 0, 6, h); g.fillRect(0, i, w, 6); } g.globalAlpha = .35; g.fillStyle = shade(base, .5); for (let i = 8; i < 64; i += 16) { g.fillRect(i, 0, 2, h); g.fillRect(0, i, w, 2); } }); }
 function figure(look, opt) {
   look = look || {}; opt = opt || {};
   const skin = look.skin || '#e9c3a1', hair = look.hair || '#7a4a2a', out = look.outfit || '#3b5bdb', acc = look.accent || '#ffd166';
   const top = look.top || 'dress', style = look.style || 'long';
   const G = new THREE.Group(), P = {};
   const M = (geo, m, x, y, z, par) => { const me = new THREE.Mesh(geo, typeof m === 'string' ? mat(m) : m); me.position.set(x || 0, y || 0, z || 0); (par || G).add(me); me.castShadow = true; return me; };
-  const sparkle = top === 'sequin';
-  const outM = sparkle ? mat(out, { emissive:shade(out, -.55) }) : mat(out);
+  const sparkle = top === 'sequin' || top === 'bodysuit' || look.sparkle;
+  const outM = look.plaid ? mat('#ffffff', { map:plaidTex(out, look.plaid) }) : sparkle ? mat(out, { emissive:shade(out, -.55) }) : mat(out);
+  const skirt = ['dress','sequin','gown'].includes(top), gown = top === 'gown', body = top === 'bodysuit';
   // legs
-  const dressy = top === 'dress' || top === 'sequin';
   P.legs = [];
+  const legC = skirt || body ? (look.tights || skin) : (look.pants || shade(out, -.35));
   [-1, 1].forEach(s => { const L = new THREE.Group(); L.position.set(s * .08, .8, 0); G.add(L);
-    M(new THREE.CylinderGeometry(.066, .058, .62, 12), dressy ? skin : shade(out, -.3), 0, -.33, 0, L);
-    M(new THREE.CylinderGeometry(.07, .075, .2, 12), look.boots || '#2b2b2b', 0, -.6, 0, L);
-    M(new THREE.BoxGeometry(.11, .06, .19), look.boots || '#2b2b2b', 0, -.69, .04, L); P.legs.push(L); });
+    M(new THREE.CylinderGeometry(.066, .058, .62, 12), legC, 0, -.33, 0, L);
+    const bh = look.boots === 'tall' ? .42 : .2, bc = look.bootColor || (look.boots === 'tall' ? acc : '#2b2b2b');
+    M(new THREE.CylinderGeometry(.07, .075, bh, 12), look.bootSparkle ? mat(bc, { emissive:shade(bc, -.5) }) : bc, 0, -.7 + bh / 2, 0, L);
+    M(new THREE.BoxGeometry(.11, .06, .19), bc, 0, -.69, .04, L); P.legs.push(L); });
   // torso
   const T = new THREE.Group(); T.position.y = .8; G.add(T); P.torso = T;
-  M(new THREE.CylinderGeometry(.15, .135, .5, 18), outM, 0, .27, 0, T);
-  M(new THREE.SphereGeometry(.15, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), outM, 0, .5, 0, T).scale.set(1, .45, 1);
-  if (dressy) {
-    M(new THREE.CylinderGeometry(.14, .33, .5, 24, 1, true), mat(out, { side:THREE.DoubleSide, emissive:sparkle ? shade(out, -.5) : '#000000' }), 0, -.16, 0, T);
-    if (sparkle) for (let i = 0; i < 40; i++) { const a = Math.random() * 6.28, yy = .5 - Math.random() * .9, r = yy > 0 ? .152 : .15 + (-yy) * .38;
-      M(new THREE.SphereGeometry(.009, 6, 4), mat('#ffffff', { emissive:acc }), Math.sin(a) * r, yy, Math.cos(a) * r, T); }
-  } else {
+  const tw = top === 'coat' || top === 'cardigan' ? .165 : .15;
+  M(new THREE.CylinderGeometry(tw, .135, .5, 18), outM, 0, .27, 0, T);
+  M(new THREE.SphereGeometry(tw, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), outM, 0, .5, 0, T).scale.set(1, .45, 1);
+  if (skirt) {
+    const len = gown ? .82 : .5, wide = gown ? .42 : .33;
+    M(new THREE.CylinderGeometry(.14, wide, len, 26, 1, true), mat(out, { side:THREE.DoubleSide, emissive:sparkle ? shade(out, -.5) : '#000000' }), 0, .09 - len / 2 - .02, 0, T);
+  } else if (!body) {
     M(new THREE.CylinderGeometry(.142, .145, .06, 18), shade(out, -.4), 0, .02, 0, T);
+  } else {
+    M(new THREE.CylinderGeometry(.14, .12, .1, 18), outM, 0, -.02, 0, T);
   }
+  if (sparkle) for (let i = 0; i < 46; i++) { const a = Math.random() * 6.28, yy = .5 - Math.random() * (skirt ? (gown ? 1.2 : .9) : .55), r = yy > 0 ? .153 : skirt ? .15 + (-yy) * (gown ? .33 : .38) : .14;
+    M(new THREE.SphereGeometry(.009, 6, 4), mat('#ffffff', { emissive:acc }), Math.sin(a) * r, yy, Math.cos(a) * r, T); }
+  if (look.fringe) for (let i = 0; i < 28; i++) { const a = i / 28 * 6.283; const f = M(new THREE.BoxGeometry(.012, .2, .004), mat(look.fringe, { emissive:shade(look.fringe, -.4) }), Math.sin(a) * .16, .1, Math.cos(a) * .16, T); f.rotation.y = a; }
   if (top === 'suit' || top === 'jacket') { M(new THREE.BoxGeometry(.09, .42, .02), top === 'suit' ? '#f4f4f4' : acc, 0, .28, .142, T);
     if (top === 'suit') M(new THREE.BoxGeometry(.03, .28, .01), acc, 0, .33, .154, T); }
+  if (top === 'cardigan' || top === 'coat') { M(new THREE.BoxGeometry(.1, .44, .02), acc, 0, .27, .158, T);
+    if (top === 'coat') M(new THREE.CylinderGeometry(.17, .2, .3, 18, 1, true), mat('#ffffff', { map:look.plaid ? plaidTex(out, look.plaid) : null, color:look.plaid ? '#ffffff' : out, side:THREE.DoubleSide }), 0, -.12, 0, T); }
   if (top === 'tee') M(new THREE.BoxGeometry(.12, .1, .01), acc, 0, .34, .148, T);
+  if (look.stripes) for (let i = 0; i < 5; i++) M(new THREE.CylinderGeometry(.152, .15, .025, 18), look.stripes, 0, .12 + i * .08, 0, T);
+  if (look.feathers) [-1, 1].forEach(s => { for (let i = 0; i < 5; i++) { const f = M(new THREE.ConeGeometry(.035, .32, 6), mat(look.feathers, { emissive:shade(look.feathers, -.6) }), s * (.17 + i * .02), .58 + i * .03, -.06 - i * .02, T); f.rotation.z = s * (-.5 - i * .18); } });
+  if (look.necklace) M(new THREE.TorusGeometry(.06, .007, 6, 20), mat(look.necklace, { emissive:shade(look.necklace, -.5) }), 0, .47, .13, T).rotation.x = 1.3;
   M(new THREE.CylinderGeometry(.048, .052, .1, 10), skin, 0, .57, 0, T);
   // arms
   P.arms = [];
-  [-1, 1].forEach(s => { const A = new THREE.Group(); A.position.set(s * .19, .47, 0); T.add(A);
-    const shortS = dressy || top === 'tee';
-    M(new THREE.CylinderGeometry(.05, .046, shortS ? .14 : .42, 10), outM, 0, shortS ? -.07 : -.21, 0, A);
-    if (shortS) M(new THREE.CylinderGeometry(.042, .04, .29, 10), skin, 0, -.29, 0, A);
-    M(new THREE.SphereGeometry(.048, 10, 8), skin, 0, -.46, 0, A); A.rotation.z = s * .12; P.arms.push(A); });
+  [-1, 1].forEach(s => { const A = new THREE.Group(); A.position.set(s * (tw + .04), .47, 0); T.add(A);
+    const bare = (skirt && !look.sleeves) || top === 'tee' || (body && !look.sleeves);
+    M(new THREE.CylinderGeometry(.05, .046, bare ? .14 : .42, 10), outM, 0, bare ? -.07 : -.21, 0, A);
+    if (bare) M(new THREE.CylinderGeometry(.042, .04, .29, 10), skin, 0, -.29, 0, A);
+    const gl = look.glove && (look.glove === 'both' || (look.glove === 'right' ? s > 0 : s < 0));
+    if (gl) M(new THREE.CylinderGeometry(.046, .042, .3, 10), mat(look.gloveColor || '#c0c0c8', { emissive:'#333' }), 0, -.3, 0, A);
+    M(new THREE.SphereGeometry(.048, 10, 8), gl ? mat(look.gloveColor || '#c0c0c8', { emissive:'#333' }) : skin, 0, -.46, 0, A); A.rotation.z = s * .12; P.arms.push(A); });
   // head
   const H = new THREE.Group(); H.position.y = .8; T.add(H); P.head = H;
   M(new THREE.SphereGeometry(.23, 26, 18), skin, 0, 0, 0, H).scale.set(.95, 1.04, .95);
-  const eyeM = mat('#16110e'); P.eyes = [];
+  const eyeM = mat(look.eyes || '#16110e'); P.eyes = [];
   [-1, 1].forEach(s => { const e = M(new THREE.SphereGeometry(.032, 12, 10), eyeM, s * .082, .02, .197, H); e.scale.set(1, 1.3, .6); P.eyes.push(e);
     M(new THREE.SphereGeometry(.01, 6, 4), new THREE.MeshBasicMaterial({ color:'#ffffff' }), s * .082 + .011, .04, .216, H);
-    M(new THREE.BoxGeometry(.07, .013, .012), shade(hair, -.35), s * .082, .095, .208, H); });
-  const lip = look.lips || '#b8505a';
-  P.smile = M(new THREE.TorusGeometry(.045, .011, 6, 16, Math.PI), lip, 0, -.09, .225, H); P.smile.rotation.z = Math.PI;
-  P.flat = M(new THREE.BoxGeometry(.06, .014, .012), lip, 0, -.105, .222, H);
-  const blush = new THREE.MeshBasicMaterial({ color:'#ff7a8a', transparent:true, opacity:.3, depthWrite:false });
+    if (look.liner) { const l = M(new THREE.BoxGeometry(.055, .009, .01), '#111', s * .1, .055, .205, H); l.rotation.z = s * -.4; }
+    M(new THREE.BoxGeometry(.07, .013, .012), look.brow || shade(hair, -.35), s * .082, .095, .208, H); });
+  const lip = look.lips || '#c46d6d';
+  P.smile = M(new THREE.TorusGeometry(.045, look.lips ? .014 : .011, 6, 16, Math.PI), lip, 0, -.09, .225, H); P.smile.rotation.z = Math.PI;
+  P.flat = M(new THREE.BoxGeometry(.06, .016, .012), lip, 0, -.105, .222, H);
+  const blush = new THREE.MeshBasicMaterial({ color:'#ff7a8a', transparent:true, opacity:.28, depthWrite:false });
   [-1, 1].forEach(s => { const b = M(new THREE.CircleGeometry(.03, 14), blush, s * .125, -.045, .196, H); b.rotation.y = s * .55; });
+  if (look.glasses) [-1, 1].forEach(s => M(new THREE.TorusGeometry(.05, .008, 6, 20), look.glasses, s * .085, .02, .23, H));
   // hair
-  const hm = mat(hair), dbl = mat(hair, { side:THREE.DoubleSide });
+  const hm = mat(hair), dbl = mat(hair, { side:THREE.DoubleSide }), tipM = look.tips ? mat(look.tips) : hm;
   const cap = M(new THREE.SphereGeometry(.25, 26, 14, 0, Math.PI * 2, 0, Math.PI * .55), hm, 0, .02, -.012, H); cap.rotation.x = -.28;
-  if (style === 'long' || style === 'curly') {
-    M(new THREE.CylinderGeometry(.26, .32, .6, 24, 1, true, Math.PI / 2, Math.PI), dbl, 0, -.24, -.01, H);
-    [-1, 1].forEach(s => M(new THREE.BoxGeometry(.07, .46, .07), hm, s * .195, -.2, .07, H));
-    if (style === 'curly') for (let i = 0; i < 18; i++) { const a = Math.PI * .6 + Math.random() * Math.PI * .8; M(new THREE.SphereGeometry(.06, 8, 6), hm, Math.sin(a) * .29, -.1 - Math.random() * .4, Math.cos(a) * .29, H); }
+  const longish = ['long','curly','straight','waves'].includes(style);
+  if (longish) {
+    const len = look.hairLen || .6;
+    M(new THREE.CylinderGeometry(.26, style === 'straight' ? .27 : .32, len, 24, 1, true, Math.PI / 2, Math.PI), dbl, 0, -len * .4, -.01, H);
+    [-1, 1].forEach(s => M(new THREE.BoxGeometry(.07, len * .78, .07), hm, s * .195, -len * .33, .07, H));
+    if (style === 'curly' || style === 'waves') for (let i = 0; i < (style === 'curly' ? 26 : 12); i++) { const a = Math.PI * .55 + Math.random() * Math.PI * .9, yy = -.08 - Math.random() * len * .75;
+      M(new THREE.SphereGeometry(style === 'curly' ? .062 : .05, 8, 6), yy < -len * .55 ? tipM : hm, Math.sin(a) * .29, yy, Math.cos(a) * .29, H); }
+    if (look.tips) for (let i = 0; i < 9; i++) { const a = Math.PI * .6 + i / 8 * Math.PI * .8; M(new THREE.SphereGeometry(.055, 8, 6), tipM, Math.sin(a) * .3, -len * .78, Math.cos(a) * .3, H); }
   }
-  if (style === 'bob') { M(new THREE.CylinderGeometry(.26, .28, .28, 24, 1, true, Math.PI * .35, Math.PI * 1.3), dbl, 0, -.1, 0, H); }
-  if (style === 'ponytail') { M(new THREE.SphereGeometry(.09, 12, 10), hm, 0, -.12, -.3, H).scale.set(.7, 1.7, .7); }
-  if (style === 'bun') { M(new THREE.SphereGeometry(.1, 12, 10), hm, 0, .2, -.16, H); }
-  if (style !== 'short') { const fr = M(new THREE.SphereGeometry(.13, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), hm, 0, .15, .14, H); fr.scale.set(1.55, .48, .6); fr.rotation.x = .5; }
+  if (style === 'bob') { M(new THREE.CylinderGeometry(.262, .285, .3, 24, 1, true, Math.PI * .3, Math.PI * 1.4), dbl, 0, -.1, 0, H);
+    if (look.tips) for (let i = 0; i < 7; i++) { const a = Math.PI * .45 + i / 6 * Math.PI * 1.1; M(new THREE.SphereGeometry(.045, 8, 6), tipM, Math.sin(a) * .28, -.24, Math.cos(a) * .28, H); } }
+  if (style === 'braid') { for (let i = 0; i < 7; i++) M(new THREE.SphereGeometry(.07 - i * .005, 10, 8), i > 5 ? tipM : hm, (i % 2 ? .02 : -.02) + .1, -.12 - i * .085, -.2 + i * .02, H);
+    [-1, 1].forEach(s => M(new THREE.BoxGeometry(.06, .22, .06), hm, s * .2, -.06, .05, H)); }
+  if (style === 'ponytail') M(new THREE.SphereGeometry(.09, 12, 10), hm, 0, -.12, -.3, H).scale.set(.7, 1.7, .7);
+  if (style === 'bun') { M(new THREE.SphereGeometry(.1, 12, 10), hm, 0, look.bunLow ? -.06 : .2, look.bunLow ? -.25 : -.16, H); [-1, 1].forEach(s => M(new THREE.SphereGeometry(.03, 6, 5), hm, s * .19, -.1, .1, H)); }
+  if (look.bangs) { const b = M(new THREE.CylinderGeometry(.235, .24, .1, 24, 1, true, -Math.PI * .38, Math.PI * .76), dbl, 0, .11, .02, H); b.rotation.x = -.12; }
+  else if (style !== 'short') { const fr = M(new THREE.SphereGeometry(.13, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), hm, 0, .15, .14, H); fr.scale.set(1.55, .48, .6); fr.rotation.x = .5; }
   else { const fr = M(new THREE.SphereGeometry(.12, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), hm, .05, .15, .14, H); fr.scale.set(1.3, .55, .7); fr.rotation.set(.5, 0, -.25); }
+  if (look.bow) M(new THREE.BoxGeometry(.26, .09, .05), look.bow, 0, .27, .02, H);
+  // hats
+  if (look.hat) { const hc = look.hatColor || '#1a1a1a', hg = new THREE.Group(); hg.position.set(0, .18, -.01); hg.rotation.x = -.1; H.add(hg);
+    const brim = look.hat === 'wide' ? .48 : look.hat === 'cowboy' ? .42 : look.hat === 'beret' ? 0 : .34;
+    if (look.hat === 'beret') { const b = M(new THREE.SphereGeometry(.24, 18, 10), hc, .03, .03, 0, hg); b.scale.set(1.1, .35, 1.1); }
+    else { const br = M(new THREE.CylinderGeometry(brim, brim, .02, 30), hc, 0, 0, 0, hg); br.scale.z = .85; if (look.hat === 'cowboy') br.scale.x = .9;
+      M(new THREE.CylinderGeometry(.18, .21, look.hat === 'wide' ? .14 : .2, 22), hc, 0, .1, 0, hg);
+      M(new THREE.CylinderGeometry(.212, .212, .035, 22), look.hatBand || shade(hc, -.4), 0, .03, 0, hg); } }
   // props
   if (opt.mic || look.mic) { const g = new THREE.Group(); P.arms[1].add(g);
-    M(new THREE.CylinderGeometry(.017, .013, .16, 8), '#222', 0, -.52, .02, g); M(new THREE.SphereGeometry(.034, 10, 8), mat('#9aa0a6', { emissive:'#222' }), 0, -.42, .02, g); }
+    M(new THREE.CylinderGeometry(.017, .013, .16, 8), look.micColor || '#222', 0, -.52, .02, g); M(new THREE.SphereGeometry(.034, 10, 8), mat(look.micColor || '#9aa0a6', { emissive:'#222' }), 0, -.42, .02, g); }
   if (opt.guitar || look.guitar) { const gg = new THREE.Group(); gg.position.set(0, .18, .2); gg.rotation.z = .9; T.add(gg);
-    const body = M(new THREE.SphereGeometry(.17, 16, 12), look.guitarColor || '#b5651d', 0, 0, 0, gg); body.scale.set(1, 1.2, .35);
+    const gc = look.guitarColor || '#b5651d';
+    const bodyG = M(new THREE.SphereGeometry(.17, 16, 12), look.guitarSparkle ? mat(gc, { emissive:shade(gc, -.45) }) : gc, 0, 0, 0, gg); bodyG.scale.set(1, 1.2, .35);
     M(new THREE.BoxGeometry(.05, .5, .03), '#3a2414', 0, .38, 0, gg);
     M(new THREE.CircleGeometry(.05, 16), new THREE.MeshBasicMaterial({ color:'#1a0f08' }), 0, .04, .062, gg); }
   if (opt.pen) { M(new THREE.BoxGeometry(.22, .015, .3), '#f3ecd9', 0, .02, .28, T).rotation.x = -.5; }

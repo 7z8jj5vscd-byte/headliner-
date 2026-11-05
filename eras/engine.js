@@ -79,7 +79,7 @@ G.uid = () => Math.random().toString(36).slice(2, 9);
 G.newGame = function (o) {
   const A = ER.artists[o.artist || 'taylor'];
   S = {
-    capCache:20000, v:1, artist:A.id, mode:o.mode || 'story', diff:o.diff || 'standard', slot:o.slot || 1, look:o.look,
+    capCache:20000, mom:1, v:1, artist:A.id, mode:o.mode || 'story', diff:o.diff || 'standard', slot:o.slot || 1, look:o.look,
     abs:A.startAbs, created:Date.now(),
     stats:{ fans:60, rep:50, heat:0, write:12, clout:0, own:0, energy:100, money:2000, team:60, genre:5 },
     canon:{ hit:0, total:0 }, songs:{}, pj:{}, custom:[], started:[], released:[],
@@ -104,7 +104,7 @@ function setupEra(id) {
   const prior = A.projects.filter(q => ERA_PRESET[q.id] && (q.ws != null ? q.ws : q.rs) <= first).pop();
   const ps = ERA_PRESET[prior ? prior.id : 'ts1'];
   Object.assign(S.stats, { fans:ps[0], rep:ps[1], heat:ps[2], write:ps[3], clout:ps[4], own:ps[5], money:ps[6], genre:ps[7] });
-  S.started = [p.id];
+  S.started = [p.id]; S.mom = 1;
   S.abs = p.ws != null ? p.ws : p.rs;
   // Earlier albums' songs are already out.
   A.projects.filter(q => q.rel != null && q.rel < S.abs && q.type !== 'rerecord').forEach(q => {
@@ -118,6 +118,7 @@ function setupEra(id) {
   const rr = A.projects.find(q => q.type === 'rerecord' && q.of && S.abs >= q.rel);
   A.projects.filter(q => q.type === 'rerecord' && q.rel < S.abs).forEach(q => { S.stats.own = Math.max(S.stats.own, 70); q.tracks.concat(q.vaultSongs || []).forEach(t => S.songs[t + " (Taylor's Version)"] = { p:q.id, st:'released', q:72, tv:true, of:t, abs:q.rel }); });
   S.flags.eggs = true;
+  S.stats.fans = G.fanTarget(S.abs);
 }
 
 /* ---------- Effects ---------- */
@@ -126,7 +127,9 @@ function applyFx(fx, mult) {
   mult = mult || 1; const s = S.stats;
   for (const k in fx) {
     const v = fx[k] * (k === 'money' ? 1 : mult);
-    if (k === 'fans') { const g = v > 0 ? s.fans * v / 100 * clamp(1 - s.fans / G.fanCap(), .01, 1) : s.fans * v / 100; s.fans = Math.max(10, s.fans + g); }
+    if (k === 'fans') {
+      if (G.curveMode()) { S.mom = clamp((S.mom || 1) + v / 100 * .1, .45, 1.6); s.fans = Math.max(10, s.fans * (1 + v / 400)); }
+      else { const g = v > 0 ? s.fans * v / 100 * clamp(1 - s.fans / G.fanCap(), .01, 1) : s.fans * v / 100; s.fans = Math.max(10, s.fans + g); } }
     else if (k === 'money') s.money += v;
     else if (k === 'hype') { const e = G.currentEra() || G.active()[0] && G.active()[0].p; if (e) G.pj(e.id).hype = clamp(G.pj(e.id).hype + v, 0, 100); }
     else if (k === 'quality') { G.active().forEach(x => { G.pj(x.p.id).qmod = (G.pj(x.p.id).qmod || 0) + v; }); }
@@ -135,6 +138,15 @@ function applyFx(fx, mult) {
   }
 }
 G.applyFx = applyFx;
+/* Fans follow the artist's real trajectory for each era, scaled by momentum: how well
+   your choices, releases and rollouts are going compared with what really happened. */
+G.curveMode = () => !S.flags.free && !!(ER.FAN_CURVE && ER.FAN_CURVE[S.artist]);
+G.fanTarget = a => {
+  const c = ER.FAN_CURVE[S.artist]; if (a <= c[0][0]) return c[0][1];
+  for (let i = 1; i < c.length; i++) if (a <= c[i][0]) { const [a0, v0] = c[i - 1], [a1, v1] = c[i]; const t = (a - a0) / (a1 - a0); return Math.exp(Math.log(v0) + (Math.log(v1) - Math.log(v0)) * t); }
+  const l = c[c.length - 1]; return l[1] * Math.pow(1.0008, a - l[0]);
+};
+G.momentum = () => S.mom || 1;
 // Fan boosts saturate: how many fans you can reach depends on what you have released and played.
 G.fanCap = () => S.capCache || 20000;
 function updateCap() {
@@ -322,23 +334,35 @@ G.releaseSingle = function (p, t) {
   const pj = G.pj(p.id); if (pj.singles.includes(t)) return;
   pj.singles.push(t);
   const s = S.songs[t]; const perf = (s.q / 100) * .5 + (S.stats.fans > 1e6 ? .2 : .05) + S.stats.clout / 400 + pj.hype / 500;
-  const pos = clamp(Math.round(100 - perf * 120 + rnd(-10, 10)), 1, 100);
-  S.charts.singles.unshift({ t, pid:p.id, abs:S.abs, debut:pos, peak:pos, pos, wk:0 });
+  const real = ER.PEAKS && ER.PEAKS[t];
+  let target = real && G.curveMode() ? clamp(Math.round(real * Math.pow(2 - G.momentum(), 1.6) * (1.12 - s.q / 600) + rnd(-1, 1)), 1, 100) : clamp(Math.round(100 - perf * 120 + rnd(-10, 10)), 1, 100);
+  if (real === 1 && G.momentum() >= .95 && s.q >= 70) target = 1;
+  const pos = clamp(target + Math.round(rnd(0, 6)), 1, 100);
+  S.charts.singles.unshift({ t, pid:p.id, abs:S.abs, debut:pos, peak:pos, pos, target, real, wk:0 });
   s.single = true; if (s.st === 'recorded' && S.abs >= G.win(p).rel) s.st = 'released';
-  if (pos === 1 && !S.ach.no1) ach('no1');
-  if (pos === 1) G.pj(p.id).no1 = true;
+
   feed(`"${t}" is out and I have listened 40 times`);
 };
 
 /* ---------- Tours ---------- */
-const CAP = { theater:2500, arena:14000, stadium:55000 };
+const CAP = { theater:2500, arena:14000, stadium:60000 };
+// Average real ticket prices over time (approximate), for the Standard price level.
+const PRICE = [[2006, 45], [2009, 55], [2011, 75], [2013, 88], [2015, 110], [2018, 120], [2023, 205], [2027, 225]];
 G.CAP = CAP;
-G.priceOf = (lvl, abs) => { const y = ER.yw(abs).y; return Math.round([0, 48, 85, 140][lvl] * Math.pow(1.033, y - 2006)); };
-G.tourDemand = (plan) => 230 * Math.pow(Math.max(1, S.stats.fans), .55) * [0, 1.15, 1, .78][plan.price] * (.65 + S.stats.rep / 140) * (1 + plan.prod * .05);
+G.priceOf = (lvl, abs) => { const y = ER.yw(abs).y + (ER.yw(abs).w - 1) / 52; let v = PRICE[PRICE.length - 1][1] * Math.pow(1.03, Math.max(0, y - 2027));
+  for (let i = 1; i < PRICE.length; i++) if (y <= PRICE[i][0]) { const [y0, p0] = PRICE[i - 1], [y1, p1] = PRICE[i]; v = p0 + (p1 - p0) * clamp((y - y0) / (y1 - y0), 0, 1); break; }
+  return Math.round(v * [0, .7, 1, 1.55][lvl]); };
+G.tourDemand = (plan, p) => {
+  const pf = [0, 1.15, 1, .78][plan.price], prod = (1 + plan.prod * .05) / 1.1;
+  // Real tours: the real ticket count, scaled by momentum. Invented tours: from fan size and reputation.
+  if (p && p.tour && p.tour.target && G.curveMode()) return p.tour.target / G.priceOf(2, G.win(p).ts) * G.momentum() * pf * prod;
+  return 230 * Math.pow(Math.max(1, S.stats.fans), .55) * pf * (.65 + S.stats.rep / 140) * prod;
+};
 G.suggestTour = function (p) {
-  const tier = S.stats.fans > 1.5e7 ? 'stadium' : S.stats.fans > 1.2e6 ? 'arena' : 'theater';
+  let tier = S.stats.fans > 1.5e7 ? 'stadium' : S.stats.fans > 1.2e6 ? 'arena' : 'theater';
+  if (p.tour.target && G.curveMode() && p.tour.tier) tier = p.tour.tier;
   const plan = { tier, price:2, prod:2, regions:['North America'], openers:(p.tour.openers || []).slice(0, 2), setlist:[], nights:0, name:p.tour.name };
-  plan.nights = clamp(Math.round(G.tourDemand(plan) * .9 / CAP[tier]), 6, 160);
+  plan.nights = clamp(Math.round(G.tourDemand(plan, p) * .92 / CAP[tier]), 6, 200);
   if (S.stats.fans > 5e6) plan.regions.push('Europe'); if (S.stats.fans > 2e7) plan.regions.push('Asia and Oceania'); if (S.stats.fans > 5e7) plan.regions.push('Latin America');
   // Two or three of the best songs from each album, with more from the newest era.
   const by = {}; G.catalog().forEach(t => { const k = S.songs[t].p; (by[k] = by[k] || []).push(t); });
@@ -349,10 +373,10 @@ G.suggestTour = function (p) {
 };
 G.catalog = () => Object.keys(S.songs).filter(t => S.songs[t].st === 'released' || (S.songs[t].tv && S.songs[t].st === 'released'));
 G.reviewTour = function (p, plan) {
-  const obj = [], dem = G.tourDemand(plan), sell = dem / (plan.nights * CAP[plan.tier]);
+  const obj = [], dem = G.tourDemand(plan, p), sell = dem / (plan.nights * CAP[plan.tier]);
   if (sell < .75) obj.push({ from:'manager', x:`Too many ${plan.tier} nights for your current numbers. About ${Math.max(4, Math.floor(dem * .85 / CAP[plan.tier]))} nights would sell.` });
   const cost = plan.nights * CAP[plan.tier] * plan.prod * 3 * Math.pow(1.03, ER.yw(S.abs).y - 2006);
-  if (S.stats.money < cost * .05) obj.push({ from:'manager', x:`The production deposit is ${G.fmtM(cost * .05)}, and you cannot cover it yet. Lower the production level or the number of nights.` });
+  if (S.stats.money < cost * .02) obj.push({ from:'manager', x:`The production deposit is ${G.fmtM(cost * .02)}, and you cannot cover it yet. Lower the production level or the number of nights.` });
   if (plan.price === 3 && S.stats.rep < 55) obj.push({ from:'publicist', x:'Top-tier prices with your reputation where it is would be a press risk. Bring prices down.' });
   if (S.stats.heat > 85 && plan.prod === 3) obj.push({ from:'publicist', x:'The press will call a maximum-production show excessive right now.' });
   if (!plan.setlist || plan.setlist.length < 10) obj.push({ from:'manager', x:'The setlist needs at least 10 songs.' });
@@ -368,26 +392,26 @@ G.submitTour = function (p, plan) {
 G.autoTour = function (p) {
   const plan = G.suggestTour(p); let r = G.submitTour(p, plan), n = 0;
   while (!r.ok && n++ < 6) { plan.nights = Math.max(4, Math.floor(plan.nights * .8)); if (plan.price === 3) plan.price = 2; if (plan.prod > 1) plan.prod--; r = G.submitTour(p, plan); }
-  if (!r.ok) { plan.tier = plan.tier === 'stadium' ? 'arena' : 'theater'; plan.nights = 10; plan.prod = 1; plan.price = 1; G.submitTour(p, plan); G.pj(p.id).tour.approved = true; }
+  if (!r.ok) { plan.prod = 1; plan.price = 2; plan.nights = clamp(Math.round(G.tourDemand(plan, p) * .85 / CAP[plan.tier]), 6, 200); G.submitTour(p, plan); G.pj(p.id).tour.approved = true; G.pj(p.id).tour.objections = []; }
 };
 G.playShows = function (p) {
   const pj = G.pj(p.id), w = G.win(p);
-  if (p.tour.kind === 'opening') { const fans = S.stats.fans * .004 + 8000; S.stats.fans += fans; S.openFans = (S.openFans || 0) + fans; S.stats.money += 6000; applyFx({ energy:-8, clout:1 }); return `You open for a headliner. About ${G.fmtN(fans)} new fans.`; }
+  if (p.tour.kind === 'opening') { const fans = S.stats.fans * .004 + 8000; if (!G.curveMode()) S.stats.fans += fans; else S.mom = clamp((S.mom || 1) + .004, .45, 1.6); S.openFans = (S.openFans || 0) + fans; S.stats.money += 6000; applyFx({ energy:-8, clout:1 }); return `You open for a headliner. About ${G.fmtN(fans)} new fans.`; }
   if (!pj.tour || !pj.tour.approved) G.autoTour(p);
   const tr = pj.tour, weeks = Math.max(1, w.te - w.ts + 1);
   tr.acc += tr.nights / weeks; const n = Math.floor(tr.acc); tr.acc -= n;
   if (!n) return 'A travel week between shows.';
-  const dem = G.tourDemand(tr), sell = clamp(dem / (tr.nights * CAP[tr.tier]) * rnd(.95, 1.04), .3, 1);
+  const dem = G.tourDemand(tr, p), sell = clamp(dem / (tr.nights * CAP[tr.tier]) * rnd(.95, 1.04), .3, 1);
   const price = G.priceOf(tr.price, S.abs), tix = Math.round(n * CAP[tr.tier] * sell), gross = tix * price;
   tr.played += n; tr.tickets += tix; tr.gross += gross;
   const net = gross * (.36 - tr.prod * .04) * (S.stats.own > 30 ? 1.05 : 1);
-  S.stats.money += net; S.stats.fans += tix * .12 * (S.flags.bracelets ? 1.2 : 1);
+  S.stats.money += net; if (!G.curveMode()) S.stats.fans += tix * .12 * (S.flags.bracelets ? 1.2 : 1);
   applyFx({ energy:-(5 + n * 1.6), clout:.4 });
   let x = `${n} show${n > 1 ? 's' : ''}, ${G.fmtN(tix)} tickets, ${G.fmtM(gross)} gross.`;
   const r = Math.random();
   if (r < .08) { applyFx({ fans:1.5, heat:4 }); x += ' A moment from one show goes viral.'; feed('the clip from last night has 20 million views'); }
   else if (r < .12) { tr.gross -= gross / n; S.stats.money -= net / n; x += ' Weather cancels one night.'; }
-  else if (r < .15 && sell >= .99) { tr.nights += 3; x += ' Demand is so high the promoter adds three nights.'; inbox('promoter', 'Added nights', 'Every show sold out, so we added three more.'); }
+  else if (r < .15 && dem > tr.nights * CAP[tr.tier] * 1.15) { tr.nights += 3; x += ' Demand is so high the promoter adds three nights.'; inbox('promoter', 'Added nights', 'Every show sold out, so we added three more.'); }
   return x;
 };
 
@@ -495,14 +519,21 @@ function endWeek() {
   let units = 0;
   S.released.forEach(r => { if (r.abs >= a) return; r.wk++; const w = r.fw * Math.pow(.62, r.wk) + r.fw * .012 + (r.fw * .002 * Math.max(0, 1 - r.wk / 300)); units += w; r.total += w; });
   const per = s.own >= 30 ? 5 : 1.6, inc = units * per;
-  s.money += inc; s.fans += units * .55; Y.units += units;
+  s.money += inc; if (!G.curveMode()) s.fans += units * .55; Y.units += units;
   // Singles chart movement.
-  S.charts.singles.forEach(c => { if (c.abs >= a || c.out) return; c.wk++; c.pos = clamp(Math.round(c.pos + rnd(-6, 9) + c.wk * .6), 1, 101); if (c.pos < c.peak) c.peak = c.pos; if (c.pos > 100) c.out = true; });
+  S.charts.singles.forEach(c => { if (c.abs >= a || c.out) return; c.wk++;
+    const t = c.target || c.peak; c.pos = c.wk <= 4 ? clamp(Math.round(c.pos - (c.pos - t) * .6), 1, 100) : clamp(Math.round(c.pos + rnd(-3, 8) + c.wk * .4), 1, 101);
+    if (c.pos < c.peak) c.peak = c.pos; if (c.peak === 1) { G.pj(c.pid).no1 = true; if (!S.ach.no1) ach('no1'); } if (c.pos > 100) c.out = true; });
   S.charts.albums.forEach(c => { c.wk++; });
   // Natural drift.
   s.heat = Math.max(0, s.heat - 2.5);
   updateCap();
-  { const gr = .0015 * ((s.rep - 50) / 50) + s.heat * .00004 - (S.flags.silence ? .001 : 0); s.fans *= 1 + (gr > 0 ? gr * clamp(1 - s.fans / G.fanCap(), 0, 1) : gr); }
+  if (G.curveMode()) {
+    const base = clamp(1 + (s.rep - 65) / 400 + (s.team - 60) / 800 + (S.recovery ? -.12 : 0), .65, 1.12);
+    S.mom = clamp((S.mom || 1) + (base - (S.mom || 1)) * .07, .45, 1.6);
+    const tgt = G.fanTarget(a + 1) * S.mom; s.fans = Math.max(10, s.fans + (tgt - s.fans) * .3);
+    if (S.flags.silence) s.heat = Math.max(0, s.heat - 2);
+  } else { const gr = .0015 * ((s.rep - 50) / 50) + s.heat * .00004 - (S.flags.silence ? .001 : 0); s.fans *= 1 + (gr > 0 ? gr * clamp(1 - s.fans / G.fanCap(), 0, 1) : gr); }
   if (S.flags.silence) s.heat = Math.max(0, s.heat - 2);
   s.energy = clamp(s.energy + Math.max(0, G.blocks() - S.week.used) * 4 + 6, 0, 100);
   if (G.active(a).some(x => x.st === 'tour')) s.energy = clamp(s.energy - 4, 0, 100);
@@ -551,7 +582,8 @@ function doRelease(p) {
   const rec = { pid:p.id, abs:S.abs, fw, total:fw, q:Math.round(q), peak:pos, wk:0, real:p.units, cover };
   S.released.push(rec);
   S.charts.albums.unshift({ t:p.title, by:G.art().name, abs:S.abs, fw, pos, wk:0 });
-  S.stats.fans += fw * 1.2; S.stats.money += fw * (S.stats.own >= 30 ? 5 : 1.6);
+  if (G.curveMode()) { if (p.units) S.mom = clamp((S.mom || 1) * clamp(.85 + .15 * fw / p.units, .85, 1.08), .45, 1.6); } else S.stats.fans += fw * 1.2;
+  S.stats.money += fw * (S.stats.own >= 30 ? 5 : 1.6);
   if (S.mode === 'story' && p.units) { const close = Math.abs(fw / p.units - 1) < .2; scoreCanon(close); }
   pj.released = true; pj.fw = fw;
   if (fw >= 1e6 && !S.ach.million) ach('million');
