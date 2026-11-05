@@ -1,6 +1,6 @@
 // Nashville: Make It or Fake It: update checker. The page knows its own build; version.json on the site says what
 // the latest build is. When they differ, a banner offers a one-tap update, and after updating you see what's new.
-const BUILD='2026.11.05-1';
+const BUILD='2026.11.05-2';
 const UPD={latest:null,notes:[],checked:0};
 async function checkUpdate(manual){try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;const v=await r.json();UPD.latest=v.build;UPD.notes=v.notes||[];UPD.checked=Date.now();
   if(v.build&&v.build!==BUILD)showUpdateBanner(v);else if(manual)toast('You\'re on the latest version ('+BUILD+').')}catch(e){if(manual)toast('Couldn\'t check for updates. Are you online?')}}
