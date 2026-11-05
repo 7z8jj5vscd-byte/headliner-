@@ -435,6 +435,24 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 .card.acc.closed{margin-bottom:8px}
 
 .vrows{display:flex;flex-direction:column;gap:2px;margin-top:6px}.vrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-top:1px solid var(--rule)}.vrow:first-child{border-top:0}.vrow>div{flex:1;min-width:0}.vrow b{display:block;font-size:14px}.vrow small{color:var(--faint);font-size:11.5px}.vrow.locked{opacity:.55}.vrow [data-locked]:after{content:none}
+
+/* ---- balance, story, career, world ---- */
+.inbox-pill{margin-left:6px;border:1px solid var(--brass);background:rgba(201,162,39,.15);color:var(--gold2);border-radius:99px;padding:3px 9px;font:700 12px var(--font);cursor:pointer}
+.inrow{text-align:left}.whyshow{margin:10px 0;background:rgba(0,0,0,.25);border-radius:10px;padding:8px 10px}.whyshow summary{cursor:pointer;font-weight:700;font-size:13px}
+.wf{display:grid;grid-template-columns:1.3fr 1fr 34px;gap:8px;align-items:center;margin:6px 0;font-size:12.5px}.wf small{display:block;color:var(--faint);font-size:10.5px}.wf i{height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}.wf i b{display:block;height:100%}.wf i.pos b{background:#7ad48a}.wf i.neg b{background:#e45a5a}.wf em{font-style:normal;text-align:right;font-weight:700}
+.career .cg{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px;margin-top:6px}.career .cg>div{background:rgba(0,0,0,.25);border-radius:10px;padding:8px}.career .cg b{display:block;color:var(--gold2)}.career .cg small{display:block;color:var(--faint);font-size:10.5px;line-height:1.25;margin-top:2px}
+#savecode,#savein{width:100%;box-sizing:border-box;font:11px monospace;background:var(--sunk);color:var(--text);border:1px solid var(--rule);border-radius:8px;padding:8px}
+.talkbox{height:190px}.talklog{display:flex;flex-direction:column;gap:6px;margin:10px 0;max-height:190px;overflow:auto}.talklog p{margin:0;padding:8px 11px;border-radius:14px;font-size:13.5px;max-width:85%}.talklog .them{background:#2a3a5a;align-self:flex-start;border-top-left-radius:4px}.talklog .me{background:rgba(201,162,39,.25);align-self:flex-end;border-top-right-radius:4px}
+.person-extra{margin:10px 0}.relhist{margin-top:8px}.relhist summary{cursor:pointer;font-weight:600}.relspark{width:100%;height:50px;display:block;margin:6px 0;background:rgba(0,0,0,.2);border-radius:6px}
+.racerow{margin:8px 0 12px}.racesvg{width:100%;height:60px;display:block;background:rgba(0,0,0,.2);border-radius:8px;margin:4px 0}
+.seqlist{list-style:none;padding:0;margin:8px 0;display:flex;flex-direction:column;gap:5px}.seqlist li{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.25);border-radius:8px;padding:6px 8px}.seqlist .sl-t{flex:1;min-width:0}.seqlist .sl-t small{display:block;color:var(--faint);font-size:10.5px}
+.cohes{text-align:center;margin:8px 0}.cohes b{display:block;font:800 36px var(--serif);color:var(--gold2)}.cohes span{font-size:11px;color:var(--faint)}
+.fanbar{display:flex;height:22px;border-radius:11px;overflow:hidden;margin:8px 0}.fanbar b{display:flex;align-items:center;justify-content:center;font-size:11px;color:#1a1206;min-width:28px}
+.town{position:fixed;inset:0;z-index:9500;background:#0a0814;touch-action:none}.town canvas{display:block;width:100%!important;height:100%!important}
+.town-hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:linear-gradient(180deg,rgba(0,0,0,.7),transparent);color:#fff}
+.town-pad{position:absolute;left:14px;bottom:calc(16px + env(safe-area-inset-bottom,0));display:flex;flex-direction:column;align-items:center;gap:4px}.town-pad div{display:flex;gap:4px}.town-pad button{width:52px;height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:18px;touch-action:none}
+.town-act{position:absolute;right:14px;bottom:calc(20px + env(safe-area-inset-bottom,0));display:flex;flex-direction:column;gap:6px;max-width:56%}.town-tip{position:absolute;left:0;right:0;top:46px;text-align:center;color:rgba(255,255,255,.6);font-size:11.5px;margin:0;padding:0 14px}
+.lyr p.sing,.karaoke p.sing{color:var(--gold2);transform:scale(1.03);transition:.2s}
 </style>
 </head>
 <body>
@@ -473,6 +491,11 @@ h1,h2,.hub-h,.screen-h{font-family:var(--serif);letter-spacing:.01em}
 <script src="power.js?v=2026.11.05-4"></script>
 <script src="layout.js?v=2026.11.05-4"></script>
 <script src="reframe.js?v=2026.11.05-4"></script>
+<script src="balance.js?v=2026.11.05-4"></script>
+<script src="sound.js?v=2026.11.05-4"></script>
+<script src="story3.js?v=2026.11.05-4"></script>
+<script src="career.js?v=2026.11.05-4"></script>
+<script src="world3d.js?v=2026.11.05-4"></script>
 <script src="update.js?v=2026.11.05-4"></script>
 </body>
 </html>
