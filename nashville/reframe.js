@@ -9,8 +9,8 @@ const REFRAME=[
  [/End of Season (\d+)/g,'End of Chapter $1'],[/Season (\d+) finale/gi,'The end of chapter $1'],[/\bseason finale\b/gi,'end of the chapter'],[/Song of the season/g,'Song of the year'],
  [/\bSeason (\d+)\b/g,'Chapter $1'],[/\bseason (\d+)\b/g,'chapter $1'],[/Season goals/g,'Chapter goals'],[/\bTonight's episode\b/g,'This week'],
  [/To camera/g,'💭 Thinking to yourself'],[/The final episode/g,'The last chapter'],[/Director's cut/g,'Relive it'],[/\(playing themselves\)/g,''],[/No seasons or goals/g,'No chapters or goals'],[/Closing montage/g,'Soundtrack of the week']];
-const reframeText=t=>{let s=t;for(const[a,b]of REFRAME)s=s.replace(a,b);return s};
-function reframeNode(root){if(!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);let n;while(n=w.nextNode()){const v=n.nodeValue;if(v&&/[Ss]eason \d|Episode|S\d-E\d|Previously on|Next time|To camera|final episode|Director's cut|Tonight's episode|playing themselves|No seasons|Closing montage|Song of the season|season finale/.test(v)){const r=reframeText(v);if(r!==v)n.nodeValue=r}}}
+const reframeText=t=>{if(typeof S!=='undefined'&&S&&S.showMode)return t;let s=t;for(const[a,b]of REFRAME)s=s.replace(a,b);return s};
+function reframeNode(root){if(!root||(typeof S!=='undefined'&&S&&S.showMode))return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);let n;while(n=w.nextNode()){const v=n.nodeValue;if(v&&/[Ss]eason \d|Episode|S\d-E\d|Previously on|Next time|To camera|final episode|Director's cut|Tonight's episode|playing themselves|No seasons|Closing montage|Song of the season|season finale/.test(v)){const r=reframeText(v);if(r!==v)n.nodeValue=r}}}
 const RF_MO=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')reframeNode(m.target.parentNode);else m.addedNodes.forEach(x=>x.nodeType===3?reframeNode(x.parentNode):x.nodeType===1&&reframeNode(x))}});
 window.addEventListener('load',()=>{RF_MO.observe(document.body,{childList:true,subtree:true,characterData:true});reframeNode(document.body)});
 (function(){const _t=window.toast;if(_t)window.toast=function(m,...a){return _t(typeof m==='string'?reframeText(m):m,...a)}})();
@@ -18,13 +18,13 @@ window.addEventListener('load',()=>{RF_MO.observe(document.body,{childList:true,
 (function(){const _l=window.log;if(_l)window.log=function(t,k){return _l(typeof t==='string'?reframeText(t):t,k)}})();
 
 // ---------- the story card: a chapter of your life, not an episode ----------
-(function(){const _sc=window.storyCard;if(_sc)window.storyCard=function(){let h=_sc();return h.replace(/<h3>"[^"]*"<\/h3><p class="small muted">([^<]*)<\/p>/,'<h3>$1</h3>')}})();
+(function(){const _sc=window.storyCard;if(_sc)window.storyCard=function(){let h=_sc();if(S.showMode)return h;return h.replace(/<h3>"[^"]*"<\/h3><p class="small muted">([^<]*)<\/p>/,'<h3>$1</h3>')}})();
 // how to play: the mode-select description
 (function(){const _cm=window.chooseMode;window.chooseMode=function(){_cm();const b=$('[data-mode="story"] small');if(b)b.textContent='Inspired by Nashville. The big moments from the show happen in your world, at the right time: Marshall Evans and Edgehill, the crash, Highway 65, Peggy, the Exes, the plane, Rayna\'s goodbye. Six chapters of your life from October 2012 to 2018, each with goals and highlights, with summer breaks you can skip. Your choices change who lives where, who loves whom and who signs with whom.'}})();
 
 // ---------- TV-only features: removed or turned into real life ----------
 // ratings box and the network cancellation
-const RF_CSS=document.createElement('style');RF_CSS.textContent='.ratings,.ep-title,.coldopen{display:none!important}';document.head.appendChild(RF_CSS);
+const RF_CSS=document.createElement('style');RF_CSS.textContent='body:not(.showmode) .ratings,body:not(.showmode) .ep-title,body:not(.showmode) .coldopen{display:none!important}';document.head.appendChild(RF_CSS);
 ['w_abc'].forEach(id=>{const w=WORLD.find(x=>x.id===id);if(w)w.when=()=>false});
 if(typeof renewalTick==='function')window.renewalTick=function(){};
 // season trailers, opening titles and cold opens are gone
