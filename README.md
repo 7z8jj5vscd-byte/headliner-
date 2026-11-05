@@ -96,6 +96,8 @@ If you own a label (Rayna's Highway 65, or your own once you can afford one) a *
 
 **The big rebalance.** This update rebalances charts and money and adds an inbox for smaller events, with a drama setting. It also adds show breakdowns, weekly goals, a career card, synthesized country instruments that play each song in its own key and tempo, ten-step character arcs, choices that come back, real conversations, relationship histories, lifestyle-based endings, the chart race, album sequencing, three kinds of fans, a walkable 3D Lower Broadway, livelier characters and save codes for moving between devices.
 
+**The music sim update.** This update adds a streaming dashboard and listener cities, playlist pitching, a radio airplay map, four charts, weekly numbers reports and viral clips. Every song now has lyrics, melody, hook, production and performance scores, and you get an A&R session with hit potential, a melody-building game that the song then plays, a rhyme game, market trends, and remixes and features. It also adds practice and new instruments, a gear shop, a home studio, session players, release planning, album rollouts, release-day reveals, a fan map, live ticket sales, festival season, a milestone track and a discography.
+
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/nashville/
 
 ## Updates go live automatically
