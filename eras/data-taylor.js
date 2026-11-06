@@ -697,7 +697,7 @@ const E = [
  { d:'2026-07-03', id:'wedding', t:'The wedding', x:'She and Travis Kelce marry in New York.',
    ch:[{l:'Keep the day private, and plan the Encore around it',fx:{energy:15,heat:10},c:1,r:'A private ceremony.'},
        {l:'Release music the same week',fx:{hype:10,energy:-10},r:'A hectic week.'}],
-   truth:'They married in New York on July 3, 2026.' },
+   truth:'Reports in 2026 placed their wedding in New York on July 3, 2026. The game follows the design report here.' },
  { d:'2026-07-20', id:'donations', t:'Wedding gifts', x:'Instead of gifts, they could give to causes.',
    ch:[{l:'Give $26 million',fx:{rep:12,money:-26000000},c:1,r:'Donations reach many charities.'},
        {l:'A smaller private gift',fx:{rep:3,money:-2000000},r:'Quiet.'}],

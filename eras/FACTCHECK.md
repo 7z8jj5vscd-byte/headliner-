@@ -7,6 +7,14 @@ Levels:
 - **Approximate**: the event is real, but the exact date, number or wording may be off by a little.
 - **Needs a source**: plausible, but should be checked before it is relied on.
 
+## Checked against live sources (November 2026)
+
+- **Showgirl's first week: confirmed.** About 4.002 million units (3.479 million in album sales), the biggest US first week since Luminate tracking began in 1991. Sources: [Variety](https://variety.com/2025/music/news/taylor-swifts-the-life-of-a-showgirl-charts-1236568956), [Music Week](https://www.musicweek.com/labels/read/taylor-swift-breaks-us-records-as-the-life-of-a-showgirl-tops-5-5m-global-album-units-in-week-one/092886).
+- **Showgirl's weeks at No. 1: at least 7.** It spent at least its first seven weeks at No. 1 in late 2025, and the latest results found did not say whether the run continued. The game now uses 7. Source: [WDEF](https://www.wdef.com/?p=2266425).
+- **TTPD's weeks at No. 1: 15, confirmed (as of 2024).** Twelve straight weeks, then a return to No. 1. Sources: [Billboard](https://ca.billboard.com/music/chart-beat/taylor-swift-tortured-poets-department-14th-week-number-one-billboard-200-chart-1235750808/), [WDEF](https://www.wdef.com/?p=1792544).
+- **Midnights' weeks at No. 1: 6, confirmed (as of early 2024).** Source: [Guinness World Records](https://www.guinnessworldrecords.com/world-records/636372-most-cumulative-weeks-at-no-1-on-us-albums-chart-solo-female).
+- **The July 3, 2026 wedding: reported, not confirmed in the sources found.** Reports cited save-the-date invitations for New York City on July 3, 2026, after earlier reports of June 13 in Rhode Island. The couple had not confirmed it in those reports. The card stays, following the design report, and its note now says "reported." Sources: [Marie Claire UK](https://www.marieclaire.co.uk/entertainment/celebrity-news/taylor-swift-wedding-date-revealed), [Newcastle Herald](https://www.newcastleherald.com.au/story/9222138/taylor-swifts-wedding-date-and-location-revealed).
+
 ## What changed in this pass
 
 - Brit Awards 2021 card: removed the claim that she was the first woman and the first non-British artist to receive the Global Icon award. The card now only says she received it.
