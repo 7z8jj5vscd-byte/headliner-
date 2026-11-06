@@ -196,3 +196,71 @@ D.endings = {
   standing: { t:'Still Standing', d:'Twelve years in, still together, still working. Plenty of groups never got this far.' },
 };
 })();
+
+/* ---------- Training, evals, debut and real-story data ---------- */
+(function () {
+const D = window.DA;
+/* Eval panel: invented coaches. */
+D.judges = [
+  { n:'Coach Rina',    role:'Vocal coach',       look:{ skin:'#e4bf9c', hair:'#6b6b6b', style:'bob' },   outfit:'#20232a' },
+  { n:'Coach Marco',   role:'Dance coach',       look:{ skin:'#9a6a4c', hair:'#111111', style:'curly' }, outfit:'#2a2d36' },
+  { n:'Director Hale', role:'Creative director', look:{ skin:'#efd2b8', hair:'#3a2618', style:'pony' },  outfit:'#1b1d22' },
+];
+D.judgeLines = {
+  hi:['That is a debut-level stage. Keep that.', 'You were the only one I watched.', 'Clean, confident, and you looked like you were having fun.', 'I have nothing to fix. That almost never happens.'],
+  mid:['Good foundations. The details will come.', 'Better than last month. Keep pushing.', 'Your energy dipped in the middle. Watch that.', 'I believe it, but I want more of you in it.'],
+  lo:['You looked like you were thinking about the steps.', 'Not your month. Go back to basics.', 'I could see the nerves from here.', 'The pieces are there. They are not together yet.'],
+};
+D.positions = [
+  ['leader', 'Leader', 'ch'], ['vocal', 'Main vocal', 'vo'], ['dance', 'Main dancer', 'da'], ['rap', 'Main rapper', 'ra'], ['center', 'Center', 'pe'],
+];
+D.fandoms = [['EYEKONS', 'The real fandom name'], ['LUMIS', ''], ['SIXTH SENSE', ''], ['DREAMERS', '']];
+D.lightsticks = [['Gold', '#f0b44c'], ['Rose', '#ff7aa8'], ['Ice blue', '#7fd3ff'], ['Lilac', '#b89cff'], ['Red', '#e5484d']];
+D.dorm = [
+  { t:'Movie night', x:'{x} wants a movie night in the dorm. Who does she ask to pick the film?' },
+  { t:'Birthday surprise', x:'It is {x}\'s birthday. Who plans the surprise?' },
+  { t:'Cooking disaster', x:'{x} tried to cook dinner. The smoke alarm agrees it went badly. Who helps clean up?' },
+  { t:'Homesick night', x:'{x} misses home tonight. Who sits up with her?' },
+  { t:'Late-night store run', x:'{x} wants snacks at 1 a.m. Who goes with her?' },
+  { t:'Practice after hours', x:'{x} is still in the practice room at midnight. Who stays to help?' },
+];
+D.chants = ['{g}! {g}!', 'Let\'s go, {n}!', 'One, two, three, four!', '{n}! {n}!', 'Encore! Encore!'];
+
+/* The real story, beat by beat. The game checks your run against each one. */
+D.realBeats = [
+  { id:'doc',    date:'Aug 2024', real:'A Netflix docuseries follows the group\'s training and debut.' },
+  { id:'debut',  date:'Jun 2024', real:'The debut single gets a lukewarm commercial response and misses the Hot 100.' },
+  { id:'viral',  date:'Sep 2024', real:'The second single\'s dance goes viral on TikTok months after release.' },
+  { id:'hot100', date:'Apr 2025', real:'A divisive single becomes the first Hot 100 entry, peaking at No. 90.' },
+  { id:'top5',   date:'Jun 2025', real:'The breakout EP debuts at No. 4 on the Billboard 200.' },
+  { id:'brand',  date:'Aug 2025', real:'A denim campaign passes 400 million views in under two weeks.' },
+  { id:'grammy', date:'Nov 2025–Feb 2026', real:'Two Grammy nominations and a live-band Grammys performance, no wins.' },
+  { id:'fest',   date:'Apr 2026', real:'A Coachella debut with a surprise guest set.' },
+  { id:'no1',    date:'Aug 2026', real:'An EP debuts at No. 1 on the Billboard 200 with 170,000 units.' },
+  { id:'tour',   date:'Sep–Nov 2026', real:'An arena world tour, Dublin to Mexico City.' },
+];
+
+D.trophies = [
+  ['firstA',  'Top of the class',   'Get an A or better in an eval'],
+  ['aplus',   'A+',                 'Get an A+ in an eval'],
+  ['mvp',     'Eval MVP',           'Top the monthly eval board'],
+  ['survivor','Survivor',           'Your focus member debuts'],
+  ['debut',   'Debut',              'Release the debut single'],
+  ['chart',   'On the chart',       'Chart a song'],
+  ['top10',   'Top 10',             'Reach the top 10'],
+  ['no1',     'No. 1',              'Top a chart'],
+  ['viral',   'Viral',              'Have a dance go viral'],
+  ['firstWin','First win',          'Win a music show'],
+  ['tenWins', 'Ten wins',           'Win ten music shows'],
+  ['award',   'Trophy night',       'Win an award'],
+  ['peace',   'Peacekeeper',        'Resolve ten tensions'],
+  ['family',  'Found family',       'Reach group cohesion 30'],
+  ['storm',   'Weathered the storm','Outlast a hate train at peak backlash'],
+  ['care',    'Welcome back',       'A member returns from a break'],
+  ['perfect', 'Flawless',           'Score 95% or more in any stage or lesson'],
+  ['writer',  'Hitmaker',           'Write a hook that scores 90% or more'],
+  ['fans50',  'Fifty million',      'Reach 50 million fans'],
+  ['canon',   'True story',         'Match or beat 8 real beats'],
+  ['legend',  'Legends',            'Get the Legends ending'],
+];
+})();

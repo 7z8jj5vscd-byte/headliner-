@@ -42,6 +42,29 @@ function av(id, size, cls) {
   return '<span class="av ' + (cls || '') + '" style="width:' + size + 'px;height:' + size + 'px">' + svg + '</span>';
 }
 UI.av = av;
+function fig3(id, i) { const L = G.p(id).look, o = outfit(id); return { id, look:L, outfit:o, pants:i % 2 === 0, accent:o === '#3a3f4a' ? '#e5484d' : null }; }
+function cast3(ids) { return ids.map(fig3); }
+function stageCast() { const s = S(); return G.debuted() ? G.activeMembers() : [s.focus].concat(G.trainees().filter(x => x !== s.focus).slice(0, 4)).filter(G.inPlay); }
+function mgOpts(v, kind) {
+  const s = S();
+  let ids = v.mgCast === 'focus' ? [s.focus] : stageCast();
+  if (!G.inPlay(s.focus) && v.mgCast === 'focus') ids = [G.cast()[0]];
+  const o = { cast:cast3(ids), set:v.set, light:s.group.light || '#f0b44c', tint:outfitTint(), skill:G.inPlay(s.focus) ? G.avg(s.focus) : 50,
+    title:v.title, chants:D.chants.map(c => c.replace(/\{g\}/g, s.group.formed ? s.group.name : 'DREAM ACADEMY').replace(/\{n\}/g, G.name(pickOf(ids)))), focusIdx:Math.max(0, ids.indexOf(s.focus)) };
+  if (v.set === 'eval') o.judges = D.judges.map(j => ({ look:j.look, outfit:j.outfit, pants:true }));
+  return o;
+}
+function pickOf(a) { return a[Math.floor(Math.random() * a.length)]; }
+function outfitTint() { const s = S(), r = s.group.releases[s.group.releases.length - 1]; return r ? (ERA_COL[r.concept] || '#e5484d') : '#e5484d'; }
+async function runGame(kind, o) {
+  if (!window.MG) return null;
+  const acc = await MG.run(kind, o);
+  G.noteGame(kind, acc);
+  if (kind === 'write' && acc != null && MG.last.hook) G.setHook(MG.last.hook);
+  G.save();
+  return acc;
+}
+UI.runGame = runGame;
 
 /* ---------- Helpers ---------- */
 function bar(v, cls) { return '<span class="bar ' + (cls || '') + '"><i style="width:' + Math.max(0, Math.min(100, v)) + '%"></i></span>'; }
@@ -67,11 +90,14 @@ function title(hasSave) {
     '<div class="slate"><span class="rec">REC</span><span class="mono">TAPE 01 · FAN-MADE</span></div>' +
     '<h1>Dream Academy<br><span>Story Mode</span></h1>' +
     '<p class="lead">120,000 auditions. Twenty trainees. Three missions, one live finale, six names. Then the hard part: twelve years of being a group.</p>' +
+    '<div class="stage3d title3d" id="t3d"></div>' +
     '<div class="cast-strip">' + D.cast.map(c => av(c.id, 44)).join('') + '</div>' +
     (hasSave ? '<button class="btn big" data-a="continue">Continue · Month ' + S().month + '</button>' : '') +
     '<button class="btn big ' + (hasSave ? 'ghost' : '') + '" data-a="new">New run</button>' +
     '<p class="notice">Unofficial fan game. Not affiliated with HYBE, Geffen, Netflix or any of the people in it. It uses real names and stylized looks; songs, eras, scores and drama are invented, and it never invents bullying, scandals or health crises for anyone.</p>' +
     '</section>';
+  if (window.S3) { const c = S3.attach($('#t3d'), 'title', { set:'stage', orbit:true, light:'#f0b44c', tint:'#e5484d',
+      cast:D.cast.filter(c => c.real).map((c, i) => ({ id:c.id, look:c.look, outfit:'#c2413b', pants:i % 2 === 0 })) }); if (c) c.dance(true, 112); }
   app().onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return;
     if (a.dataset.a === 'continue') game();
     if (a.dataset.a === 'new') setupScreen(); };
@@ -100,6 +126,7 @@ function setupScreen() {
 
 /* ---------- Main game screen ---------- */
 function game() {
+  if (window.S3 && S3.cur && S3.cur.key === 'title') S3.release();
   render();
   nextEvent();
 }
@@ -111,14 +138,14 @@ function stats() {
 }
 function tabs() {
   const s = S(), deb = G.debuted();
-  const T = [['plan','Plan'],['cast','Cast'],['drama','Drama', s.tensions.length],['feed','Feed', s.hate ? '!' : 0]].concat(deb ? [['charts','Charts']] : []).concat([['log','Log']]);
+  const T = [['plan','Plan'],['cast','Cast'],['drama','Drama', s.tensions.length],['feed','Feed', s.hate ? '!' : 0]].concat(deb ? [['charts','Charts']] : []).concat([['story','Real story'],['log','Log']]);
   if (!T.some(t => t[0] === tab)) tab = 'plan';
   return '<nav class="tabs" role="tablist">' + T.map(t => '<button role="tab" aria-selected="' + (tab === t[0]) + '" class="tab ' + (tab === t[0] ? 'on' : '') + '" data-tab="' + t[0] + '">' + t[1] + (t[2] ? '<i class="badge">' + t[2] + '</i>' : '') + '</button>').join('') + '</nav>';
 }
 function render() {
   const s = S(); if (!s) return title(false);
   const ch = G.ch();
-  const body = ({ plan:planTab, cast:castTab, drama:dramaTab, feed:feedTab, charts:chartsTab, log:logTab })[tab] || planTab;
+  const body = ({ plan:planTab, cast:castTab, drama:dramaTab, feed:feedTab, charts:chartsTab, story:storyTab, log:logTab })[tab] || planTab;
   const waiting = s.queue.length;
   app().innerHTML =
     '<header class="top"><div class="between"><div><span class="rec">REC</span> <span class="mono date">MONTH ' + pad3(s.month) + '<span class="faint">/144</span></span></div>' +
@@ -129,6 +156,9 @@ function render() {
       : '<button class="btn big" data-a="advance">Advance to month ' + pad3(s.month + 1) + '</button>') + '</footer>';
   app().onclick = onClick;
   app().onchange = onChange;
+  const el = $('#p3d');
+  if (el && window.S3) { const ids = G.working().slice(0, 7); const sc = S3.attach(el, 'room', { set:'practice', cast:cast3(ids) }); if (sc) sc.dance(false); }
+  G.takeTrophies().forEach((id, k) => { const t = D.trophies.find(x => x[0] === id); if (t) setTimeout(() => toast('Trophy: ' + t[1]), 400 + k * 2600); });
 }
 UI.render = render;
 
@@ -148,6 +178,8 @@ function planTab() {
   } else if (s.month < 19) {
     h += '<section class="card note"><p class="small">Training years. Each month you plan lessons, then the coaches grade everyone from D to A+. The bottom three get a warning. The survival show starts in month 019.</p></section>';
   }
+  h = '<section class="card room"><div class="stage3d" id="p3d"></div><div class="between roomrow"><div><b>Practice room</b><div class="small muted">Free sessions this month: ' + s.practice + ' of 2. Drag to look around.</div></div>' +
+    '<button class="btn sm" data-a="practice" ' + (s.practice > 0 && G.working().length ? '' : 'disabled') + '>Practice</button></div></section>' + h;
   const ids = G.cast().slice().sort((a, b) => (b === s.focus) - (a === s.focus) || (s.ctrl[b] === 'manual') - (s.ctrl[a] === 'manual'));
   h += '<section class="card"><h3>This month</h3>' + ids.map(id => planRow(id)).join('') + '</section>';
   return h;
@@ -159,11 +191,14 @@ function planRow(id) {
   if (p.hiatus) ctl = '<p class="small muted">On a break' + (p.hiatus > 0 ? ': ' + p.hiatus + ' month' + (p.hiatus > 1 ? 's' : '') + ' left' : '') + '. Wellbeing recovers 12 a month.</p>';
   else if (manual) {
     ctl = '<div class="chips acts">' + G.acts(id).map(k => '<button class="chip ' + (cur === k ? 'on' : '') + '" data-act="' + k + '" data-id="' + id + '" title="' + esc(D.acts[k].l) + '">' + ACT_SHORT[k] + '</button>').join('') + '</div>';
+    const ses = s.session[id];
+    if (ses) ctl += '<p class="small sess">Lesson done: ' + Math.round(ses.acc * 100) + '% · gains ×' + ses.mult.toFixed(2) + ' this month</p>';
+    else if (G.canTrain(id)) ctl += '<button class="btn sm trainbtn" data-train="' + id + '">Train now: ' + esc(MG.INFO[G.MG_KIND[cur]].title.split(': ')[1]) + '</button><span class="small faint"> boosts this month\'s gains up to ×1.7</span>';
     if (cur === 'bond') { const pt = G.partnerOf(id);
       ctl += '<label class="field inline"><span>With</span><select data-partner="' + id + '">' + G.partners(id).map(o => '<option value="' + o + '"' + (o === pt ? ' selected' : '') + '>' + esc(G.name(o)) + ' (bond ' + G.bond(id, o) + ')</option>').join('') + '</select></label>'; }
   } else ctl = '<p class="small muted">Autoplay: ' + esc(D.acts[cur].l) + (cur === 'bond' ? ' with ' + esc(G.name(G.partnerOf(id) || id)) : '') + '</p>';
   return '<div class="prow">' + '<button class="pav" data-prof="' + id + '">' + av(id, 46) + '</button>' +
-    '<div class="pmain"><div class="between"><div><b>' + esc(G.name(id)) + '</b> ' + statusTags(id) + '</div>' +
+    '<div class="pmain"><div class="between"><div><b>' + esc(G.name(id)) + '</b> ' + statusTags(id) + G.rolesOf(id).map(r => tag(r, 'calm')).join('') + '</div>' +
     '<select class="ctrl" data-ctrl="' + id + '" aria-label="Control for ' + esc(G.name(id)) + '"><option value="manual"' + (manual ? ' selected' : '') + '>Manual</option>' +
     Object.keys(D.styles).map(k => '<option value="' + k + '"' + (ctrl === k ? ' selected' : '') + '>Auto: ' + D.styles[k].l + '</option>').join('') + '</select></div>' +
     '<div class="mini"><span>WB</span>' + bar(p.wb, p.wb < 30 ? 'bad' : p.wb < 50 ? 'warn' : '') + '<span class="mono">' + Math.round(p.wb) + '</span><span>AVG</span><span class="mono">' + Math.round(G.avg(id)) + '</span>' +
@@ -175,7 +210,12 @@ function castTab() {
   const s = S();
   const inPlay = s.order.filter(G.inPlay), out = s.order.filter(id => !G.inPlay(id));
   const card = id => '<button class="ccard" data-prof="' + id + '">' + av(id, 64) + '<b>' + esc(G.name(id)) + '</b><span class="small faint">' + esc(G.CAST[id].from) + '</span><span class="tags">' + statusTags(id) + '</span></button>';
-  return '<section class="card"><h3>' + (G.debuted() ? esc(s.group.name) : 'Trainees') + '</h3><div class="cgrid">' + inPlay.map(card).join('') + '</div></section>' +
+  const P = s.group.pos;
+  const pos = P && G.debuted() ? '<section class="card"><h3>Positions</h3>' + D.positions.map(([k, l, sk]) => '<label class="field inline posrow"><span>' + l + '</span><select data-pos="' + k + '">' +
+      G.members().map(id => '<option value="' + id + '"' + (P[k] === id ? ' selected' : '') + '>' + esc(G.name(id)) + ' (' + Math.round(G.p(id).sk[sk]) + ')</option>').join('') + '</select></label>').join('') +
+    '<p class="small faint">Numbers show the skill each position needs. A position\'s skill trains 15% faster.</p>' +
+    (s.group.fandom ? '<p class="small">Fandom: <b>' + esc(s.group.fandom) + '</b>' + (s.group.light ? ' · lightstick <span class="dot" style="background:' + s.group.light + '"></span>' : '') + '</p>' : '') + '</section>' : '';
+  return '<section class="card"><h3>' + (G.debuted() ? esc(s.group.name) : 'Trainees') + '</h3><div class="cgrid">' + inPlay.map(card).join('') + '</div></section>' + pos +
     (out.length ? '<section class="card"><h3>' + (s.alumni.length ? 'Left the show or the group' : 'Left the show') + '</h3><div class="cgrid">' + out.map(card).join('') + '</div></section>' : '') +
     '<p class="small faint pad">Looks are stylized approximations. Tap a member, then Edit look to adjust them.</p>';
 }
@@ -265,11 +305,35 @@ function spark(ch) {
 function chartsTab() {
   const s = S(), r = s.group.releases.slice().reverse();
   return '<section class="card"><div class="between"><h3>Releases</h3><span class="mono small">BEST No. ' + (s.rec.best > 100 ? '—' : s.rec.best) + '</span></div>' +
-    (r.length ? r.map(x => '<div class="rel"><div class="tl"><b>"' + esc(x.title) + '"</b><div class="small muted">' + x.kind + ' · ' + esc(x.concept) + (x.kind === 'EP' ? ' · ' + esc(x.era) : '') + ' · M' + pad3(x.month) + (x.viral ? ' · <span class="spot">viral</span>' : '') + (x.divisive ? ' · divisive' : '') + '</div></div>' +
+    (r.length ? r.map(x => '<div class="rel"><div class="tl"><b>"' + esc(x.title) + '"</b><div class="small muted">' + x.kind + ' · ' + esc(x.concept) + (x.kind === 'EP' ? ' · ' + esc(x.era) : '') + ' · M' + pad3(x.month) + (x.viral ? ' · <span class="spot">viral</span>' : '') + (x.divisive ? ' · divisive' : '') + (x.mv ? ' · MV ' + x.mv : '') + '</div>' + (x.lines ? linesBar(x.lines) : '') + '</div>' +
       spark(x.chart) + '<div class="peak"><b class="mono">' + (x.peak > 100 ? '—' : '#' + x.peak) + '</b><span class="small faint">' + (x.album ? 'EP #' + x.album : 'peak') + '</span></div></div>').join('') : '<p class="small muted">Nothing out yet.</p>') +
     '<p class="small faint">Chart lines run month by month; the dotted line is the top 10. The charts are fictional.</p></section>' +
     '<section class="card"><h3>Awards</h3><p class="small">' + s.rec.wins + ' win' + (s.rec.wins === 1 ? '' : 's') + ' from ' + s.rec.noms + ' nominations · ' + s.rec.no1 + ' No. 1' + (s.rec.no1 === 1 ? '' : 's') + ' · ' + s.rec.viral + ' viral moment' + (s.rec.viral === 1 ? '' : 's') + '</p>' +
     s.group.awards.map(a => '<div class="logrow"><span class="mono faint small">M' + pad3(a.m) + '</span> ' + esc(a.t) + ', ' + esc(D.awards) + '</div>').join('') + '</section>';
+}
+
+function linesBar(L) {
+  const ids = Object.keys(L).sort((a, b) => L[b] - L[a]);
+  return '<div class="lines" title="Line distribution">' + ids.map((id, i) => '<i style="width:' + L[id] + '%;background:' + ['#ecebe6','#c9c8c3','#a5a7ad','#86898f','#696c72','#55585e'][i % 6] + '"><span>' + esc(G.name(id)) + ' ' + L[id] + '%</span></i>').join('') + '</div>';
+}
+
+/* Real story + trophies */
+function storyTab() {
+  const s = S(), B = G.realBeats(), got = B.filter(b => b.ok).length;
+  return '<section class="card"><div class="between"><h3>The real story vs yours</h3><span class="mono small">' + got + ' / ' + B.length + ' MATCHED</span></div>' +
+    '<p class="small muted">Each beat from the real group\'s first years, and how your run compares. Match or beat 8 for a trophy.</p>' +
+    B.map(b => '<div class="beat ' + (b.ok === true ? 'ok' : b.ok === false ? 'no' : '') + '"><span class="mono small faint">' + esc(b.date) + '</span><p><b>Real:</b> ' + esc(b.real) + '</p><p><b>Yours:</b> ' + esc(b.yours) + '</p><i>' + (b.ok === true ? '✓' : b.ok === false ? '✗' : '…') + '</i></div>').join('') + '</section>' +
+    '<section class="card"><div class="between"><h3>Trophies</h3><span class="mono small">' + Object.keys(s.trophies).length + ' / ' + D.trophies.length + '</span></div><div class="troph">' +
+    D.trophies.map(([id, t, d]) => '<div class="tr ' + (s.trophies[id] ? 'on' : '') + '"><b>' + esc(t) + '</b><span>' + esc(d) + '</span>' + (s.trophies[id] ? '<em class="mono">M' + pad3(s.trophies[id]) + '</em>' : '') + '</div>').join('') + '</div></section>';
+}
+
+/* Practice room */
+function practiceSheet(sel) {
+  const s = S(), ids = G.working();
+  sel = sel && ids.includes(sel) ? sel : (ids.includes(s.focus) ? s.focus : ids[0]);
+  sheet('<span class="eyebrow">Practice room · ' + s.practice + ' of 2 left</span><h2>Extra practice</h2><p class="small muted">A free session on top of the month\'s plan. It raises the skill directly and costs a little Wellbeing.</p>' +
+    '<div class="chips">' + ids.map(id => '<button class="chip ' + (id === sel ? 'on' : '') + '" data-psel="' + id + '">' + esc(G.name(id)) + '</button>').join('') + '</div>' +
+    '<div class="stack tight">' + D.skills.map(({ k, l }) => '<button class="choice" data-pk="' + k + '" data-id="' + sel + '"><b>' + esc(MG.INFO[G.MG_KIND[k]].title) + '</b><span>' + l + ' ' + Math.round(G.p(sel).sk[k]) + '</span></button>').join('') + '</div>');
 }
 
 /* Log */
@@ -308,7 +372,8 @@ function openEvent(ev, temp) {
     if (!b) { if (temp && (e.target === m || e.target.closest('[data-a="close"]'))) closeSheet(); return; }
     const i = +b.dataset.ch;
     let acc = null;
-    if (v.perform && i === 0) { m.style.display = 'none'; acc = await window.Rhythm.play({ title:v.title, bpm:100 + Math.floor(Math.random() * 30) }); m.style.display = ''; }
+    const games = v.games || (v.perform ? ['live', null] : null), kind = games && games[i];
+    if (kind) { m.style.display = 'none'; acc = await runGame(kind, mgOpts(v, kind)); m.style.display = ''; if (acc == null && v.perform) acc = null; }
     const out = G.choose(ev, i, acc);
     if (temp) { const s = S(); s.queue = s.queue.filter(x => !(x.kind === ev.kind && (ev.tid ? x.tid === ev.tid : true))); G.save(); }
     if (out) result(out, acc, () => { closeSheet(); render(); if (!temp) nextEvent(); });
@@ -316,7 +381,8 @@ function openEvent(ev, temp) {
   };
 }
 function result(text, acc, cb) {
-  const m = sheet((acc != null ? '<span class="eyebrow">Stage accuracy ' + Math.round(acc * 100) + '%</span>' : '') + '<p class="big">' + esc(text) + '</p><button class="btn big" data-a="ok">Continue</button>', { lock:true });
+  const parts = String(text).split('\n');
+  const m = sheet((acc != null ? '<span class="eyebrow">Score ' + Math.round(acc * 100) + '%</span>' : '') + '<p class="big">' + esc(parts[0]) + '</p>' + parts.slice(1).map(x => '<p class="judge">' + esc(x) + '</p>').join('') + '<button class="btn big" data-a="ok">Continue</button>', { lock:true });
   m.onclick = e => { if (e.target.closest('[data-a="ok"]')) cb(); };
 }
 function nextEvent() {
@@ -383,6 +449,11 @@ function onClick(e) {
   const td = e.target.closest('[data-tid]'); if (td) { openEvent({ kind:'drama', tid:+td.dataset.tid }, true); return; }
   const lk = e.target.closest('[data-look]'); if (lk) { G.p(lk.dataset.id).look[lk.dataset.look] = lk.dataset.v; G.save(); lookEditor(lk.dataset.id); render(); return; }
   const br = e.target.closest('[data-brk]'); if (br) { G.startHiatus(br.dataset.id, +br.dataset.brk); G.save(); closeSheet(); render(); toast(G.name(br.dataset.id) + ' is on a break.'); return; }
+  const tr = e.target.closest('[data-train]'); if (tr) { const id = tr.dataset.train, kind = G.MG_KIND[G.planOf(id)];
+    runGame(kind, { cast:cast3([id]), skill:G.avg(id) }).then(acc => { const mlt = G.trainResult(id, acc); G.save(); render(); if (mlt) toast(G.name(id) + ': ' + Math.round(acc * 100) + '% · gains ×' + mlt.toFixed(2)); }); return; }
+  const ps = e.target.closest('[data-psel]'); if (ps) { practiceSheet(ps.dataset.psel); return; }
+  const pk = e.target.closest('[data-pk]'); if (pk) { const id = pk.dataset.id, k = pk.dataset.pk; closeSheet();
+    runGame(G.MG_KIND[k], { cast:cast3([id]), skill:G.avg(id) }).then(acc => { const g = G.practice(id, k, acc); G.save(); render(); if (g) toast(G.name(id) + ': ' + D.skills.find(x => x.k === k).l + ' +' + g); }); return; }
   const a = e.target.closest('[data-a]'); if (!a) return;
   const id = a.dataset.id;
   switch (a.dataset.a) {
@@ -390,6 +461,7 @@ function onClick(e) {
     case 'next': nextEvent(); break;
     case 'final': finalScreen(); break;
     case 'menu': menu(); break;
+    case 'practice': practiceSheet(); break;
     case 'close': closeSheet(); break;
     case 'release': G.queueRelease(); G.save(); render(); nextEvent(); break;
     case 'hate': openEvent({ kind:'hate' }, true); break;
@@ -412,6 +484,7 @@ function onClick(e) {
 }
 function onChange(e) {
   const s = S();
+  const ps = e.target.closest('[data-pos]'); if (ps) { G.setPosition(ps.dataset.pos, ps.value); G.save(); render(); return; }
   const c = e.target.closest('[data-ctrl]'); if (c) { G.setCtrl(c.dataset.ctrl, c.value); G.save(); render(); return; }
   const p = e.target.closest('[data-partner]'); if (p) { s.partner[p.dataset.partner] = p.value; G.save(); return; }
   const st = e.target.closest('[data-set]'); if (st) { s.settings[st.dataset.set] = st.checked; G.save(); }
