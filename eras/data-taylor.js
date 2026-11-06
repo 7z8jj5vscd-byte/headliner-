@@ -753,7 +753,7 @@ const E = [
    ch:[{l:'Send a video message from home',fx:{rep:2},c:1,r:'A small acceptance from her kitchen.'},{l:'Skip it',fx:{},r:'You win anyway.'}],
    truth:'She won Artist of the Year at the 2020 AMAs.', award:'AMA Artist of the Year' },
  { d:'2021-05-11', id:'brits2021', t:'The Global Icon award', x:'The Brit Awards want to give her their Global Icon award.',
-   ch:[{l:'Accept in person in London',fx:{rep:4,fans:3},c:1,r:'The first woman and first non-British artist to receive it.'},{l:'Accept by video',fx:{rep:2},r:'A short video.'}],
+   ch:[{l:'Accept in person in London',fx:{rep:4,fans:3},c:1,r:'You accept it onstage in London.'},{l:'Accept by video',fx:{rep:2},r:'A short video.'}],
    truth:'She received the Global Icon award at the 2021 Brit Awards.', award:'Brit Global Icon' },
  { d:'2022-06-13', id:'tribeca', t:'Tribeca', x:'The Tribeca Festival wants her to talk about making the All Too Well film.',
    ch:[{l:'Do the talk and screen the film',fx:{rep:5},c:1,r:'Filmmakers take your directing seriously.'},{l:'Pass',fx:{},r:'Maybe another year.'}],

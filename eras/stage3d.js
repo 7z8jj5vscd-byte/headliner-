@@ -3,7 +3,12 @@
    of any real person (a rule from the design report). */
 (function () {
 const T3 = window.T3 = { ok:null, grad:null, slots:{}, raf:0 };
+T3.quality = (() => { try { const q = localStorage.getItem('eras-3d'); if (q) return q; } catch (e) {}
+  const weak = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 3; return weak ? 'low' : 'high'; })();
+T3.setQuality = q => { T3.quality = q; try { localStorage.setItem('eras-3d', q); } catch (e) {}
+  for (const k in T3.slots) { const s = T3.slots[k]; try { s.r.dispose(); if (s.r.domElement.parentNode) s.r.domElement.remove(); } catch (e) {} } T3.slots = {}; };
 function ok() {
+  if (T3.quality === 'off') return false;
   if (T3.ok !== null) return T3.ok;
   try { if (!window.THREE) throw 0; const c = document.createElement('canvas'); T3.ok = !!(c.getContext('webgl') || c.getContext('experimental-webgl')); }
   catch (e) { T3.ok = false; }
@@ -209,8 +214,9 @@ T3.view = function (el, spec, slot) {
   let s = T3.slots[slot];
   try {
     if (!s) {
-      const r = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'low-power' });
-      r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); r.outputEncoding = THREE.sRGBEncoding; r.shadowMap.enabled = true;
+      const low = T3.quality === 'low';
+      const r = new THREE.WebGLRenderer({ antialias:!low, alpha:true, powerPreference:'low-power', preserveDrawingBuffer:false });
+      r.setPixelRatio(low ? 1 : Math.min(2, window.devicePixelRatio || 1)); r.outputEncoding = THREE.sRGBEncoding; r.shadowMap.enabled = !low;
       s = T3.slots[slot] = { r, key:'', scene:null, cam:new THREE.PerspectiveCamera(32, 1, .1, 60), figs:[], rotY:0, drag:null };
       const c = r.domElement; c.style.touchAction = 'pan-y'; c.className = 't3';
       c.addEventListener('pointerdown', e => { s.drag = { x:e.clientX, r:s.rotY }; });
@@ -239,8 +245,11 @@ T3.view = function (el, spec, slot) {
 function dispose(sc) { sc.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) [].concat(o.material).forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }); }); }
 function loop() {
   if (T3.raf) return;
-  const step = () => {
+  let last = 0;
+  const step = (now) => {
     T3.raf = requestAnimationFrame(step);
+    if (document.hidden) return;
+    if (T3.quality === 'low' && now - last < 33) return; last = now;
     const t = performance.now() / 1000; let any = false;
     for (const k in T3.slots) { const s = T3.slots[k]; const c = s.r.domElement;
       if (!c.isConnected || !s.scene) continue; any = true;
