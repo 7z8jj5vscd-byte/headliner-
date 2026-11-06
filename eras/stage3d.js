@@ -219,6 +219,8 @@ T3.view = function (el, spec, slot) {
       r.setPixelRatio(low ? 1 : Math.min(2, window.devicePixelRatio || 1)); r.outputEncoding = THREE.sRGBEncoding; r.shadowMap.enabled = !low;
       s = T3.slots[slot] = { r, key:'', scene:null, cam:new THREE.PerspectiveCamera(32, 1, .1, 60), figs:[], rotY:0, drag:null };
       const c = r.domElement; c.style.touchAction = 'pan-y'; c.className = 't3';
+      // Rest while the view is scrolled off screen, to save battery.
+      if (window.IntersectionObserver) { const io = new IntersectionObserver(es => { s.away = !es[0].isIntersecting; }); io.observe(c); }
       c.addEventListener('pointerdown', e => { s.drag = { x:e.clientX, r:s.rotY }; });
       const stop = () => { s.drag = null; }; window.addEventListener('pointerup', stop); c.addEventListener('pointercancel', stop); c.addEventListener('pointerleave', stop);
       c.style.opacity = '0'; c.style.transition = 'opacity .35s';
@@ -258,7 +260,7 @@ function loop() {
     if (T3.quality === 'low' && now - last < 33) return; last = now;
     const t = performance.now() / 1000; let any = false;
     for (const k in T3.slots) { const s = T3.slots[k]; const c = s.r.domElement;
-      if (!c.isConnected || !s.scene) continue; any = true;
+      if (!c.isConnected || !s.scene) continue; any = true; if (s.away) continue;
       if (!s.drag) s.rotY *= .98;
       s.root.rotation.y = s.rotY;
       if (!T3.reduced) s.figs.forEach(f => anim(f, t));

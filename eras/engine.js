@@ -670,7 +670,7 @@ function startWeek() {
   S.flags.exhausted = false;
   const a = S.abs, A = G.art();
   if (G.tasks().some(t => t.kind === 'school')) { S.week.used = 1; S.week.done.school = true; }
-  if (S.mode === 'story' && !S.flags.free) A.events.forEach(e => { if (e.abs === a && S.seen[e.id] == null) S.week.pending.push(e.id); });
+  if (S.mode === 'story' && !S.flags.free) A.events.forEach(e => { if ((G.eventAbs ? G.eventAbs(e) : e.abs) === a && S.seen[e.id] == null) S.week.pending.push(e.id); });
   // Real-world events happen in every save, whichever artist or mode.
   if (!S.flags.free) (ER.WORLD || []).forEach(e => { if (e.abs === a && S.seen[e.id] == null) S.week.pending.push(e.id); });
   // The pandemic cancels any tour that would run during the lockdown.

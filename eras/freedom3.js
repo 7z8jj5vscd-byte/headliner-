@@ -164,7 +164,7 @@ G.launchBrand = function (kind, name) { const s = S(), k = G.BRANDS.find(x => x.
   s.stats.money -= cost; s.brands.push({ kind, name, abs:s.abs, cost }); G.applyFx({ heat:3 });
   G.inbox('manager', `${name} launches`, `${k.n}, all yours. It is invented for this game. It should earn a little every week.`);
   return { ok:true, msg:`${name} launches.` }; };
-G.hooks.week.push(() => { const s = S(); (s.brands || []).forEach(b => { s.stats.money += Math.round(b.cost * .02 * (.6 + s.stats.rep / 100)); }); });
+G.hooks.week.push(() => { const s = S(); (s.brands || []).forEach(b => { const fade = Math.max(.25, 1 - (s.abs - b.abs) / 260); s.stats.money += Math.round(b.cost * .02 * (.6 + s.stats.rep / 100) * fade); }); });
 G.canBuyMasters = () => { const s = S(); return (G.frMode() === 'sandbox' || s.flags.free || s.mode === 'era') && s.stats.own < 90 && s.released.length > 0; };
 G.mastersPrice = () => Math.round(Math.max(5e5, S().released.reduce((a, r) => a + r.total * 4, 0)));
 G.buyMasters = function () { const s = S(); if (!G.canBuyMasters()) return { err:G.frMode() === 'canon' && s.mode === 'story' ? 'In Canon and Guided, the real story plays out. Buying back masters needs Sandbox.' : 'Not possible right now.' };
