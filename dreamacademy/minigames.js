@@ -64,14 +64,22 @@ function laneGame(O, cfg) {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const size = () => { cv.width = O.play.clientWidth * dpr; cv.height = 150 * dpr; cv.style.height = '150px'; };
     size();
-    const a = ac(), t0 = now() + .3;
-    if (a) for (let k = 0; k < endB; k++) { kick(t0 + k * beat, k < 4 ? .18 : .3); hat(t0 + (k + .5) * beat); if (k % 2 === 0 && k >= 4) bass(t0 + k * beat, [55, 65.4, 73.4, 49][Math.floor(k / 4) % 4]); }
-    if (a) for (let k = 0; k < 4; k++) blip(880, .06, 'square', .05, t0 + k * beat);
+    // Game timing runs on the screen clock, so a paused or blocked audio context can never freeze the game.
+    const clock = () => performance.now() / 1000, t0 = clock() + .3, a = ac();
+    let audioOn = false;
+    const scheduleAudio = () => {
+      if (audioOn || !a || a.state !== 'running') return; audioOn = true;
+      const lag = clock() - t0, at0 = a.currentTime - lag; // audio time that matches game beat 0
+      for (let k = Math.max(0, Math.ceil(lag / beat)); k < endB; k++) { const at = at0 + k * beat; if (at < a.currentTime) continue;
+        kick(at, k < 4 ? .18 : .3); hat(at + beat / 2); if (k % 2 === 0 && k >= 4) bass(at, [55, 65.4, 73.4, 49][Math.floor(k / 4) % 4]); if (k < 4) blip(880, .06, 'square', .05, at); }
+    };
+    if (a) { if (a.state === 'running') scheduleAudio(); else { try { a.resume().then(scheduleAudio, () => {}); } catch (e) {} a.onstatechange = scheduleAudio; } }
     let combo = 0, done = false, raf, chantAt = 0; const offs = [];
     const judge = (txt, cls) => { J.textContent = txt + (combo > 2 ? ' ×' + combo : ''); J.className = 'mg-judge on ' + cls; };
     function hit(lane) {
       if (done) return;
-      const t = (now() - t0) / beat;
+      if (!audioOn && a) { try { a.resume(); } catch (e) {} scheduleAudio(); }
+      const t = (clock() - t0) / beat;
       let bi = -1, bd = 9;
       notes.forEach((n, i) => { if (!n.s && (lanes === 1 || n.l === lane)) { const d = Math.abs(t - n.t); if (d < bd) { bd = d; bi = i; } } });
       if (bi < 0) return;
@@ -86,7 +94,7 @@ function laneGame(O, cfg) {
       else if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); hit(0); } });
     O.play.addEventListener('pointerdown', e => { const l = e.target.closest('[data-l]'); if (l) { hit(+l.dataset.l); return; } if (lanes === 1) hit(0); });
     function draw() {
-      const W = cv.width, H = cv.height, t = (now() - t0) / beat, lx = W * .16, px = W * .18;
+      const W = cv.width, H = cv.height, t = (clock() - t0) / beat, lx = W * .16, px = W * .18;
       cx.clearRect(0, 0, W, H);
       for (let l = 0; l < lanes; l++) { const y = H * (lanes > 1 ? (l ? .7 : .3) : .5); cx.strokeStyle = '#2c3038'; cx.lineWidth = 2 * dpr; cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke(); }
       cx.strokeStyle = '#ecebe6'; cx.lineWidth = 3 * dpr; cx.beginPath(); cx.moveTo(lx, 8 * dpr); cx.lineTo(lx, H - 8 * dpr); cx.stroke();
@@ -103,7 +111,7 @@ function laneGame(O, cfg) {
       if (t > endB) end(); else raf = requestAnimationFrame(draw);
     }
     raf = requestAnimationFrame(draw);
-    function end() { if (done) return; done = true; cancelAnimationFrame(raf); unkey();
+    function end() { if (done) return; done = true; cancelAnimationFrame(raf); unkey(); if (a) a.onstatechange = null;
       const avg = offs.length ? offs.reduce((a, b) => a + b, 0) / offs.length : 0;
       MG.last.timing = { perfect:notes.filter(n => n.s === 1).length, good:notes.filter(n => n.s === 2).length, miss:notes.filter(n => n.s !== 1 && n.s !== 2).length, avg:Math.round(avg) };
       res(notes.reduce((s, n) => s + (n.s === 1 ? 1 : n.s === 2 ? .6 : 0), 0) / N); }
