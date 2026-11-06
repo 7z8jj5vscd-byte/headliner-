@@ -23,6 +23,7 @@
  --serif:"Fraunces",Georgia,serif;--sans:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--r:14px}
 *{box-sizing:border-box}
 html{background:var(--ground);-webkit-text-size-adjust:100%}
+html.big-text body{font-size:16px}html.big-text .small{font-size:14px}html.huge-text body{font-size:18px}html.huge-text .small{font-size:15.5px}
 body{margin:0;background:radial-gradient(1200px 600px at 50% -200px,color-mix(in srgb,var(--era) 28%,transparent),transparent 70%),var(--ground);color:var(--text);font:14px/1.5 var(--sans);min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.4;cursor:not-allowed}
 h1,h2,h3{margin:0 0 6px;line-height:1.2;text-wrap:balance}h1{font:800 30px/1.1 var(--serif)}h2{font:600 19px/1.25 var(--serif)}h3{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:12px}
@@ -120,7 +121,7 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 <script src="sound.js?v=1"></script>
 <script src="stage3d.js?v=14"></script>
 <script src="engine.js?v=16"></script>
-<script src="ui.js?v=16"></script>
+<script src="ui.js?v=18"></script>
 <script>UI.narrow = window.matchMedia('(max-width:560px)').matches; window.matchMedia('(max-width:560px)').addEventListener('change', e => { UI.narrow = e.matches; if (G.S()) UI.render(); }); UI.start();</script>
 </body>
 </html>
