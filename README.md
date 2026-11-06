@@ -102,6 +102,20 @@ If you own a label (Rayna's Highway 65, or your own once you can afford one) a *
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/nashville/
 
+## Dream Academy: Story Mode
+
+An unofficial fan game that follows the shape of the real story behind the global girl group from The Debut: Dream Academy: the 2021 open call, a year of training, the 2023 survival show, the debut and the first years as a group, then twelve years in all (144 months). It uses the twenty real contestants' names and stylized looks you can edit. Every song, era, chart, eval, skill number, quote and bit of drama is invented. It is not affiliated with HYBE, Geffen, Netflix or anyone in it.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/dreamacademy/
+
+**How it plays.** One turn is one month. Pick a focus member, then plan each member's month by hand or put her on autoplay (Balanced, Skill Grind, Fan Service or Protect Wellbeing), and switch between them at any time. Monthly evals grade everyone from D to A+ during training, and the bottom three get a warning. The survival show runs three missions and a live finale. Choose Real result to follow the real eliminations and final six (with the real finale scores), or Open result to let scores and votes decide. Key stages are a short tap-timing game with a skip button.
+
+**Drama.** Tensions arise between members and contestants in survival-show style: team picks, the center spot, practice clashes, rivalries, misunderstandings, line distribution, concept fights, two camps, spotlight, label favoritism, push-or-rest and writing credits. Each has heat that rises every month nobody deals with it, a bond score between the two, confessional quotes, and four ways to handle it. The Drama tab shows a bond web. Contestants who were minors on the show and contestants who did not debut only get light, competitive drama. Nothing invents bullying, betrayal, crimes or scandals.
+
+**After the debut.** A group schedule (training, recording, promotion, touring, recovery), releases with concepts and invented titles, a fictional chart, viral dance moments, a brand campaign, awards nights, a festival with a surprise guest, a hometown arena show, label pressure, hate trains aimed at the group (never one member by name) with statement, silence, standing together or apology, breaks of any length that never end a run, contract renewals and five endings.
+
+**Saves.** Autosave on the device, plus export and import of a save code.
+
 ## Updates go live automatically
 
 Any push to a `claude/...` branch is merged into `main` by `.github/workflows/auto-publish.yml`, and GitHub Pages publishes `main`. No pull request is needed. If an automatic merge ever conflicts, GitHub emails the repo owner and that branch can be merged with a normal pull request instead.

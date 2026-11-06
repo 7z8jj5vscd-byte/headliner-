@@ -1,0 +1,420 @@
+/* Dream Academy: Story Mode. Interface. */
+(function () {
+const D = window.DA, G = window.G;
+const UI = window.UI = {};
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
+const app = () => $('#app');
+let tab = 'plan', setup = { mode:'real', focus:'sophia' };
+try { tab = localStorage.getItem('da-tab') || 'plan'; } catch (e) {}
+const S = () => G.S();
+
+/* ---------- Avatars: stylized busts drawn from each person's look ---------- */
+const ERA_COL = { 'Bright Pop':'#d9a441', 'Dance Break':'#c2413b', 'Girl Crush':'#3b3f8f', 'Soft Ballad':'#8a9bb0', 'Experimental':'#5d8a3a', 'Y2K Revival':'#b84f9c',
+  'Dark Pop':'#2a2a33', 'Live Band':'#8a4b2a', 'Latin Crossover':'#c8572e', 'Unplugged':'#a28766', 'Disco Revival':'#b39237', 'Hyperpop':'#5bb3c4' };
+function outfit(id) {
+  const s = S(), p = s && s.people[id];
+  if (!p || p.status === 'trainee' || p.status === 'cut') return '#3a3f4a';
+  const r = s.group.releases[s.group.releases.length - 1];
+  return r ? (ERA_COL[r.concept] || '#4b4f5a') : '#4b4f5a';
+}
+function shade(hex, f) { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  r = Math.round(Math.min(255, r * f)); g = Math.round(Math.min(255, g * f)); b = Math.round(Math.min(255, b * f)); return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); }
+function av(id, size, cls) {
+  const s = S(), L = (s && s.people[id] ? s.people[id].look : G.CAST[id].look), sk = L.skin, h = L.hair, st = L.style, o = outfit(id);
+  let back = '', front = '';
+  if (st === 'long') { back = '<path d="M28 40 Q28 18 50 17 Q72 18 72 40 L75 92 L25 92 Z" fill="' + h + '"/>'; }
+  if (st === 'wavy') { back = '<path d="M27 40 Q27 17 50 16 Q73 17 73 40 Q78 52 72 62 Q79 72 73 82 Q77 88 74 92 L26 92 Q23 88 27 82 Q21 72 28 62 Q22 52 27 40 Z" fill="' + h + '"/>'; }
+  if (st === 'curly') { back = [[30,30,11],[42,21,11],[58,21,11],[70,30,11],[25,46,11],[75,46,11],[27,62,11],[73,62,11],[31,76,10],[69,76,10]].map(c => '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="' + h + '"/>').join(''); }
+  if (st === 'bob') { back = '<path d="M28 42 Q28 18 50 17 Q72 18 72 42 L73 64 Q62 68 50 66 Q38 68 27 64 Z" fill="' + h + '"/>'; }
+  if (st === 'pony') { back = '<path d="M30 40 Q30 19 50 18 Q70 19 70 40 L68 50 L32 50 Z" fill="' + h + '"/><path d="M66 24 Q86 30 80 62 Q76 76 70 80 Q74 60 68 40 Z" fill="' + h + '"/>'; }
+  if (st === 'bun') { back = '<circle cx="50" cy="13" r="10" fill="' + h + '"/><path d="M30 40 Q30 19 50 18 Q70 19 70 40 L68 48 L32 48 Z" fill="' + h + '"/>'; }
+  front = st === 'curly' ? '<path d="M33 34 Q40 22 50 24 Q60 22 67 34 Q60 28 50 30 Q40 28 33 34 Z" fill="' + h + '"/>'
+    : st === 'bob' ? '<path d="M32 38 Q34 22 50 22 Q66 22 68 38 Q58 30 50 31 Q42 30 32 38 Z" fill="' + h + '"/>'
+    : '<path d="M32 40 Q33 21 50 21 Q67 21 68 40 Q63 30 52 28 Q44 33 32 40 Z" fill="' + h + '"/>';
+  const svg = '<svg viewBox="0 0 100 100" width="' + size + '" height="' + size + '" aria-hidden="true">' +
+    '<rect width="100" height="100" fill="#1b1e23"/>' + back +
+    '<path d="M14 100 Q16 78 36 74 L64 74 Q84 78 86 100 Z" fill="' + o + '"/><path d="M42 64 L58 64 L58 76 Q50 80 42 76 Z" fill="' + shade(sk, .9) + '"/>' +
+    '<ellipse cx="50" cy="45" rx="17" ry="21" fill="' + sk + '"/>' + front +
+    '<ellipse cx="43" cy="47" rx="2" ry="2.4" fill="#1a1414"/><ellipse cx="57" cy="47" rx="2" ry="2.4" fill="#1a1414"/>' +
+    '<path d="M39 41 Q43 39 46 41" stroke="' + shade(h, 1.2) + '" stroke-width="1.4" fill="none"/><path d="M54 41 Q57 39 61 41" stroke="' + shade(h, 1.2) + '" stroke-width="1.4" fill="none"/>' +
+    '<path d="M46 57 Q50 59.5 54 57" stroke="#7a3b3b" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
+  return '<span class="av ' + (cls || '') + '" style="width:' + size + 'px;height:' + size + 'px">' + svg + '</span>';
+}
+UI.av = av;
+
+/* ---------- Helpers ---------- */
+function bar(v, cls) { return '<span class="bar ' + (cls || '') + '"><i style="width:' + Math.max(0, Math.min(100, v)) + '%"></i></span>'; }
+function pad3(n) { return String(n).padStart(3, '0'); }
+function tag(t, cls) { return '<span class="tag ' + (cls || '') + '">' + esc(t) + '</span>'; }
+function statusTags(id) {
+  const p = G.p(id), out = [];
+  if (id === S().focus) out.push(tag('Focus', 'focus'));
+  if (p.hiatus) out.push(tag('On a break', 'calm'));
+  if (p.warn) out.push(tag('Eval warning', 'warn'));
+  if (p.status === 'solo') out.push(tag('Solo', 'calm'));
+  if (p.status === 'cut') out.push(tag(({ M1:'Out at Mission 1', M2:'Out at Mission 2', M3:'Out at Mission 3', W:'Withdrew', F:'Out at the finale' })[p.out] || 'Left the show'));
+  if (p.wb < 30 && !p.hiatus && G.inPlay(id)) out.push(tag('Low Wellbeing', 'bad'));
+  return out.join('');
+}
+function toast(t) { let el = $('.toast'); if (!el) { el = document.createElement('div'); el.className = 'toast'; document.body.appendChild(el); }
+  el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 2400); }
+
+/* ---------- Title and setup ---------- */
+UI.start = () => { if (G.load()) title(true); else title(false); };
+function title(hasSave) {
+  app().innerHTML = '<section class="title">' +
+    '<div class="slate"><span class="rec">REC</span><span class="mono">TAPE 01 · FAN-MADE</span></div>' +
+    '<h1>Dream Academy<br><span>Story Mode</span></h1>' +
+    '<p class="lead">120,000 auditions. Twenty trainees. Three missions, one live finale, six names. Then the hard part: twelve years of being a group.</p>' +
+    '<div class="cast-strip">' + D.cast.map(c => av(c.id, 44)).join('') + '</div>' +
+    (hasSave ? '<button class="btn big" data-a="continue">Continue · Month ' + S().month + '</button>' : '') +
+    '<button class="btn big ' + (hasSave ? 'ghost' : '') + '" data-a="new">New run</button>' +
+    '<p class="notice">Unofficial fan game. Not affiliated with HYBE, Geffen, Netflix or any of the people in it. It uses real names and stylized looks; songs, eras, scores and drama are invented, and it never invents bullying, scandals or health crises for anyone.</p>' +
+    '</section>';
+  app().onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return;
+    if (a.dataset.a === 'continue') game();
+    if (a.dataset.a === 'new') setupScreen(); };
+}
+function setupScreen() {
+  const c = D.cast;
+  app().innerHTML = '<section class="title setup">' +
+    '<button class="btn ghost sm" data-a="back">Back</button>' +
+    '<h2>How should the show end?</h2>' +
+    '<div class="seg">' +
+      '<button class="choice ' + (setup.mode === 'real' ? 'on' : '') + '" data-mode="real"><b>Real result</b><span>Eliminations and the final six follow the real show. You shape everything else.</span></button>' +
+      '<button class="choice ' + (setup.mode === 'open' ? 'on' : '') + '" data-mode="open"><b>Open result</b><span>Scores and votes decide who goes home and who debuts.</span></button>' +
+    '</div>' +
+    '<h2>Who do the cameras follow?</h2><p class="muted small">Your focus member. You can switch to any trainee and plan her month at any time.</p>' +
+    '<div class="pickgrid">' + c.map(x => '<button class="pick ' + (setup.focus === x.id ? 'on' : '') + '" data-f="' + x.id + '">' + av(x.id, 56) + '<b>' + esc(x.first) + '</b><span>' + esc(x.from) + '</span></button>').join('') + '</div>' +
+    '<button class="btn big" data-a="go">Start: Month 001</button>' +
+    '</section>';
+  app().onclick = e => {
+    const m = e.target.closest('[data-mode]'), f = e.target.closest('[data-f]'), a = e.target.closest('[data-a]');
+    if (m) { setup.mode = m.dataset.mode; setupScreen(); }
+    else if (f) { setup.focus = f.dataset.f; setupScreen(); }
+    else if (a && a.dataset.a === 'back') title(G.hasSave() && G.load());
+    else if (a && a.dataset.a === 'go') { G.newGame(setup); G.save(); tab = 'plan'; game(); }
+  };
+}
+
+/* ---------- Main game screen ---------- */
+function game() {
+  render();
+  nextEvent();
+}
+function stats() {
+  const s = S(), deb = G.debuted();
+  const cells = deb ? [['Fans', G.fmt(s.group.fans)], ['Momentum', Math.round(s.group.momentum)], ['Label', Math.round(s.label)], ['Cohesion', G.cohesion()]]
+    : [['Trainees', G.trainees().length], ['Cohesion', G.cohesion()], ['Focus WB', Math.round(G.p(s.focus).wb)], ['Year', G.year()]];
+  return '<div class="statline">' + cells.map(c => '<div class="st"><b>' + c[1] + '</b><span>' + c[0] + '</span></div>').join('') + '</div>';
+}
+function tabs() {
+  const s = S(), deb = G.debuted();
+  const T = [['plan','Plan'],['cast','Cast'],['drama','Drama', s.tensions.length],['feed','Feed', s.hate ? '!' : 0]].concat(deb ? [['charts','Charts']] : []).concat([['log','Log']]);
+  if (!T.some(t => t[0] === tab)) tab = 'plan';
+  return '<nav class="tabs" role="tablist">' + T.map(t => '<button role="tab" aria-selected="' + (tab === t[0]) + '" class="tab ' + (tab === t[0] ? 'on' : '') + '" data-tab="' + t[0] + '">' + t[1] + (t[2] ? '<i class="badge">' + t[2] + '</i>' : '') + '</button>').join('') + '</nav>';
+}
+function render() {
+  const s = S(); if (!s) return title(false);
+  const ch = G.ch();
+  const body = ({ plan:planTab, cast:castTab, drama:dramaTab, feed:feedTab, charts:chartsTab, log:logTab })[tab] || planTab;
+  const waiting = s.queue.length;
+  app().innerHTML =
+    '<header class="top"><div class="between"><div><span class="rec">REC</span> <span class="mono date">MONTH ' + pad3(s.month) + '<span class="faint">/144</span></span></div>' +
+    '<div class="row"><div class="chap mono">CH ' + ch.n + '<br>' + esc(ch.name.toUpperCase()) + '</div><button class="btn ghost sm" data-a="menu">Menu</button></div></div>' + stats() + '</header>' + tabs() +
+    '<main>' + body() + '</main>' +
+    '<footer class="foot">' + (s.ended ? '<button class="btn big" data-a="final">The final numbers</button>'
+      : waiting ? '<button class="btn big warnbtn" data-a="next">' + waiting + ' decision' + (waiting > 1 ? 's' : '') + ' waiting</button>'
+      : '<button class="btn big" data-a="advance">Advance to month ' + pad3(s.month + 1) + '</button>') + '</footer>';
+  app().onclick = onClick;
+  app().onchange = onChange;
+}
+UI.render = render;
+
+/* Plan */
+const ACT_SHORT = { vo:'Vocal', da:'Dance', ra:'Rap', pe:'Stage', so:'Write', ch:'Fans', bond:'Bond', rest:'Rest', solo:'Solo' };
+function planTab() {
+  const s = S(), deb = G.debuted();
+  let h = '';
+  if (deb) {
+    const ep = G.effectivePlan();
+    h += '<section class="card"><div class="between"><h3>Group schedule</h3><span class="mono small">PREP ' + Math.round(s.group.prep) + '</span></div>' +
+      '<div class="chips">' + Object.keys(D.groupPlans).map(k => '<button class="chip ' + (s.group.plan === k ? 'on' : '') + '" data-gp="' + k + '">' + D.groupPlans[k].l + '</button>').join('') + '</div>' +
+      '<p class="small muted">' + esc(D.groupPlans[s.group.plan].d) + (s.group.plan === 'tour' && ep !== 'tour' ? ' <span class="neg">No release in the last 8 months, so this will be a training month.</span>' : '') + '</p>' +
+      '<div class="row">' + bar(s.group.prep, s.group.prep >= 85 ? 'ok' : '') + '<span class="small faint">60 single · 85 EP</span></div>' +
+      (s.month >= 32 ? '<button class="btn ' + (G.canRelease() ? '' : 'sm ghost') + '" data-a="release" ' + (G.canRelease() ? '' : 'disabled') + '>' + (G.canRelease() ? 'Release next song' : 'Release at prep 60') + '</button>' : '<p class="small faint">The debut single is set for month 032.</p>') +
+      '</section>';
+  } else if (s.month < 19) {
+    h += '<section class="card note"><p class="small">Training years. Each month you plan lessons, then the coaches grade everyone from D to A+. The bottom three get a warning. The survival show starts in month 019.</p></section>';
+  }
+  const ids = G.cast().slice().sort((a, b) => (b === s.focus) - (a === s.focus) || (s.ctrl[b] === 'manual') - (s.ctrl[a] === 'manual'));
+  h += '<section class="card"><h3>This month</h3>' + ids.map(id => planRow(id)).join('') + '</section>';
+  return h;
+}
+function planRow(id) {
+  const s = S(), p = G.p(id), ctrl = s.ctrl[id], manual = ctrl === 'manual';
+  const cur = G.planOf(id);
+  let ctl;
+  if (p.hiatus) ctl = '<p class="small muted">On a break' + (p.hiatus > 0 ? ': ' + p.hiatus + ' month' + (p.hiatus > 1 ? 's' : '') + ' left' : '') + '. Wellbeing recovers 12 a month.</p>';
+  else if (manual) {
+    ctl = '<div class="chips acts">' + G.acts(id).map(k => '<button class="chip ' + (cur === k ? 'on' : '') + '" data-act="' + k + '" data-id="' + id + '" title="' + esc(D.acts[k].l) + '">' + ACT_SHORT[k] + '</button>').join('') + '</div>';
+    if (cur === 'bond') { const pt = G.partnerOf(id);
+      ctl += '<label class="field inline"><span>With</span><select data-partner="' + id + '">' + G.partners(id).map(o => '<option value="' + o + '"' + (o === pt ? ' selected' : '') + '>' + esc(G.name(o)) + ' (bond ' + G.bond(id, o) + ')</option>').join('') + '</select></label>'; }
+  } else ctl = '<p class="small muted">Autoplay: ' + esc(D.acts[cur].l) + (cur === 'bond' ? ' with ' + esc(G.name(G.partnerOf(id) || id)) : '') + '</p>';
+  return '<div class="prow">' + '<button class="pav" data-prof="' + id + '">' + av(id, 46) + '</button>' +
+    '<div class="pmain"><div class="between"><div><b>' + esc(G.name(id)) + '</b> ' + statusTags(id) + '</div>' +
+    '<select class="ctrl" data-ctrl="' + id + '" aria-label="Control for ' + esc(G.name(id)) + '"><option value="manual"' + (manual ? ' selected' : '') + '>Manual</option>' +
+    Object.keys(D.styles).map(k => '<option value="' + k + '"' + (ctrl === k ? ' selected' : '') + '>Auto: ' + D.styles[k].l + '</option>').join('') + '</select></div>' +
+    '<div class="mini"><span>WB</span>' + bar(p.wb, p.wb < 30 ? 'bad' : p.wb < 50 ? 'warn' : '') + '<span class="mono">' + Math.round(p.wb) + '</span><span>AVG</span><span class="mono">' + Math.round(G.avg(id)) + '</span>' +
+    (p.grades.length ? '<span>EVAL</span><span class="mono grade g' + p.grades[p.grades.length - 1].g.replace('+', 'p') + '">' + p.grades[p.grades.length - 1].g + '</span>' : '') + '</div>' + ctl + '</div></div>';
+}
+
+/* Cast */
+function castTab() {
+  const s = S();
+  const inPlay = s.order.filter(G.inPlay), out = s.order.filter(id => !G.inPlay(id));
+  const card = id => '<button class="ccard" data-prof="' + id + '">' + av(id, 64) + '<b>' + esc(G.name(id)) + '</b><span class="small faint">' + esc(G.CAST[id].from) + '</span><span class="tags">' + statusTags(id) + '</span></button>';
+  return '<section class="card"><h3>' + (G.debuted() ? esc(s.group.name) : 'Trainees') + '</h3><div class="cgrid">' + inPlay.map(card).join('') + '</div></section>' +
+    (out.length ? '<section class="card"><h3>' + (s.alumni.length ? 'Left the show or the group' : 'Left the show') + '</h3><div class="cgrid">' + out.map(card).join('') + '</div></section>' : '') +
+    '<p class="small faint pad">Looks are stylized approximations. Tap a member, then Edit look to adjust them.</p>';
+}
+function profile(id) {
+  const s = S(), p = G.p(id), c = G.CAST[id];
+  const others = (G.debuted() ? G.members() : G.trainees()).filter(x => x !== id);
+  const bonds = others.map(o => [o, G.bond(id, o)]).sort((a, b) => b[1] - a[1]);
+  const canBreak = (p.status === 'member' || p.status === 'solo') && !p.hiatus;
+  sheet('<div class="prof">' + av(id, 96) + '<div><span class="eyebrow">' + esc(c.from) + (c.real ? ' · debuted in the real group' : '') + '</span><h2>' + esc(G.full(id)) + '</h2><div>' + statusTags(id) + '</div></div></div>' +
+    (c.real && c.score ? '<p class="small muted">Real finale: ' + c.score.toFixed(2) + ' (fan pre-vote ' + c.pre + ', live vote ' + c.live + ', judges ' + c.judges.toFixed(2) + '), ' + ordinal(c.place) + ' place.</p>' : '') +
+    (c.id === 'samara' ? '<p class="small muted">Real finale: 66.67, seventh place, 1.33 points behind sixth.</p>' : '') +
+    '<h3>Skills</h3>' + D.skills.map(({ k, l }) => '<div class="statrow"><span>' + l + '</span>' + bar(p.sk[k]) + '<b>' + Math.round(p.sk[k]) + '</b></div>').join('') +
+    '<div class="statrow"><span>Wellbeing</span>' + bar(p.wb, p.wb < 30 ? 'bad' : p.wb < 50 ? 'warn' : 'ok') + '<b>' + Math.round(p.wb) + '</b></div>' +
+    '<div class="statrow"><span>Fan Favor</span>' + bar(p.fan) + '<b>' + Math.round(p.fan) + '</b></div>' +
+    (p.grades.length ? '<h3>Evals</h3><div class="grades">' + p.grades.slice(-14).map(g => '<span class="grade g' + g.g.replace('+', 'p') + '" title="Month ' + g.m + '">' + g.g + '</span>').join('') + '</div>' : '') +
+    (bonds.length ? '<h3>Bonds</h3><div class="bonds">' + bonds.map(([o, v]) => '<div class="bondrow">' + av(o, 26) + '<span>' + esc(G.name(o)) + '</span>' + bondBar(v) + '<b class="mono">' + (v > 0 ? '+' : '') + v + '</b></div>').join('') + '</div>' : '') +
+    '<p class="small faint">Skill numbers are game numbers, not claims about anyone.</p>' +
+    '<div class="row wrap">' +
+    (G.inPlay(id) && id !== s.focus ? '<button class="btn sm" data-a="focus" data-id="' + id + '">Make her the focus</button>' : '') +
+    (canBreak ? '<button class="btn ghost sm" data-a="break" data-id="' + id + '">Take a break</button>' : '') +
+    (p.hiatus ? '<button class="btn ghost sm" data-a="unbreak" data-id="' + id + '">End her break</button>' : '') +
+    '<button class="btn ghost sm" data-a="look" data-id="' + id + '">Edit look</button></div>');
+}
+function ordinal(n) { return n + (['th','st','nd','rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : n % 10] || 'th'); }
+function bondBar(v) { const w = Math.abs(v); return '<span class="bbar"><i class="' + (v < 0 ? 'neg' : 'pos') + '" style="width:' + w + '%;' + (v < 0 ? 'right:50%' : 'left:50%') + '"></i></span>'; }
+function lookEditor(id) {
+  const L = G.p(id).look;
+  sheet('<span class="eyebrow">Edit look</span><h2>' + esc(G.name(id)) + '</h2><div class="lookprev">' + av(id, 120) + '</div>' +
+    '<h3>Skin</h3><div class="sw">' + D.skinTones.map(c => '<button class="swatch ' + (L.skin === c ? 'on' : '') + '" style="background:' + c + '" data-look="skin" data-v="' + c + '" data-id="' + id + '" aria-label="Skin tone"></button>').join('') + '</div>' +
+    '<h3>Hair colour</h3><div class="sw">' + D.hairColors.map(c => '<button class="swatch ' + (L.hair === c ? 'on' : '') + '" style="background:' + c + '" data-look="hair" data-v="' + c + '" data-id="' + id + '" aria-label="Hair colour"></button>').join('') + '</div>' +
+    '<h3>Hair style</h3><div class="chips">' + D.hairStyles.map(([k, l]) => '<button class="chip ' + (L.style === k ? 'on' : '') + '" data-look="style" data-v="' + k + '" data-id="' + id + '">' + l + '</button>').join('') + '</div>' +
+    '<div class="row"><button class="btn ghost sm" data-a="lookreset" data-id="' + id + '">Reset</button><button class="btn sm" data-a="close">Done</button></div>');
+}
+
+/* Drama */
+function dramaTab() {
+  const s = S();
+  const ids = G.debuted() ? G.members() : G.trainees();
+  let h = '<section class="card"><div class="between"><h3>Bond web</h3><span class="mono small">COHESION ' + G.cohesion() + '</span></div>' + web(ids) +
+    '<p class="small faint">Lines show how two people get on: red is strained, white is close. Tap a face for her bonds.</p></section>';
+  h += '<section class="card"><h3>Open tensions</h3>' + (s.tensions.length ? s.tensions.map(t => {
+    const d = D.drama[t.type];
+    return '<div class="tension"><div class="pair">' + av(t.a, 36) + av(t.b, 36) + '</div><div class="tl"><b>' + esc(d.title) + '</b><div class="small muted">' + esc(G.name(t.a)) + ' and ' + esc(G.name(t.b)) + ' · ' + t.age + ' month' + (t.age === 1 ? '' : 's') + '</div>' +
+      '<div class="heat">' + [1,2,3,4,5].map(k => '<i class="' + (k <= t.heat ? 'on' : '') + '"></i>').join('') + '</div></div><button class="btn sm" data-tid="' + t.id + '">Deal with it</button></div>';
+  }).join('') : '<p class="small muted">No open tensions. Enjoy it.</p>') + '</section>';
+  h += '<p class="small faint pad">Unresolved tension heats up every month, wears down Wellbeing and bonds, and costs points on shared stages. Above heat 3 fans start to notice.</p>';
+  return h;
+}
+function web(ids) {
+  const n = ids.length, R = n > 8 ? 120 : 95, cx = 160, cy = 140, pts = {};
+  ids.forEach((id, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; pts[id] = [cx + R * Math.cos(a), cy + R * Math.sin(a)]; });
+  let lines = '';
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    const a = ids[i], b = ids[j], v = G.bond(a, b), t = S().tensions.find(x => (x.a === a && x.b === b) || (x.a === b && x.b === a));
+    if (Math.abs(v) < 6 && !t && n > 8) continue;
+    const col = t ? '#e5484d' : v < 0 ? '#b0503f' : v < 15 ? '#5a5f69' : v < 30 ? '#a9adb5' : '#f2f1ec';
+    lines += '<line x1="' + pts[a][0] + '" y1="' + pts[a][1] + '" x2="' + pts[b][0] + '" y2="' + pts[b][1] + '" stroke="' + col + '" stroke-width="' + (t ? 3 : 1 + Math.abs(v) / 18) + '"' + (t ? ' stroke-dasharray="5 4"' : '') + ' opacity="' + (t ? 1 : .8) + '"/>';
+  }
+  const sz = n > 8 ? 30 : 38;
+  const nodes = ids.map(id => '<foreignObject x="' + (pts[id][0] - sz / 2) + '" y="' + (pts[id][1] - sz / 2) + '" width="' + sz + '" height="' + sz + '"><button xmlns="http://www.w3.org/1999/xhtml" class="wnode" data-prof="' + id + '" aria-label="' + esc(G.name(id)) + '">' + av(id, sz) + '</button></foreignObject>' +
+    '<text x="' + pts[id][0] + '" y="' + (pts[id][1] + sz / 2 + 11) + '" text-anchor="middle" class="wlabel">' + esc(G.name(id)) + '</text>').join('');
+  return '<svg class="web" viewBox="0 0 320 290" role="img" aria-label="Bonds between members">' + lines + nodes + '</svg>';
+}
+
+/* Feed */
+function feedTab() {
+  const s = S();
+  let h = '';
+  if (s.hate) {
+    const t = G.hateTopic();
+    h += '<section class="card hate"><span class="eyebrow">Hate train · ' + D.hateStages[s.hate.stage] + '</span><h2>' + esc(t.t) + '</h2>' +
+      '<div class="stages">' + D.hateStages.map((x, i) => '<span class="' + (i <= s.hate.stage ? 'on' : '') + '">' + x + '</span>').join('') + '</div>' +
+      '<p class="small muted">It costs momentum, fans and everyone\'s Wellbeing each month. Respond once a month. Silence works when the group did nothing wrong; a bad apology makes it worse.</p>' +
+      (s.hate.responded ? '<p class="small">You have responded this month.</p>' : '<button class="btn sm" data-a="hate">Respond</button>') + '</section>';
+  }
+  h += '<section class="card"><h3>Feed</h3>' + (s.feed.length ? s.feed.slice(0, 40).map(p => '<div class="post ' + (p.mood < 0 ? 'neg' : '') + '"><div class="between"><b>' + esc(p.h) + '</b><span class="mono faint small">M' + pad3(p.m) + '</span></div><p>' + esc(p.t) + '</p></div>').join('') : '<p class="muted small">Quiet for now.</p>') + '</section>';
+  return h;
+}
+
+/* Charts */
+function spark(ch) {
+  if (!ch.length) return '';
+  const w = 120, hgt = 34, step = ch.length > 1 ? w / (ch.length - 1) : 0, y = v => 2 + (Math.min(v, 101) - 1) / 100 * (hgt - 4);
+  const d = ch.map((v, i) => (i ? 'L' : 'M') + (i * step).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+  return '<svg class="spark" viewBox="0 0 ' + w + ' ' + hgt + '" width="' + w + '" height="' + hgt + '" aria-hidden="true"><line x1="0" x2="' + w + '" y1="' + y(10) + '" y2="' + y(10) + '" class="ref"/><path d="' + d + '"/></svg>';
+}
+function chartsTab() {
+  const s = S(), r = s.group.releases.slice().reverse();
+  return '<section class="card"><div class="between"><h3>Releases</h3><span class="mono small">BEST No. ' + (s.rec.best > 100 ? '—' : s.rec.best) + '</span></div>' +
+    (r.length ? r.map(x => '<div class="rel"><div class="tl"><b>"' + esc(x.title) + '"</b><div class="small muted">' + x.kind + ' · ' + esc(x.concept) + (x.kind === 'EP' ? ' · ' + esc(x.era) : '') + ' · M' + pad3(x.month) + (x.viral ? ' · <span class="spot">viral</span>' : '') + (x.divisive ? ' · divisive' : '') + '</div></div>' +
+      spark(x.chart) + '<div class="peak"><b class="mono">' + (x.peak > 100 ? '—' : '#' + x.peak) + '</b><span class="small faint">' + (x.album ? 'EP #' + x.album : 'peak') + '</span></div></div>').join('') : '<p class="small muted">Nothing out yet.</p>') +
+    '<p class="small faint">Chart lines run month by month; the dotted line is the top 10. The charts are fictional.</p></section>' +
+    '<section class="card"><h3>Awards</h3><p class="small">' + s.rec.wins + ' win' + (s.rec.wins === 1 ? '' : 's') + ' from ' + s.rec.noms + ' nominations · ' + s.rec.no1 + ' No. 1' + (s.rec.no1 === 1 ? '' : 's') + ' · ' + s.rec.viral + ' viral moment' + (s.rec.viral === 1 ? '' : 's') + '</p>' +
+    s.group.awards.map(a => '<div class="logrow"><span class="mono faint small">M' + pad3(a.m) + '</span> ' + esc(a.t) + ', ' + esc(D.awards) + '</div>').join('') + '</section>';
+}
+
+/* Log */
+function logTab() {
+  const s = S();
+  return '<section class="card"><h3>Production log</h3>' + s.log.slice(0, 160).map(l => '<div class="logrow k-' + l.kind + '"><span class="mono faint small">M' + pad3(l.m) + '</span> ' + esc(l.t) + '</div>').join('') + '</section>';
+}
+
+/* ---------- Sheets ---------- */
+function sheet(html, opts) {
+  closeSheet();
+  const m = document.createElement('div');
+  m.className = 'modal' + (opts && opts.cls ? ' ' + opts.cls : '');
+  m.innerHTML = '<div class="sheet" role="dialog" aria-modal="true">' + (opts && opts.lock ? '' : '<button class="x" data-a="close" aria-label="Close">×</button>') + html + '</div>';
+  document.body.appendChild(m);
+  m.onclick = e => {
+    if (e.target === m && !(opts && opts.lock)) return closeSheet();
+    onClick(e);
+  };
+  return m;
+}
+function closeSheet() { document.querySelectorAll('.modal').forEach(x => x.remove()); }
+
+/* Event sheet. temp = not in the queue (opened from a tab). */
+function openEvent(ev, temp) {
+  const v = G.view(ev);
+  if (!v) { const s = S(); s.queue = s.queue.filter(x => x !== ev); G.save(); render(); return nextEvent(); }
+  const conf = v.conf ? '<div class="confs">' + v.conf.map(([id, t]) => '<div class="conf">' + av(id, 40) + '<div><span class="mono small faint">CONFESSIONAL · ' + esc(G.name(id).toUpperCase()) + '</span><p>' + esc(t) + '</p></div></div>').join('') + '</div>' : '';
+  const pair = v.drama ? '<div class="pair big">' + av(v.drama.a, 56) + av(v.drama.b, 56) + '</div>' : '';
+  const m = sheet('<span class="eyebrow">' + esc(v.eyebrow || '') + '</span><h2>' + esc(v.title) + '</h2>' + pair + '<p>' + esc(v.text) + '</p>' + conf +
+    (v.note ? '<p class="small faint">' + esc(v.note) + '</p>' : '') +
+    '<div class="stack tight">' + v.choices.map((c, i) => '<button class="choice" data-ch="' + i + '"><b>' + esc(c[0]) + '</b>' + (c[1] ? '<span>' + esc(c[1]) + '</span>' : '') + '</button>').join('') + '</div>',
+    { lock:!temp, cls:ev.kind === 'archive' ? 'archive' : ev.kind === 'hate' ? 'hatem' : '' });
+  m.onclick = async e => {
+    const b = e.target.closest('[data-ch]');
+    if (!b) { if (temp && (e.target === m || e.target.closest('[data-a="close"]'))) closeSheet(); return; }
+    const i = +b.dataset.ch;
+    let acc = null;
+    if (v.perform && i === 0) { m.style.display = 'none'; acc = await window.Rhythm.play({ title:v.title, bpm:100 + Math.floor(Math.random() * 30) }); m.style.display = ''; }
+    const out = G.choose(ev, i, acc);
+    if (temp) { const s = S(); s.queue = s.queue.filter(x => !(x.kind === ev.kind && (ev.tid ? x.tid === ev.tid : true))); G.save(); }
+    if (out) result(out, acc, () => { closeSheet(); render(); if (!temp) nextEvent(); });
+    else { closeSheet(); render(); if (!temp) nextEvent(); }
+  };
+}
+function result(text, acc, cb) {
+  const m = sheet((acc != null ? '<span class="eyebrow">Stage accuracy ' + Math.round(acc * 100) + '%</span>' : '') + '<p class="big">' + esc(text) + '</p><button class="btn big" data-a="ok">Continue</button>', { lock:true });
+  m.onclick = e => { if (e.target.closest('[data-a="ok"]')) cb(); };
+}
+function nextEvent() {
+  const s = S(); if (!s) return;
+  if (s.queue.length) openEvent(s.queue[0], false);
+  else if (s.ended) finalScreen();
+}
+UI.nextEvent = nextEvent;
+
+/* Month report. */
+function report(R) {
+  const s = S();
+  let h = '<span class="eyebrow">Month ' + pad3(R.m) + ' wrap</span><h2>' + (s.ended ? 'The last month' : 'What happened') + '</h2>';
+  const fg = G.p(s.focus);
+  if (R.gains[s.focus] != null) h += '<p>' + esc(G.name(s.focus)) + ': ' + esc(D.acts[fg.last.act].l.toLowerCase()) + ', skills +' + R.gains[s.focus] + ', Wellbeing ' + Math.round(fg.wb) + '.</p>';
+  if (G.debuted() && R.fans1 != null) { const d = R.fans1 - R.fans0; h += '<p>Fans ' + G.fmt(R.fans1) + ' (' + (d >= 0 ? '+' : '−') + G.fmt(Math.abs(d)) + ').</p>'; }
+  R.chart.concat(R.lines).forEach(l => { h += '<p class="small">' + esc(l) + '</p>'; });
+  if (G.canRelease()) h += '<p class="small spot">Prep is at ' + Math.round(s.group.prep) + '. You can release the next song from the Plan tab' + (s.group.prep < 85 ? ' now, or keep recording to 85 for an EP.' : '.') + '</p>';
+  if (R.grades && R.grades.length) {
+    h += '<h3>Eval board</h3><div class="evalboard">' + R.grades.map((r, i) => '<div class="ev ' + (r.id === s.focus ? 'me' : '') + (G.p(r.id).warn ? ' warn' : '') + '"><span class="mono faint">' + (i + 1) + '</span>' + av(r.id, 26) + '<span>' + esc(G.name(r.id)) + '</span><b class="grade g' + r.g.replace('+', 'p') + '">' + r.g + '</b></div>').join('') + '</div>' +
+      (R.grades.some(r => G.p(r.id).warn) ? '<p class="small faint">Highlighted: the bottom three, on warning.</p>' : '');
+  }
+  h += '<button class="btn big" data-a="ok">' + (s.queue.length ? 'Next: ' + s.queue.length + ' decision' + (s.queue.length > 1 ? 's' : '') : 'Plan month ' + pad3(s.month)) + '</button>';
+  const m = sheet(h, { lock:true });
+  m.onclick = e => { if (e.target.closest('[data-a="ok"]')) { closeSheet(); render(); nextEvent(); } };
+}
+
+/* Final screen. */
+function finalScreen() {
+  const s = S(), e = D.endings[s.ended];
+  sheet('<span class="eyebrow">Ending</span><h2>' + esc(e.t) + '</h2><p>' + esc(e.d) + '</p>' +
+    '<div class="grid2"><div><b>' + G.fmt(s.group.fans) + '</b><span>fans</span></div><div><b>' + s.group.releases.length + '</b><span>releases</span></div><div><b>' + (s.rec.best > 100 ? '—' : '#' + s.rec.best) + '</b><span>best chart peak</span></div><div><b>' + s.rec.wins + '</b><span>awards won</span></div>' +
+    '<div><b>' + s.rec.no1 + '</b><span>No. 1s</span></div><div><b>' + G.cohesion(G.members().concat(s.alumni)) + '</b><span>cohesion</span></div></div>' +
+    '<div class="cast-strip">' + G.members().concat(s.alumni).map(id => av(id, 48)).join('') + '</div>' +
+    '<button class="btn big" data-a="newrun">New run</button><button class="btn big ghost" data-a="close">Look around</button>');
+}
+
+/* Menu. */
+function menu() {
+  const s = S();
+  sheet('<span class="eyebrow">Menu</span><h2>' + esc(s.group.formed ? s.group.name : 'Dream Academy') + '</h2>' +
+    '<label class="toggle"><input type="checkbox" data-set="askAll"' + (s.settings.askAll ? ' checked' : '') + '><span>Ask me about every tension, even between autoplayed members</span></label>' +
+    '<div class="stack tight">' +
+    '<button class="choice" data-a="export"><b>Export save</b><span>Copy a save code to keep or move to another device</span></button>' +
+    '<button class="choice" data-a="import"><b>Import save</b><span>Paste a save code</span></button>' +
+    (s.month >= 100 && !s.ended ? '<button class="choice" data-a="endnow"><b>Write the final chapter</b><span>End the story now and see the ending</span></button>' : '') +
+    '<button class="choice" data-a="title"><b>Title screen</b><span>Your run is saved automatically on this device</span></button>' +
+    '<button class="choice" data-a="about"><b>About this game</b></button></div>');
+}
+function about() {
+  sheet('<span class="eyebrow">About</span><h2>Dream Academy: Story Mode</h2>' +
+    '<p>An unofficial fan game, not affiliated with HYBE, Geffen, Netflix or any of the people in it. It follows the shape of the real story, from the 2021 open call through The Debut: Dream Academy (2023) and the group\'s first years, then invents the future.</p>' +
+    '<p class="small">Real: names, where each contestant is from, how they left the show, the real finale scores, and the dated archive cards. Invented: every song, era, chart, eval, skill number, quote and drama. Drama stays in the style of a survival show: rivalries, line distribution, cliques, misunderstandings. The game never invents bullying, betrayal, crimes, scandals or health crises, hate trains never target one member by name, and anyone who was a minor on the show only gets light, competitive drama.</p>' +
+    '<p class="small faint">Sources for the real timeline: Wikipedia (Dream Academy), Wikiwand (Katseye), generasia, TheWrap and news reports, as collected in the design report.</p>');
+}
+
+/* ---------- Input ---------- */
+function onClick(e) {
+  const s = S();
+  const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; try { localStorage.setItem('da-tab', tab); } catch (x) {} render(); window.scrollTo(0, 0); return; }
+  const gp = e.target.closest('[data-gp]'); if (gp) { s.group.plan = gp.dataset.gp; G.save(); render(); return; }
+  const ac = e.target.closest('[data-act]'); if (ac) { G.setPlan(ac.dataset.id, ac.dataset.act); G.save(); render(); return; }
+  const pr = e.target.closest('[data-prof]'); if (pr) { profile(pr.dataset.prof); return; }
+  const td = e.target.closest('[data-tid]'); if (td) { openEvent({ kind:'drama', tid:+td.dataset.tid }, true); return; }
+  const lk = e.target.closest('[data-look]'); if (lk) { G.p(lk.dataset.id).look[lk.dataset.look] = lk.dataset.v; G.save(); lookEditor(lk.dataset.id); render(); return; }
+  const br = e.target.closest('[data-brk]'); if (br) { G.startHiatus(br.dataset.id, +br.dataset.brk); G.save(); closeSheet(); render(); toast(G.name(br.dataset.id) + ' is on a break.'); return; }
+  const a = e.target.closest('[data-a]'); if (!a) return;
+  const id = a.dataset.id;
+  switch (a.dataset.a) {
+    case 'advance': { const R = G.advance(); if (R) { render(); report(R); } break; }
+    case 'next': nextEvent(); break;
+    case 'final': finalScreen(); break;
+    case 'menu': menu(); break;
+    case 'close': closeSheet(); break;
+    case 'release': G.queueRelease(); G.save(); render(); nextEvent(); break;
+    case 'hate': openEvent({ kind:'hate' }, true); break;
+    case 'focus': { const old = s.focus; s.focus = id; G.setCtrl(id, 'manual'); if (old !== id && G.inPlay(old)) G.setCtrl(old, 'balanced'); G.save(); closeSheet(); render(); toast('The cameras follow ' + G.name(id) + ' now.'); break; }
+    case 'break': sheet('<span class="eyebrow">Hiatus</span><h2>A break for ' + esc(G.name(id)) + '</h2><p class="small">Her Wellbeing recovers 12 a month and the group performs as a smaller lineup. A break costs momentum for a while but never ends the run.</p><div class="stack tight">' +
+      [[1,'One month'],[3,'Three months'],[6,'Six months'],[-1,'Until she feels ready']].map(([k, l]) => '<button class="choice" data-brk="' + k + '" data-id="' + id + '"><b>' + l + '</b></button>').join('') + '</div>'); break;
+    case 'unbreak': G.endHiatus(id); G.save(); closeSheet(); render(); break;
+    case 'look': lookEditor(id); break;
+    case 'lookreset': G.p(id).look = Object.assign({}, G.CAST[id].look); G.save(); lookEditor(id); render(); break;
+    case 'export': { const code = G.exportSave(); sheet('<span class="eyebrow">Export</span><h2>Save code</h2><textarea class="code" readonly>' + esc(code) + '</textarea><button class="btn sm" data-a="copy">Copy</button>');
+      break; }
+    case 'copy': { const ta = $('.modal textarea'); if (ta) { ta.select(); try { navigator.clipboard.writeText(ta.value).then(() => toast('Copied.'), () => toast('Select the text and copy it.')); } catch (x) { toast('Select the text and copy it.'); } } break; }
+    case 'import': sheet('<span class="eyebrow">Import</span><h2>Paste a save code</h2><textarea class="code" placeholder="Save code"></textarea><button class="btn sm" data-a="doimport">Load it</button>'); break;
+    case 'doimport': { const ta = $('.modal textarea'); if (ta && G.importSave(ta.value)) { closeSheet(); tab = 'plan'; game(); toast('Save loaded.'); } else toast('That code did not work.'); break; }
+    case 'endnow': G.endNow(); closeSheet(); render(); nextEvent(); break;
+    case 'title': closeSheet(); title(true); break;
+    case 'about': about(); break;
+    case 'newrun': closeSheet(); G.wipe(); setupScreen(); break;
+  }
+}
+function onChange(e) {
+  const s = S();
+  const c = e.target.closest('[data-ctrl]'); if (c) { G.setCtrl(c.dataset.ctrl, c.value); G.save(); render(); return; }
+  const p = e.target.closest('[data-partner]'); if (p) { s.partner[p.dataset.partner] = p.value; G.save(); return; }
+  const st = e.target.closest('[data-set]'); if (st) { s.settings[st.dataset.set] = st.checked; G.save(); }
+}
+document.addEventListener('change', e => { if (e.target.closest('.modal')) onChange(e); });
+})();
