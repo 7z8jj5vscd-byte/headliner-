@@ -91,7 +91,7 @@ G.newGame = function (o) {
     week:{ used:0, done:{}, pending:[], forcedRest:false }, seen:{}, log:[], inbox:[], duties:[], sponsors:[],
     eggs:{ planted:[], log:[], fatigue:0, decoded:0 }, feed:[], awards:[], charts:{ albums:[], singles:[] },
     recap:null, years:{}, routine:[], ach:{}, goals:{}, flags:{}, priorities:[], recovery:null, history:[],
-    rivalsSeen:{}, modal:[], ffStop:'' };
+    rivalsSeen:{}, modal:[], ffStop:'', journal:[], guide:{} };
   if (o.prologue) o.prologue.forEach((ci, i) => { const c = A.prologue[i].ch[ci]; applyFx(c.fx); scoreCanon(!!c.c); S.log.push({ abs:A.born + i * 200, id:'pro' + i, t:A.prologue[i].t, l:c.l, canon:!!c.c, truth:A.prologue[i].truth }); });
   if (S.mode === 'era') setupEra(o.era);
   inbox('family', 'A new start', S.mode === 'story' ? 'Every week you get Time Blocks to spend. Required tasks come first. Real events interrupt with a decision. Press Advance Week when you are done.' : 'Era Start: the event track is off, and you control the calendar for this era.');
@@ -190,13 +190,21 @@ G.writable = () => {
   });
   return out;
 };
-G.writeSong = function (t, co) {
+G.writeSong = function (t, co, insp, appr) {
   const item = G.writable().find(x => x.t === t); if (!item) return null;
   const cw = G.art().cowriters[co] || { bonus:0 };
   let q = rnd(32, 52) + S.stats.write * .42 + cw.bonus + (item.p.solo && co === 'Solo' ? 5 : 0) + (S.flags.hidden ? 4 : 0) + (G.world('lockdown') ? 3 : 0) + (S.flags.focus ? 3 : 0);
   S.flags.focus = false;
   q = clamp(Math.round(q), 10, 100);
-  S.songs[t] = { p:item.p.id, st:'written', q, co, abs:S.abs, vault:item.kind === 'vault', kind:item.kind };
+  // Writing what you know helps; a good fit between the subject and the approach helps more.
+  let note = '';
+  if (insp) { const ap = ER.APPROACHES.find(x => x.id === appr), real = insp.startsWith('card:');
+    if (real) { q += 4; note = 'Write what you know.'; }
+    if (ap && ap.fit.includes(real ? 'heartbreak' : insp)) { q += 3; note = (note ? note + ' ' : '') + 'The approach suits the subject.'; }
+    else if (ap) q -= 1;
+    q = clamp(Math.round(q), 10, 100); }
+  const inspName = insp ? (insp.startsWith('card:') ? (S.log.find(l => l.id === insp.slice(5)) || {}).t : (ER.INSPIRATIONS.find(x => x.id === insp) || {}).n) : null;
+  S.songs[t] = { p:item.p.id, st:'written', q, co, abs:S.abs, vault:item.kind === 'vault', kind:item.kind, insp:inspName || null, appr:appr || null, note };
   if (item.p.solo && co !== 'Solo') G.pj(item.p.id).notSolo = true;
   S.stats.write = clamp(S.stats.write + .6, 0, 100);
   if (!S.ach.firstsong) ach('firstsong');
@@ -214,9 +222,11 @@ G.recordable = () => {
   });
   return out;
 };
-G.recordSong = function (t, prod, pid) {
+G.recordSong = function (t, prod, pid, take) {
   const item = G.recordable().find(x => x.t === t && (!pid || x.p.id === pid)); if (!item) return null;
-  const pb = rnd(0, 6) + (item.p.producers && item.p.producers[0] === prod ? 2 : 0);
+  const tk = take && ER.TAKES.find(x => x.id === take);
+  const pb = rnd(0, 6) + (item.p.producers && item.p.producers[0] === prod ? 2 : 0) + (tk ? rnd(tk.q[0], tk.q[1]) : 0);
+  if (tk) applyFx({ energy:tk.energy });
   if (item.p.type === 'rerecord') {
     const orig = S.songs[t]; const base = orig ? orig.q : 62;
     S.songs[item.tv] = { p:item.p.id, st:'recorded', q:clamp(Math.round(base + pb + 4), 10, 100), co:orig ? orig.co : '', prod, abs:S.abs, vault:item.vault, tv:true, of:t };
@@ -303,6 +313,7 @@ G.tasks = function () {
   out.push(T('network', lock ? 'Video calls with the industry' : hid ? 'Private meetings with your team' : 'Network in the industry', 1, { kind:'network', desc:'+Industry Clout' }));
   if (S.stats.money > 5000) out.push(T('charity', 'Support a cause', 1, { kind:'charity', desc:'+Reputation, costs money' }));
   out.push(T('private', 'Private time with friends and family', 1, { kind:'private', desc:'+Energy, +Team mood' }));
+  if (G.earlyYears()) ER.EARLY_ACTS.forEach(e => { if (!e.minAge || age >= e.minAge) out.push(T('early:' + e.id, e.l, e.cost, { kind:'early', early:e.id, desc:G.fxText(e.fx) })); });
   if (a < W('2006-01-01') && !lock) out.push(T('gig', 'Play a local gig', 1, { kind:'gig', desc:'Fans up, a little money' }));
   if (S.flags.retired) {
     out.length = 0;
@@ -321,6 +332,10 @@ G.tasks = function () {
   if (S.flags.free && !G.active().some(x => ['write','record','finish','pre'].includes(x.st))) out.push(T('newera', 'Plan your next era', 0, { kind:'newera', tab:'studio' }));
   return out;
 };
+// Before her first record deal: no release yet, and not in lockdown.
+G.earlyYears = () => !S.released.length && !G.world('lockdown') && G.age() >= 8 && !G.allProjects().some(p => p.type !== 'demos' && G.stageOf(p, S.abs) === 'pre');
+G.fxText = fx => Object.keys(fx).map(k => { const v = fx[k], n = { fans:'Fans', rep:'Reputation', heat:'Press Heat', write:'Songwriting', clout:'Clout', energy:'Energy', money:'Money', team:'Team', hype:'Hype', own:'Ownership' }[k] || k;
+  return k === 'money' ? `${v < 0 ? '−' : '+'}$${Math.abs(v)}` : `${v > 0 ? '+' : ''}${v} ${n}`; }).join(', ');
 G.taskDone = id => !!S.week.done[id];
 G.requiredLeft = () => G.tasks().filter(t => t.req && !S.week.done[t.id]);
 G.canSpend = cost => S.week.used + cost <= G.blocks() + 3;
@@ -335,9 +350,9 @@ G.doTask = function (id, arg) {
   switch (t.kind) {
     case 'school': msg = 'Homework done.'; break;
     case 'write': { const opts = G.writable().filter(x => x.p.id === t.p); const s = arg && opts.find(x => x.t === arg.t) || opts.find(x => x.kind === 'album') || opts[0];
-      if (!s) return { err:'No songs left to write here.' }; const co = arg && arg.co || (p.cowriters || ['Solo'])[0]; const r = G.writeSong(s.t, co); msg = `You wrote "${s.t}" (${co === 'Solo' ? 'alone' : 'with ' + co}). Quality ${r.q}.`; break; }
+      if (!s) return { err:'No songs left to write here.' }; const co = arg && arg.co || (p.cowriters || ['Solo'])[0]; const r = G.writeSong(s.t, co, arg && arg.insp, arg && arg.appr); msg = `You wrote "${s.t}" (${co === 'Solo' ? 'alone' : 'with ' + co}). Quality ${r.q}.`; break; }
     case 'record': { const opts = G.recordable().filter(x => x.p.id === t.p); const s = arg && opts.find(x => x.t === arg.t) || opts.find(x => !x.vault) || opts[0];
-      if (!s) return { err:'Nothing ready to record.' }; G.recordSong(s.t, arg && arg.prod || (p.producers || ['Producer'])[0], t.p); msg = `Recorded "${s.tv || s.t}".`; break; }
+      if (!s) return { err:'Nothing ready to record.' }; G.recordSong(s.t, arg && arg.prod || (p.producers || ['Producer'])[0], t.p, arg && arg.take); msg = `Recorded "${s.tv || s.t}".`; break; }
     case 'fin': pj.fin[t.item] = true; if (t.item === 'cover' && !pj.cover) pj.cover = G.autoCover(p); if (t.item === 'edition' && arg) pj.edition = arg; msg = 'Done.'; break;
     case 'pre': pj.pre[t.item] = true; if (t.item === 'single' && !pj.singles.length) { const s = arg || G.defaultSingle(p); if (s) G.releaseSingle(p, s); } if (t.item === 'announce') { pj.hype = clamp(pj.hype + 12, 0, 100); feed(`${p.title} is coming. I'm not okay.`); } pj.hype = clamp(pj.hype + 5, 0, 100); msg = 'Done.'; break;
     case 'rel': pj.rel[t.item] = true; pj.hype = clamp(pj.hype + 4, 0, 100); applyFx({ energy:-4 }); msg = 'Done.'; break;
@@ -348,6 +363,7 @@ G.doTask = function (id, arg) {
     case 'recover': applyFx({ energy:12 }); msg = 'You sleep on the bus all day.'; break;
     case 'surprise': applyFx({ fans:1.5 * pri('fans'), heat:3 }); feed('the surprise tonight!!! I am on the floor'); msg = 'The crowd loses it.'; break;
     case 'duty': { const d = S.duties.find(x => x.id === t.duty); if (d) { S.duties = S.duties.filter(x => x !== d); applyFx({ team:2, clout:1 }); msg = `${d.l}: done.`; } break; }
+    case 'early': { const e = ER.EARLY_ACTS.find(x => x.id === t.early); applyFx(e.fx); msg = 'Done.'; break; }
     case 'rest': applyFx({ energy:15 * pri('rest') }); msg = 'You rest.'; break;
     case 'practice': applyFx({ write:2 * pri('writing') }); msg = 'Your craft improves.'; break;
     case 'social': if (S.flags.wiped && S.abs < (S.flags.wiped + 1)) { msg = 'Your accounts are wiped.'; break; } applyFx({ fans:1.2 * pri('fans'), heat:2 }); feed(pick(['she posted!!','new post, decoding now','the caption... it means something','okay but the outfit']), null); msg = 'Fans react.'; break;
@@ -367,11 +383,43 @@ G.doTask = function (id, arg) {
     case 'retireask': S.modal.push({ k:'retire', after:'ask' }); return { ok:true, msg:'' };
     case 'newera': G.proposeEra(); return { ok:true, msg:'Your label has ideas for the next era.' };
   }
-  S.week.used += t.cost; S.week.done[id] = true;
+  S.week.used += t.cost; S.week.done[id] = true; G.guideTick('block');
   if (over > 0) { applyFx({ energy:-8 * over }); msg += ` Overtime cost ${8 * over} Energy.`; }
   return { ok:true, msg };
 };
 
+/* ---------- Scenes ---------- */
+// Which scene fits a task. Some tasks always get one; everyday ones only sometimes.
+G.sceneKey = t => {
+  if (!t) return null;
+  if (t.kind === 'duty') { const d = (t.l || '').toLowerCase(); return /shoot|magazine/.test(d) ? 'magazine' : /budget/.test(d) ? 'budget' : /label/.test(d) ? 'label' : 'sponsor'; }
+  if (t.kind === 'rel') return { tv:'rel_tv', signing:'rel_signing' }[t.item] || null;
+  if (t.kind === 'pre') return { video:'pre_video', announce:'pre_announce' }[t.item] || null;
+  if (t.kind === 'fin') return { sequence:'fin_sequence', master:'fin_master' }[t.item] || null;
+  if (t.kind === 'tp') return { costume:'tp_costume', rehearse:'tp_rehearse' }[t.item] || null;
+  if (t.kind === 'early') { const e = ER.EARLY_ACTS.find(x => x.id === t.early); return e && e.scene || null; }
+  return { interview:'interview', social:'social', fanevent:'fanevent', network:'network', charity:'charity', gig:'gig', rest:'rest' }[t.kind] || null;
+};
+G.pickScene = function (t) {
+  const k = G.sceneKey(t); if (!k || !ER.SCENES[k]) return null;
+  const always = ['magazine','budget','label','sponsor'].includes(k) || /^(rel_|pre_|fin_|tp_|early_)/.test(k);
+  if (!always && Math.random() > .45) return null;
+  const early = G.earlyYears();
+  const pool = ER.SCENES[k].filter(x => !x.early || early || k === 'label');
+  const pref = pool.filter(x => !!x.early === early);
+  const sc = pick(pref.length ? pref : pool); if (!sc) return null;
+  const p = t.p ? G.proj(t.p) : G.currentEra();
+  const fill = str => str.replace(/\{nm\}/g, p ? (p.short || p.title) : 'your next record');
+  return { k, t:fill(sc.t), x:fill(sc.x), set:sc.set, with:sc.with, ch:sc.ch.map(c => ({ l:fill(c.l), fx:c.fx, r:fill(c.r) })) };
+};
+G.resolveScene = function (sc, ci) {
+  const c = sc.ch[ci]; if (!c) return null; applyFx(c.fx);
+  S.journal = S.journal || []; S.journal.unshift({ abs:S.abs, t:sc.t, l:c.l, r:c.r }); if (S.journal.length > 200) S.journal.length = 200;
+  G.guideTick('scene'); return c;
+};
+G.journalAdd = (t, r) => { S.journal = S.journal || []; S.journal.unshift({ abs:S.abs, t, r }); if (S.journal.length > 200) S.journal.length = 200; };
+// The first-week guide: a short checklist in a new game.
+G.guideTick = id => { if (!S || !S.guide || S.guide.done) return; S.guide[id] = true; if (ER.GUIDE.every(g => S.guide[g.id])) { S.guide.done = true; inbox('family', 'You have got the hang of it', 'The guide is complete. The rest is up to you.'); } };
 /* ---------- Singles ---------- */
 G.peaks = () => S.artist === 'taylor' ? (ER.PEAKS || {}) : ((ER.PEAKS_BY || {})[S.artist] || {});
 G.debuts = () => S.artist === 'taylor' ? (ER.SINGLE_DEBUT || {}) : ((ER.SINGLE_DEBUT_BY || {})[S.artist] || {});
@@ -583,6 +631,7 @@ G.answer = function (id, ci) {
 G.dramaText = d => d.x.replace('{rival}', S.flags.rival || (S.flags.rival = pick(ER.RIVAL_STARS))).replace('{exec}', pick(ER.EXECS)).replace('{tabloid}', pick(ER.TABLOIDS));
 
 G.advance = function (force) {
+  if (S.guide && !S.week.pending.length) G.guideTick('advance');
   if (S.week.pending.length) return { blocked:'event' };
   const left = G.requiredLeft();
   if (left.length && !force) return { confirm:left };

@@ -211,7 +211,8 @@ VIEWS.week = function () {
   const taskRow = t => { const done = G.taskDone(t.id); return `<div class="task ${done ? 'done' : ''} ${t.req ? 'req' : ''}"><div class="cost">${'●'.repeat(Math.max(1, t.cost))}</div><div class="tl"><b>${h(t.l)}</b>${t.desc ? `<div class="small muted">${h(t.desc)}</div>` : ''}</div>
     ${done ? '<span class="pill ok">Done</span>' : t.fixed ? '' : `<div class="row">${t.tab && t.tab !== 'week' ? `<button class="btn ghost sm" data-act="tab" data-v="${t.tab}">Open</button>` : ''}<button class="btn sm" data-act="do" data-id="${h(t.id)}" ${G.canSpend(t.cost) ? '' : 'disabled'}>Do</button></div>`}</div>`; };
   const r = s.recap;
-  return `${s.recovery ? card(`<b>Recovery goal:</b> raise your ${s.recovery.k === 'rep' ? 'Public Reputation' : 'team mood'} to 30. Weeks are harder until you do.`, 'warn') : ''}
+  return `${s.guide && !s.guide.done && s.week ? card(`<span class="eyebrow">Getting started</span>${ER.GUIDE.map(g => `<div class="small"><b>${s.guide[g.id] ? '✅' : '⬜'} ${h(g.l)}</b> <span class="muted">${h(g.hint)}</span></div>`).join('')}`, 'world') : ''}
+  ${s.recovery ? card(`<b>Recovery goal:</b> raise your ${s.recovery.k === 'rep' ? 'Public Reputation' : 'team mood'} to 30. Weeks are harder until you do.`, 'warn') : ''}
   ${G.worldNotes().map(n => card(`<span class="eyebrow">The world right now</span><p class="small">${h(n)}</p>`, 'world')).join('')}
   ${s.flags.retired ? card(`<span class="eyebrow">Retired</span><p class="small">You retired in ${ER.yw(s.flags.retired).y}. Weeks are quiet now. Come out of retirement from the tasks below whenever you like.</p>`, 'world') : ''}
   ${s.flags.farewell ? card('<span class="eyebrow">The Farewell Tour</span><p class="small">No new eras. One last tour, then you decide whether to retire.</p>', 'world') : ''}
@@ -236,6 +237,7 @@ VIEWS.life = function () {
    <h3>Stats</h3>${STAT.map(([k, l]) => `<div class="statrow"><span>${l}</span>${k === 'fans' ? `<b>${G.fmtN(s.stats.fans)}</b>` : bar(s.stats[k]) + `<b>${Math.round(s.stats[k])}</b>`}</div>`).join('')}
    <div class="statrow"><span>Genre</span><div class="genre"><i style="left:${s.stats.genre}%"></i></div><b class="small">${h((G.art().genreLabels || ['Country','Pop','Alternative'])[s.stats.genre < 33 ? 0 : s.stats.genre < 66 ? 1 : 2])}</b></div>
    <p class="small muted">Moving the genre meter fast costs radio support and old fans in exchange for new ones.</p>`)}
+  ${(s.journal || []).length ? card(`<h2>Scrapbook</h2><p class="small muted">Little moments from your weeks.</p>${s.journal.slice(0, 30).map(j => `<div class="logrow"><div class="between"><b>${h(j.t)}</b><span class="small muted">${h(G.fmtDate(j.abs))}</span></div>${j.l ? `<div class="small">You: ${h(j.l)}</div>` : ''}<div class="small muted">${h(j.r)}</div></div>`).join('')}`) : ''}
   ${card(`<h3>Family</h3>${fam.map(p => `<div class="between small"><b>${h(p.n)}</b><span class="muted">${h(p.role)}</span></div>`).join('')}<h3>School</h3><p class="small">${h(school)}</p>`)}
   ${card(`<h2>Event cards</h2><p class="small muted">Your choices beside what really happened.</p>${s.log.slice().reverse().map(l => `<div class="logrow ${l.s ? 'sens' : ''}"><div class="between"><b>${h(l.t)}</b><span class="small muted">${h(G.fmtDate(l.abs))}</span></div>
      <div class="small">You: ${h(l.l)} ${l.world ? pill('World') : l.s || l.drama ? '' : l.canon ? pill('Canon', 'ok') : pill('What-if')}</div>${l.truth ? `<div class="small muted">What really happened: ${h(l.truth)}</div>` : ''}</div>`).join('') || '<p class="muted small">No cards yet.</p>'}`)}`;
@@ -253,7 +255,7 @@ VIEWS.songbook = function () {
       <label class="field"><span>Co-writer</span><select data-act="selco" data-p="${p.id}">${(p.cowriters || ['Solo']).map(n => `<option ${n === co ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
       <p class="small faint">${h((A.cowriters[co] || {}).note || '')}</p>
       <div class="songs">${all.map(([t, k]) => { const so = s.songs[t]; return `<div class="song ${so ? 'has' : ''}"><div><b>${h(t)}</b><div class="small muted">${k === 'vault' ? `Vault: locked until ${h(tv ? tv.title : "Taylor's Version")}` : k === 'bonus' ? 'Bonus or other release' : 'Album track'}${p.confidence ? ' · ' + h(p.confidence[t] || 'reported') : ''}</div></div>
-        ${so ? `<span class="pill">${so.st === 'written' ? 'Written' : so.st === 'recorded' ? 'Recorded' : so.st === 'vault' ? 'In the vault' : 'Released'} · ${so.q}</span>` : `<button class="btn sm" data-act="write" data-t="${h(t)}" data-p="${p.id}" ${G.canSpend(2) ? '' : 'disabled'}>Write · 2</button>`}</div>`; }).join('')}</div>`);
+        ${so && so.insp ? `<span class="small faint">About: ${h(so.insp)}</span>` : ''}${so ? `<span class="pill">${so.st === 'written' ? 'Written' : so.st === 'recorded' ? 'Recorded' : so.st === 'vault' ? 'In the vault' : 'Released'} · ${so.q}</span>` : `<button class="btn sm" data-act="write" data-t="${h(t)}" data-p="${p.id}" ${G.canSpend(2) ? '' : 'disabled'}>Write · 2</button>`}</div>`; }).join('')}</div>`);
   }).join('') + catalogCard();
 };
 function catalogCard() {
@@ -544,13 +546,86 @@ function eventModal(id) {
 }
 
 /* ---------- Actions ---------- */
+/* ---------- Scenes and sessions ---------- */
+const TEAMFIG = { publicist:'publicist', manager:'manager', label:'label', family:'family', producer:'producer', fan:'fan' };
+function sceneFigs(sc) {
+  const era = G.currentEra(), figs = [{ look:lookFor(sc.set === 'theater' || sc.set === 'tv' ? 'release' : '', era), x:-.35, anim:sc.set === 'writers' || sc.set === 'farm' ? 'strum' : 'talk', s:ageScale() }];
+  if (sc.with && T3.TEAM[TEAMFIG[sc.with]]) figs.push({ look:T3.TEAM[TEAMFIG[sc.with]], x:.9, z:-.3, ry:-.5, anim:'talk', s:.94 });
+  return figs;
+}
+function showScene(sc) {
+  if (!sc) return render();
+  UI.scene = sc; closeModals();
+  modal(`<span class="eyebrow">A moment · ${h(G.fmtDate(G.S().abs))}</span><h2>${h(sc.t)}</h2><div class="stage3d short" id="t3scene"></div><p>${h(sc.x)}</p>
+    <div class="stack tight" id="scch">${sc.ch.map((c, i) => `<button class="choice" data-act="scene" data-i="${i}">${h(c.l)}<div class="small muted">${h(G.fxText(c.fx))}</div></button>`).join('')}</div>`);
+  mount3D('#t3scene', { set:sc.set || 'home', color:(G.currentEra() || {}).color, figs:sceneFigs(sc) }, 'scene');
+}
+function writeSession(pid, title) {
+  const s = G.S(), p = G.proj(pid), opts = G.writable().filter(x => x.p.id === pid);
+  if (!opts.length) return toast('Nothing left to write for this era.');
+  const w = UI.ws && UI.ws.pid === pid ? UI.ws : (UI.ws = { pid, t:title || (opts.find(x => x.kind === 'album') || opts[0]).t, co:UI.sel['co:' + pid] || (p.cowriters || ['Solo'])[0], insp:'', appr:'story' });
+  if (title) w.t = title;
+  // Recent real cards are offered as inspiration: write what you know.
+  const recent = s.log.filter(l => !l.s && !l.world && !l.drama && s.abs - l.abs < 40 && l.id && !l.id.startsWith('pro')).slice(-3).reverse();
+  const insps = recent.map(l => ({ id:'card:' + l.id, n:`What just happened: ${l.t}` })).concat(ER.INSPIRATIONS);
+  if (!w.insp) w.insp = insps[0].id;
+  closeModals();
+  modal(`<span class="eyebrow">Writing session · ${h(p.short || p.title)}</span><h2>Write a song</h2><div class="stage3d short" id="t3write"></div>
+    <label class="field"><span>Song</span><select data-act="wsel" data-k="t">${opts.map(o => `<option ${o.t === w.t ? 'selected' : ''}>${h(o.t)}</option>`).join('')}</select></label>
+    <label class="field"><span>Co-writer</span><select data-act="wsel" data-k="co">${(p.cowriters || ['Solo']).map(n => `<option ${n === w.co ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
+    <h3>What is it about?</h3><div class="chips">${insps.map(i => `<button class="chip ${w.insp === i.id ? 'on' : ''}" data-act="wpick" data-k="insp" data-v="${h(i.id)}">${h(i.n)}</button>`).join('')}</div>
+    <h3>How do you write it?</h3><div class="chips">${ER.APPROACHES.map(a => `<button class="chip ${w.appr === a.id ? 'on' : ''}" data-act="wpick" data-k="appr" data-v="${a.id}">${h(a.n)}</button>`).join('')}</div>
+    <p class="small faint">Writing about something that really just happened helps, and so does an approach that suits the subject. Only the title is real; the game never uses lyrics.</p>
+    <button class="btn big" data-act="wgo">Write it · 2 blocks</button><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="closem">Not now</button></div>`);
+  mount3D('#t3write', { set:G.age() < 15 ? 'bedroom' : 'writers', color:p.color, figs:[{ look:lookFor('', p), anim:'strum', guitar:true, s:ageScale() }] }, 'write');
+}
+function studioSession(pid, title) {
+  const p = G.proj(pid), opts = G.recordable().filter(x => x.p.id === pid);
+  if (!opts.length) return toast('Nothing is ready to record.');
+  const r = UI.rs && UI.rs.pid === pid ? UI.rs : (UI.rs = { pid, t:title || (opts.find(x => !x.vault) || opts[0]).t, prod:UI.sel['pr:' + pid] || (p.producers || ['Producer'])[0], take:'polish' });
+  if (title) r.t = title;
+  closeModals();
+  modal(`<span class="eyebrow">Studio session · ${h(p.short || p.title)}</span><h2>Record a track</h2><div class="stage3d short" id="t3rec"></div>
+    <label class="field"><span>Song</span><select data-act="rsel" data-k="t">${opts.map(o => `<option value="${h(o.t)}" ${o.t === r.t ? 'selected' : ''}>${h(o.tv || o.t)}</option>`).join('')}</select></label>
+    <label class="field"><span>Producer</span><select data-act="rsel" data-k="prod">${(p.producers || ['Producer']).map(n => `<option ${n === r.prod ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
+    <h3>The take</h3>${ER.TAKES.map(tk => `<button class="choice ${r.take === tk.id ? 'on' : ''}" data-act="rpick" data-v="${tk.id}">${h(tk.n)}<div class="small muted">${h(tk.d)}</div></button>`).join('')}
+    <button class="btn big" data-act="rgo" style="margin-top:10px">Record it · 1 block</button><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="closem">Not now</button></div>`);
+  mount3D('#t3rec', { set:'studio', color:p.color, figs:[{ look:lookFor('studio', p), anim:'sing', mic:true }, { look:T3.TEAM.producer, x:-1.2, z:-.4, ry:.5, anim:'talk', s:.92 }] }, 'rec');
+}
+function sessionResult(title, lines, after) {
+  closeModals();
+  modal(`<span class="eyebrow">${h(G.fmtDate(G.S().abs))}</span><h2>${h(title)}</h2>${lines.map(l => `<p class="${l.c || ''}">${h(l.x)}</p>`).join('')}<button class="btn big" data-act="closem">Continue</button>`);
+}
 function after(r) { if (r && r.err) toast(r.err); else if (r && r.msg) toast(r.msg); render(); }
 const ACT = {
-  tab:d => { UI.tab = d.v; render(); window.scrollTo(0, 0); },
-  do:d => after(G.doTask(d.id, d.arg || undefined)),
-  write:d => { const t = G.tasks().find(x => x.kind === 'write' && x.p === d.p); if (!t) return toast('Nothing to write here.'); if (G.taskDone(t.id)) { if (!G.canSpend(2)) return toast('No blocks left.'); const r = G.writeSong(d.t, UI.sel['co:' + d.p] || G.proj(d.p).cowriters[0]); G.S().week.used += 2; toast(`Wrote "${d.t}". Quality ${r.q}.`); return render(); }
+  tab:d => { UI.tab = d.v; if (d.v !== 'week') G.guideTick('tab'); render(); window.scrollTo(0, 0); },
+  do:d => { const t = G.tasks().find(x => x.id === d.id);
+    if (t && t.kind === 'write' && !d.arg) return writeSession(t.p);
+    if (t && t.kind === 'record' && !d.arg) return studioSession(t.p);
+    const r = G.doTask(d.id, d.arg || undefined); if (r && r.err) return after(r);
+    if (r && r.msg) toast(r.msg);
+    const sc = t && r && r.ok ? G.pickScene(t) : null; if (sc) { render(); return showScene(sc); } render(); },
+  scene:d => { const sc = UI.scene; if (!sc) return closeModals(); const c = G.resolveScene(sc, +d.i); UI.scene = null;
+    const box = document.querySelector('#scch'); if (box) box.innerHTML = `<p><b>${h(c.r)}</b></p><p class="small muted">${h(G.fxText(c.fx))}</p><button class="btn big" data-act="scenedone">Continue</button>`; },
+  scenedone:() => { closeModals(); render(); },
+  wsel:(d, el) => { UI.ws[d.k] = el.value; }, wpick:d => { UI.ws[d.k] = d.v; writeSession(UI.ws.pid); },
+  wgo:() => { const w = UI.ws; const t = G.tasks().find(x => x.kind === 'write' && x.p === w.pid);
+    let res; if (t && !G.taskDone(t.id)) res = G.doTask(t.id, { t:w.t, co:w.co, insp:w.insp, appr:w.appr });
+    else { if (!G.canSpend(2)) return toast('No blocks left.'); G.writeSong(w.t, w.co, w.insp, w.appr); G.S().week.used += 2; res = { ok:true }; }
+    if (res && res.err) return toast(res.err);
+    const so = G.S().songs[w.t]; const moment = G.pick(ER.WRITE_MOMENTS); G.journalAdd(`Wrote "${w.t}"`, moment);
+    UI.ws = null; render();
+    sessionResult(`"${w.t}"`, [{ x:moment }, { x:`Quality ${so ? so.q : '?'}${so && so.insp ? ` · About: ${so.insp}` : ''}` }, ...(so && so.note ? [{ x:so.note, c:'small muted' }] : [])]); },
+  rsel:(d, el) => { UI.rs[d.k] = el.value; }, rpick:d => { UI.rs.take = d.v; studioSession(UI.rs.pid); },
+  rgo:() => { const r = UI.rs; const t = G.tasks().find(x => x.kind === 'record' && x.p === r.pid);
+    let res; if (t && !G.taskDone(t.id)) res = G.doTask(t.id, { t:r.t, prod:r.prod, take:r.take });
+    else { if (!G.canSpend(1)) return toast('No blocks left.'); G.recordSong(r.t, r.prod, r.pid, r.take); G.S().week.used += 1; res = { ok:true }; }
+    if (res && res.err) return toast(res.err);
+    const s = G.S(); const so = s.songs[r.t + " (Taylor's Version)"] || s.songs[r.t]; const moment = G.pick(ER.STUDIO_MOMENTS); G.journalAdd(`Recorded "${r.t}"`, moment);
+    UI.rs = null; render(); sessionResult(`Recorded "${r.t}"`, [{ x:moment }, { x:`Quality now ${so ? so.q : '?'}, produced by ${r.prod}.` }]); },
+  write:d => { return writeSession(d.p, d.t); const t = G.tasks().find(x => x.kind === 'write' && x.p === d.p); if (!t) return toast('Nothing to write here.'); if (G.taskDone(t.id)) { if (!G.canSpend(2)) return toast('No blocks left.'); const r = G.writeSong(d.t, UI.sel['co:' + d.p] || G.proj(d.p).cowriters[0]); G.S().week.used += 2; toast(`Wrote "${d.t}". Quality ${r.q}.`); return render(); }
     after(G.doTask(t.id, { t:d.t, co:UI.sel['co:' + d.p] })); },
-  record:d => { const t = G.tasks().find(x => x.kind === 'record' && x.p === d.p); const prod = UI.sel['pr:' + d.p];
+  record:d => { return studioSession(d.p, d.t); const t = G.tasks().find(x => x.kind === 'record' && x.p === d.p); const prod = UI.sel['pr:' + d.p];
     if (!t || G.taskDone(t.id)) { if (!G.canSpend(1)) return toast('No blocks left.'); G.recordSong(d.t, prod || G.proj(d.p).producers[0], d.p); G.S().week.used += 1; toast(`Recorded "${d.t}".`); return render(); }
     after(G.doTask(t.id, { t:d.t, prod })); },
   selco:(d, el) => { UI.sel['co:' + d.p] = el.value; render(); }, selpr:(d, el) => { UI.sel['pr:' + d.p] = el.value; }, seled:(d, el) => { UI.sel['ed:' + d.p] = el.value; }, selsg:(d, el) => { UI.sel['sg:' + d.p] = el.value; render(); },
