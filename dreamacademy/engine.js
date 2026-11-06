@@ -45,7 +45,7 @@ G.newGame = ({ mode, focus }) => {
   S = { v:1, month:1, mode, focus, order:D.cast.map(c => c.id), people:{}, bonds:{}, ctrl:{}, plan:{}, partner:{},
     tensions:[], tid:1, group:{ name:'KATSEYE', formed:false, fans:0, momentum:0, prep:0, plan:'train', releases:[], awards:[], tours:0, doc:null },
     label:25, hate:null, feed:[], log:[], queue:[], flags:{}, settings:{ askAll:true }, rec:{ best:101, no1:0, wins:0, noms:0, viral:0 },
-    alumni:[], ended:null, report:null };
+    alumni:[], ended:null, report:null, session:{}, practice:2, evalAcc:{}, trophies:{}, newTrophies:[], resolved:0 };
   D.cast.forEach(c => {
     const base = c.real ? 34 + (c.score - 60) * .45 : ({ F:31, M3:29, W:27, M2:27, M1:25 })[c.realOut] || 26;
     const sk = {};
@@ -133,9 +133,10 @@ G.advance = () => {
       return;
     }
     const key = G.planOf(id), a = D.acts[key], before = Object.assign({}, p.sk);
-    const mult = (p.wb < 25 ? .5 : p.wb < 45 ? .8 : 1) * (S.ctrl[id] === 'manual' ? 1.1 : 1);
+    const mult = (p.wb < 25 ? .5 : p.wb < 45 ? .8 : 1) * (S.ctrl[id] === 'manual' ? 1.1 : 1) * (S.session[id] ? S.session[id].mult : 1);
+    const posK = G.posSkill(id);
     D.skills.forEach(({ k }) => {
-      const g = (a.g[k] || 0) * mult * (2.4 + Math.random() * 1.6) * (1 - p.sk[k] / 112) + .12;
+      const g = (a.g[k] || 0) * mult * (k === posK ? 1.15 : 1) * (2.4 + Math.random() * 1.6) * (1 - p.sk[k] / 112) + .12;
       p.sk[k] = r1(clamp(p.sk[k] + g, 0, 99));
     });
     p.wb = clamp(p.wb + a.wb, 5, 100);
@@ -152,7 +153,7 @@ G.advance = () => {
     const gp = D.groupPlans[effectivePlan()];
     G.activeMembers().forEach(id => { const p = S.people[id]; p.wb = clamp(p.wb + gp.wb, 5, 100);
       if (S.group.plan === 'tour') p.sk.pe = r1(clamp(p.sk.pe + .8, 0, 99)); });
-    S.label = clamp(S.label + 3 + gp.label + G.members().filter(id => S.people[id].hiatus).length * 4, 0, 100);
+    S.label = clamp(S.label + 2 + gp.label + G.members().filter(id => S.people[id].hiatus).length * 4, 0, 100);
     if (gp.prep) S.group.prep = clamp(S.group.prep + gp.prep + G.stageSkill(G.activeMembers()) * .05, 0, 100);
     const F = S.group.fans;
     if (effectivePlan() === 'promo') { grow(F * .02 * (S.group.momentum / 50 + .3) + 40000); S.group.momentum += 6; }
@@ -196,12 +197,14 @@ G.advance = () => {
   // 8. Next month.
   S.month++;
   G.cast().forEach(id => { delete S.plan['auto:' + id]; });
+  G.monthReset();
   R.fans1 = S.group.fans;
   if (S.month > D.END) { endGame(); R.lines.push('Month 144. The documentary crew packs up.'); S.report = R; save(); return R; }
   const ch = G.ch(), prev = G.ch(m);
   if (ch.n !== prev.n) { queueChapterStart(ch.n); log('Chapter ' + ch.n + ': ' + ch.name + '.', 'chapter'); }
   scripted(S.month);
   randomEvents(R);
+  checkTrophies();
   S.report = R;
   save();
   return R;
@@ -220,7 +223,7 @@ G.recentRelease = n => S.group.releases.some(r => S.month - r.month <= n);
 function runEval(m) {
   const ids = (m <= 21 ? G.trainees() : G.members()).filter(id => !S.people[id].hiatus);
   const rows = ids.map(id => {
-    const p = S.people[id], v = G.avg(id) * .95 + (p.last.gain || 0) * 3.2 + rnd(-2, 2);
+    const p = S.people[id], ea = S.evalAcc[id], v = G.avg(id) * .95 + (p.last.gain || 0) * 3.2 + rnd(-2, 2) + (ea != null ? (ea - .55) * 22 : 0);
     const g = G.grade(v); p.grades.push({ m, g }); if (p.grades.length > 40) p.grades.shift();
     return { id, g, v };
   }).sort((a, b) => b.v - a.v);
@@ -228,6 +231,8 @@ function runEval(m) {
   if (m <= 18 && rows.length > 6) {
     rows.slice(-3).forEach(r => { const p = S.people[r.id]; p.warn = true; p.wb = clamp(p.wb - 4, 5, 100); });
   }
+  if (rows.length && rows[0].id === S.focus) S.flags.mvp = 1;
+  S.evalAcc = {};
   const f = rows.find(r => r.id === S.focus);
   if (f) log('Monthly eval: ' + G.name(S.focus) + ' gets ' + f.g + '.', 'eval');
   return rows;
@@ -241,7 +246,12 @@ function scripted(m) {
   if (m === 19) q({ kind:'mission', n:1 });
   if (m === 20) { if (S.mode === 'real' && G.inPlay('lexie')) q({ kind:'withdraw' }); q({ kind:'mission', n:2 }); }
   if (m === 21) { q({ kind:'mission', n:3 }); q({ kind:'finale' }); }
+  if (m >= 4 && m <= 30 && m !== 19 && m !== 20 && m !== 21 && (G.p(S.focus).status === 'trainee' || G.p(S.focus).status === 'member')) q({ kind:'evalDay' });
   if (m === 22) q({ kind:'nameGroup' });
+  if (m === 23) q({ kind:'positions' });
+  if (m === 25) q({ kind:'fandom' });
+  if (m === 26) q({ kind:'lightstick' });
+  if (m === 30) q({ kind:'info', eyebrow:'Pre-Debut', title:'Two months to debut', text:'The debut date is announced. Recording wraps, the music video is next, and the documentary crew is everywhere.' });
   if (m === 24) q({ kind:'documentary' });
   if (m === 32) { if (!S.group.releases.length) { S.group.prep = Math.max(S.group.prep, 55); q({ kind:'release', debut:true }); } q({ kind:'stage', key:'showcase' }); }
   if (m === 46) q({ kind:'brand' });
@@ -279,6 +289,7 @@ function randomEvents(R) {
     if (p.hiatus === 0 && p.onBreak) q({ kind:'return', id });
     else if (p.hiatus < 0 && p.wb >= 75 && !S.queue.some(e => e.kind === 'return' && e.id === id)) q({ kind:'return', id });
   });
+  extraEvents(R);
   // Feed chatter.
   if (m >= 19 && chance(.7)) chatter();
 }
@@ -349,7 +360,7 @@ function resolveDrama(t, i) {
   const n = G.name, A = t.a, B = t.b;
   let txt = null, done = false;
   if (i === 0) {
-    const p = clamp(.5 + (G.bond(A, B) + 20) / 120 - t.heat * .05, .2, .92);
+    const p = clamp(.5 + (G.bond(A, B) + 20) / 120 - t.heat * .05 + (S.group.pos && S.group.pos.leader && G.p(S.group.pos.leader).status === 'member' ? .08 : 0), .2, .92);
     if (chance(p)) { G.addBond(A, B, 12); [A, B].forEach(id => { S.people[id].wb = clamp(S.people[id].wb + 3, 5, 100); }); txt = 'They talk it through in an empty practice room. It takes an hour and some tears, but it ends with a hug.'; done = true; }
     else { t.heat = Math.min(5, t.heat + 1); G.addBond(A, B, -4); txt = 'It got louder before it got quieter. They are not there yet.'; }
   } else if (i === 1) {
@@ -363,7 +374,7 @@ function resolveDrama(t, i) {
     txt = 'You back ' + n(A) + '. It ends the argument, but ' + n(B) + ' goes quiet for a while.'; done = true;
   }
   t.handled = true;
-  if (done) { S.tensions = S.tensions.filter(x => x !== t); log('Resolved: ' + D.drama[t.type].title.toLowerCase() + ' (' + n(A) + ' and ' + n(B) + ').', 'drama'); }
+  if (done) { S.resolved = (S.resolved || 0) + 1; S.tensions = S.tensions.filter(x => x !== t); log('Resolved: ' + D.drama[t.type].title.toLowerCase() + ' (' + n(A) + ' and ' + n(B) + ').', 'drama'); }
   return txt;
 }
 G.dramaChoices = t => {
@@ -403,7 +414,7 @@ function hateLine(h, st) {
 function hateTick(R) {
   const H = S.hate, h = G.hateTopic();
   if (!H.responded) {
-    if (!H.peaked) { H.stage++; if (H.stage >= 4) { H.stage = 4; H.peaked = true; } }
+    if (!H.peaked) { H.stage++; if (H.stage >= 4) { H.stage = 4; H.peaked = true; S.flags.storm = 1; } }
     else H.stage -= H.quiet ? 2 : 1;
   } else if (H.peaked || H.quiet) H.stage -= 1;
   H.responded = false;
@@ -445,11 +456,15 @@ G.makeRelease = (cid, debut) => {
   const risk = S.flags.softConcept ? c.risk / 2 : c.risk; S.flags.softConcept = 0;
   const divisive = chance(risk);
   const n = S.group.releases.length;
-  const r = { id:n + 1, title:title(), era:pick(D.eraA) + ' ' + pick(D.eraB), concept:c.l, kind, month:S.month, quality:r1(quality), divisive, viral:false, chart:[], peak:101, album:null, debut:!!debut };
+  const r = { id:n + 1, title:S.flags.hook || title(), era:pick(D.eraA) + ' ' + pick(D.eraB), concept:c.l, kind, month:S.month, quality:r1(quality), divisive, viral:false, chart:[], peak:101, album:null, debut:!!debut };
   const same = S.group.releases.slice(-3).filter(x => x.concept === c.l).length;
   r.power = quality * .55 + (Math.log10(Math.max(S.group.fans, 1e5)) - 6) * 22 + S.group.momentum * .3 + (divisive ? 6 : 0) + (n === 0 ? -24 : 0)
     - Math.max(0, n - 6) * 1.5 - same * 6 + rnd(-10, 8);
+  S.flags.hook = null;
+  r.lines = lineSplit(ids);
   S.group.releases.push(r);
+  q({ kind:'mv', rid:r.id });
+  const sh = Object.values(r.lines); if (ids.length > 2 && Math.max(...sh) > 30 && chance(.5)) { const lo = ids.slice().sort((a, b) => r.lines[a] - r.lines[b])[0], hi = ids.slice().sort((a, b) => r.lines[b] - r.lines[a])[0]; forceTension('lines', hi, lo); }
   S.group.prep = 0;
   S.group.momentum = clamp(S.group.momentum + 15 + (divisive ? 10 : 0), 0, 100);
   if (divisive) { S.flags.divisive = 1; if (!S.hate) startHate('notthem'); }
@@ -475,7 +490,7 @@ function chartTick(R) {
     const pos = clamp(Math.round(115 - pw), 1, 101);
     r.chart.push(pos);
     if (pos < r.peak) r.peak = pos;
-    if (r.kind === 'EP' && age === 0) r.album = clamp(Math.round(125 - pw - 12), 1, 200);
+    if (r.kind === 'EP' && age === 0) r.album = clamp(Math.round(112 - pw * 1.05), 1, 200);
     if (pos <= 100) {
       grow((101 - pos) * 9000);
       R.chart.push('"' + r.title + '" is at No. ' + pos + (age === 0 ? ' in its first month' : '') + '.');
@@ -485,6 +500,8 @@ function chartTick(R) {
     if (pos === 1 && !r.no1) { r.no1 = true; S.rec.no1++; log('"' + r.title + '" hits No. 1.', 'release'); }
     if (r.album === 1 && !r.albumNo1) { r.albumNo1 = true; S.rec.no1++; log('The ' + r.era + ' EP debuts at No. 1.', 'release'); }
     if (pos <= 10) S.label = clamp(S.label - 4, 0, 100);
+    if (pos <= 100 && !S.flags.firstChart) S.flags.firstChart = { m:S.month, pos, title:r.title };
+    if (r.viral && !S.flags.firstViral) S.flags.firstViral = { m:S.month, n:r.id };
   });
 }
 G.bestRecentPeak = n => S.group.releases.filter(r => S.month - r.month <= n).reduce((b, r) => Math.min(b, r.peak, r.album || 999), 101);
@@ -497,7 +514,7 @@ G.startHiatus = (id, months) => {
   log(G.name(id) + ' starts a break' + (months > 0 ? ' of ' + months + ' month' + (months > 1 ? 's' : '') : ' with no fixed end') + '.', 'story');
   S.queue = S.queue.filter(e => !(e.kind === 'lowwb' && e.id === id));
 };
-G.endHiatus = id => { const p = S.people[id]; p.hiatus = 0; p.onBreak = false; log(G.name(id) + ' is back.', 'story'); feed(pick(D.handles), 'Welcome back, ' + G.name(id) + '!', 1); };
+G.endHiatus = id => { const p = S.people[id]; p.hiatus = 0; p.onBreak = false; S.flags.returned = 1; log(G.name(id) + ' is back.', 'story'); feed(pick(D.handles), 'Welcome back, ' + G.name(id) + '!', 1); };
 
 /* ---------- Event views and choices ----------
    view(ev) -> { eyebrow, title, text, conf?, choices:[[label, note]], perform? }
@@ -558,6 +575,7 @@ G.view = ev => {
     case 'return': return { eyebrow:'Hiatus', title:n(ev.id) + ' feels ready', text:n(ev.id) + ' says she feels ready to come back. Her Wellbeing is ' + Math.round(G.p(ev.id).wb) + '.',
       choices:[['Welcome her back'], ['Give her more time', 'Two more months']] };
     case 'renewal': return { eyebrow:'Contracts', title:'Contract renewal', text:renewalText(), choices:[['Offer a lighter schedule to everyone', 'More of them stay; the label pushes back'], ['Let each of them decide freely']] };
+    default: { const x = G.view2 && G.view2(ev); return x || { title:'', text:'', choices:[['Continue']] }; }
     case 'ending': { const e = D.endings[S.ended]; return { eyebrow:'The end', title:e.t, text:e.d, choices:[['See the final numbers']] }; }
   }
   return { title:'', text:'', choices:[['Continue']] };
@@ -590,10 +608,10 @@ G.choose = (ev, i, acc) => {
       out = 'Showcase score: ' + Math.round(s) + '. ' + (s >= 70 ? 'The room is on its feet.' : s >= 50 ? 'Solid, if a little nervous.' : 'Rough. The documentary keeps the stumble in.'); break; }
     case 'brand':
       if (i === 0) { q({ kind:'brandShoot' }); if (chance(.3) && !S.hate) S.flags.sellout = 1; out = 'Contracts signed. The shoot is next.'; }
-      else out = 'You pass. The label is not thrilled.', S.label = clamp(S.label + 8, 0, 100);
+      else S.flags.brandDone = 'no', out = 'You pass. The label is not thrilled.', S.label = clamp(S.label + 8, 0, 100);
       break;
-    case 'brandShoot': { const s = G.stageScore(G.activeMembers(), acc);
-      if (s >= 62 || chance(.25)) { mult(1.5); S.group.momentum = clamp(S.group.momentum + 25, 0, 100); S.rec.viral++; log('The ' + D.brand + ' ad becomes a global dance trend.', 'story'); out = 'Score ' + Math.round(s) + '. The ad becomes a global dance trend: hundreds of millions of views.'; }
+    case 'brandShoot': { const s = G.stageScore(G.activeMembers(), acc); S.flags.brandDone = 'yes';
+      if (s >= 62 || chance(.25)) { mult(1.5); S.group.momentum = clamp(S.group.momentum + 25, 0, 100); S.rec.viral++; S.flags.brandViral = 1; log('The ' + D.brand + ' ad becomes a global dance trend.', 'story'); out = 'Score ' + Math.round(s) + '. The ad becomes a global dance trend: hundreds of millions of views.'; }
       else { mult(1.1); out = 'Score ' + Math.round(s) + '. A good ad, and a decent bump.'; }
       if (S.flags.sellout) { S.flags.sellout = 0; startHate('sellout'); }
       break; }
@@ -609,11 +627,12 @@ G.choose = (ev, i, acc) => {
     case 'festival': ev.guest = i < D.guests.length ? D.guests[i] : null; q({ kind:'festivalShow', guest:ev.guest }); out = ev.guest ? 'The guest is locked in. Nobody can know.' : 'Just the six of them.'; break;
     case 'festivalShow': { const s = G.stageScore(G.activeMembers(), acc) + (ev.guest ? 6 : 0);
       S.group.momentum = clamp(S.group.momentum + s / 5, 0, 100); mult(1 + s / 600);
+      if (S.flags.festGuest == null) S.flags.festGuest = ev.guest ? 1 : 0;
       log('Festival set at ' + D.festival + (ev.guest ? ' with ' + ev.guest : '') + '.', 'story');
       out = 'Score ' + Math.round(s) + '. ' + (ev.guest ? 'The guest reveal breaks the internet.' : 'A strong set.'); break; }
     case 'arena': { const id = G.members()[i]; q({ kind:'arenaShow', id }); out = 'The tour routes through ' + G.CAST[id].from + '.'; break; }
     case 'arenaShow': { const s = G.stageScore(G.activeMembers(), acc); const p = G.p(ev.id); if (p) { p.wb = clamp(p.wb + 10, 5, 100); p.fan = clamp(p.fan + 8, 0, 100); }
-      mult(1.08); S.group.tours++; log('Hometown arena show for ' + n(ev.id) + '.', 'story');
+      mult(1.08); S.group.tours++; S.flags.arena = 1; log('Hometown arena show for ' + n(ev.id) + '.', 'story');
       out = 'Score ' + Math.round(s) + '. ' + n(ev.id) + ' cries through the last song.'; break; }
     case 'drama': { const t = G.tension(ev.tid); if (!t) break; const c = G.dramaChoices(t); if (ev.blowup) c.splice(2, 1);
       if (i >= c.length) { done(); return ''; }
@@ -634,9 +653,10 @@ G.choose = (ev, i, acc) => {
     case 'return': if (i === 0) { G.endHiatus(ev.id); out = n(ev.id) + ' is back with the group.'; } else { G.p(ev.id).hiatus = 2; out = 'Two more months. No rush.'; } break;
     case 'renewal': out = renewal(i === 0); break;
     case 'ending': break;
-    default: break;
+    default: if (G.choose2) out = G.choose2(ev, i, acc) || ''; break;
   }
   done();
+  checkTrophies();
   return out;
 };
 
@@ -724,6 +744,183 @@ function endGame() {
 }
 G.endNow = () => { endGame(); save(); };
 
+/* ---------- Positions and line distribution ---------- */
+G.posSkill = id => { const P = S.group.pos; if (!P) return null; const r = D.positions.find(x => P[x[0]] === id); return r ? r[2] : null; };
+G.rolesOf = id => { const P = S.group.pos || {}; return D.positions.filter(x => P[x[0]] === id).map(x => x[1]); };
+G.suggestPositions = () => {
+  const ids = G.members(), best = f => ids.slice().sort((a, b) => f(b) - f(a))[0];
+  return { leader:best(id => S.people[id].sk.ch + G.groupBond(id) * .5), vocal:best(id => S.people[id].sk.vo), dance:best(id => S.people[id].sk.da),
+    rap:best(id => S.people[id].sk.ra), center:best(id => S.people[id].sk.pe + S.people[id].sk.ch * .5 + S.people[id].fan * .3) };
+};
+G.setPosition = (role, id) => { S.group.pos = S.group.pos || {}; S.group.pos[role] = id; log(G.name(id) + ' is now ' + D.positions.find(x => x[0] === role)[1].toLowerCase() + '.', 'story'); };
+function lineSplit(ids) {
+  const P = S.group.pos || {}, w = {};
+  ids.forEach(id => { const k = S.people[id].sk; w[id] = 1 + (k.vo + k.ra * .6) / 40 + (P.vocal === id ? 1.2 : 0) + (P.rap === id ? .7 : 0) + (P.center === id ? .8 : 0) + rnd(0, .5); });
+  const t = Object.values(w).reduce((a, b) => a + b, 0), out = {};
+  ids.forEach(id => { out[id] = Math.round(w[id] / t * 100); });
+  return out;
+}
+function forceTension(type, a, b) {
+  if (S.tensions.length >= 3 || S.tensions.some(t => (t.a === a && t.b === b) || (t.a === b && t.b === a))) return;
+  if (G.isLight(a) || G.isLight(b)) type = 'center';
+  const t = { id:S.tid++, type, a, b, heat:1, age:0, handled:true };
+  S.tensions.push(t); log('Drama: ' + D.drama[type].title.toLowerCase() + ' between ' + G.name(a) + ' and ' + G.name(b) + '.', 'drama');
+  q({ kind:'drama', tid:t.id });
+}
+
+/* ---------- Training sessions and the practice room ---------- */
+const SKILL_ACTS = ['vo','da','ra','pe','so','ch'];
+G.canTrain = id => { const p = S.people[id]; return G.inPlay(id) && !p.hiatus && S.ctrl[id] === 'manual' && SKILL_ACTS.includes(G.planOf(id)) && !S.session[id]; };
+G.trainResult = (id, acc) => {
+  if (acc == null) return null;
+  const mult = .8 + acc * .9;
+  S.session[id] = { mult, acc, act:G.planOf(id) };
+  S.people[id].wb = clamp(S.people[id].wb - 1, 5, 100);
+  return mult;
+};
+G.practiceLeft = () => S.practice;
+G.practice = (id, k, acc) => {
+  if (S.practice <= 0 || acc == null) return 0;
+  S.practice--;
+  const g = r1(acc * 1.6 + .2); S.people[id].sk[k] = r1(clamp(S.people[id].sk[k] + g, 0, 99)); S.people[id].wb = clamp(S.people[id].wb - 2, 5, 100);
+  return g;
+};
+G.noteGame = (kind, acc) => { if (acc == null) return; if (acc >= .95) S.flags.flawless = 1; if (kind === 'write' && acc >= .9) S.flags.hitmaker = 1; checkTrophies(); };
+G.setHook = t => { if (t) S.flags.hook = t; };
+G.monthReset = () => { S.session = {}; S.practice = 2; };
+
+/* ---------- More events ---------- */
+function extraEvents(R) {
+  const m = S.month;
+  // Dorm life.
+  if (m >= 4 && chance(.16)) {
+    const pool = G.working().filter(id => S.people[id].status === (G.debuted() ? 'member' : 'trainee'));
+    if (pool.length >= 3) { const x = pick(pool); q({ kind:'dorm', x, d:Math.floor(Math.random() * D.dorm.length) }); }
+  }
+  if (!G.debuted()) return;
+  const r = S.group.releases[S.group.releases.length - 1];
+  const promo = effectivePlan() === 'promo';
+  if (r && promo && S.month - r.month <= 2 && chance(.85)) q({ kind:'musicShow', rid:r.id });
+  if (promo && chance(.35)) q({ kind:'fansign' });
+}
+
+G.view2 = ev => {
+  const n = G.name, f = S.focus;
+  switch (ev.kind) {
+    case 'evalDay': {
+      const p = G.p(f), ch = D.skills.map(({ k, l }) => [l, 'Now ' + Math.round(p.sk[k])]);
+      return { eyebrow:'Monthly eval · Month ' + String(S.month).padStart(3, '0'), title:'Eval day', set:'eval', mgCast:'focus',
+        text:'The panel is waiting: ' + D.judges.map(j => j.n).join(', ') + '. Which skill does ' + n(f) + ' show this month?',
+        choices:ch.concat([['Quick result', 'No stage; graded on her stats']]), games:D.skills.map(({ k }) => MG_KIND[k]).concat([null]) };
+    }
+    case 'positions': { const P = G.suggestPositions();
+      return { eyebrow:'Pre-Debut', title:'Positions', text:'The coaches post their picks: ' + D.positions.map(([k, l]) => l + ': ' + n(P[k])).join(', ') + '. A member trains her position\'s skill 15% faster, the main vocal and center get more lines, and a strong leader calms fights. You can change them any time in the Cast tab.',
+        choices:[['Go with the coaches\' picks']] }; }
+    case 'fandom': return { eyebrow:'Pre-Debut', title:'Fandom name', text:'Fans need a name. The label shortlists four.', choices:D.fandoms };
+    case 'lightstick': return { eyebrow:'Pre-Debut', title:'Lightstick', text:'The lightstick design is final. Pick its glow; you will see it in every crowd.', choices:D.lightsticks.map(x => [x[0]]) };
+    case 'mv': { const r = S.group.releases.find(x => x.id === ev.rid); if (!r) return null;
+      return { eyebrow:'Music video', title:'Shooting "' + r.title + '"', text:'One day on set. Hit the camera with the red light, then land the ending pose. A sharp video lifts the song.', set:'mv', mgCast:'group',
+        choices:[['Shoot it', 'Find the Camera'], ['Let the director handle it', 'Average result']], games:['mv', null] }; }
+    case 'musicShow': { const r = S.group.releases.find(x => x.id === ev.rid); if (!r) return null;
+      return { eyebrow:'Music show', title:'Nominated for first place', text:'"' + r.title + '" is up for first place this week. Perform live; the stage counts toward the score.', set:'stage', mgCast:'group',
+        choices:[['Perform live', 'Tap on the beat'], ['Pre-recorded stage', 'Stats only']], games:['live', null] }; }
+    case 'fansign': return { eyebrow:'Fansign', title:'Fansign event', text:n(f) + ' has 5 fans and a few seconds each. Make them count.', mgCast:'focus',
+      choices:[['Meet the fans', 'Fan Q&A'], ['Keep it quick', 'Stats only']], games:['fans', null] };
+    case 'dorm': { const d = D.dorm[ev.d], x = ev.x; if (!G.inPlay(x)) return null;
+      const others = G.working().filter(o => o !== x && S.people[o].status === S.people[x].status).sort((a, b) => G.bond(x, a) - G.bond(x, b)).slice(0, 4);
+      ev.opts = others;
+      return { eyebrow:'Dorm life', title:d.t, text:d.x.replace('{x}', n(x)), choices:others.map(o => [n(o), 'Bond ' + G.bond(x, o)]).concat([['Leave them be']]) }; }
+  }
+  return null;
+};
+const MG_KIND = { vo:'vocal', da:'dance', ra:'rap', pe:'stage', so:'write', ch:'fans' };
+G.MG_KIND = MG_KIND;
+G.choose2 = (ev, i, acc) => {
+  const n = G.name, f = S.focus;
+  switch (ev.kind) {
+    case 'evalDay': {
+      if (i >= D.skills.length || acc == null) { S.evalAcc[f] = null; return 'Graded on her stats this month. Results come at the end of the month.'; }
+      const k = D.skills[i].k, p = S.people[f];
+      S.evalAcc[f] = acc;
+      p.sk[k] = r1(clamp(p.sk[k] + acc * 1.4, 0, 99));
+      const est = G.grade(G.avg(f) * .95 + (acc - .55) * 22 + 3);
+      const tier = acc >= .78 ? 'hi' : acc >= .5 ? 'mid' : 'lo';
+      if (acc >= .78) p.fan = clamp(p.fan + 2, 0, 100);
+      return 'Stage ' + Math.round(acc * 100) + '%. Likely grade: ' + est + '.\n' + D.judges.map(j => j.n + ': "' + pick(D.judgeLines[tier]) + '"').join('\n');
+    }
+    case 'positions': S.group.pos = G.suggestPositions(); log('Positions set.', 'story'); return 'Positions are set. ' + D.positions.map(([k, l]) => l + ': ' + n(S.group.pos[k])).join(', ') + '.';
+    case 'fandom': S.group.fandom = D.fandoms[i][0]; log('The fandom is named ' + S.group.fandom + '.', 'story'); feed('@lightstickhq', 'We are ' + S.group.fandom + '!!', 1); return 'Fans are ' + S.group.fandom + ' now.';
+    case 'lightstick': S.group.light = D.lightsticks[i][1]; log('The lightstick glows ' + D.lightsticks[i][0].toLowerCase() + '.', 'story'); return 'The ' + D.lightsticks[i][0].toLowerCase() + ' lightstick goes on sale.';
+    case 'mv': { const r = S.group.releases.find(x => x.id === ev.rid); if (!r) return '';
+      const a = acc == null ? .55 : acc; r.power += (a - .5) * 16; r.mv = Math.round(a * 100);
+      return acc == null ? 'The director gets a solid, safe video.' : 'Video score ' + Math.round(a * 100) + '. ' + (a >= .8 ? 'The teaser trends within an hour.' : a >= .5 ? 'A good-looking video.' : 'It will need a lot of editing.'); }
+    case 'musicShow': { const r = S.group.releases.find(x => x.id === ev.rid); if (!r) return '';
+      const sc = G.stageScore(G.activeMembers(), acc);
+      const p = clamp((r.power + (sc - 50) / 3 - 40) / 55, .03, .9);
+      if (chance(p)) { S.rec.showWins = (S.rec.showWins || 0) + 1; S.group.momentum = clamp(S.group.momentum + 6, 0, 100);
+        const first = S.rec.showWins === 1; if (first) log('First music show win with "' + r.title + '".', 'release');
+        feed('@chartwatcher', S.group.name + (first ? ' got their FIRST WIN' : ' win again') + ' with "' + r.title + '"!', 1);
+        return 'Stage ' + Math.round(sc) + '. ' + (first ? 'First win! The members cry through the encore stage.' : 'Another first place. Win number ' + S.rec.showWins + '.'); }
+      return 'Stage ' + Math.round(sc) + '. Second place this week.'; }
+    case 'fansign': { const a = acc == null ? .5 : acc; const p = S.people[f]; p.fan = clamp(p.fan + a * 6, 0, 100); grow(S.group.fans * .01 * a);
+      return a >= .8 ? 'Fans leave with stories they will tell for years.' : a >= .5 ? 'A warm afternoon. Fans are happy.' : 'A bit awkward, but she got through it.'; }
+    case 'dorm': { const o = ev.opts && ev.opts[i]; if (!o) return '';
+      G.addBond(ev.x, o, 10); [ev.x, o].forEach(id => { S.people[id].wb = clamp(S.people[id].wb + 4, 5, 100); });
+      return n(o) + ' and ' + n(ev.x) + ' end up talking until 3 a.m.'; }
+  }
+  return '';
+};
+
+/* ---------- The real story vs yours ---------- */
+G.realBeats = () => {
+  const rel = S.group.releases, F = S.flags, mk = (ok, t) => ({ ok, yours:t });
+  const res = {
+    doc:   () => S.group.doc ? mk(true, S.group.doc === 'open' ? 'Cameras everywhere.' : 'A documentary with private rooms.') : mk(null, 'Not yet.'),
+    debut: () => rel[0] ? mk(true, '"' + rel[0].title + '": ' + (rel[0].peak > 100 ? 'missed the chart.' : 'peaked at No. ' + rel[0].peak + '.')) : mk(null, 'Not yet.'),
+    viral: () => F.firstViral ? mk(true, 'Release ' + F.firstViral.n + ' went viral in month ' + F.firstViral.m + '.') : mk(rel.length >= 3 ? false : null, rel.length >= 3 ? 'No viral moment in the first three releases.' : 'Not yet.'),
+    hot100:() => F.firstChart ? mk(F.firstChart.m <= 48, 'First chart entry in month ' + F.firstChart.m + ' at No. ' + F.firstChart.pos + '.') : mk(S.month > 48 ? false : null, 'Not yet.'),
+    top5:  () => { const b = rel.reduce((x, r) => Math.min(x, r.album || 999), 999); return b <= 5 ? mk(true, 'Best EP debut: No. ' + b + '.') : mk(S.month > 48 && b < 999 ? false : null, b < 999 ? 'Best EP debut: No. ' + b + '.' : 'No EP yet.'); },
+    brand: () => F.brandDone ? mk(!!F.brandViral, F.brandViral ? 'The ad became a global dance trend.' : F.brandDone === 'no' ? 'You turned the campaign down.' : 'A decent ad, no trend.') : mk(null, 'Not yet.'),
+    grammy:() => S.month >= 53 ? mk(S.rec.noms > 0, S.rec.noms ? S.rec.noms + ' nominations, ' + S.rec.wins + ' win' + (S.rec.wins === 1 ? '' : 's') + ' so far.' : 'No nominations.') : mk(null, 'Not yet.'),
+    fest:  () => F.festGuest != null ? mk(true, F.festGuest ? 'Played with a surprise guest.' : 'Played without a guest.') : mk(null, 'Not yet.'),
+    no1:   () => S.rec.no1 ? mk(true, S.rec.no1 + ' No. 1' + (S.rec.no1 > 1 ? 's' : '') + '.') : mk(S.month > 60 ? false : null, 'Best so far: No. ' + (S.rec.best > 100 ? '—' : S.rec.best) + '.'),
+    tour:  () => F.arena ? mk(true, 'Arena tour with a hometown night.') : mk(null, 'Not yet.'),
+  };
+  return D.realBeats.map(b => Object.assign({}, b, res[b.id]()));
+};
+
+/* ---------- Trophies ---------- */
+function checkTrophies() {
+  if (!S) return;
+  const T = S.trophies, add = id => { if (!T[id]) { T[id] = S.month; S.newTrophies.push(id); } };
+  const allGrades = G.cast().concat(S.alumni).map(id => S.people[id].grades).flat();
+  const fg = S.people[S.focus].grades;
+  if (fg.some(g => g.g === 'A' || g.g === 'A+')) add('firstA');
+  if (fg.some(g => g.g === 'A+')) add('aplus');
+  if (S.flags.mvp) add('mvp');
+  if (S.group.formed && S.people[S.focus].status === 'member') add('survivor');
+  if (S.group.releases.length) add('debut');
+  if (S.flags.firstChart) add('chart');
+  if (S.rec.best <= 10) add('top10');
+  if (S.rec.no1) add('no1');
+  if (S.rec.viral) add('viral');
+  if (S.rec.showWins) add('firstWin');
+  if ((S.rec.showWins || 0) >= 10) add('tenWins');
+  if (S.rec.wins) add('award');
+  if ((S.resolved || 0) >= 10) add('peace');
+  if (G.debuted() && G.cohesion() >= 30) add('family');
+  if (S.flags.storm) add('storm');
+  if (S.flags.returned) add('care');
+  if (S.flags.flawless) add('perfect');
+  if (S.flags.hitmaker) add('writer');
+  if (S.group.fans >= 5e7) add('fans50');
+  if (G.debuted() && G.realBeats().filter(b => b.ok).length >= 8) add('canon');
+  if (S.ended === 'legends') add('legend');
+  void allGrades;
+}
+G.checkTrophies = checkTrophies;
+G.takeTrophies = () => { const t = S.newTrophies.slice(); S.newTrophies = []; return t; };
+
 /* ---------- Saves ---------- */
 const KEY = 'dreamacademy-save-v1';
 function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -731,8 +928,9 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e
 function save() { if (S) lsSet(KEY, JSON.stringify(S)); }
 G.save = save;
 G.hasSave = () => !!lsGet(KEY);
-G.load = () => { try { const s = JSON.parse(lsGet(KEY)); if (s && s.v === 1) { S = s; return true; } } catch (e) {} return false; };
+function migrate(s) { const d = { session:{}, practice:2, evalAcc:{}, trophies:{}, newTrophies:[], resolved:0 }; Object.keys(d).forEach(k => { if (s[k] == null) s[k] = d[k]; }); return s; }
+G.load = () => { try { const s = JSON.parse(lsGet(KEY)); if (s && s.v === 1) { S = migrate(s); return true; } } catch (e) {} return false; };
 G.wipe = () => { try { localStorage.removeItem(KEY); } catch (e) {} S = null; };
 G.exportSave = () => btoa(unescape(encodeURIComponent(JSON.stringify(S))));
-G.importSave = txt => { try { const s = JSON.parse(decodeURIComponent(escape(atob(txt.trim())))); if (s && s.v === 1 && s.people) { S = s; save(); return true; } } catch (e) {} return false; };
+G.importSave = txt => { try { const s = JSON.parse(decodeURIComponent(escape(atob(txt.trim())))); if (s && s.v === 1 && s.people) { S = migrate(s); save(); return true; } } catch (e) {} return false; };
 })();

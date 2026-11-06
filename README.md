@@ -114,6 +114,14 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/dreamacademy/
 
 **After the debut.** A group schedule (training, recording, promotion, touring, recovery), releases with concepts and invented titles, a fictional chart, viral dance moments, a brand campaign, awards nights, a festival with a surprise guest, a hometown arena show, label pressure, hate trains aimed at the group (never one member by name) with statement, silence, standing together or apology, breaks of any length that never end a run, contract renewals and five endings.
 
+**3D.** Stylized 3D toon figures built from each member's look stand in a practice room on the Plan tab and appear in every lesson, eval and stage. Stages have an LED wall, light cones, camera cuts and a crowd waving lightsticks in your fandom's colour. Drag to look around.
+
+**Training you play.** Every lesson is a mini-game: Hold the Note (vocal pitch control with a live tone), Mirror the Choreo (watch the coach's 3D moves, then repeat them), Two-Lane Flow (rap rhythm), Find the Camera with an ending fairy (stage presence), Hook Builder (write a four-line hook; it becomes the title of your next release), and Fan Q&A (charisma). "Train now" on a manually planned member boosts that month's gains up to 1.7x, and the Practice room gives two free extra sessions a month.
+
+**Evals and debut.** Every month from 4 to 30 is an eval day in front of a three-coach panel in 3D: pick the skill to show, perform it, and hear their comments; the result feeds the monthly grade and the eval board. Pre-debut adds positions (leader, main vocal, main dancer, main rapper, center: each trains 15% faster in its skill and shapes line distribution), the fandom name (EYEKONS is an option), the lightstick colour, a debut countdown and a music video shoot for every release.
+
+**After the debut.** Live stages with chants, music show nominations and first wins with an encore, fansigns, dorm life (movie nights, birthdays, homesick nights), line distribution bars on every release, a Real story tab that sets each beat of the real group's first years beside your run, and 21 trophies.
+
 **Saves.** Autosave on the device, plus export and import of a save code.
 
 ## Updates go live automatically
