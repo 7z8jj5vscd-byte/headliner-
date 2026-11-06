@@ -220,3 +220,10 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/eras/
 `node eras/tests/story-check.js` plays every story headless (Node.js only, no browser), checks the results still match the real careers (Canon Score, first-week sales, tour grosses, Fearless at No. 1), then plays ten years of free play to check money and fans stay sensible. It exits with an error if anything is off. Run it before publishing changes.
 
 The game also works offline after the first visit, and saves can move between devices with a code (Menu → Move this save to another device).
+
+### More to play and aim for
+
+- **On stage:** a tap-along concert mini-game on show nights, tour shows built act by act (effects and costume changes), and music videos cut from three shots.
+- **Business:** a merch designer, and Loop, an invented streaming and short-video app (from 2012) with trends, playlist pitches and its own chart.
+- **Your own artist:** a fully invented career from the first open mic, with your own name, hometown, sound and look.
+- **Goals:** a year-in-review every January that you can save as an image, a legacy score with an ending written when you retire, a Hall of Fame across saves, scenarios with best times, and invented rival stars who become friends or rivals depending on how you treat them.
