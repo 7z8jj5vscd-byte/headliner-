@@ -62,7 +62,10 @@ function figure(p) {
   const hd = new THREE.Group(); hd.position.y = .19; N.add(hd); R.hd = hd;
   M(new THREE.SphereGeometry(.13, 18, 14), skin, 0, 0, 0, hd).scale.set(.95, 1.08, 1);
   [-1, 1].forEach(s => { M(new THREE.SphereGeometry(.017, 8, 6), '#1a1414', s * .045, .0, .118, hd); M(new THREE.BoxGeometry(.04, .008, .01), shade(hair, .15), s * .047, .045, .118, hd); });
-  M(new THREE.BoxGeometry(.04, .009, .01), '#9c4a4a', 0, -.058, .12, hd);
+  R.mLine = M(new THREE.BoxGeometry(.04, .009, .01), '#9c4a4a', 0, -.058, .12, hd);
+  R.mOpen = M(new THREE.SphereGeometry(.018, 10, 8), '#5a1f24', 0, -.06, .118, hd); R.mOpen.scale.set(1.2, .8, .4); R.mOpen.visible = false;
+  R.mSmile = M(new THREE.TorusGeometry(.024, .005, 6, 12, Math.PI), '#9c4a4a', 0, -.05, .121, hd); R.mSmile.rotation.z = Math.PI; R.mSmile.visible = false;
+  R.tears = [-1, 1].map(sd => { const t = M(new THREE.BoxGeometry(.008, .03, .006), basic('#8fd3ff'), sd * .045, -.03, .121, hd); t.visible = false; return t; });
   const hm = mat(hair);
   // Hair shell: full top, sides and back down past the ears, with only the face left open, plus bangs.
   const hs = mat(hair, { side:THREE.DoubleSide }), H2 = Math.PI / 2;
@@ -104,6 +107,7 @@ const MOVES = {
   fairy:(R) => { arms(R, 2.3, 2.3, 2.5, 2.5, -.4, .4); R.hd.rotation.z = .22; R.torso.rotation.y = .1; },
   bow:(R, p) => { R.torso.rotation.x = .7; arms(R, .1, .1, .1, .1); },
   talk:(R, p, t) => { const a = Math.sin(t * 5.2), b = Math.sin(t * 3.1 + 1); arms(R, .35 + Math.max(0, a) * .5, .2 + Math.max(0, b) * .35, .9 + a * .3, .4, -.1, .1); R.hd.rotation.x = Math.sin(t * 6) * .05; R.hd.rotation.y = Math.sin(t * 1.4) * .12; },
+  gasp:(R) => { arms(R, 1.4, 1.4, 2.2, 2.2, -.3, .3); R.hd.rotation.x = -.12; },
   cry:(R, p, t) => { arms(R, 2.2, 2.2, 2.6, 2.6, -.5, .5); R.hd.rotation.x = .35; R.torso.rotation.x = .15 + Math.sin(t * 7) * .02; },
   cheer:(R, p) => { const j = Math.abs(Math.sin(p * Math.PI * 2)); R.root.position.y = R.base.y + j * .12; arms(R, 2.9, 2.9, .2, .2, .4, -.4); },
   hug:(R) => { arms(R, 1.5, 1.5, 1.2, 1.2, -.6, .6); R.torso.rotation.x = .1; },
@@ -164,6 +168,54 @@ function buildSet(scene, kind, o) {
     add(new THREE.PlaneGeometry(1.8, 1.2), basic('#1b2a4a'), 0, 2.3, -2.98);
     for (let i = 0; i < 14; i++) add(new THREE.SphereGeometry(.015, 4, 4), basic('#fff6d0'), -.8 + Math.random() * 1.6, 1.8 + Math.random() * 1, -2.97);
     const lampL = new THREE.PointLight(0xffc98a, .9, 9); lampL.position.set(3.6, 1.8, -1.6); scene.add(lampL);
+  }
+  if (kind === 'makeup') {
+    const floor = add(new THREE.PlaneGeometry(12, 10), mat('#3b3034'), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
+    add(new THREE.PlaneGeometry(12, 5), mat('#4a3a40'), 0, 2.5, -3);
+    add(new THREE.BoxGeometry(6, .1, .7), mat('#e8e2da'), 0, .9, -2.5);
+    [-2, 0, 2].forEach(x => { add(new THREE.PlaneGeometry(1.4, 1.1), new THREE.MeshPhongMaterial({ color:col('#c9d3de'), shininess:120 }), x, 1.75, -2.97);
+      for (let i = 0; i < 6; i++) add(new THREE.SphereGeometry(.05, 8, 6), basic('#fff3c4'), x - .7 + (i % 3) * .7 * (i < 3 ? 1 : 1), i < 3 ? 2.35 : 1.15, -2.94); });
+    for (let i = 0; i < 9; i++) add(new THREE.CylinderGeometry(.03, .03, .12, 8), mat(['#e5484d','#f0b44c','#b89cff'][i % 3]), -2.6 + i * .65, 1.01, -2.4);
+    const l = new THREE.PointLight(0xfff0d0, .8, 8); l.position.set(0, 2.2, -1.5); scene.add(l);
+  }
+  if (kind === 'airport') {
+    const floor = add(new THREE.PlaneGeometry(16, 12), mat('#cfd3d8'), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
+    add(new THREE.PlaneGeometry(16, 5), basic('#9fc3e6'), 0, 2.5, -3.5);
+    for (let i = -7; i <= 7; i += 1.6) add(new THREE.BoxGeometry(.08, 5, .08), mat('#555'), i, 2.5, -3.45);
+    const pl = new THREE.Group(); pl.position.set(-3, 2.4, -3.4); scene.add(pl);
+    [[2.6, .3, .3, 0, 0], [.4, .05, 2.2, 0, 0], [.3, .6, .05, -1.2, .3]].forEach(([w, h, d, x, y]) => { const m2 = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), basic('#f4f6f8')); m2.position.set(x, y, 0); pl.add(m2); });
+    anim.push({ tick:t => { pl.position.x = -6 + (t * .6) % 12; } });
+    add(new THREE.BoxGeometry(2.2, .5, .1), basic('#1b1d22'), 2.6, 3, -3.3); add(new THREE.PlaneGeometry(2, .3), basic('#f0b44c'), 2.6, 3, -3.24);
+    for (let i = 0; i < 3; i++) add(new THREE.BoxGeometry(.35, .5, .22), mat(['#c2413b','#3b3f8f','#2e6b3a'][i]), 1.6 + i * .5, .25, 1);
+  }
+  if (kind === 'van') {
+    add(new THREE.BoxGeometry(5, .1, 4), mat('#1a1a1e'), 0, 0, 0);
+    add(new THREE.PlaneGeometry(6, 3), basic('#0d1a30'), 0, 1.6, -2.4);
+    for (let r = 0; r < 2; r++) add(new THREE.BoxGeometry(3.2, .5, .6), mat('#2e3138'), 0, .25, -1.4 + r * 1.3), add(new THREE.BoxGeometry(3.2, .7, .15), mat('#2e3138'), 0, .7, -1.7 + r * 1.3);
+    const lights = []; for (let i = 0; i < 10; i++) { const b = add(new THREE.SphereGeometry(.04, 6, 4), basic(i % 2 ? '#f0b44c' : '#fff6d0'), 0, 1.3 + Math.random() * .8, -2.38); lights.push(b); }
+    anim.push({ tick:t => lights.forEach((b, i) => { b.position.x = ((t * 2.2 + i * 1.3) % 6) - 3; }) });
+  }
+  if (kind === 'fansign') {
+    const floor = add(new THREE.PlaneGeometry(14, 10), mat('#3a2f3a'), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
+    add(new THREE.PlaneGeometry(14, 5), mat('#5b2a3b'), 0, 2.5, -3);
+    add(new THREE.PlaneGeometry(6, .9), basic(o.light || '#f0b44c'), 0, 3, -2.95);
+    add(new THREE.BoxGeometry(6.4, .06, .8), mat('#f4f1ea'), 0, .58, .9); add(new THREE.BoxGeometry(6.2, .55, .7), mat('#d8cfc4'), 0, .28, .9);
+    for (let i = 0; i < 12; i++) add(new THREE.SphereGeometry(.12, 10, 8), mat(['#c99a74','#efd2b8','#7c5238','#e4bf9c'][i % 4]), -4 + (i % 6) * 1.6, 1.4, 2.6 + Math.floor(i / 6) * .6);
+  }
+  if (kind === 'street') {
+    const floor = add(new THREE.PlaneGeometry(16, 12), mat('#4a4a50'), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
+    add(new THREE.PlaneGeometry(16, 6), basic('#f2b38a'), 0, 3, -6);
+    for (let i = 0; i < 8; i++) { const h = 1.5 + Math.random() * 3; add(new THREE.BoxGeometry(1.6, h, 1.2), mat(['#c9a27e','#a6b4c2','#d6c7a8','#9c8a7a'][i % 4]), -6 + i * 1.7, h / 2, -4); }
+    add(new THREE.CylinderGeometry(.04, .04, 2.6, 6), mat('#222'), 2.8, 1.3, -1); add(new THREE.SphereGeometry(.14, 8, 6), basic('#ffe6a8'), 2.8, 2.65, -1);
+    { const pl2 = new THREE.PointLight(0xffc98a, .6, 7); pl2.position.set(2.8, 2.5, -.8); scene.add(pl2); }
+  }
+  if (kind === 'backstage') {
+    const floor = add(new THREE.PlaneGeometry(12, 10), mat('#1b1c20'), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
+    add(new THREE.PlaneGeometry(12, 5), mat('#26282e'), 0, 2.5, -3);
+    for (let i = 0; i < 5; i++) add(new THREE.BoxGeometry(.9, .7, .6), mat('#111214'), -4 + i * 2, .35, -2.4), add(new THREE.BoxGeometry(.92, .05, .62), mat('#8a8a8a'), -4 + i * 2, .72, -2.4);
+    add(new THREE.PlaneGeometry(1.4, .4), basic('#6fcf97'), 3.5, 2.8, -2.95);
+    const red = add(new THREE.SphereGeometry(.06, 8, 6), basic('#e5484d'), -3.5, 2.8, -2.95); anim.push({ tick:t => { red.visible = Math.sin(t * 3) > 0; } });
+    { const pl3 = new THREE.PointLight(0x9ec5ff, .7, 8); pl3.position.set(0, 2.5, 0); scene.add(pl3); }
   }
   if (kind === 'office' || kind === 'studio') {
     const floor = add(new THREE.PlaneGeometry(12, 10), mat(kind === 'office' ? '#3a3d44' : '#2b2622'), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
@@ -226,6 +278,8 @@ const CAMS = {
   dorm:{ pos:[0, 1.6, 5.2], look:[0, 1.0, 0] },
   office:{ pos:[0, 1.6, 5.2], look:[0, 1.05, 0] },
   studio:{ pos:[0, 1.6, 5.2], look:[0, 1.05, 0] },
+  makeup:{ pos:[0, 1.6, 5.0], look:[0, 1.05, 0] }, airport:{ pos:[0, 1.7, 5.8], look:[0, 1.1, 0] }, van:{ pos:[0, 1.2, 3.6], look:[0, .8, -.6] },
+  fansign:{ pos:[0, 1.9, 5.6], look:[0, 1.0, 0] }, street:{ pos:[0, 1.6, 5.6], look:[0, 1.2, 0] }, backstage:{ pos:[0, 1.6, 5.2], look:[0, 1.05, 0] },
 };
 function mount(el, o) {
   o = o || {};
@@ -312,6 +366,8 @@ function mount(el, o) {
         else mv = (t - C.seq.t0) / C.seq.dur - k < .8 ? C.seq.moves[k] : 'idle';
       }
       (MOVES[mv] || MOVES.idle)(f, mv === 'spin' ? (bt / 4) % 1 : ph, t + i);
+      if (f.mLine) { const happy = ['cheer','clap','wave','jump','fairy','hug','hips','point'].includes(mv), talking = mv === 'talk' && Math.sin((t + i) * 14) > 0, gasp = mv === 'gasp';
+        f.mOpen.visible = talking || gasp; f.mSmile.visible = happy && !talking; f.mLine.visible = !f.mOpen.visible && !f.mSmile.visible; f.tears.forEach(x => { x.visible = mv === 'cry'; }); }
     });
     C.anim.forEach(a => { if (a.tick) a.tick(t, bt); if (a.fig) MOVES[a.move](a.fig, 0, t); });
     if (C.flash > 0) { flashLight.intensity = C.flash * 3; C.flash = Math.max(0, C.flash - .06); } else flashLight.intensity = 0;
