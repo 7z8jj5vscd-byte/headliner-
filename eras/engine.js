@@ -786,7 +786,7 @@ G.chartWeek = function (r, rivalTop) {
   } else if (r.run && r.run.peak && wk <= r.run.peakWeek) {
     // A slow climb to the real peak.
     // Climb from the debut position to the real peak, a little better or worse depending on how the era went.
-    const start = r.debutPos || r.pos, goal = clamp(Math.round(r.run.peak * clamp(2 - (r.real ? r.fw / r.real : 1), .6, 1.6)), 2, 40);
+    const start = r.debutPos || r.pos, goal = clamp(Math.round(r.run.peak * clamp(2 - (r.real ? r.fw / r.real : 1), .6, 1.6)), 2, 200);
     const t = wk / r.run.peakWeek; pos = Math.max(goal, Math.round(start + (goal - start) * t + rnd(-1, 1)));
   } else {
     pos = Math.round(r.pos + (r.pos < 10 ? rnd(1, 3) : r.pos < 50 ? rnd(1, 5) : rnd(2, 9)) - (r.wk < 2 ? 1 : 0));
@@ -809,6 +809,7 @@ function doRelease(p) {
   const rivalSame = S.charts.albums.filter(c => c.rival && c.abs === S.abs).reduce((m, c) => Math.max(m, c.fw), 0);
   let pos = fw > 150000 ? 1 : fw > 60000 ? clamp(Math.round(8 - fw / 20000), 1, 8) : clamp(Math.round(40 - fw / 2000), 2, 40);
   if (pos === 1 && rivalSame > fw) pos = 2;
+  { const rr = (ER.ALBUM_RUNS || {})[p.id]; if (rr && rr.debut && S.abs < G.FREE_START) pos = rr.debut; }
   // Songs come out.
   songs.forEach(x => { x.st = 'released'; });
   (p.extras || []).forEach(t => { const x = S.songs[t]; if (x && x.st === 'recorded') x.st = 'released'; });

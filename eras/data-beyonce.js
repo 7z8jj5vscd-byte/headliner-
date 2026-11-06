@@ -242,7 +242,26 @@ const E = [
    truth:'Cowboy Carter won Album of the Year and Best Country Album at the 2025 Grammys.', award:'Album of the Year' },
  { d:'2026-05-04', id:'b_metgala', t:'The Met Gala', x:'She co-chairs the Met Gala. Fans are sure Act III is coming.',
    ch:[{l:'Say nothing about Act III',fx:{heat:12,hype:8},c:1,r:'Your publicist denies the rumours.'},{l:'Drop a hint',fx:{heat:20,hype:15},r:'The internet melts down.'}],
-   truth:'She co-chaired the 2026 Met Gala. Her publicist denied rumours of an imminent Act III.' }
+   truth:'She co-chaired the 2026 Met Gala. Her publicist denied rumours of an imminent Act III.' },
+ // More public-record moments.
+ { d:'2001-05-07', id:'b_carmen', t:'Carmen: A Hip Hopera', x:'MTV wants her to star in a made-for-TV hip-hop version of the opera Carmen.',
+   ch:[{l:'Take the lead role',fx:{fans:6,clout:2},c:1,r:'Her first starring acting role.'},{l:'Stay focused on the group',fx:{team:2},r:'You pass.'}],
+   truth:'She starred in MTV\'s Carmen: A Hip Hopera in 2001, her first lead acting role.' },
+ { d:'2007-02-12', id:'b_grammys2007', t:'Grammys: B\'Day', x:'B\'Day is up for Best Contemporary R&B Album.',
+   ch:[{l:'Attend and celebrate',fx:{clout:5,rep:2},c:1,r:'You win.'},{l:'Stay on tour',fx:{money:50000},r:'You win from afar.'}],
+   truth:'B\'Day won Best Contemporary R&B Album at the 2007 Grammys.', award:'Grammy: Best Contemporary R&B Album' },
+ { d:'2013-02-18', id:'b_lifeis', t:'Life Is But a Dream', x:'She has made a documentary about her own life, partly from her own video diaries.',
+   ch:[{l:'Air it on HBO',fx:{fans:6,rep:4,heat:6},c:1,r:'A rare look behind the curtain.'},{l:'Keep it private',fx:{},r:'The footage stays in the archive.'}],
+   truth:'Her documentary Life Is But a Dream premiered on HBO in February 2013.' },
+ { d:'2017-02-13', id:'b_urban', t:'Best Urban Contemporary Album', x:'Lemonade is up for Best Urban Contemporary Album as well as Album of the Year.',
+   ch:[{l:'Accept with a speech about representation',fx:{rep:5,clout:4},c:1,r:'You win the category.'},{l:'Keep it short',fx:{clout:3},r:'You win.'}],
+   truth:'Lemonade won Best Urban Contemporary Album at the 2017 Grammys.', award:'Grammy: Best Urban Contemporary Album' },
+ { d:'2019-07-22', id:'b_nala', t:'The Lion King', x:'She voices Nala in the new film version of The Lion King.',
+   ch:[{l:'Record a new song for it too',fx:{fans:6,write:2},c:1,r:'"Spirit" plays over the film.'},{l:'Voice only',fx:{fans:3},r:'A smaller part.'}],
+   truth:'She voiced Nala in The Lion King (2019) and released "Spirit" for the film.' },
+ { d:'2020-05-04', id:'b_savage', t:'"Savage" remix', x:'Megan Thee Stallion\'s "Savage" could get a remix with her, with proceeds going to pandemic relief.',
+   ch:[{l:'Record a verse',fx:{fans:8,rep:4},c:1,r:'The remix reaches No. 1 on the Hot 100.'},{l:'Pass',fx:{},r:'Maybe another time.'}],
+   truth:'The "Savage" remix with Megan Thee Stallion reached No. 1 on the Hot 100 in 2020 and supported a Houston charity.' }
 ];
 E.forEach(e => { e.abs = W(e.d); e.year = +e.d.slice(0, 4); });
 E.sort((a, b) => a.abs - b.abs);

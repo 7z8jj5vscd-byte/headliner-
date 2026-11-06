@@ -213,7 +213,29 @@ const E = [
    truth:'She made a cameo appearance at Super Bowl LX in 2026.' },
  { d:'2026-04-20', id:'g_prada', t:'The Devil Wears Prada 2', x:'The sequel wants original songs from her.',
    ch:[{l:'Write them',fx:{write:3,fans:4},c:1,r:'The songs come out with the film.'},{l:'Pass',fx:{},r:'Someone else writes them.'}],
-   truth:'She contributed songs to The Devil Wears Prada 2 in 2026.' }
+   truth:'She contributed songs to The Devil Wears Prada 2 in 2026.' },
+ // More public-record moments.
+ { d:'2011-02-14', id:'g_btwsingle', t:'"Born This Way"', x:'The title single is ready to release.',
+   ch:[{l:'Release it as an anthem for everyone',fx:{fans:10,rep:6},c:1,r:'It debuts at No. 1 on the Hot 100.'},{l:'Hold it for the album',fx:{},r:'Later.'}],
+   truth:'"Born This Way" debuted at No. 1 on the Hot 100 in February 2011, the chart\'s 1,000th No. 1.' },
+ { d:'2016-02-08', id:'g_anthem', t:'Super Bowl 50', x:'She is asked to sing the national anthem at Super Bowl 50.',
+   ch:[{l:'Sing it in a red suit, straight and powerful',fx:{rep:8,fans:4},c:1,r:'Critics call it one of the great anthem performances.'},{l:'Decline',fx:{},r:'Someone else sings it.'}],
+   truth:'She sang the national anthem at Super Bowl 50 in February 2016.' },
+ { d:'2016-02-15', id:'g_bowie', t:'A tribute to Bowie', x:'The Grammys want a tribute to David Bowie, one of her heroes, who died last month.',
+   ch:[{l:'Perform a medley of his songs',fx:{rep:3,heat:8},c:1,r:'Reviews are divided, but it is unforgettable.'},{l:'Decline',fx:{},r:'Someone else does it.'}],
+   truth:'She performed a David Bowie tribute medley at the 2016 Grammys.' },
+ { d:'2019-02-11', id:'g_grammys2019', t:'Grammys: "Shallow"', x:'"Shallow" is up for several Grammys.',
+   ch:[{l:'Perform it alone at the piano',fx:{rep:4,fans:4},c:1,r:'You win Best Pop Duo/Group Performance.'},{l:'Just attend',fx:{rep:2},r:'You win.'}],
+   truth:'"Shallow" won Grammys in 2019, including Best Pop Duo/Group Performance.', award:'Grammy: Best Pop Duo/Group Performance' },
+ { d:'2020-08-31', id:'g_vmas2020', t:'The 2020 VMAs', x:'The VMAs go ahead with distancing. She is being honoured with a new award.',
+   ch:[{l:'Perform in a series of themed face masks',fx:{fans:6,heat:6},c:1,r:'The masks become the image of the night.'},{l:'Accept by video',fx:{rep:2},r:'A short speech from home.'}],
+   truth:'She won the first Tricon Award at the 2020 VMAs and performed in a series of face masks.', award:'VMA Tricon Award' },
+ { d:'2022-05-09', id:'g_hmh', t:'"Hold My Hand"', x:'She has written a song for Top Gun: Maverick.',
+   ch:[{l:'Release it ahead of the film',fx:{fans:6,write:2},c:1,r:'It earns an Oscar nomination.'},{l:'Hold it',fx:{},r:'Later.'}],
+   truth:'"Hold My Hand" from Top Gun: Maverick came out in May 2022 and was nominated for an Oscar.' },
+ { d:'2022-12-05', id:'g_bloodymary', t:'"Bloody Mary" goes viral', x:'A dance from the TV series Wednesday has made her 2011 song "Bloody Mary" a viral hit.',
+   ch:[{l:'Join in with your own version of the dance',fx:{fans:8,heat:6},c:1,r:'An eleven-year-old album track is suddenly everywhere.'},{l:'Just enjoy it',fx:{fans:4},r:'It charts again anyway.'}],
+   truth:'"Bloody Mary" went viral in late 2022 through a dance from Wednesday and returned to the charts.' }
 ];
 E.forEach(e => { e.abs = W(e.d); e.year = +e.d.slice(0, 4); });
 E.sort((a, b) => a.abs - b.abs);
