@@ -126,7 +126,7 @@ function uploads() { try { return JSON.parse(G.lsGet('eras-uploads') || '{}'); }
 
 /* ---------- Title ---------- */
 function title() {
-  const slots = [1, 2, 3].map(n => { const i = G.slotInfo(n); return `<div class="slot"><div><b>Slot ${n}</b><div class="small muted">${i ? `${h(ER.artists[i.artist].name)} · ${i.mode === 'story' ? 'Story' : 'Era Start'} · ${i.y}, week ${i.w}` : 'Empty'}</div></div><div class="row">${i ? `<button class="btn" data-act="load" data-n="${n}">Continue</button><button class="btn ghost sm" data-act="delslot" data-n="${n}" aria-label="Delete slot ${n}">Delete</button>` : `<button class="btn" data-act="newgame" data-n="${n}">New game</button>`}</div></div>`; }).join('');
+  const slots = [1, 2, 3].map(n => { const i = G.slotInfo(n); return `<div class="slot"><div><b>Slot ${n}</b><div class="small muted">${i ? `${h(ER.artists[i.artist].name)} · ${i.mode === 'story' ? 'Story' : 'Era Start'} · ${i.y}, week ${i.w}${i.retired ? ' · Retired' : ''}` : 'Empty'}</div></div><div class="row">${i ? `<button class="btn" data-act="load" data-n="${n}">Continue</button><button class="btn ghost sm" data-act="delslot" data-n="${n}" aria-label="Delete slot ${n}">Delete</button>` : `<button class="btn" data-act="newgame" data-n="${n}">New game</button>`}</div></div>`; }).join('');
   const artists = ['taylor','beyonce','gaga'].map(id => { const a = ER.artists[id]; return `<div class="artist ${a.comingNext ? 'soon' : ''}"><div class="sw" style="background:${a.color || '#d6a93a'}"></div><div><b>${h(a.name)}</b><div class="small muted">${a.comingNext ? 'Coming next. The story is mapped.' : 'Playable: 1989 to 2026, then free play'}</div></div>${a.comingNext ? `<button class="btn ghost sm" data-act="preview" data-id="${id}">Preview</button>` : ''}</div>`; }).join('');
   $('#app').innerHTML = `<div class="title">
     <div class="logo"><span class="eyebrow">A week-by-week career game</span><h1>The Eras Life</h1><p class="muted">Live through a documented career from the first demo to the last stadium night, then carry it on yourself.</p></div>
@@ -200,6 +200,8 @@ VIEWS.week = function () {
   const r = s.recap;
   return `${s.recovery ? card(`<b>Recovery goal:</b> raise your ${s.recovery.k === 'rep' ? 'Public Reputation' : 'team mood'} to 30. Weeks are harder until you do.`, 'warn') : ''}
   ${G.worldNotes().map(n => card(`<span class="eyebrow">The world right now</span><p class="small">${h(n)}</p>`, 'world')).join('')}
+  ${s.flags.retired ? card(`<span class="eyebrow">Retired</span><p class="small">You retired in ${ER.yw(s.flags.retired).y}. Weeks are quiet now. Come out of retirement from the tasks below whenever you like.</p>`, 'world') : ''}
+  ${s.flags.farewell ? card('<span class="eyebrow">The Farewell Tour</span><p class="small">No new eras. One last tour, then you decide whether to retire.</p>', 'world') : ''}
   ${s.flags.hidden ? card('<span class="eyebrow">Out of public view</span><p class="small">No interviews, posts or appearances. You can still write, record, plan your comeback and work with your team in private.</p>', 'world') : ''}
   ${s.week.forcedRest ? card('<b>Forced rest.</b> Energy hit zero, so you only have 1 Time Block this week.', 'warn') : ''}
   <div class="stagewrap"><div class="stage3d" id="t3stage"></div><div class="caption">${x ? `<b>${h(x.p.title)}</b> · ${h(stageName(x.st))}<div class="small">Done when: ${h(ER.STAGES[x.st].need)}</div>` : '<b>Between eras</b>'}</div></div>
@@ -422,6 +424,8 @@ VIEWS.legacy = function () {
   + card(`<h3>Era gallery</h3><div class="shelf">${s.released.map(r => { const p = G.proj(r.pid); return `<div class="sh">${coverSVG(G.pj(r.pid).cover, 84, r.pid)}<span class="small"><b>${h(p.short || p.title)}</b>${p.eraNo ? `<br><span class="faint">Era ${p.eraNo}</span>` : ''}<br>${G.fmtN(r.total)} sold</span></div>`; }).join('') || '<p class="small muted">Your albums appear here.</p>'}</div>`)
   + card(`<h3>Era goals</h3>${P.filter(p => s.goals[p.id] || G.stageOf(p, s.abs) !== 'none').map(p => `<div class="logrow"><b>${h(p.title)}</b>${p.goals.map((g, i) => `<div class="small">${s.goals[p.id] ? (s.goals[p.id][i] ? '✅' : '❌') : '⏳'} ${h(g.l)}</div>`).join('')}</div>`).join('') || '<p class="small muted">Goals appear as each era begins.</p>'}`)
   + card(`<h3>Achievements</h3><div class="chips">${Object.keys(G.ACH).map(k => `<span class="chip ${s.ach[k] ? 'on' : ''}">${s.ach[k] ? '★' : '☆'} ${h(G.ACH[k])}</span>`).join('')}</div>`)
+  + (G.canRetire() || s.flags.retired ? card(`<h3>Retirement</h3>${s.flags.retired ? `<p class="small">Retired in ${ER.yw(s.flags.retired).y}.</p><div class="row"><button class="btn ghost sm" data-act="showend">See your career</button><button class="btn ghost sm" data-act="unretire">Come out of retirement</button></div>`
+      : `<p class="small muted">End your career with a farewell tour, or retire straight away. You can always come back.</p><div class="row"><button class="btn ghost sm" data-act="tofarewell" ${s.flags.farewell ? 'disabled' : ''}>${s.flags.farewell ? 'Farewell tour planned' : 'Plan a farewell tour'}</button><button class="btn ghost sm" data-act="retireask">Retire</button></div>`}`) : '')
   + card(`<h3>Business holdings</h3><p class="small">Masters ownership: ${Math.round(s.stats.own)}%. Money: ${G.fmtM(s.stats.money)}. Industry Clout: ${Math.round(s.stats.clout)}.</p>`)
   + card(`<h3>Your timeline beside hers</h3>${s.log.filter(l => !l.s && !l.drama && l.real).slice(-30).reverse().map(l => `<div class="logrow"><div class="between"><b>${h(l.t)}</b><span class="small muted">${ER.yw(l.abs).y}</span></div><div class="small">You: ${h(l.l)}</div><div class="small muted">She: ${h(l.real)}</div></div>`).join('') || '<p class="small muted">Your choices will be listed here.</p>'}`);
 };
@@ -466,9 +470,43 @@ function modals() {
       <label class="field"><span>Release in</span><select data-act="nesel" data-k="weeks">${[20, 26, 32, 44, 60].map(v => `<option value="${v}" ${ne.weeks === v ? 'selected' : ''}>${v} weeks</option>`).join('')}</select></label>
       <label class="field"><span>Tour</span><select data-act="nesel" data-k="tour">${[[0, 'None'], [20, '20 weeks'], [40, '40 weeks'], [70, '70 weeks']].map(([v, l]) => `<option value="${v}" ${ne.tour === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
       <button class="btn big" data-act="startera">Start ${h(ne.title)}</button>
-      <div class="row" style="margin-top:8px">${next ? `<button class="btn ghost sm" data-act="nextreal" data-id="${next.id}">The next real era: ${h(next.title)}</button>` : ''}<button class="btn ghost sm" data-act="erabreak" data-w="26">Take six months off</button><button class="btn ghost sm" data-act="erabreak" data-w="52">Take a year off</button></div>`);
+      <div class="row" style="margin-top:8px">${next ? `<button class="btn ghost sm" data-act="nextreal" data-id="${next.id}">The next real era: ${h(next.title)}</button>` : ''}<button class="btn ghost sm" data-act="erabreak" data-w="26">Take six months off</button><button class="btn ghost sm" data-act="erabreak" data-w="52">Take a year off</button>${G.canRetire() ? '<button class="btn ghost sm" data-act="tofarewell">Plan a farewell tour</button><button class="btn ghost sm" data-act="retireask">Retire</button>' : ''}</div>`);
     const seedId = 'c' + P.eraNo + ne.title, pal = ER.seeded(seedId)() < .5 ? th.pals[0] : th.pals[1], lk = ER.makeEraLook(th, pal, seedId);
     mount3D('#t3era', { set:'stadium', color:pal[0], figs:[{ look:Object.assign({}, lk.base, lk.stage), anim:'sing', mic:!!lk.stage.mic, guitar:!!lk.stage.guitar }, { look:Object.assign({}, lk.base, lk.casual), x:1.05, z:-.35, ry:-.5, anim:'idle', s:.92 }] }, 'era');
+    return;
+  }
+  if (m.k === 'farewell') {
+    const fw = UI.sel.fw || (UI.sel.fw = { weeks:40, name:'The Farewell Tour' });
+    modal(`<span class="eyebrow">One last time</span><h2>Plan a farewell tour</h2><p class="small muted">A greatest-hits stadium tour through every era. Demand for a farewell is huge. When the last show is played, you can retire.</p>
+      <div class="stage3d" id="t3fw"></div>
+      <label class="field"><span>Name</span><input id="fw-name" maxlength="40" value="${h(fw.name)}"></label>
+      <label class="field"><span>Length</span><select data-act="fwsel">${[[20, '20 weeks'], [40, '40 weeks'], [60, '60 weeks'], [80, '80 weeks']].map(([v, l]) => `<option value="${v}" ${fw.weeks === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <button class="btn big" data-act="fwgo">Announce the farewell tour</button><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="modalok">Not yet</button></div>`);
+    const lk = ER.makeEraLook(Object.assign({}, ER.ERA_THEMES.find(t => t.id === 'orchestral'), { tops:['sequin','gown','bodysuit'] }), ['#e6c35a', '#fff4c4', '#1a1408'], 'f' + (s.custom.filter(p => p.type === 'farewell').length + 1) + 'farewell');
+    mount3D('#t3fw', { set:'stadium', color:'#e6c35a', figs:[{ look:Object.assign({}, lk.base, lk.stage), anim:'wave', mic:true }] }, 'fw');
+    return;
+  }
+  if (m.k === 'retire') {
+    const after = m.after === 'farewell';
+    modal(`<span class="eyebrow">${after ? 'The last show' : 'A big decision'}</span><h2>${after ? 'The farewell tour is over' : 'Retire?'}</h2>
+      <p class="small">${after ? 'The lights go down on the last night. Is this the end?' : 'You can end your career here, with or without a farewell tour first.'}</p>
+      <p class="small muted">Retiring shows your whole career. You can still come out of retirement later.</p>
+      <div class="stack tight"><button class="btn big" data-act="retirego">Retire</button>${after ? '' : '<button class="btn ghost" data-act="tofarewell">Do a farewell tour first</button>'}<button class="btn ghost" data-act="${after ? 'keepgoing' : 'modalok'}">${after ? 'Keep going after all' : 'Not yet'}</button></div>`);
+    return;
+  }
+  if (m.k === 'ending') {
+    const c = G.careerSummary(), A = G.art();
+    modal(`<span class="eyebrow">${h(G.fmtDate(s.abs))} · Age ${c.age}</span><h2>${h(A.name)}: a career</h2><div class="stage3d" id="t3end"></div>
+      <div class="grid3"><div><b>${c.years}</b><div class="small muted">Years</div></div><div><b>${c.eras}</b><div class="small muted">Albums</div></div><div><b>${G.fmtN(c.units)}</b><div class="small muted">Units</div></div></div>
+      <div class="grid3"><div><b>${c.no1}</b><div class="small muted">No. 1 singles</div></div><div><b>${c.awards}</b><div class="small muted">Awards</div></div><div><b>${c.aoty}</b><div class="small muted">Album of the Year</div></div></div>
+      <div class="grid3"><div><b>${G.fmtN(c.shows)}</b><div class="small muted">Shows</div></div><div><b>${G.fmtN(c.tickets)}</b><div class="small muted">Tickets</div></div><div><b>${G.fmtM(c.gross)}</b><div class="small muted">Tour gross</div></div></div>
+      ${c.best ? `<p class="small">Biggest first week: <b>${h(c.best.t)}</b>, ${G.fmtN(c.best.fw)}.</p>` : ''}
+      <p class="small">${c.invented ? `${c.invented} eras of your own after the real story. ` : ''}${G.fmtN(c.fans)} ${h(A.fanName)} · ${Math.round(c.own)}% of the masters · Canon Score ${c.canon}</p>
+      <div class="shelf">${s.released.slice(-12).map(r => { const p = G.proj(r.pid); return p ? `<div class="sh">${coverSVG(G.pj(r.pid).cover, 64, r.pid)}<span class="small">${h(p.short || p.title)}</span></div>` : ''; }).join('')}</div>
+      <div class="stack tight" style="margin-top:12px"><button class="btn big" data-act="modalok">Enjoy retirement</button><button class="btn ghost" data-act="totitle">Back to the title screen</button></div>
+      <p class="small faint">Retired saves keep going quietly. You can come out of retirement from This Week whenever you like.</p>`);
+    const e = G.allProjects().filter(p => G.pj(p.id).released).pop();
+    mount3D('#t3end', { set:'stadium', color:'#e6c35a', figs:[{ look:lookFor('tour', e), anim:'bow' }] }, 'end');
     return;
   }
   if (m.k === 'free') {
@@ -544,6 +582,14 @@ const ACT = {
   pri:d => { const a = UI.sel.pri; const i = a.indexOf(d.k); if (i >= 0) a.splice(i, 1); else { a.push(d.k); if (a.length > 2) a.shift(); } closeModals(); modals(); },
   planok:() => { G.S().priorities = (UI.sel.pri || []).slice(); UI.sel.pri = null; G.S().modal.shift(); closeModals(); render(); },
   modalok:() => { G.S().modal.shift(); closeModals(); render(); },
+  tofarewell:() => { const s = G.S(); s.modal = s.modal.filter(m => !['nextera','retire','farewell'].includes(m.k)); s.modal.unshift({ k:'farewell' }); closeModals(); modals(); },
+  fwsel:(d, el) => { UI.sel.fw.weeks = +el.value; },
+  fwgo:() => { const fw = UI.sel.fw, name = (($('#fw-name') || {}).value || '').trim() || 'The Farewell Tour'; G.planFarewell(fw.weeks, name); UI.sel.fw = null; G.S().modal = G.S().modal.filter(m => m.k !== 'farewell'); closeModals(); toast(`${name} is announced.`); UI.tab = 'tour'; render(); },
+  retireask:() => { const s = G.S(); s.modal = s.modal.filter(m => !['nextera','retire'].includes(m.k)); s.modal.unshift({ k:'retire', after:'ask' }); closeModals(); modals(); },
+  keepgoing:() => { G.S().modal.shift(); G.keepGoing(); closeModals(); render(); },
+  retirego:() => { G.retire(); closeModals(); render(); },
+  unretire:() => { G.unretire(); closeModals(); UI.tab = 'week'; render(); },
+  showend:() => { G.S().modal.unshift({ k:'ending' }); closeModals(); modals(); },
   pitch:() => { G.proposeEra(); render(); },
   ne:d => { UI.sel.ne[d.k] = d.v; const o = $('#ne-own'); if (o) o.value = ''; closeModals(); modals(); },
   nesel:(d, el) => { UI.sel.ne[d.k] = +el.value; },
