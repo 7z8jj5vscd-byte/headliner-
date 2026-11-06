@@ -160,7 +160,7 @@ G.oppOk = function (o) { const s = S(), age = G.age(), sts = G.active().map(x =>
   return o.when.some(w => w === 'none' ? !sts.filter(x => x !== 'rest' && x !== 'promo').length : sts.includes(w)); };
 G.hooks.week.push(a => { const s = S(); s.opps = (s.opps || []).filter(o => o.until >= a && G.oppOk(ER.OPPS.find(x => x.id === o.id) || { when:'any' }));
   if (s.flags.retired || s.opps.length >= 3 || Math.random() > (G.fr ? G.fr().opp : .35)) return;
-  const recent = new Set((s.oppSeen || []).slice(-10)), pool = ER.OPPS.filter(o => !recent.has(o.id) && !s.opps.some(x => x.id === o.id) && G.oppOk(o));
+  const recent = new Set((s.oppSeen || []).slice(-10)), rivalRoll = Math.random() < .3, pool = ER.OPPS.filter(o => !recent.has(o.id) && !s.opps.some(x => x.id === o.id) && (!o.rival || rivalRoll) && (o.rival ? true : !rivalRoll || Math.random() < .5) && G.oppOk(o));
   if (!pool.length) return; const o = pick(pool);
   s.opps.push({ id:o.id, uid:G.uid(), until:a + 3 }); s.oppSeen = (s.oppSeen || []).concat(o.id).slice(-12); });
 G.opps = () => (S().opps || []).map(x => Object.assign({ o:ER.OPPS.find(y => y.id === x.id) }, x)).filter(x => x.o);

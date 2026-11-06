@@ -1,13 +1,11 @@
 {
- "build": "2026.11.06-10",
- "title": "New ways to play",
+ "build": "2026.11.06-11",
+ "title": "Goals and legacy",
  "notes": [
-  "Concert mini-game: on show nights, tap along to the big song. Good timing lifts the review.",
-  "Build your tour show act by act: effects like rain, fireworks or a flying platform, and costume changes.",
-  "Music videos: pick three shots and watch the cut.",
-  "Merch designer: design shirts, hoodies, posters, vinyl, totes and bracelet kits that sell every week, and more on tour.",
-  "Loop: an invented streaming app with trends, playlist pitches and its own chart (from 2012).",
-  "Create your own artist: a fully invented career from the first open mic.",
-  "Fixed: the stage designer now appears the first time you open the Tour Desk."
+  "A year in review every January, which you can save or share as an image.",
+  "A legacy score and an ending that depends on how your career went, plus a Hall of Fame across all your saves.",
+  "Scenarios: Start broke, Speedrun to a stadium, One shot at No. 1, No team, and A million fans, each with a best time.",
+  "Rivals with storylines: invented stars who can become friends or bitter rivals.",
+  "Twelve new achievements."
  ]
 }
