@@ -13,6 +13,7 @@ function banner() {
   document.body.appendChild(b);
 }
 async function check(manual) {
+  if (location.protocol === 'file:') { if (manual) toast('Update checks work on the website, not from a local file.'); return; }
   try {
     const r = await fetch('version.json?t=' + Date.now(), { cache:'no-store' }); if (!r.ok) throw 0;
     const v = await r.json(); UPD.latest = v.build; UPD.notes = v.notes || []; UPD.title = v.title || ''; UPD.checked = Date.now();
@@ -36,6 +37,7 @@ document.addEventListener('click', e => {
 });
 // What's new, once, after an update lands.
 function whatsNew() {
+  if (location.protocol === 'file:') return;
   let last = null; try { last = localStorage.getItem('eras-last-build'); localStorage.setItem('eras-last-build', BUILD); } catch (e) {}
   if (!last || last === BUILD) return;
   fetch('version.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.json()).then(v => {
