@@ -72,7 +72,7 @@ G.fmtDate = abs => { const d = ER.dateOf(abs); return d.toLocaleDateString('en-U
 G.fmtN = n => { n = Math.round(n); const a = Math.abs(n); if (a >= 1e9) return (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + 'B'; if (a >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'; if (a >= 1e4) return Math.round(n / 1e3) + 'K'; if (a >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K'; return String(n); };
 G.fmtM = n => (n < 0 ? '−$' : '$') + G.fmtN(Math.abs(n));
 G.mod = id => !!(S && S.mods && S.mods.includes(id));
-G.blocks = () => { if (S.week.forcedRest) return 1; const b = DIFF[S.diff].blocks + (S.flags.easyBlocks || 0); return G.mod('fewblocks') ? Math.max(2, b - 2) : b; };
+G.blocks = () => { if (S.week.forcedRest) return 1; const b = DIFF[S.diff].blocks + (S.flags.easyBlocks || 0); const w = G.hasPerk && G.hasPerk('workhorse') ? 1 : 0; return (G.mod('fewblocks') ? Math.max(2, b - 2) : b) + w; };
 G.canon = () => S.canon.total ? Math.round(S.canon.hit / S.canon.total * 100) : 100;
 G.unlocked = tab => {
   if (S.mode !== 'story') return true;
@@ -198,7 +198,7 @@ G.writeSong = function (t, co, insp, appr) {
   const item = G.writable().find(x => x.t === t); if (!item) return null;
   if (G.mod('solo')) co = 'Solo';
   const cw = G.art().cowriters[co] || { bonus:0 };
-  let q = rnd(32, 52) + S.stats.write * .42 + cw.bonus + (item.p.solo && co === 'Solo' ? 5 : 0) + (S.flags.hidden ? 4 : 0) + (G.world('lockdown') ? 3 : 0) + (S.flags.focus ? 3 : 0);
+  let q = rnd(32, 52) + S.stats.write * .42 + cw.bonus + (item.p.solo && co === 'Solo' ? 5 : 0) + (S.flags.hidden ? 4 : 0) + (G.world('lockdown') ? 3 : 0) + (S.flags.focus ? 3 : 0) + (G.writeBonus ? G.writeBonus() : 0);
   S.flags.focus = false;
   q = clamp(Math.round(q), 10, 100);
   // Writing what you know helps; a good fit between the subject and the approach helps more.
@@ -230,7 +230,7 @@ G.recordable = () => {
 G.recordSong = function (t, prod, pid, take) {
   const item = G.recordable().find(x => x.t === t && (!pid || x.p.id === pid)); if (!item) return null;
   const tk = take && ER.TAKES.find(x => x.id === take);
-  const pb = rnd(0, 6) + (item.p.producers && item.p.producers[0] === prod ? 2 : 0) + (tk ? rnd(tk.q[0], tk.q[1]) : 0);
+  const pb = rnd(0, 6) + (item.p.producers && item.p.producers[0] === prod ? 2 : 0) + (tk ? rnd(tk.q[0], tk.q[1]) : 0) + (G.recBonus ? G.recBonus() : 0);
   if (tk) applyFx({ energy:tk.energy });
   if (item.p.type === 'rerecord') {
     const orig = S.songs[t]; const base = orig ? orig.q : 62;
@@ -371,7 +371,7 @@ G.doTask = function (id, arg) {
     case 'duty': { const d = S.duties.find(x => x.id === t.duty); if (d) { S.duties = S.duties.filter(x => x !== d); applyFx({ team:2, clout:1 }); msg = `${d.l}: done.`; } break; }
     case 'early': { const e = ER.EARLY_ACTS.find(x => x.id === t.early); applyFx(e.fx); msg = 'Done.'; break; }
     case 'rest': applyFx({ energy:15 * pri('rest') }); msg = 'You rest.'; break;
-    case 'practice': applyFx({ write:2 * pri('writing') }); msg = 'Your craft improves.'; break;
+    case 'practice': applyFx({ write:2 * pri('writing') * (G.hasPerk && G.hasPerk('wordsmith') ? 1.5 : 1) }); msg = 'Your craft improves.'; break;
     case 'social': if (S.flags.wiped && S.abs < (S.flags.wiped + 1)) { msg = 'Your accounts are wiped.'; break; } applyFx({ fans:1.2 * pri('fans'), heat:2 }); feed(pick(['she posted!!','new post, decoding now','the caption... it means something','okay but the outfit']), null); msg = 'Fans react.'; break;
     case 'fanevent': applyFx({ fans:2.5 * pri('fans'), energy:-8, rep:1 }); msg = S.flags.secretsessions ? 'A Secret Session. Nobody leaks a note.' : 'A meet-up with fans.'; break;
     case 'interview': { const o = arg ? ER.OUTLETS.find(x => x.id === arg) : ER.OUTLETS.filter(x => ER.ds(x.from + '-01-01') <= S.abs).pop(); applyFx({ heat:o.heat, rep:(S.stats.heat > 70 ? -2 : o.rep) * pri('press'), fans:o.fans }); msg = `${o.n}: done.`; break; }
@@ -446,7 +446,8 @@ G.showNight = function (sh, openerId, picks, mi) {
   const op = ER.OPENERS.find(o => o.id === openerId) || ER.OPENERS[0], mc = sh.moment.ch[mi] || sh.moment.ch[0];
   applyFx(op.fx); applyFx(mc.fx);
   let score = 2.6 + (S.stats.energy > 50 ? .5 : -.3) + (S.stats.team > 60 ? .3 : 0) + rnd(-.4, .6);
-  const pj = G.pj(sh.pid); if (pj.underRehearsed) score -= .7; if (pj.tp && pj.tp.rehearse) score += .3;
+  const pj = G.pj(sh.pid); if (pj.underRehearsed) score -= .7;
+  score += (G.hasPerk && G.hasPerk('showstopper') ? .5 : 0) + ((S.specialists || []).includes('choreo') ? .3 : 0) + (S.gearShow || 0); if (pj.tp && pj.tp.rehearse) score += .3;
   (picks || []).forEach(t => { const first = !S.surprisePlayed[t]; S.surprisePlayed[t] = (S.surprisePlayed[t] || 0) + 1; if (first) { score += .35; applyFx({ fans:.4 }); } });
   const br = (S.bracelets || []).find(b => b.traded < 3); if (br) { br.traded++; score += .15; applyFx({ fans:.3 }); }
   const stars = clamp(Math.round(score), 1, 5);

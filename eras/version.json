@@ -1,9 +1,10 @@
 {
- "build": "2026.11.06-1",
- "title": "Updates you can see",
+ "build": "2026.11.06-2",
+ "title": "Town: free roam",
  "notes": [
-  "The game now tells you when a new version is out: a banner offers a one-tap update, and you see what's new afterwards.",
-  "Settings shows your version and has a Check for updates button.",
-  "It checks when you open the game, every few minutes, and whenever you come back to it."
+  "New Town tab: play any venue you can fill, from open mic nights to a one-night stadium show, or busk on a street corner.",
+  "This week in town: five side gigs and activities each week, like guest-judging, commercials, songwriting camps and road trips.",
+  "Level up and pick perks such as Workhorse, Hitmaker and Showstopper.",
+  "Upgrade your studio, buy gear and homes, and hire a vocal coach, choreographer, stylist or trainer. The real story still happens on its dates."
  ]
 }
