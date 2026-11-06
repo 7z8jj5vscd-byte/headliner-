@@ -342,7 +342,7 @@ VIEWS.rollout = function () {
   const s = S(), out = [];
   G.active().filter(x => ['finish','pre','release','promo'].includes(x.st) && x.p.type !== 'demos').forEach(({ p, st }) => {
     const pj = G.pj(p.id), list = p.type === 'rerecord' ? ER.PRE_TV : p.surprise ? ER.PRE_SURPRISE : ER.PRE, w = G.win(p);
-    const recd = (p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => t + " (Taylor's Version)") : p.tracks.concat(p.extras || [])).filter(t => s.songs[t] && s.songs[t].st !== 'written' && !pj.singles.includes(t));
+    const recd = (p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => t + " (Taylor's Version)") : p.tracks.concat(p.extras || [], G.origOn ? G.origOn(p.id) : [])).filter(t => s.songs[t] && s.songs[t].st !== 'written' && !pj.singles.includes(t));
     const sg = UI.sel['sg:' + p.id] || recd[0];
     out.push(card(`<div class="between"><h2>${h(p.title)}</h2>${pill(stageName(st))}</div><p class="small muted">Release: ${h(G.fmtDate(w.rel))}${p.surprise ? ' · Surprise drop' : ''}</p>
       <div class="statrow"><span>Hype</span>${bar(pj.hype)}<b>${Math.round(pj.hype)}</b></div>
@@ -374,7 +374,7 @@ VIEWS.cover = function () {
 };
 VIEWS.tour = function () {
   const s = S(), out = [];
-  const tps = G.allProjects().filter(p => p.tour && ['promo','tourprep','tour','release'].includes(G.stageOf(p, s.abs)));
+  const tps = G.allProjects().filter(p => p.tour && ['finish','pre','promo','tourprep','tour','release'].includes(G.stageOf(p, s.abs)));
   const freeNoTour = s.flags.free || s.mode === 'era' ? G.allProjects().filter(p => p.custom && !p.tour && G.pj(p.id).released) : [];
   tps.forEach(p => {
     const pj = G.pj(p.id), st = G.stageOf(p, s.abs), w = G.win(p);
@@ -414,7 +414,7 @@ VIEWS.tour = function () {
       ${pj.tour && pj.tour.objections && pj.tour.objections.length ? `<div class="obj">${pj.tour.objections.map(o => `<p class="small"><b>${o.from === 'manager' ? 'Manager' : 'Publicist'}:</b> ${h(o.x)}</p>`).join('')}</div>` : ''}
       <div class="row"><button class="btn" data-act="submittour" data-p="${p.id}">Send for approval</button><button class="btn ghost sm" data-act="suggest" data-p="${p.id}">Use the manager's suggestion</button></div>`));
   });
-  freeNoTour.forEach(p => out.push(card(`<h2>Tour ${h(p.title)}</h2><label class="field"><span>Length</span><select id="ct-w"><option value="20">20 weeks</option><option value="40" selected>40 weeks</option><option value="70">70 weeks</option></select></label><button class="btn" data-act="customtour" data-p="${p.id}">Put a tour on the calendar</button>`)));
+  freeNoTour.forEach(p => out.push(card(`<h2>Tour ${h(p.title)}</h2><label class="field"><span>Length</span><select id="ct-w"><option value="20">20 weeks</option><option value="40" selected>40 weeks</option><option value="70">70 weeks</option></select></label><label class="field"><span>First show</span><select id="ct-l">${[4, 8, 12, 16, 24, 36].map(n => `<option value="${n}" ${n === 12 ? 'selected' : ''}>In ${n} weeks</option>`).join('')}</select></label><button class="btn" data-act="customtour" data-p="${p.id}">Put a tour on the calendar</button>`)));
   const canc = Object.keys(s.pj).filter(id => s.pj[id].cancelled);
   if (canc.length) out.push(card(`<h3>Cancelled tours</h3>${canc.map(id => { const c = s.pj[id].cancelled; return `<div class="logrow"><div class="between"><b>${h(c.name)}</b><span class="small muted">${h(G.fmtDate(c.abs))}</span></div><div class="small">${c.why === 'pandemic' ? 'Cancelled by the COVID-19 pandemic.' : 'Cancelled.'}${c.planned ? ` ${G.fmtN(c.sold)} tickets refunded.` : ' It was never planned.'}</div></div>`; }).join('')}`));
   if (G.world('lockdown')) out.unshift(card(`<span class="eyebrow">Live music is shut down</span><p class="small">Because of the COVID-19 pandemic, venues are closed. No tours can go on sale until live music returns.</p>`, 'world'));
@@ -844,7 +844,7 @@ const ACT = {
   tps:d => { const a = UI.sel.plan.setlist; const i = a.indexOf(d.v); i < 0 ? a.push(d.v) : a.splice(i, 1); render(); },
   suggest:d => { UI.sel.plan = Object.assign({ pid:d.p }, G.suggestTour(G.proj(d.p))); render(); },
   submittour:d => { const p = G.proj(d.p), r = G.submitTour(p, UI.sel.plan); toast(r.ok ? 'Approved by your manager and publicist.' : 'Sent back with objections. Check the notes.'); if (r.ok) { const t = G.tasks().find(x => x.id === 'tp:' + p.id + ':route'); if (t && !G.taskDone(t.id)) G.doTask(t.id); } render(); },
-  customtour:d => { G.planCustomTour(G.proj(d.p), +($('#ct-w') || {}).value || 40); toast('Tour on the calendar.'); render(); },
+  customtour:d => { G.planCustomTour(G.proj(d.p), +($('#ct-w') || {}).value || 40, +($('#ct-l') || {}).value || 8); toast('Tour on the calendar.'); render(); },
   readall:() => { G.S().inbox.forEach(m => m.read = true); render(); },
   read:d => { const m = G.S().inbox.find(x => x.id === d.id); if (m) m.read = true; render(); },
   eggt:(d, el) => { UI.sel.eggType = el.value; }, eggg:(d, el) => { UI.sel.eggTarget = el.value; },

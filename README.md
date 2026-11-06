@@ -195,3 +195,12 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/eras/
 **Saves.** Three slots, autosave every week, and export and import of save files.
 
 **Three playable stories.** Pick Taylor Swift, Beyoncé or Lady Gaga when you start a new game. Each has a prologue, real eras with their real dates and song titles, public-record event cards, people, co-writers, era-by-era 3D looks (from Destiny's Child to Cowboy Carter, from the Fame bob to Mayhem), and real-success anchors for fans, first weeks, single peaks and tours. Tours without a confirmed real gross are sized from a rough estimate. All three share the world events, free play, the farewell tour and retirement, and each appears in the others' games as a real chart rival, with crossover cards such as the 2009 VMAs and the "Telephone" video. Lady Gaga's past assault appears only through her own public advocacy, as the design report set out. Dates and figures come from the design report and still need a card-by-card fact-check.
+
+### More freedom
+
+- **Song structure.** In any writing session, arrange the song section by section (verse, pre-chorus, chorus, bridge, key change and more), then pick its tempo, mood and sound. The shape changes its quality, radio appeal and fan-favourite potential. Only the structure is used, never lyrics.
+- **Songs of your own.** Write invented songs at any time in your notebook, then put them on any album while it is being made. They sit beside the real tracklist and never replace a real song.
+- **Tracklist.** Put an album's songs in your own order in the Studio. A strong opener, your best song early, a real closer and a heartfelt track 5 help the reviews.
+- **Tour prep timing.** Choose when preparation for a tour starts, from right after release down to a four-week crunch. The real show dates do not move.
+- **Ways to do tasks.** Videos, announcements, release-week TV, signings, costumes, casting, setlists and mastering each offer different approaches with their own trade-offs.
+- **Opportunities.** Optional offers turn up on This Week, such as late-night shows, film songs, retreats, features, documentaries and remixes. All of them are invented, and you can take them or let them pass.
