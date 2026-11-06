@@ -69,6 +69,7 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 .stage3d{width:100%;height:230px;border-radius:var(--r);overflow:hidden;background:linear-gradient(#0003,#0006),var(--surface);border:1px solid var(--rule);position:relative}
 .stage3d.tall{height:300px;margin:12px 0}.stage3d.short{height:170px;margin:8px 0}
 .stage3d canvas{display:block;cursor:grab}
+.stage3d.off3d{height:60px}.stage3d.off3d::after{content:"3D is off (turn it on in the menu)";position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);font-size:12px}
 .stage3d.no3d::after{content:"3D view needs WebGL";position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);font-size:12px}
 .caption{position:absolute;left:10px;bottom:10px;right:10px;background:#000a;border-radius:10px;padding:7px 10px;font-size:13px;pointer-events:none}
 .title{padding:calc(env(safe-area-inset-top,0px) + 20px) 0 20px}.title>h1,.title>.between,.title>.eyebrow,.title>.logo,.title>p,.title>.stage3d,.title>.btn{margin-left:16px;margin-right:16px;width:auto}
@@ -105,7 +106,7 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 <body>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="data-taylor.js?v=12"></script>
+<script src="data-taylor.js?v=14"></script>
 <script src="data-world.js?v=2"></script>
 <script src="data-looks.js?v=8"></script>
 <script src="data-events-world.js?v=1"></script>
@@ -115,9 +116,9 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 <script src="data-scenes.js?v=1"></script>
 <script src="data-shows.js?v=13"></script>
 <script src="sound.js?v=1"></script>
-<script src="stage3d.js?v=12"></script>
+<script src="stage3d.js?v=14"></script>
 <script src="engine.js?v=13"></script>
-<script src="ui.js?v=13"></script>
+<script src="ui.js?v=15"></script>
 <script>UI.narrow = window.matchMedia('(max-width:560px)').matches; window.matchMedia('(max-width:560px)').addEventListener('change', e => { UI.narrow = e.matches; if (G.S()) UI.render(); }); UI.start();</script>
 </body>
 </html>

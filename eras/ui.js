@@ -102,7 +102,7 @@ function eventSpec(e) {
   else figs.push({ look:set === 'home' ? T3.TEAM.family : set === 'tv' ? T3.TEAM.publicist : T3.TEAM.manager, x:.9, z:-.3, ry:-.5, anim:'talk', s:.94 });
   return { set, color:era ? era.color : '#7a9a4a', figs };
 }
-function mount3D(sel, spec, slot) { requestAnimationFrame(() => { const el = $(sel); if (!el) return; if (!T3.view(el, spec, slot)) el.classList.add('no3d'); }); }
+function mount3D(sel, spec, slot) { requestAnimationFrame(() => { const el = $(sel); if (!el) return; if (!T3.view(el, spec, slot)) el.classList.add(T3.quality === 'off' ? 'off3d' : 'no3d'); }); }
 
 /* ---------- Covers ---------- */
 function coverSVG(c, size, pid) {
@@ -711,6 +711,7 @@ const ACT = {
   dailyload:() => { if (G.load('daily')) { UI.tab = 'week'; render(); } },
   reply:d => { const s = G.S(), m = s.inbox.find(x => x.id === d.id); if (!m) return; const f = ER.FAN_MAIL[m.mail]; m.read = true; m.replied = true;
     showScene({ t:`A letter from ${f.from}`, x:f.x, set:'home', with:'fan', ch:f.ch }); },
+  q3d:() => { const next = { high:'low', low:'off', off:'high' }[T3.quality] || 'high'; T3.setQuality(next); toast(`3D: ${next === 'high' ? 'High' : next === 'low' ? 'Low (faster on older phones)' : 'Off'}`); closeModals(); render(); },
   sound:() => { const on = SND.toggle(); UI.heard = true; if (on) SND.setMood(moodOf(G.currentEra())); toast(on ? 'Sound on.' : 'Sound off.'); closeModals(); },
   scene:d => { const sc = UI.scene; if (!sc) return closeModals(); const c = G.resolveScene(sc, +d.i); UI.scene = null;
     const box = document.querySelector('#scch'); if (box) box.innerHTML = `<p><b>${h(c.r)}</b></p><p class="small muted">${h(G.fxText(c.fx))}</p><button class="btn big" data-act="scenedone">Continue</button>`; },
@@ -806,7 +807,7 @@ const ACT = {
   newera:() => { const t = ($('#ne-title') || {}).value || '', n = +($('#ne-n') || {}).value || 13, w = +($('#ne-w') || {}).value || 32, tr = +($('#ne-t') || {}).value || 0; const p = G.newEra(t.trim(), n, w, tr); toast(`${p.title} is on the calendar.`); UI.tab = 'week'; render(); },
   nextreal:d => { G.startNextReal(d.id); G.S().proposal = null; G.S().modal = G.S().modal.filter(m => m.k !== 'nextera'); closeModals(); toast('The next era begins.'); UI.tab = 'week'; render(); },
   menu:() => { const s = G.S(); modal(`<h2>Menu</h2><p class="small muted">Slot ${s.slot} · ${s.mode === 'story' ? 'Story Mode' : 'Era Start'} · ${G.DIFF[s.diff].l}. The game autosaves every week.</p>
-      <div class="stack tight"><button class="btn" data-act="savenow">Save now</button><button class="btn ghost" data-act="sound">Sound: ${window.SND && SND.on ? 'on' : 'off'}</button><button class="btn ghost" data-act="export">Export save file</button><label class="btn ghost">Import save file<input type="file" accept=".json,application/json" data-act="import" hidden></label><button class="btn ghost" data-act="totitle">Title screen</button><button class="btn ghost" data-act="closem">Close</button></div>`); },
+      <div class="stack tight"><button class="btn" data-act="savenow">Save now</button><button class="btn ghost" data-act="q3d">3D: ${T3.quality === 'high' ? 'High' : T3.quality === 'low' ? 'Low (faster)' : 'Off'}</button><button class="btn ghost" data-act="sound">Sound: ${window.SND && SND.on ? 'on' : 'off'}</button><button class="btn ghost" data-act="export">Export save file</button><label class="btn ghost">Import save file<input type="file" accept=".json,application/json" data-act="import" hidden></label><button class="btn ghost" data-act="totitle">Title screen</button><button class="btn ghost" data-act="closem">Close</button></div>`); },
   savenow:() => { G.save(); toast('Saved.'); closeModals(); },
   export:() => { const b = new Blob([G.exportSave()], { type:'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `eras-life-slot${G.S().slot}-${G.yw().y}.json`; document.body.appendChild(a); a.click(); a.remove(); toast('Save file downloaded.'); },
   totitle:() => { G.save(); G.set(null); closeModals(); title(); },
