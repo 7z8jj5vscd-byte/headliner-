@@ -192,6 +192,7 @@ function render() {
   const nav = `<nav class="tabs" aria-label="Game tabs">${TABS.map(([k, l]) => { const ok = G.unlocked(k); const un = k === 'inbox' ? s.inbox.filter(m => !m.read).length : 0; return `<button class="tab ${UI.tab === k ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="tab" data-v="${k}">${h(l)}${un ? `<i class="badge">${un}</i>` : ''}${ok ? '' : ' 🔒'}</button>`; }).join('')}</nav>`;
   $('#app').innerHTML = top + nav + `<main id="main">${(VIEWS[UI.tab] || VIEWS.week)()}</main><div id="toast" class="toast"></div>`;
   if (UI.tab === 'week') mount3D('#t3stage', stageSpec(), 'main');
+  if (window.SND && SND.on && UI.heard) SND.setMood(moodOf(e));
   if (UI.tab === 'tour') { const v = $('#t3venue'); if (v) mount3D('#t3venue', { set:UI.sel.tier || 'arena', color:(e || {}).color, figs:[{ look:lookFor('tour', e), anim:'sing', mic:true }] }, 'venue'); }
   if (UI.tab === 'charts' || UI.tab === 'legacy') {}
   const nb = document.querySelector('.tab.on'); if (nb) nb.scrollIntoView({ block:'nearest', inline:'center' });
@@ -340,6 +341,7 @@ VIEWS.tour = function () {
         ${ER.TOUR_SHOWS[p.id] ? `<p class="small muted">The real tour played about ${ER.TOUR_SHOWS[p.id]} shows.</p>` : ''}
         ${!p.tour.target && p.tour.est ? `<p class="small muted">Its real gross is not confirmed. The game sizes it from a rough estimate of about ${G.fmtM(p.tour.est)}.</p>` : ''}
         ${p.tour.target ? `<p class="small">Real tour target: about ${G.fmtM(p.tour.target)}. Matching its scale gives a Canon bonus. Going far past it costs Energy.</p>${bar(tr.gross, p.tour.target)}` : ''}
+        ${(pj.diary || []).length ? `<h3>Tour diary</h3>${pj.diary.slice(0, 6).map(d => `<div class="between small"><span>${h(d.city)}: ${'★'.repeat(d.stars)}</span><span class="muted">${h(d.moment)}</span></div>`).join('')}` : ''}
         <p class="small">Openers: ${h((tr.openers || []).join(', ') || 'None')}</p><p class="small muted">Setlist: ${h((tr.setlist || []).join(' · '))}</p>${p.tour.surprise ? '<p class="small">Surprise-song slots: two acoustic songs a night, changing every show.</p>' : ''}`));
       return;
     }
@@ -373,7 +375,7 @@ VIEWS.inbox = function () {
   const s = S(); const F = { manager:'Manager', publicist:'Publicist', label:'Label', family:'Mom', collab:'Collaborator', promoter:'Promoter', fans:'Fan club' };
   return card(`<div class="between"><h2>Team Inbox</h2><button class="btn ghost sm" data-act="readall">Mark all read</button></div>
     ${s.duties.length ? `<h3>Assignments</h3>${s.duties.map(d => `<div class="between small"><span>${h(d.l)}</span><span class="muted">Due ${h(G.fmtDate(d.due))}</span></div>`).join('')}` : ''}
-    <h3>Messages</h3>${s.inbox.map(m => `<div class="msg ${m.read ? '' : 'unread'}" data-act="read" data-id="${m.id}"><div class="between"><b>${h(m.subj)}</b><span class="small muted">${h(F[m.from] || m.from)}</span></div><div class="small muted">${h(m.x)}</div><div class="small faint">${h(G.fmtDate(m.abs))}</div></div>`).join('') || '<p class="small muted">No messages.</p>'}`);
+    <h3>Messages</h3>${s.inbox.map(m => `<div class="msg ${m.read ? '' : 'unread'}" data-act="read" data-id="${m.id}">${m.mail != null && !m.replied ? `<button class="btn sm" style="float:right" data-act="reply" data-id="${m.id}">Reply</button>` : ''}<div class="between"><b>${h(m.subj)}</b><span class="small muted">${h(F[m.from] || m.from)}</span></div><div class="small muted">${h(m.x)}</div><div class="small faint">${h(G.fmtDate(m.abs))}</div></div>`).join('') || '<p class="small muted">No messages.</p>'}`);
 };
 VIEWS.eggs = function () {
   const s = S(), E = s.eggs, tg = G.eggTargets();
@@ -478,6 +480,23 @@ function modals() {
     modal(`<span class="eyebrow">Release week</span><h2>${h(p.title)}</h2><div class="coverwrap">${coverSVG(G.pj(p.id).cover, 140, p.id)}<div><p><b>${G.fmtN(r.fw)}</b> first week</p>${r.real ? `<p class="small muted">Real: ${G.fmtN(r.real)}</p>` : ''}<p class="small">Quality ${r.q} · Debut No. ${r.peak}</p></div></div><button class="btn big" data-act="modalok">Continue</button>`);
     return;
   }
+  if (m.k === 'wrap') {
+    const w = G.eraWrap(m.pid); if (!w) { s.modal.shift(); return modals(); }
+    modal(`<span class="eyebrow">Era wrap-up</span><h2>${h(w.p.title)}</h2><div class="coverwrap">${coverSVG(G.pj(w.p.id).cover, 110, w.p.id)}<div>
+      <p class="small">First week: <b>${G.fmtN(w.fw)}</b>${w.real ? ` <span class="muted">(real ${G.fmtN(w.real)})</span>` : ''}</p><p class="small">Peak No. ${w.peak}${w.no1w ? `, ${w.no1w} weeks at No. 1` : ''}</p></div></div>
+      ${w.best ? `<p class="small">Your best song: <b>${h(w.best)}</b> (quality ${w.bestQ})</p>` : ''}${w.single ? `<p class="small">Biggest single: <b>${h(w.single.t)}</b>, peak No. ${w.single.peak}</p>` : ''}
+      ${w.tour ? `<p class="small">${h(w.tour.name)}: ${w.tour.shows} shows, ${G.fmtM(w.tour.gross)}${w.tour.target ? ` <span class="muted">(real ${G.fmtM(w.tour.target)})</span>` : ''}</p>` : ''}
+      ${w.moment ? `<div class="truth"><span class="eyebrow">A moment to remember</span><p class="small"><b>${h(w.moment.t)}</b> ${h(w.moment.r)}</p></div>` : ''}
+      ${w.goals ? `<p class="small">Era goals: ${w.goals.filter(Boolean).length} of ${w.goals.length}</p>` : ''}<button class="btn big" data-act="modalok">On to the next era</button>`);
+    return;
+  }
+  if (m.k === 'honours') {
+    modal(`<span class="eyebrow">${m.y}</span><h2>${h(ER.FREE_AWARDS.n)}</h2><p class="small muted">An invented award show for the years after the real story.</p><div class="stage3d short" id="t3hon"></div>
+      ${m.noms.map(n => `<div class="between small"><span><b>${h(n.cat)}</b>: ${h(n.what)}</span><span>${n.won ? '🏆 Won' : 'Nominated'}</span></div>`).join('')}<button class="btn big" data-act="modalok" style="margin-top:10px">Continue</button>`);
+    mount3D('#t3hon', { set:'awards', color:'#e8c66a', figs:[{ look:lookFor('awards', G.currentEra()), anim:m.noms.some(n => n.won) ? 'bow' : 'wave' }] }, 'hon');
+    if (m.noms.some(n => n.won) && window.SND) SND.fanfare();
+    return;
+  }
   if (m.k === 'nextera') {
     const P = s.proposal || G.proposeEra(); UI.sel.ne = UI.sel.ne && UI.sel.ne.abs === P.abs ? UI.sel.ne : { abs:P.abs, title:P.titles[0], theme:P.themes[0], weeks:32, n:13, tour:40 };
     const ne = UI.sel.ne, th = ER.ERA_THEMES.find(t => t.id === ne.theme);
@@ -536,6 +555,9 @@ function modals() {
   }
 }
 function eventModal(id) {
+  const ev = G.findEvent(id);
+  UI.awardSeen = UI.awardSeen || {};
+  if (ev && ev.award && !UI.awardSeen[id]) { if (!UI.award || UI.award.id !== id) UI.award = { id, step:'carpet' }; return awardNight(id); }
   const s = S(), drama = id.startsWith('drama:');
   const e = drama ? ER.DRAMA.find(x => x.id === id.slice(6)) : G.findEvent(id);
   const txt = drama ? G.dramaText(e) : e.x;
@@ -596,6 +618,35 @@ function sessionResult(title, lines, after) {
   closeModals();
   modal(`<span class="eyebrow">${h(G.fmtDate(G.S().abs))}</span><h2>${h(title)}</h2>${lines.map(l => `<p class="${l.c || ''}">${h(l.x)}</p>`).join('')}<button class="btn big" data-act="closem">Continue</button>`);
 }
+/* ---------- Show nights ---------- */
+function showNight() {
+  const st = UI.show; if (!st) return; const sh = st.sh, p = G.proj(sh.pid), era = G.currentEra();
+  closeModals(); let body = '';
+  if (st.step === 'opener') body = `<p>${h(sh.detail)}</p><h3>How do you open?</h3>${ER.OPENERS.map(o => `<button class="choice" data-act="shop" data-v="${o.id}">${h(o.n)}</button>`).join('')}`;
+  else if (st.step === 'surprise') body = `<h3>Surprise songs</h3><p class="small muted">Pick two acoustic songs. Ones you have never played as a surprise get the biggest reaction.</p>
+    <div class="chips">${sh.offer.map(t => `<button class="chip ${st.picks.includes(t) ? 'on' : ''}" data-act="shsong" data-v="${h(t)}">${h(t)}${(G.S().surprisePlayed || {})[t] ? '' : ' ✨'}</button>`).join('')}</div>
+    <button class="btn big" data-act="shnext" ${st.picks.length ? '' : 'disabled'}>Play them</button>`;
+  else if (st.step === 'moment') body = `<h3>${h(sh.moment.t)}</h3><p>${h(sh.moment.x)}</p>${sh.moment.ch.map((c, i) => `<button class="choice" data-act="shmoment" data-i="${i}">${h(c.l)}</button>`).join('')}`;
+  else if (st.step === 'result') body = `<p><b>${h(st.res.mc.r)}</b></p><div class="review">${'★'.repeat(st.res.stars)}${'☆'.repeat(5 - st.res.stars)}</div><p class="small muted">The review: ${h(st.res.line)}</p>
+    ${st.picks.length ? `<p class="small">Surprise songs: ${st.picks.map(h).join(' and ')}</p>` : ''}<button class="btn big" data-act="shdone">Back to the tour</button>`;
+  modal(`<span class="eyebrow">${h(p.tour.name)} · ${h(G.fmtDate(G.S().abs))}</span><h2>Tonight in ${h(sh.city)}</h2><div class="stage3d short" id="t3show"></div>${body}`);
+  const tier = (G.pj(p.id).tour || {}).tier || 'stadium';
+  mount3D('#t3show', { set:tier, color:(era || p).color, figs:[{ look:lookFor('tour', era || p), anim:st.step === 'result' ? 'bow' : st.step === 'surprise' ? 'strum' : 'sing', mic:st.step !== 'surprise', guitar:st.step === 'surprise' }] }, 'show');
+}
+/* ---------- Award nights ---------- */
+function awardNight(id) {
+  const e = G.findEvent(id), st = UI.award; closeModals();
+  const era = G.currentEra(), y = G.yw().y;
+  let body = '', look = lookFor('awards', era), anim = 'wave';
+  if (st.step === 'carpet') body = `<p>${h(e.x)}</p><h3>The red carpet: what do you wear?</h3>${ER.CARPET.map(c => `<button class="choice" data-act="awcarpet" data-v="${c.id}">${h(c.n)}</button>`).join('')}`;
+  else if (st.step === 'perform') { const cs = ER.CARPET.find(c => c.id === st.carpet); Object.assign(look, cs.look); body = `<p><b>${h(cs.r)}</b></p><h3>Do you perform tonight?</h3>
+    ${G.catalog().slice(-6).reverse().map(t => `<button class="choice" data-act="awperf" data-v="${h(t)}">Perform "${h(t)}"</button>`).join('')}<button class="choice" data-act="awperf" data-v="">Just watch tonight</button>`; anim = 'sing'; }
+  else if (st.step === 'reveal') { const cs = ER.CARPET.find(c => c.id === st.carpet); Object.assign(look, cs.look); anim = 'idle';
+    body = `<p class="small muted">${st.perf ? `You performed "${h(st.perf)}". ` : ''}The presenter opens the envelope.</p><h3>And the award goes to…</h3><button class="btn big" data-act="awreveal">Open the envelope</button>`; }
+  modal(`<span class="eyebrow">Award night · ${h(G.fmtDate(G.S().abs))}</span><h2>${h(e.t)}</h2><div class="stage3d short" id="t3award"></div>${body}`);
+  mount3D('#t3award', { set:st.step === 'carpet' ? 'press' : 'awards', color:(era || {}).color || '#e8c66a', figs:[{ look, anim, mic:st.step === 'perform', s:ageScale() }] }, 'award');
+}
+function moodOf(e) { if (!e) return 'country'; const th = e.theme; return ER.ERA_MOOD[e.id] || (th ? ({ country:'country', folk:'quiet', acoustic:'quiet', darkpop:'dark', jazz:'romantic', orchestral:'romantic' })[th] || 'pop' : 'pop'); }
 function after(r) { if (r && r.err) toast(r.err); else if (r && r.msg) toast(r.msg); render(); }
 const ACT = {
   tab:d => { UI.tab = d.v; if (d.v !== 'week') G.guideTick('tab'); render(); window.scrollTo(0, 0); },
@@ -604,7 +655,19 @@ const ACT = {
     if (t && t.kind === 'record' && !d.arg) return studioSession(t.p);
     const r = G.doTask(d.id, d.arg || undefined); if (r && r.err) return after(r);
     if (r && r.msg) toast(r.msg);
+    if (t && t.kind === 'shows' && r && r.ok) { const p = G.proj(t.p); if (p.tour.kind !== 'opening' && !/travel week/.test(r.msg || '')) { render(); UI.show = { sh:G.showSetup(p), step:'opener', picks:[] }; return showNight(); } }
     const sc = t && r && r.ok ? G.pickScene(t) : null; if (sc) { render(); return showScene(sc); } render(); },
+  shop:d => { UI.show.opener = d.v; UI.show.step = UI.show.sh.surprise ? 'surprise' : 'moment'; if (window.SND) SND.crowd(2.5); showNight(); },
+  shsong:d => { const a = UI.show.picks, i = a.indexOf(d.v); if (i >= 0) a.splice(i, 1); else { a.push(d.v); if (a.length > 2) a.shift(); } showNight(); },
+  shnext:() => { UI.show.step = 'moment'; if (window.SND) SND.crowd(2); showNight(); },
+  shmoment:d => { const st = UI.show; st.res = G.showNight(st.sh, st.opener, st.picks, +d.i); st.step = 'result'; if (window.SND) { SND.crowd(4, st.res.stars >= 4); } showNight(); },
+  shdone:() => { UI.show = null; closeModals(); render(); },
+  awcarpet:d => { UI.award.carpet = d.v; UI.award.step = 'perform'; awardNight(UI.award.id); },
+  awperf:d => { UI.award.perf = d.v; UI.award.step = 'reveal'; if (d.v && window.SND) SND.crowd(3); awardNight(UI.award.id); },
+  awreveal:() => { const a = UI.award; G.awardNight(G.findEvent(a.id), a.carpet, a.perf); UI.awardSeen[a.id] = 1; UI.award = null; if (window.SND) SND.fanfare(); closeModals(); eventModal(a.id); },
+  reply:d => { const s = G.S(), m = s.inbox.find(x => x.id === d.id); if (!m) return; const f = ER.FAN_MAIL[m.mail]; m.read = true; m.replied = true;
+    showScene({ t:`A letter from ${f.from}`, x:f.x, set:'home', with:'fan', ch:f.ch }); },
+  sound:() => { const on = SND.toggle(); UI.heard = true; if (on) SND.setMood(moodOf(G.currentEra())); toast(on ? 'Sound on.' : 'Sound off.'); closeModals(); },
   scene:d => { const sc = UI.scene; if (!sc) return closeModals(); const c = G.resolveScene(sc, +d.i); UI.scene = null;
     const box = document.querySelector('#scch'); if (box) box.innerHTML = `<p><b>${h(c.r)}</b></p><p class="small muted">${h(G.fxText(c.fx))}</p><button class="btn big" data-act="scenedone">Continue</button>`; },
   scenedone:() => { closeModals(); render(); },
@@ -695,7 +758,7 @@ const ACT = {
   newera:() => { const t = ($('#ne-title') || {}).value || '', n = +($('#ne-n') || {}).value || 13, w = +($('#ne-w') || {}).value || 32, tr = +($('#ne-t') || {}).value || 0; const p = G.newEra(t.trim(), n, w, tr); toast(`${p.title} is on the calendar.`); UI.tab = 'week'; render(); },
   nextreal:d => { G.startNextReal(d.id); G.S().proposal = null; G.S().modal = G.S().modal.filter(m => m.k !== 'nextera'); closeModals(); toast('The next era begins.'); UI.tab = 'week'; render(); },
   menu:() => { const s = G.S(); modal(`<h2>Menu</h2><p class="small muted">Slot ${s.slot} · ${s.mode === 'story' ? 'Story Mode' : 'Era Start'} · ${G.DIFF[s.diff].l}. The game autosaves every week.</p>
-      <div class="stack tight"><button class="btn" data-act="savenow">Save now</button><button class="btn ghost" data-act="export">Export save file</button><label class="btn ghost">Import save file<input type="file" accept=".json,application/json" data-act="import" hidden></label><button class="btn ghost" data-act="totitle">Title screen</button><button class="btn ghost" data-act="closem">Close</button></div>`); },
+      <div class="stack tight"><button class="btn" data-act="savenow">Save now</button><button class="btn ghost" data-act="sound">Sound: ${window.SND && SND.on ? 'on' : 'off'}</button><button class="btn ghost" data-act="export">Export save file</button><label class="btn ghost">Import save file<input type="file" accept=".json,application/json" data-act="import" hidden></label><button class="btn ghost" data-act="totitle">Title screen</button><button class="btn ghost" data-act="closem">Close</button></div>`); },
   savenow:() => { G.save(); toast('Saved.'); closeModals(); },
   export:() => { const b = new Blob([G.exportSave()], { type:'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `eras-life-slot${G.S().slot}-${G.yw().y}.json`; document.body.appendChild(a); a.click(); a.remove(); toast('Save file downloaded.'); },
   totitle:() => { G.save(); G.set(null); closeModals(); title(); },
@@ -724,6 +787,8 @@ const ACT = {
     UI.showPrev = show; show(P.length - 1); },
 };
 document.addEventListener('click', e => {
+  if (window.SND && !UI.heard) { UI.heard = true; if (SND.on && G.S()) SND.setMood(moodOf(G.currentEra())); }
+  if (window.SND && e.target.closest('.choice, .chip')) SND.blip(true);
   const el = e.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT' || el.tagName === 'INPUT') return;
   const f = ACT[el.dataset.act]; if (f) { e.preventDefault(); f(el.dataset, el); }
 });

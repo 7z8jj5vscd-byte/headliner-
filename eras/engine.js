@@ -388,6 +388,46 @@ G.doTask = function (id, arg) {
   return { ok:true, msg };
 };
 
+/* ---------- Show nights ---------- */
+// The night itself, after the week's shows are played: city, opener, surprise songs and a crowd moment.
+G.showSetup = function (p) {
+  const pj = G.pj(p.id), tr = pj.tour || {}, regions = (tr.regions && tr.regions.length ? tr.regions : ['North America']);
+  const city = pick(ER.CITIES[pick(regions)] || ER.CITIES['North America']);
+  const played = S.surprisePlayed = S.surprisePlayed || {};
+  const cat = G.catalog(); const fresh = cat.filter(t => !played[t]);
+  const offer = (fresh.length >= 6 ? fresh : cat).slice().sort(() => Math.random() - .5).slice(0, 6);
+  return { pid:p.id, city, detail:pick(ER.CITY_DETAILS), offer, moment:pick(ER.CROWD_MOMENTS), surprise:!!(p.tour.surprise || S.flags.surpriseGuests || G.yw().y >= 2023) };
+};
+G.showNight = function (sh, openerId, picks, mi) {
+  const op = ER.OPENERS.find(o => o.id === openerId) || ER.OPENERS[0], mc = sh.moment.ch[mi] || sh.moment.ch[0];
+  applyFx(op.fx); applyFx(mc.fx);
+  let score = 2.6 + (S.stats.energy > 50 ? .5 : -.3) + (S.stats.team > 60 ? .3 : 0) + rnd(-.4, .6);
+  const pj = G.pj(sh.pid); if (pj.underRehearsed) score -= .7; if (pj.tp && pj.tp.rehearse) score += .3;
+  (picks || []).forEach(t => { const first = !S.surprisePlayed[t]; S.surprisePlayed[t] = (S.surprisePlayed[t] || 0) + 1; if (first) { score += .35; applyFx({ fans:.4 }); } });
+  const stars = clamp(Math.round(score), 1, 5);
+  applyFx({ rep:(stars - 3) * .8, fans:(stars - 3) * .4 });
+  const line = ER.REVIEW_LINES[stars];
+  pj.diary = pj.diary || []; pj.diary.unshift({ abs:S.abs, city:sh.city, stars, picks:picks || [], moment:sh.moment.t }); if (pj.diary.length > 120) pj.diary.length = 120;
+  G.journalAdd(`${sh.city}: ${stars} stars`, `${sh.moment.t}. ${mc.r}`);
+  return { stars, line, mc };
+};
+/* ---------- Award nights ---------- */
+G.awardNight = function (e, carpetId, perf) {
+  const c = ER.CARPET.find(x => x.id === carpetId) || ER.CARPET[0]; applyFx(c.fx);
+  if (perf) applyFx({ fans:1, hype:2 });
+  G.journalAdd(`${e.t}: the red carpet`, `${c.n}. ${c.r}`);
+  return c;
+};
+/* ---------- Era wrap-ups ---------- */
+G.eraWrap = function (pid) {
+  const p = G.proj(pid), r = S.released.find(x => x.pid === pid); if (!p || !r) return null;
+  const songs = Object.keys(S.songs).filter(t => S.songs[t].p === pid && S.songs[t].st === 'released').sort((a, b) => S.songs[b].q - S.songs[a].q);
+  const singles = S.charts.singles.filter(c => c.pid === pid).sort((a, b) => a.peak - b.peak);
+  const w = G.win(p), mom = (S.journal || []).filter(j => j.abs >= (w.ws != null ? w.ws : w.rs) && j.abs <= S.abs);
+  const tr = G.pj(pid).tour;
+  return { p, best:songs[0], bestQ:songs[0] ? S.songs[songs[0]].q : 0, single:singles[0], fw:r.fw, real:r.real, peak:r.peak, no1w:r.no1w, moment:mom.length ? pick(mom) : null,
+    tour:tr && tr.played ? { name:tr.name, shows:tr.played, gross:tr.gross, target:p.tour && p.tour.target } : null, goals:S.goals[pid] };
+};
 /* ---------- Scenes ---------- */
 // Which scene fits a task. Some tasks always get one; everyday ones only sometimes.
 G.sceneKey = t => {
@@ -603,6 +643,9 @@ function startWeek() {
     inbox('label', `${ER.artists[r.who].name} releases ${r.title}`, `Expect ${G.fmtN(r.units)} in its first week. Plan around it.`); } });
   if (G.canRetire() && !S.flags.farewell && G.age() >= 65 && ER.yw(a).w === 26 && !S.flags.retireNudged) { S.flags.retireNudged = a; inbox('family', 'Have you thought about stopping?', 'You have nothing left to prove. A farewell tour, then time for yourself? It is your call. You can plan a farewell tour or retire from This Week.'); }
   if (S.flags.retired && ER.yw(a).w === 1 && Math.random() < .25) feed(pick(['it has been years and i still check for a comeback every morning','imagine one more era. just one.','the farewell tour was the best night of my life']));
+  if (a >= W('2006-06-01') && !S.flags.retired && S.released.length && Math.random() < .14) {
+    const m = pick(ER.FAN_MAIL); inbox('fans', `A letter from ${m.from}`, m.x, { mail:ER.FAN_MAIL.indexOf(m) }); }
+  if (S.flags.free && !S.flags.retired && ER.yw(a).w === 6 && S.awardsYear !== ER.yw(a).y) { S.awardsYear = ER.yw(a).y; const n = G.freeNominations(); if (n.length) S.modal.push({ k:'honours', y:ER.yw(a).y, noms:n }); }
   if (G.needsNextEra()) G.proposeEra();
   G.save(true);
 }
@@ -784,6 +827,7 @@ function checkGoals(p) {
     if (g.k === 'film') return S.seen.atwfilm === 0;
     if (g.k === 'written') return p.tracks.every(t => S.songs[t]);
     return false; });
+  if (G.pj(p.id).released && p.type !== 'edition') S.modal.push({ k:'wrap', pid:p.id });
   const n = S.goals[p.id].filter(Boolean).length; if (n) { applyFx({ clout:n * 2, fans:n }); S.stats.money += n * 50000; }
 }
   const ACH_FAREWELL = { farewell:'The Farewell Tour', retired:'Retired', unretired:'The comeback after retirement' };
@@ -884,6 +928,19 @@ G.careerSummary = function () {
     shows:tours.reduce((a, x) => a + x.tour.played, 0), gross:tours.reduce((a, x) => a + x.tour.gross, 0), tickets:tours.reduce((a, x) => a + x.tour.tickets, 0),
     years:Math.max(0, Math.round((S.abs - firstRel) / 52)), eras:rel.filter(r => { const p = G.proj(r.pid); return p && p.type !== 'edition'; }).length,
     invented:S.custom.filter(p => p.type !== 'farewell').length, fans:S.stats.fans, money:S.stats.money, canon:G.canon(), own:S.stats.own, age:G.age() };
+};
+// The invented award show in free play: nominations from last year's work, results from how it did.
+G.freeNominations = function () {
+  const y = ER.yw(S.abs).y - 1, rel = S.released.filter(r => ER.yw(r.abs).y === y), cats = ER.FREE_AWARDS.cats, out = [];
+  rel.forEach(r => { const p = G.proj(r.pid); if (!p) return; const sc = r.q / 100 * .5 + Math.min(1, r.fw / Math.max(1, S.stats.fans * .03)) * .5;
+    out.push({ cat:cats[0], what:p.title, chance:clamp(sc - .1, .1, .85) }); });
+  const best = S.charts.singles.filter(c => ER.yw(c.abs).y === y).sort((a, b) => a.peak - b.peak)[0];
+  if (best) out.push({ cat:cats[1], what:best.t, chance:clamp(1 - best.peak / 25, .1, .8) });
+  const toured = Object.keys(S.pj).some(k => S.pj[k].diary && S.pj[k].diary.some(d => ER.yw(d.abs).y === y));
+  if (toured) out.push({ cat:cats[2], what:'your tour', chance:.5 });
+  if (out.length) out.push({ cat:cats[3], what:G.art().name, chance:clamp(S.stats.rep / 140, .1, .7) });
+  out.forEach(n => { n.won = Math.random() < n.chance; if (n.won) S.awards.push({ n:`${ER.FREE_AWARDS.n}: ${n.cat}`, abs:S.abs, y:y + 1 }); });
+  return out;
 };
 G.takeBreak = function (weeks) { S.proposal = null; S.breakUntil = S.abs + weeks; applyFx({ energy:30, team:5 }); inbox('family', 'A break', `No new music for ${weeks} weeks. Rest up.`); };
 G.startNextReal = function (id) {
