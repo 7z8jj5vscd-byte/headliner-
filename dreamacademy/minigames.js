@@ -338,6 +338,14 @@ const INFO = {
   mv:{ title:'Music video shoot', help:'Hit the camera with the red light. One take each.' },
 };
 MG.INFO = INFO;
+/* A beat loop for music video and stage playback. Returns a stop function. */
+MG.beatLoop = (bpm, secs) => {
+  const a = ac(); if (!a) return () => {};
+  const beat = 60 / bpm, t0 = a.currentTime + .1, n = Math.floor(secs / beat), roots = [55, 65.4, 73.4, 49];
+  for (let k = 0; k < n; k++) { kick(t0 + k * beat, .26); hat(t0 + (k + .5) * beat); if (k % 2 === 0) bass(t0 + k * beat, roots[Math.floor(k / 4) % 4]);
+    if (k % 4 === 2) blip(roots[Math.floor(k / 4) % 4] * 8, .25, 'triangle', .05, t0 + k * beat); }
+  return () => { try { MASTER.gain.setValueAtTime(0, a.currentTime); setTimeout(() => { MASTER.gain.value = MG.vol; }, 300); } catch (e) {} };
+};
 /* Background music: a soft four-chord pad loop. */
 let MUS = null;
 MG.music = on => {

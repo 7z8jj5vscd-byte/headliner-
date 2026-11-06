@@ -165,6 +165,17 @@ body.calm *{animation:none!important;transition:none!important}
 .binder{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
 .pc{background:linear-gradient(160deg,color-mix(in srgb,var(--pc) 55%,#111),#111);border:1px solid var(--rule);border-radius:8px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
 .pc b{font-size:12.5px}.pc span{font-size:10.5px;color:var(--muted)}.pc em{font:700 9px var(--mono);font-style:normal;color:var(--faint)}.pc.rare{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+.linkbtn{background:none;border:0;padding:0;color:var(--amber);font:inherit;font-size:12px;text-decoration:underline}
+.custrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.custrow input{background:var(--raised);border:1px solid var(--rule);border-radius:6px;padding:6px 8px;width:100%}
+.seqline{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.logoprev{background:#0a0b0d;border:1px solid var(--rule);border-radius:8px;padding:18px;text-align:center;margin:8px 0}
+.logo3{font-weight:700;font-size:22px;letter-spacing:.06em}.lf-serif{font-family:var(--serif)}.lf-mono{font-family:var(--mono)}.lf-sans{font-family:var(--sans)}.lf-wide{font-family:var(--sans);letter-spacing:.3em;font-weight:500}
+.glogo{margin-top:2px}.glogo .logo3{font-size:12px}
+.mvp .mv-cap{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);text-align:center;pointer-events:none}
+.mv-cap b{display:block;font:600 26px var(--serif);text-shadow:0 2px 14px #000}.mv-cap span{font:500 12px var(--mono);color:var(--muted)}
+.wchart{display:flex;flex-direction:column;gap:4px}.wrow{display:flex;align-items:center;gap:10px;background:var(--raised);border-radius:6px;padding:6px 10px;animation:slidein .45s ease-out both}
+.wrow b{width:24px;text-align:center}.wrow span{display:block;font-weight:600;font-size:13px}.wrow em{font-style:normal;font-size:11.5px;color:var(--faint)}.wrow.you{background:color-mix(in srgb,var(--amber) 22%,var(--raised));outline:1px solid var(--amber)}
+@keyframes slidein{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
 /* mini-games */
 .mg{position:fixed;inset:0;z-index:80;background:#050607;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px);user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:auto}
 .mg-top{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 8px}.mg-top b{flex:1;font:600 16px var(--serif)}
@@ -199,14 +210,15 @@ body.calm *{animation:none!important;transition:none!important}
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="data.js?v=2"></script>
-<script src="engine.js?v=5"></script>
+<script src="engine.js?v=6"></script>
 <script src="story.js?v=2"></script>
 <script src="depth.js?v=2"></script>
 <script src="career.js?v=1"></script>
 <script src="replay.js?v=1"></script>
-<script src="stage3d.js?v=5"></script>
-<script src="minigames.js?v=2"></script>
-<script src="ui.js?v=7"></script>
+<script src="stage3d.js?v=6"></script>
+<script src="minigames.js?v=3"></script>
+<script src="ui.js?v=8"></script>
+<script src="studio.js?v=1"></script>
 <script>UI.start();
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});</script>
 </body>

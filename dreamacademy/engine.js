@@ -483,7 +483,7 @@ function chartTick(R) {
     if (age < 0 || age > 5) return;
     // Slow-burn viral chance: higher for the second release in its 2nd-3rd month.
     const danceAvg = G.activeMembers().reduce((t, id) => t + S.people[id].sk.da, 0) / Math.max(1, G.activeMembers().length);
-    let pv = .03 + (danceAvg - 50) / 500 + (effectivePlan() === 'promo' ? .03 : 0);
+    let pv = .03 + (danceAvg - 50) / 500 + (effectivePlan() === 'promo' ? .03 : 0) + (S.flags.choreoBonus ? .02 : 0);
     if (r.id === 2 && age >= 2 && age <= 3) pv += .2;
     if (!r.viral && age >= 1 && chance(pv)) {
       r.viral = true; r.power += 22; S.group.momentum = clamp(S.group.momentum + 30, 0, 100); mult(1.35); S.rec.viral++;

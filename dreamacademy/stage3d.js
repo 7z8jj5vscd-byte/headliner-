@@ -61,6 +61,10 @@ function figure(p) {
   M(new THREE.CylinderGeometry(.045, .05, .09, 10), skin, 0, .03, 0, N);
   const hd = new THREE.Group(); hd.position.y = .19; N.add(hd); R.hd = hd;
   M(new THREE.SphereGeometry(.13, 18, 14), skin, 0, 0, 0, hd).scale.set(.95, 1.08, 1);
+  [-1, 1].forEach(sd => { M(new THREE.SphereGeometry(.024, 8, 6), skin, sd * .124, -.005, 0, hd).scale.set(.5, 1, .8);
+    M(new THREE.SphereGeometry(.016, 8, 6), basic('#f2a0a8', { transparent:true, opacity:.45 }), sd * .07, -.03, .108, hd).scale.set(1.3, .7, .3);
+    M(new THREE.BoxGeometry(.03, .006, .006), '#1a1414', sd * .045, .018, .121, hd).rotation.z = sd * -.25; });
+  M(new THREE.SphereGeometry(.011, 8, 6), shade(skin, -.12), 0, -.025, .127, hd).scale.set(.8, 1, .7);
   [-1, 1].forEach(s => { M(new THREE.SphereGeometry(.017, 8, 6), '#1a1414', s * .045, .0, .118, hd); M(new THREE.BoxGeometry(.04, .008, .01), shade(hair, .15), s * .047, .045, .118, hd); });
   R.mLine = M(new THREE.BoxGeometry(.04, .009, .01), '#9c4a4a', 0, -.058, .12, hd);
   R.mOpen = M(new THREE.SphereGeometry(.018, 10, 8), '#5a1f24', 0, -.06, .118, hd); R.mOpen.scale.set(1.2, .8, .4); R.mOpen.visible = false;
@@ -92,7 +96,21 @@ S3.figure = figure;
 
 /* ---------- Moves ----------
    Each move sets limb rotations from phase p (0..1 over one beat-pair). */
+/* Keyframed routines: poses [l, r, le, re, lz, rz, hipZ, hipX, lift, torsoY] eased between beats. */
+const KF = {
+  kfHook:[[2.8, .3, .2, .2, .3, 0, .12, 0, 0, -.3], [.3, 2.8, .2, .2, 0, -.3, -.12, 0, 0, .3], [1.6, 1.6, 1.8, 1.8, -.6, .6, 0, 0, .06, 0], [2.9, 2.9, .1, .1, .5, -.5, 0, 0, .12, 0]],
+  kfWave:[[1.5, .2, .1, .2, -1.2, 0, .1, 0, 0, .2], [2.2, 1.2, .3, .2, -.6, .6, 0, 0, 0, 0], [.2, 1.5, .2, .1, 0, 1.2, -.1, 0, 0, -.2], [1.2, 2.2, .2, .3, -.6, .6, 0, 0, 0, 0]],
+  kfPower:[[.6, .6, 2.2, 2.2, -.9, .9, 0, .25, -.08, 0], [3, .4, 0, .4, .2, 0, .15, 0, .1, -.4], [.4, 3, .4, 0, 0, -.2, -.15, 0, .1, .4], [1.8, 1.8, .4, .4, -1.3, 1.3, 0, -.1, 0, 0]],
+  kfCute:[[2.3, 2.3, 2.5, 2.5, -.4, .4, .12, 0, 0, 0], [1, 2.6, 1.6, .3, -.2, -.5, -.12, 0, .05, .2], [2.6, 1, .3, 1.6, .5, .2, .12, 0, .05, -.2], [1.3, 1.3, 2.7, 2.7, -.3, .3, 0, 0, 0, 0]],
+};
+const ease = x => x * x * (3 - 2 * x);
+function kfPose(R, keys, p) {
+  const n = keys.length, f = p * n, i = Math.floor(f) % n, j = (i + 1) % n, t = ease(f - Math.floor(f)), k = keys[i].map((v, z) => v + (keys[j][z] - v) * t);
+  arms(R, k[0], k[1], k[2], k[3], k[4], k[5]); R.hips.rotation.z = k[6]; R.torso.rotation.x = k[7]; R.root.position.y = R.base.y + Math.max(0, k[8]); R.torso.rotation.y = k[9];
+  if (k[8] < 0) R.legs.forEach(l => { l.rotation.x = k[8] * 4; l.userData.knee.rotation.x = -k[8] * 8; });
+}
 const MOVES = {
+  kfHook:(R, p) => kfPose(R, KF.kfHook, p), kfWave:(R, p) => kfPose(R, KF.kfWave, p), kfPower:(R, p) => kfPose(R, KF.kfPower, p), kfCute:(R, p) => kfPose(R, KF.kfCute, p),
   idle:(R, p, t) => { R.hips.rotation.z = Math.sin(t * 1.3) * .03; arms(R, .12, .12, .2, .2); R.hd.rotation.y = Math.sin(t * .7) * .15; },
   wave:(R, p) => { const a = Math.sin(p * Math.PI * 2); arms(R, 2.6 + a * .3, 2.6 - a * .3, .3, .3, a * .4, -a * .4); R.hips.rotation.z = a * .08; },
   hips:(R, p) => { const a = Math.sin(p * Math.PI * 2); R.hips.rotation.z = a * .18; R.hips.position.x = a * .06; arms(R, .4, .4, 1.6, 1.6, .9, -.9); R.hd.rotation.z = -a * .1; },
@@ -119,6 +137,7 @@ const MOVES = {
   D:(R) => { arms(R, .5, .5, 1.6, 1.6, .6, -.6); R.legs.forEach(l => { l.rotation.x = -.6; l.userData.knee.rotation.x = 1.1; }); R.root.position.y = R.base.y - .14; R.torso.rotation.x = .3; },
 };
 S3.MOVES = Object.keys(MOVES);
+S3.DANCE = ['kfHook','kfWave','kfPower','kfCute','step','wave','hips','point','body','clap','jump','spin'];
 function arms(R, l, r, le, re, lz, rz) {
   const [A, B] = R.arms;
   A.rotation.x = -l; B.rotation.x = -r; A.rotation.z = lz || -.08; B.rotation.z = rz || .08;
@@ -287,7 +306,7 @@ function mount(el, o) {
   const kind = o.set || 'practice';
   let host = el; const W = () => Math.max(50, host.clientWidth), Hh = () => Math.max(50, host.clientHeight || o.height || 220);
   let renderer;
-  try { renderer = new THREE.WebGLRenderer({ antialias:S3.gfx !== 'low', alpha:false, powerPreference:'low-power' }); }
+  try { renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer:!!o.photo, antialias:S3.gfx !== 'low', alpha:false, powerPreference:'low-power' }); }
   catch (e) { el.classList.add('no3d'); return null; }
   renderer.setPixelRatio(S3.gfx === 'low' ? 1 : Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(W(), Hh());
@@ -348,7 +367,7 @@ function mount(el, o) {
     cam.position.set(look[0] + dx * Math.cos(yaw) + dz * Math.sin(yaw), pos[1], look[2] - dx * Math.sin(yaw) + dz * Math.cos(yaw));
     cam.lookAt(look[0], look[1], look[2]);
   }
-  const ROUT = ['step','wave','hips','point','body','clap','jump','spin'];
+  const ROUT = (o.routine && o.routine.length ? o.routine : S3.routine && S3.routine.length ? S3.routine : ['kfHook','step','wave','kfPower','hips','point','kfCute','body','clap','kfWave','jump','spin']);
   function loop() {
     if (C.dead) return;
     C.raf = requestAnimationFrame(loop);
@@ -378,6 +397,7 @@ function mount(el, o) {
   const ro = window.ResizeObserver ? new ResizeObserver(() => { renderer.setSize(W(), Hh()); cam.aspect = W() / Hh(); cam.updateProjectionMatrix(); }) : null;
   if (ro) ro.observe(el);
   C.attachTo = el2 => { C.el = el2; host = el2; el2.appendChild(renderer.domElement); if (ro) { ro.disconnect(); ro.observe(el2); } renderer.setSize(Math.max(50, el2.clientWidth), Math.max(50, el2.clientHeight)); cam.aspect = el2.clientWidth / Math.max(1, el2.clientHeight); cam.updateProjectionMatrix(); };
+  C.snapshot = () => { placeCam(clock()); renderer.render(scene, cam); try { return renderer.domElement.toDataURL('image/png'); } catch (e) { return null; } };
   C.destroy = () => {
     C.dead = true; cancelAnimationFrame(C.raf); if (ro) ro.disconnect();
     renderer.domElement.removeEventListener('pointerdown', pd); window.removeEventListener('pointermove', pm); window.removeEventListener('pointerup', pu);
