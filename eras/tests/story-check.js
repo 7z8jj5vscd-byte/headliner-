@@ -4,7 +4,7 @@
 // It needs only Node.js (no browser). It exits with an error code if a check fails.
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const D = path.join(__dirname, '..') + path.sep;
-const FILES = ['data-taylor.js','data-world.js','data-looks.js','data-events-world.js','data-forever.js','data-beyonce.js','data-gaga.js','data-scenes.js','data-shows.js','data-callbacks.js','data-goals.js','data-more.js','data-freedom.js','engine.js','extras.js','town.js','freedom.js','freedom2.js','freedom3.js'];
+const FILES = ['data-taylor.js','data-world.js','data-looks.js','data-events-world.js','data-forever.js','data-beyonce.js','data-gaga.js','data-scenes.js','data-shows.js','data-callbacks.js','data-goals.js','data-more.js','data-freedom.js','engine.js','extras.js','town.js','freedom.js','freedom2.js','freedom3.js','play.js'];
 let failed = 0; const fail = m => { failed++; console.log('  FAIL: ' + m); };
 
 function play(artist, style) {
