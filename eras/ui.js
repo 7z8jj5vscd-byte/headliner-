@@ -6,6 +6,24 @@ const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;
 const S = () => G.S();
 const UI = window.UI = { tab:'week', sel:{}, toast:null, newg:null };
 const TABS = [['week','This Week'],['town','Town'],['life','Life'],['songbook','Songbook'],['studio','Studio'],['rollout','Rollout'],['cover','Cover Studio'],['tour','Tour Desk'],['inbox','Team Inbox'],['eggs','Easter Eggs'],['fandom','Fandom'],['press','Press and People'],['charts','Charts and Awards'],['legacy','Legacy']];
+const TABNAME = Object.fromEntries(TABS);
+const GROUPS = [['home', 'Home', ['week','inbox','town']], ['music', 'Music', ['songbook','studio','rollout','cover']], ['stage', 'Stage', ['tour','fandom','eggs']], ['career', 'Career', ['press','charts','legacy']], ['life', 'Life', ['life']]];
+const SVG = d => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const ICON = {
+  home:SVG('<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>'),
+  music:SVG('<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>'),
+  stage:SVG('<rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/><path d="M8.5 21h7"/>'),
+  career:SVG('<path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4"/><path d="M17 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4"/><path d="M8.5 21h7l-1-4h-5z"/>'),
+  life:SVG('<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>'),
+  menu:SVG('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+  fans:SVG('<circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.6.7 2.6 2.2 3 4.7"/>'),
+  rep:SVG('<path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>'),
+  heat:SVG('<path d="M12 21a6 6 0 0 0 6-6c0-4-3-6-4-10-2 2-3 4-3 6-1-1-1.5-2-1.5-3C7 9.5 6 12 6 15a6 6 0 0 0 6 6z"/>'),
+  energy:SVG('<path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12z"/>'),
+  money:SVG('<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5v5M17.5 9.5v5"/>'),
+  canon:SVG('<path d="M5 4.5h11a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="m9 8.5 1.6 1.6L14 6.8"/>')
+};
+UI.ICON = ICON;
 const STAT = [['fans','Fans'],['rep','Public Reputation'],['heat','Press Heat'],['write','Songwriting'],['clout','Industry Clout'],['own','Ownership'],['energy','Energy'],['team','Team mood']];
 const LOOKS = {
   hair:[['Honey','#c8954f'],['Platinum','#efe0b9'],['Auburn','#8a3b1f'],['Dark brown','#3a2417'],['Black','#141414'],['Copper','#b5562b']],
@@ -152,15 +170,18 @@ function title() {
   const slots = [1, 2, 3].map(n => { const i = G.slotInfo(n); return `<div class="slot"><div><b>Slot ${n}</b><div class="small muted">${i ? `${h(ER.artists[i.artist].name)} · ${i.mode === 'story' ? 'Story' : 'Era Start'} · ${i.y}, week ${i.w}${i.retired ? ' · Retired' : ''}` : 'Empty'}</div></div><div class="row">${i ? `<button class="btn" data-act="load" data-n="${n}">Continue</button><button class="btn ghost sm" data-act="delslot" data-n="${n}" aria-label="Delete slot ${n}">Delete</button>` : `<button class="btn" data-act="newgame" data-n="${n}">New game</button>`}</div></div>`; }).join('');
   const span = { taylor:'From 2001 (age 11)', beyonce:'From 1990 (age 8)', gaga:'From 2000 (age 13)' };
   const artists = ['taylor','beyonce','gaga'].map(id => { const a = ER.artists[id]; return `<div class="artist"><div class="sw" style="background:${a.color || '#d6a93a'}"></div><div><b>${h(a.name)}</b><div class="small muted">Playable · ${span[id]} to 2026, then free play</div></div><button class="btn ghost sm" data-act="preview" data-id="${id}">Story</button></div>`; }).join('');
+  const last = [1, 2, 3].map(n => ({ n, i:G.slotInfo(n) })).filter(x => x.i).sort((a, b) => (b.i.saved || 0) - (a.i.saved || 0))[0];
+  const daily = (() => { const c = G.challengeToday(), A = ER.artists[c.artist]; return `<p><b>${h(c.n)}</b> as ${h(A.name)}, ${h(c.title)} era.</p><p class="small muted">${h(c.d)} Everyone gets the same challenge today. Streak: ${G.challengeStreak()} day${G.challengeStreak() === 1 ? '' : 's'}.</p>`; })();
   $('#app').innerHTML = `<div class="title">
-    <div class="logo"><span class="eyebrow">A week-by-week career game</span><h1>The Eras Life</h1><p class="muted">Live through a documented career from the first demo to the last stadium night, then carry it on yourself.</p></div>
+    <section class="thero"><div class="stage3d tall" id="t3title"></div><div class="tov"><span class="eyebrow">A week-by-week career game</span><h1 class="logo-t">The Eras Life</h1><p>Live through a documented career from the first demo to the last stadium night, then carry it on yourself.</p>
+      ${last ? `<button class="btn big" data-act="load" data-n="${last.n}">Continue · ${h(ER.artists[last.i.artist].name)}, ${last.i.y}</button>` : `<button class="btn big" data-act="newgame" data-n="1">Start your story</button>`}</div></section>
     <div id="ver-line" class="ver-line" role="status">${window.UPD ? UPD.line() : ''}</div>
-    <div class="stage3d tall" id="t3title"></div>
-    ${card(`<h2>Daily challenge</h2>${(() => { const c = G.challengeToday(), A = ER.artists[c.artist]; return `<p><b>${h(c.n)}</b> as ${h(A.name)}, ${h(c.title)} era.</p><p class="small muted">${h(c.d)} Everyone gets the same challenge today. Streak: ${G.challengeStreak()} day${G.challengeStreak() === 1 ? '' : 's'}.</p>`; })()}
-      <div class="row"><button class="btn" data-act="daily">Play today's challenge</button>${G.slotInfo('daily') ? '<button class="btn ghost sm" data-act="dailyload">Continue it</button>' : ''}</div>${dailyHist()}<p class="small faint">It has its own save, so your slots are never touched.</p>`)}
+    <div class="tgrid">
     ${card(`<h2>Saves</h2><div class="stack tight">${slots}</div><div class="row"><label class="btn ghost sm">Import a save<input type="file" accept=".json,application/json" data-act="import" hidden></label></div>`)}
+    ${card(`<span class="eyebrow">Daily challenge</span>${daily}<div class="row"><button class="btn" data-act="daily">Play today's challenge</button>${G.slotInfo('daily') ? '<button class="btn ghost sm" data-act="dailyload">Continue it</button>' : ''}</div>${dailyHist()}<p class="small faint">It has its own save, so your slots are never touched.</p>`)}
     ${card(`<h2>Stories</h2><p class="small muted">Pick who to play when you start a new game. Each one appears in the others' games as a real chart rival.</p><div class="stack tight">${artists}</div>`)}
-    <p class="small faint">An unofficial fan project. No lyrics, audio, album art or photos of real people are used. Figures are stylised and are not likenesses. Event cards stick to the public record.</p></div>`;
+    </div>
+    <p class="small faint tfoot">An unofficial fan project. No lyrics, audio, album art or photos of real people are used. Figures are stylised and are not likenesses. Event cards stick to the public record.</p></div>`;
   mount3D('#t3title', { set:'stadium', color:'#d6a93a', figs:[{ look:lookFor('tour', null, 'fearless'), anim:'strum' }] }, 'title');
 }
 function newGameFlow() {
@@ -206,14 +227,23 @@ function render() {
   if (!G.unlocked(UI.tab)) UI.tab = 'week';
   const yw = G.yw(), x = primary(), e = G.currentEra();
   const blocks = G.blocks(), used = s.week.used;
-  const top = `<header class="top"><div class="between"><div><div class="date">${h(G.fmtDate(s.abs))}</div><div class="small muted">Week ${yw.w} of 52 · Age ${G.age()}${e ? ' · ' + h(e.short || e.title) + ' era' : ''}</div></div>
-    <div class="row"><div class="blocks" title="Time Blocks">${Array.from({ length:blocks }, (_, i) => `<i class="${i < used ? 'used' : ''}"></i>`).join('')}${used > blocks ? `<b class="over">+${used - blocks}</b>` : ''}</div><button class="icon" data-act="menu" aria-label="Menu">☰</button></div></div>
-    <div class="statline">${[['fans', G.fmtN(s.stats.fans), (G.fanName ? G.fanName() : G.art().fanName)], ['rep', Math.round(s.stats.rep), 'Rep'], ['heat', Math.round(s.stats.heat), 'Heat'], ['energy', Math.round(s.stats.energy), 'Energy'], ['money', G.fmtM(s.stats.money), 'Money'], ['canon', G.canon(), 'Canon']].map(([k, v, l]) => `<div class="st"><b>${v}</b><span>${l}</span></div>`).join('')}</div></header>`;
-  const GROUPS = [['Now', ['week','town','inbox','life']], ['Music', ['songbook','studio','rollout','cover']], ['Stage', ['tour','fandom','eggs']], ['Career', ['press','charts','legacy']]];
-  const grp = GROUPS.find(g => g[1].includes(UI.tab)) || GROUPS[0];
-  const groupNav = `<nav class="groups" aria-label="Sections">${GROUPS.map(g => { const un = g[1].includes('inbox') ? s.inbox.filter(m => !m.read).length : 0; return `<button class="grp ${g === grp ? 'on' : ''}" data-act="tab" data-v="${g[1].find(k => G.unlocked(k)) || 'week'}">${h(g[0])}${un ? `<i class="badge">${un}</i>` : ''}</button>`; }).join('')}</nav>`;
-  const nav = groupNav + `<nav class="tabs" aria-label="Game tabs">${TABS.filter(([k]) => !UI.narrow || grp[1].includes(k)).map(([k, l]) => { const ok = G.unlocked(k); const un = k === 'inbox' ? s.inbox.filter(m => !m.read).length : 0; return `<button class="tab ${UI.tab === k ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="tab" data-v="${k}">${h(l)}${un ? `<i class="badge">${un}</i>` : ''}${ok ? '' : ' 🔒'}</button>`; }).join('')}</nav>`;
-  $('#app').innerHTML = top + nav + `<main id="main">${(VIEWS[UI.tab] || VIEWS.week)()}</main><div id="toast" class="toast"></div>`;
+  const unread = s.inbox.filter(m => !m.read).length, left = Math.max(0, blocks - used);
+  const stats = [['fans', G.fmtN(s.stats.fans), G.fanName ? G.fanName() : G.art().fanName, ICON.fans], ['rep', Math.round(s.stats.rep), 'Rep', ICON.rep], ['heat', Math.round(s.stats.heat), 'Heat', ICON.heat], ['energy', Math.round(s.stats.energy), 'Energy', ICON.energy], ['money', G.fmtM(s.stats.money), 'Money', ICON.money], ['canon', G.canon(), 'Canon', ICON.canon]];
+  const top = `<header class="top"><div class="topbar"><div class="when"><div class="date">${h(G.fmtDate(s.abs))}</div><div class="sub">Week ${yw.w} · Age ${G.age()}${e ? ` · <span class="erachip"><i style="background:${h(e.color || 'var(--era)')}"></i>${h(e.short || e.title)}</span>` : ''}</div></div>
+    <div class="blk" title="Time Blocks this week"><div class="blocks">${Array.from({ length:blocks }, (_, i) => `<i class="${i < used ? 'used' : ''}"></i>`).join('')}${used > blocks ? `<b class="over">+${used - blocks}</b>` : ''}</div><span>${left} left</span></div>
+    <button class="icon" data-act="menu" aria-label="Menu">${ICON.menu}</button></div>
+    <div class="statline">${stats.map(([k, v, l, ic]) => `<div class="st st-${k}">${ic}<b>${v}</b><span>${h(l)}</span></div>`).join('')}</div></header>`;
+  const grp = GROUPS.find(g => g[2].includes(UI.tab)) || GROUPS[0];
+  const first = g => g[2].find(k => G.unlocked(k)) || 'week';
+  const badge = g => g[2].includes('inbox') && unread ? `<i class="badge">${unread}</i>` : '';
+  const bottom = `<nav class="bottomnav" aria-label="Sections">${GROUPS.map(g => `<button class="bn ${g === grp ? 'on' : ''}" data-act="tab" data-v="${first(g)}" aria-label="${h(g[1])}">${ICON[g[0]]}<span>${h(g[1])}</span>${badge(g)}</button>`).join('')}</nav>`;
+  const side = `<aside class="side" aria-label="Game sections"><div class="brand">The Eras Life</div>${GROUPS.map(g => `<div class="sg"><div class="sgh">${ICON[g[0]]}${h(g[1])}</div>${g[2].map(k => { const ok = G.unlocked(k), un = k === 'inbox' ? unread : 0; return `<button class="sl ${UI.tab === k ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="tab" data-v="${k}">${h(TABNAME[k])}${un ? `<i class="badge">${un}</i>` : ''}${ok ? '' : ' 🔒'}</button>`; }).join('')}</div>`).join('')}</aside>`;
+  const subtabs = `<nav class="tabs" aria-label="${h(grp[1])} tabs">${grp[2].map(k => { const ok = G.unlocked(k), un = k === 'inbox' ? unread : 0; return `<button class="tab ${UI.tab === k ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="tab" data-v="${k}">${h(TABNAME[k])}${un ? `<i class="badge">${un}</i>` : ''}${ok ? '' : ' 🔒'}</button>`; }).join('')}</nav>`;
+  const cal = G.calendar ? G.calendar(20).slice(0, 7) : [];
+  const rail = `<aside class="rail" aria-label="Your numbers"><h3>Your numbers</h3>${STAT.map(([k, l]) => `<div class="rs"><span>${h(k === 'fans' ? (G.fanName ? G.fanName() : l) : l)}</span>${k === 'fans' ? `<b>${G.fmtN(s.stats.fans)}</b>` : `${bar(s.stats[k])}<b>${Math.round(s.stats[k])}</b>`}</div>`).join('')}
+    <div class="rs"><span>Money</span><b>${G.fmtM(s.stats.money)}</b></div><div class="rs"><span>Canon Score</span><b>${G.canon()}</b></div>
+    ${cal.length ? `<h3>Coming up</h3>${cal.map(c => `<div class="rc"><span>${h(c.l)}</span><small>${c.abs === s.abs ? 'This week' : h(G.fmtDate(c.abs))}</small></div>`).join('')}` : ''}</aside>`;
+  $('#app').innerHTML = `<div class="shell tab-${h(UI.tab)}">${side}<div class="mainwrap">${top}${subtabs}<main id="main">${(VIEWS[UI.tab] || VIEWS.week)()}</main></div>${rail}</div>${bottom}<div id="toast" class="toast" role="status"></div>`;
   if (UI.tab === 'week') mount3D('#t3stage', stageSpec(), 'main');
   if (!document.querySelector('.modal') && s.abs - (s.lastBackup != null ? s.lastBackup : (s.lastBackup = s.abs)) > 104 && (!UI.backupSnooze || s.abs - UI.backupSnooze > 52) && s.slot !== 'daily') {
     UI.backupSnooze = s.abs;
@@ -248,11 +278,12 @@ VIEWS.week = function () {
   ${s.flags.farewell ? card('<span class="eyebrow">The Farewell Tour</span><p class="small">No new eras. One last tour, then you decide whether to retire.</p>', 'world') : ''}
   ${s.flags.hidden ? card('<span class="eyebrow">Out of public view</span><p class="small">No interviews, posts or appearances. You can still write, record, plan your comeback and work with your team in private.</p>', 'world') : ''}
   ${s.week.forcedRest ? card('<b>Forced rest.</b> Energy hit zero, so you only have 1 Time Block this week.', 'warn') : ''}
-  <div class="stagewrap"><div class="stage3d" id="t3stage"></div><div class="caption">${x ? `<b>${h(x.p.title)}</b> · ${h(stageName(x.st))}<div class="small">Done when: ${h(ER.STAGES[x.st].need)}</div>` : '<b>Between eras</b>'}</div></div>
+  <div class="stagewrap hero"><div class="stage3d" id="t3stage"></div><div class="caption">${x ? `<b>${h(x.p.title)}</b> · ${h(stageName(x.st))}<div class="small">Done when: ${h(ER.STAGES[x.st].need)}</div>` : '<b>Between eras</b>'}</div></div>
   ${act.length > 1 ? card(`<h3>Your stages</h3><div class="chips">${act.map(y => pill(`${y.p.short || y.p.title}: ${stageName(y.st)}`)).join('')}</div><p class="small muted">Stages overlap, and your Time Blocks have to cover all of them.</p>`) : ''}
   ${dl.length ? card(`<h3>Deadlines</h3>${dl.slice(0, 6).map(([a, l]) => `<div class="between small"><span>${h(l)}</span><span class="${a === s.abs ? 'spot' : 'muted'}">${a === s.abs ? 'This week' : h(G.fmtDate(a))}</span></div>`).join('')}`) : ''}
-  ${card(`<div class="between"><h2>Required</h2><span class="small muted">${s.week.used} of ${G.blocks()} blocks used</span></div>${req.length ? req.map(taskRow).join('') : '<p class="muted small">No required tasks this week.</p>'}`)}
-  ${card(`<h2>Optional</h2>${opt.map(taskRow).join('')}`)}
+  ${card(`<div class="between"><h2>This week</h2><span class="small muted">${s.week.used} of ${G.blocks()} blocks used</span></div>${bar(s.week.used, G.blocks(), s.week.used > G.blocks() ? 'warn' : '')}
+    <h3>${req.length ? 'Must do' : 'Nothing required'}</h3>${req.length ? req.map(taskRow).join('') : '<p class="muted small">No required tasks this week. The week is yours.</p>'}`, 'focus')}
+  <details class="card opt" ${UI.sel.optOpen ? 'open' : ''}><summary data-act="optopen"><h2>Things you could do</h2><span class="pill">${opt.filter(t => !G.taskDone(t.id)).length}</span></summary>${opt.map(taskRow).join('')}</details>
   <div class="actions"><button class="btn big" data-act="advance">Advance Week</button>
     <button class="btn ghost" data-act="ff" ${G.quietWeek() ? '' : 'disabled'} title="Skips quiet weeks only. Stops at every real event and deadline.">Fast-forward</button></div>
   <div class="row small"><button class="btn ghost sm" data-act="saveroutine">Save routine</button><button class="btn ghost sm" data-act="applyroutine" ${s.routine.length ? '' : 'disabled'}>Apply routine (${s.routine.length})</button></div>
@@ -769,6 +800,7 @@ function boothDraw() {
 }
 function after(r) { if (r && r.err) toast(r.err); else if (r && r.msg) toast(r.msg); render(); }
 const ACT = {
+  optopen:(d, el) => { const det = el.closest('details'); UI.sel.optOpen = !det.open; det.open = UI.sel.optOpen; },
   tab:d => { UI.tab = d.v; if (d.v !== 'week') G.guideTick('tab'); render(); window.scrollTo(0, 0); },
   do:d => { const t = G.tasks().find(x => x.id === d.id);
     if (UI.prefs.quick) { const r = G.doTask(d.id, d.arg || undefined); return after(r); }
