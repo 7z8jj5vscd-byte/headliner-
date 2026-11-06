@@ -1,11 +1,12 @@
 {
- "build": "2026.11.06-3",
- "title": "Title screen fixes",
+ "build": "2026.11.06-4",
+ "title": "More freedom",
  "notes": [
-  "The title screen now shows your version and whether an update is available, with an Update now button.",
-  "Check for updates on the title screen now tells you the result.",
-  "The daily challenge row no longer jumps in after the page loads or wraps onto two lines.",
-  "The 3D stage fades in, stays sharp when you rotate your phone, and no longer gets stuck spinning after a swipe.",
-  "The update banner fits phone screens."
+  "Song structure: build each song section by section, and pick its tempo, mood and sound.",
+  "Write songs of your own any time, in a notebook, and put them on any album as extra tracks.",
+  "Set an album's track order yourself in the Studio.",
+  "Choose when tour prep starts, from right after release to a four-week crunch.",
+  "Choose how to do videos, announcements, release-week TV, signings, costumes, casting, setlists and mastering.",
+  "Optional opportunities now turn up on This Week, each with its own choices."
  ]
 }

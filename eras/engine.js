@@ -1109,7 +1109,7 @@ G.moveRelease = function (id, delta) {
   return { ok:true };
 };
 G.tourName = p => /^the /i.test(p.title) ? `${p.title} Tour` : `The ${p.title} Tour`;
-G.planCustomTour = function (p, weeks) { p.tour = { name:G.tourName(p), kind:'headline', ts:S.abs + 8, te:S.abs + 8 + weeks, openers:['Vesper Lane','Nova Kincaid'], target:null, tier:'stadium' }; };
+G.planCustomTour = function (p, weeks, lead) { lead = clamp(lead || 8, 3, 52); p.tour = { name:G.tourName(p), kind:'headline', ts:S.abs + lead, te:S.abs + lead + weeks, openers:['Vesper Lane','Nova Kincaid'], target:null, tier:'stadium' }; };
 G.enterFree = function () { S.flags.free = true; ach('free'); inbox('manager', 'The story is yours', 'From here on, the calendar, the songs and the drama are invented. Start a new era from the Studio.'); };
 
 /* ---------- Sponsors ---------- */
