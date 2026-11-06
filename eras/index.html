@@ -44,6 +44,9 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 .setl .chip{font-size:11.5px;padding:4px 9px}
 .choice{display:block;width:100%;text-align:left;background:var(--raised);border:1px solid var(--rule);border-radius:12px;padding:12px 14px;font-weight:600}
 .choice:hover{border-color:var(--era)}
+.groups{display:none;gap:6px;padding:10px 16px 0}.grp{flex:1;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:8px 4px;font-weight:700;font-size:13px;position:relative}.grp.on{background:var(--era);color:var(--era-ink);border-color:var(--era)}
+@media(max-width:560px){.groups{display:flex}}
+.bracelets{display:flex;flex-direction:column;gap:6px;margin-top:8px}.bracelet{display:flex;gap:2px;flex-wrap:wrap}.bracelet i{font-style:normal;font-weight:800;font-size:11px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#1a1a1a;box-shadow:inset 0 -2px 0 #0002}
 .review{font-size:26px;color:#ffd166;letter-spacing:2px;margin:6px 0}
 .choice.on{border-color:var(--era);background:color-mix(in srgb,var(--era) 18%,var(--raised))}
 .field{display:flex;flex-direction:column;gap:4px;margin:8px 0}.field span{font-size:12px;color:var(--muted)}
@@ -102,7 +105,7 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 <body>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="data-taylor.js?v=8"></script>
+<script src="data-taylor.js?v=12"></script>
 <script src="data-world.js?v=2"></script>
 <script src="data-looks.js?v=8"></script>
 <script src="data-events-world.js?v=1"></script>
@@ -112,9 +115,9 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 <script src="data-scenes.js?v=1"></script>
 <script src="data-shows.js?v=1"></script>
 <script src="sound.js?v=1"></script>
-<script src="stage3d.js?v=3"></script>
-<script src="engine.js?v=11"></script>
-<script src="ui.js?v=11"></script>
-<script>UI.start();</script>
+<script src="stage3d.js?v=12"></script>
+<script src="engine.js?v=12"></script>
+<script src="ui.js?v=12"></script>
+<script>UI.narrow = window.matchMedia('(max-width:560px)').matches; window.matchMedia('(max-width:560px)').addEventListener('change', e => { UI.narrow = e.matches; if (G.S()) UI.render(); }); UI.start();</script>
 </body>
 </html>
