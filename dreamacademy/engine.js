@@ -41,8 +41,14 @@ G.cohesion = (ids) => {
 G.groupBond = id => { const o = G.members().filter(x => x !== id); return o.length ? o.reduce((t, x) => t + G.bond(id, x), 0) / o.length : 0; };
 
 /* ---------- New game ---------- */
-G.newGame = ({ mode, focus }) => {
-  S = { v:1, month:1, mode, focus, order:D.cast.map(c => c.id), people:{}, bonds:{}, ctrl:{}, plan:{}, partner:{},
+G.DIFF = {
+  easy:  { l:'Easy',   d:'Faster training, kinder charts, fewer hate trains. Rewind and undo allowed.', gain:1.15, chart:0,  hate:.7, label:-1, legend:3e7, cap:7e7 },
+  normal:{ l:'Normal', d:'The intended balance. Rewind and undo allowed.', gain:1,    chart:-12, hate:1,  label:0,  legend:4e7, cap:5.5e7 },
+  hard:  { l:'Hard',   d:'Slower training, tougher charts, louder backlash. No rewind, no undo.', gain:.9,   chart:-20, hate:1.3, label:1, legend:5e7, cap:4.5e7 },
+};
+G.dif = () => G.DIFF[(S && S.diff) || 'normal'];
+G.newGame = ({ mode, focus, diff }) => {
+  S = { v:1, month:1, mode, focus, diff:diff || 'normal', tips:{}, order:D.cast.map(c => c.id), people:{}, bonds:{}, ctrl:{}, plan:{}, partner:{},
     tensions:[], tid:1, group:{ name:'KATSEYE', formed:false, fans:0, momentum:0, prep:0, plan:'train', releases:[], awards:[], tours:0, doc:null },
     label:25, hate:null, feed:[], log:[], queue:[], flags:{}, settings:{ askAll:true }, rec:{ best:101, no1:0, wins:0, noms:0, viral:0 },
     alumni:[], ended:null, report:null, session:{}, practice:2, evalAcc:{}, trophies:{}, newTrophies:[], resolved:0 };
@@ -121,6 +127,7 @@ G.fmt = n => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + 'M' : n >= 1e3 ? M
 G.blocking = () => S.queue.length > 0;
 G.advance = () => {
   if (S.ended || G.blocking()) return null;
+  lsSet(KEY + '-prev', JSON.stringify(S));
   const m = S.month, R = { m, lines:[], gains:{}, grades:null, chart:[], fans0:S.group.fans };
   const debuted = G.debuted();
 
@@ -133,7 +140,7 @@ G.advance = () => {
       return;
     }
     const key = G.planOf(id), a = D.acts[key], before = Object.assign({}, p.sk);
-    const mult = (p.wb < 25 ? .5 : p.wb < 45 ? .8 : 1) * (S.ctrl[id] === 'manual' ? 1.1 : 1) * (S.session[id] ? S.session[id].mult : 1) * (G.coachMult ? G.coachMult(id, key) : 1);
+    const mult = (p.wb < 25 ? .5 : p.wb < 45 ? .8 : 1) * (S.ctrl[id] === 'manual' ? 1.1 : 1) * (S.session[id] ? S.session[id].mult : 1) * (G.coachMult ? G.coachMult(id, key) : 1) * G.dif().gain;
     const posK = G.posSkill(id);
     D.skills.forEach(({ k }) => {
       const g = (a.g[k] || 0) * mult * (k === posK ? 1.15 : 1) * (2.4 + Math.random() * 1.6) * (1 - p.sk[k] / 112) + .12;
@@ -153,7 +160,7 @@ G.advance = () => {
     const gp = D.groupPlans[effectivePlan()];
     G.activeMembers().forEach(id => { const p = S.people[id]; p.wb = clamp(p.wb + gp.wb, 5, 100);
       if (S.group.plan === 'tour') p.sk.pe = r1(clamp(p.sk.pe + .8, 0, 99)); });
-    S.label = clamp(S.label + 2 + gp.label + G.members().filter(id => S.people[id].hiatus).length * 4, 0, 100);
+    S.label = clamp(S.label + 2 + G.dif().label + gp.label + G.members().filter(id => S.people[id].hiatus).length * 4, 0, 100);
     if (gp.prep) S.group.prep = clamp(S.group.prep + gp.prep + G.stageSkill(G.activeMembers()) * .05, 0, 100);
     const F = S.group.fans;
     if (effectivePlan() === 'promo') { grow(F * .02 * (S.group.momentum / 50 + .3) + 40000); S.group.momentum += 6; }
@@ -179,7 +186,7 @@ G.advance = () => {
 
   // 5. Momentum and fans.
   if (debuted) {
-    S.group.momentum = clamp(S.group.momentum - 4, 0, 100);
+    S.group.momentum = clamp(S.group.momentum - 4 - S.group.momentum / 20, 0, 100);
     S.group.fans = Math.max(0, S.group.fans * 1.004);
     G.members().forEach(id => { S.people[id].fan = clamp(S.people[id].fan + (S.group.momentum - 40) / 60, 0, 100); });
   }
@@ -215,7 +222,7 @@ function effectivePlan() {
 }
 G.effectivePlan = effectivePlan;
 // Fan growth slows as the fandom gets huge.
-function grow(n) { S.group.fans += n * Math.max(.05, 1 - S.group.fans / 9e7); }
+function grow(n) { S.group.fans += n * Math.max(.02, 1 - S.group.fans / G.dif().cap); }
 function mult(x) { grow(S.group.fans * (x - 1)); }
 G.recentRelease = n => S.group.releases.some(r => S.month - r.month <= n);
 
@@ -273,7 +280,7 @@ function randomEvents(R) {
   S.tensions.filter(t => t.heat >= 5 && !t.blow).forEach(t => { t.blow = true; q({ kind:'drama', tid:t.id, blowup:true }); });
   // A tension spills into the feed.
   if (m >= 22 && !S.hate && S.tensions.some(t => t.heat >= 3) && chance(.2)) startHate('apart');
-  if (m >= 22 && !S.hate && chance(.03 + (S.label > 70 ? .04 : 0))) startHate();
+  if (m >= 22 && !S.hate && chance((.03 + (S.label > 70 ? .04 : 0)) * G.dif().hate)) startHate();
   // Label pressure.
   if (G.debuted() && S.label >= 70 && m - (S.flags.labelAsk || 0) >= 3) { S.flags.labelAsk = m; q({ kind:'label' }); }
   // Wellbeing.
@@ -456,7 +463,7 @@ G.makeRelease = (cid, debut) => {
   const n = S.group.releases.length;
   const r = { id:n + 1, title:S.flags.hook || title(), era:pick(D.eraA) + ' ' + pick(D.eraB), concept:c.l, kind, month:S.month, quality:r1(quality), divisive, viral:false, chart:[], peak:101, album:null, debut:!!debut };
   const same = S.group.releases.slice(-3).filter(x => x.concept === c.l).length;
-  r.power = quality * .55 + (Math.log10(Math.max(S.group.fans, 1e5)) - 6) * 22 + S.group.momentum * .3 + (divisive ? 6 : 0) + (n === 0 ? -24 : 0)
+  r.power = G.dif().chart + quality * .55 + (Math.log10(Math.max(S.group.fans, 1e5)) - 6) * 22 + S.group.momentum * .3 + (divisive ? 6 : 0) + (n === 0 ? -24 : 0)
     - Math.max(0, n - 6) * 1.5 - same * 6 + rnd(-10, 8);
   S.flags.hook = null;
   r.lines = lineSplit(ids);
@@ -736,7 +743,7 @@ function endGame() {
   const fans = S.group.fans, coh = G.cohesion(G.members().concat(S.alumni));
   let e = 'standing';
   if (G.members().length < 3) e = coh >= 15 ? 'reunion' : 'solo';
-  else if (fans >= 6e7 && S.rec.no1 >= 1 && S.rec.wins >= 2 && coh >= 10) e = 'legends';
+  else if (fans >= G.dif().legend && S.rec.no1 >= 1 && S.rec.wins >= 2 && coh >= 10) e = 'legends';
   else if (S.alumni.length && coh >= 15) e = 'reunion';
   else if (fans < 8e6 && coh >= 20) e = 'cult';
   S.ended = e;
@@ -925,15 +932,25 @@ G.takeTrophies = () => { const t = S.newTrophies.slice(); S.newTrophies = []; re
 
 G._ = { q, feed, log, grow, mult, chance, rnd, pick, clamp, r1, startHate };
 /* ---------- Saves ---------- */
-const KEY = 'dreamacademy-save-v1';
+let SLOT = 1;
+try { SLOT = +localStorage.getItem('da-slot') || 1; } catch (e) {}
+let KEY = slotKey(SLOT);
+function slotKey(n) { return n === 1 ? 'dreamacademy-save-v1' : 'dreamacademy-save-v1-s' + n; }
+G.slot = () => SLOT;
+G.setSlot = n => { SLOT = n; KEY = slotKey(n); try { localStorage.setItem('da-slot', String(n)); } catch (e) {} };
+G.slots = () => [1, 2, 3].map(n => { try { const s = JSON.parse(localStorage.getItem(slotKey(n))); return s && s.v === 1 ? { n, month:s.month, focus:s.focus, group:s.group && s.group.formed ? s.group.name : null, ended:s.ended, diff:s.diff || 'normal', mode:s.mode } : { n }; } catch (e) { return { n }; } });
+G.snap = () => JSON.stringify(S);
+G.restore = j => { S = migrate(JSON.parse(j)); save(); };
+G.canRewind = () => S && (S.diff || 'normal') !== 'hard' && !!lsGet(KEY + '-prev');
+G.rewind = () => { const j = lsGet(KEY + '-prev'); if (!j) return false; S = migrate(JSON.parse(j)); try { localStorage.removeItem(KEY + '-prev'); } catch (e) {} save(); return true; };
 function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
 function save() { if (S) lsSet(KEY, JSON.stringify(S)); }
 G.save = save;
 G.hasSave = () => !!lsGet(KEY);
-function migrate(s) { const d = { session:{}, practice:2, evalAcc:{}, trophies:{}, newTrophies:[], resolved:0, mem:{ helped:{}, promised:{}, gifts:{}, moments:[], goal:null, danger:0, seen:{} } }; Object.keys(d).forEach(k => { if (s[k] == null) s[k] = d[k]; }); return s; }
+function migrate(s) { const d = { tips:{}, diff:'normal', session:{}, practice:2, evalAcc:{}, trophies:{}, newTrophies:[], resolved:0, mem:{ helped:{}, promised:{}, gifts:{}, moments:[], goal:null, danger:0, seen:{} } }; Object.keys(d).forEach(k => { if (s[k] == null) s[k] = d[k]; }); return s; }
 G.load = () => { try { const s = JSON.parse(lsGet(KEY)); if (s && s.v === 1) { S = migrate(s); return true; } } catch (e) {} return false; };
-G.wipe = () => { try { localStorage.removeItem(KEY); } catch (e) {} S = null; };
+G.wipe = () => { try { localStorage.removeItem(KEY); localStorage.removeItem(KEY + '-prev'); } catch (e) {} S = null; };
 G.exportSave = () => btoa(unescape(encodeURIComponent(JSON.stringify(S))));
 G.importSave = txt => { try { const s = JSON.parse(decodeURIComponent(escape(atob(txt.trim())))); if (s && s.v === 1 && s.people) { S = migrate(s); save(); return true; } } catch (e) {} return false; };
 })();

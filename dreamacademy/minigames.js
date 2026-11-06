@@ -8,16 +8,19 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
 
 /* ---------- Audio ---------- */
-let AC = null;
-function ac() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; } return AC; }
+let AC = null, MASTER = null;
+MG.vol = 1;
+function ac() { try { if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); MASTER = AC.createGain(); MASTER.connect(AC.destination); } if (AC.state === 'suspended') AC.resume(); MASTER.gain.value = MG.vol; } catch (e) { AC = null; } return AC; }
+const OUT = () => MASTER;
+MG.setVol = v => { MG.vol = v; if (MASTER) MASTER.gain.value = v; };
 function blip(f, d, type, vol, at) { const a = ac(); if (!a) return; const t = at || a.currentTime, o = a.createOscillator(), g = a.createGain();
   o.type = type || 'triangle'; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(vol || .15, t); g.gain.exponentialRampToValueAtTime(.001, t + (d || .15));
-  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + (d || .15) + .03); }
+  o.connect(g); g.connect(OUT()); o.start(t); o.stop(t + (d || .15) + .03); }
 function kick(at, vol) { const a = ac(); if (!a) return; const o = a.createOscillator(), g = a.createGain(); o.frequency.setValueAtTime(140, at); o.frequency.exponentialRampToValueAtTime(42, at + .12);
-  g.gain.setValueAtTime(vol || .32, at); g.gain.exponentialRampToValueAtTime(.001, at + .2); o.connect(g); g.connect(a.destination); o.start(at); o.stop(at + .22); }
+  g.gain.setValueAtTime(vol || .32, at); g.gain.exponentialRampToValueAtTime(.001, at + .2); o.connect(g); g.connect(OUT()); o.start(at); o.stop(at + .22); }
 function hat(at) { const a = ac(); if (!a) return; const b = a.createBuffer(1, a.sampleRate * .04, a.sampleRate), d = b.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'highpass'; f.frequency.value = 7000; g.gain.value = .1; s.buffer = b; s.connect(f); f.connect(g); g.connect(a.destination); s.start(at); }
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'highpass'; f.frequency.value = 7000; g.gain.value = .1; s.buffer = b; s.connect(f); f.connect(g); g.connect(OUT()); s.start(at); }
 function bass(at, f) { blip(f, .3, 'sawtooth', .05, at); }
 const now = () => AC ? AC.currentTime : performance.now() / 1000;
 MG.unlock = ac;
@@ -64,7 +67,7 @@ function laneGame(O, cfg) {
     const a = ac(), t0 = now() + .3;
     if (a) for (let k = 0; k < endB; k++) { kick(t0 + k * beat, k < 4 ? .18 : .3); hat(t0 + (k + .5) * beat); if (k % 2 === 0 && k >= 4) bass(t0 + k * beat, [55, 65.4, 73.4, 49][Math.floor(k / 4) % 4]); }
     if (a) for (let k = 0; k < 4; k++) blip(880, .06, 'square', .05, t0 + k * beat);
-    let combo = 0, done = false, raf, chantAt = 0;
+    let combo = 0, done = false, raf, chantAt = 0; const offs = [];
     const judge = (txt, cls) => { J.textContent = txt + (combo > 2 ? ' ×' + combo : ''); J.className = 'mg-judge on ' + cls; };
     function hit(lane) {
       if (done) return;
@@ -72,7 +75,7 @@ function laneGame(O, cfg) {
       let bi = -1, bd = 9;
       notes.forEach((n, i) => { if (!n.s && (lanes === 1 || n.l === lane)) { const d = Math.abs(t - n.t); if (d < bd) { bd = d; bi = i; } } });
       if (bi < 0) return;
-      const ms = bd * beat * 1000;
+      const ms = bd * beat * 1000; offs.push((t - notes[bi].t) * beat * 1000);
       if (ms <= 75) { notes[bi].s = 1; combo++; judge('Perfect', 'perfect'); blip(523 * Math.pow(2, (bi % 8) / 12), .15, 'triangle', .14); if (O.scene) O.scene.flashHit(cfg.light); }
       else if (ms <= 155) { notes[bi].s = 2; combo++; judge('Good', 'good'); blip(392, .1, 'triangle', .1); }
       else if (ms <= 260) { notes[bi].s = 3; combo = 0; judge('Off beat', 'miss'); }
@@ -101,6 +104,8 @@ function laneGame(O, cfg) {
     }
     raf = requestAnimationFrame(draw);
     function end() { if (done) return; done = true; cancelAnimationFrame(raf); unkey();
+      const avg = offs.length ? offs.reduce((a, b) => a + b, 0) / offs.length : 0;
+      MG.last.timing = { perfect:notes.filter(n => n.s === 1).length, good:notes.filter(n => n.s === 2).length, miss:notes.filter(n => n.s !== 1 && n.s !== 2).length, avg:Math.round(avg) };
       res(notes.reduce((s, n) => s + (n.s === 1 ? 1 : n.s === 2 ? .6 : 0), 0) / N); }
     O.stop = () => { done = true; cancelAnimationFrame(raf); unkey(); };
   });
@@ -118,7 +123,7 @@ function vocal(O, o) {
     let y = .5, v = 0, hold = false, inside = 0, total = 0, last = performance.now(), start = last, done = false, raf;
     const a = ac(); let osc = null, gain = null;
     if (a) { osc = a.createOscillator(); gain = a.createGain(); osc.type = 'triangle'; gain.gain.value = 0; const lfo = a.createOscillator(), lg = a.createGain(); lfo.frequency.value = 5.5; lg.gain.value = 4; lfo.connect(lg); lg.connect(osc.frequency); lfo.start();
-      osc.connect(gain); gain.connect(a.destination); osc.start(); O._stopAudio = () => { try { osc.stop(); lfo.stop(); } catch (e) {} }; }
+      osc.connect(gain); gain.connect(OUT()); osc.start(); O._stopAudio = () => { try { osc.stop(); lfo.stop(); } catch (e) {} }; }
     const down = e => { if (e && e.target && e.target.closest('.mg-skip')) return; hold = true; }, up = () => { hold = false; };
     O.play.addEventListener('pointerdown', down); window.addEventListener('pointerup', up);
     const unkey = keyOnce(e => { if (e.code === 'Space') { e.preventDefault(); hold = e.type === 'keydown'; } });
@@ -333,9 +338,27 @@ const INFO = {
   mv:{ title:'Music video shoot', help:'Hit the camera with the red light. One take each.' },
 };
 MG.INFO = INFO;
+/* Background music: a soft four-chord pad loop. */
+let MUS = null;
+MG.music = on => {
+  const a = ac(); if (!a) return;
+  if (!on) { if (MUS) { MUS.stop(); MUS = null; } return; }
+  if (MUS) return;
+  const g = a.createGain(); g.gain.value = .035; g.connect(OUT());
+  const chords = [[220, 277.2, 329.6], [196, 246.9, 293.7], [174.6, 220, 261.6], [196, 246.9, 329.6]];
+  let k = 0, stopped = false, oscs = [];
+  const play = () => { if (stopped) return; const t = a.currentTime; oscs.forEach(o => { try { o.stop(t + .9); } catch (e) {} }); oscs = [];
+    chords[k % 4].forEach(f => { const o = a.createOscillator(), og = a.createGain(); o.type = 'sine'; o.frequency.value = f; og.gain.setValueAtTime(0, t); og.gain.linearRampToValueAtTime(1, t + .8); og.gain.linearRampToValueAtTime(.6, t + 3.5);
+      o.connect(og); og.connect(g); o.start(t); oscs.push(o); }); k++; MUS.tm = setTimeout(play, 4000); };
+  MUS = { stop() { stopped = true; clearTimeout(MUS && MUS.tm); oscs.forEach(o => { try { o.stop(); } catch (e) {} }); g.disconnect(); } };
+  play();
+};
 MG.forSkill = k => ({ vo:'vocal', da:'dance', ra:'rap', pe:'stage', so:'write', ch:'fans' })[k];
+MG.statsOnly = false;
 MG.run = (kind, o) => new Promise(async res => {
   o = o || {};
+  if (MG.statsOnly) return res(null);
+  MG.last.timing = null;
   ac();
   const info = INFO[kind] || INFO.live;
   const set = o.set || (kind === 'live' ? 'stage' : kind === 'mv' ? 'mv' : 'practice');
@@ -347,16 +370,18 @@ MG.run = (kind, o) => new Promise(async res => {
   let acc;
   if (kind === 'vocal') acc = await vocal(O, o);
   else if (kind === 'dance') acc = await dance(O, o);
-  else if (kind === 'rap') { if (O.scene) O.scene.dance(true, 96); acc = await laneGame(O, { lanes:2, bpm:96, notes:20, gaps:[.5, 1, .5, .75, 1] }); }
+  else if (kind === 'rap') { const sk = o.skill || 50, bpm = Math.round(88 + sk * .25); if (O.scene) O.scene.dance(true, bpm); acc = await laneGame(O, { lanes:2, bpm, notes:16 + Math.round(sk / 10), gaps:sk > 65 ? [.5, .5, .75, .5, 1, .25] : [.5, 1, .5, .75, 1] }); }
   else if (kind === 'stage' || kind === 'mv') acc = await stage(O, o);
   else if (kind === 'write') acc = await write(O, o);
   else if (kind === 'fans') acc = await fans(O, o);
-  else acc = await laneGame(O, { lanes:1, bpm:o.bpm || 118, notes:o.notes || 18, light:o.light,
+  else acc = await laneGame(O, { lanes:1, bpm:o.bpm || Math.round(104 + (o.skill || 50) * .25), notes:o.notes || 14 + Math.round((o.skill || 50) / 8), gaps:(o.skill || 50) > 65 ? [1, .5, .5, 1, .75, .5] : undefined, light:o.light,
       chant:() => { const c = document.createElement('div'); c.className = 'mg-chant'; c.textContent = pick(o.chants || ['Go!']); O.view.appendChild(c); setTimeout(() => c.remove(), 1600); },
       onCombo:() => { if (O.scene) O.scene.setShot('close'); } });
   if (skipped) return;
   if (kind === 'live' && O.scene) { O.scene.dance(false); O.scene.play('fairy'); O.scene.focus(Math.max(0, o.focusIdx || 0)); }
-  const extra = kind === 'write' && MG.last.lyric ? '<div class="mg-sheet small">' + MG.last.lyric.map(l => '<p>' + esc(l) + '</p>').join('') + '</div>' : '';
+  MG.last.timing = MG.last.timing || null;
+  const tm = (kind === 'live' || kind === 'rap') && MG.last.timing ? '<p class="small mono">Perfect ' + MG.last.timing.perfect + ' · Good ' + MG.last.timing.good + ' · Miss ' + MG.last.timing.miss + '<br>' + (Math.abs(MG.last.timing.avg) < 25 ? 'Your timing is centered.' : MG.last.timing.avg > 0 ? 'You tap ' + MG.last.timing.avg + ' ms late on average.' : 'You tap ' + (-MG.last.timing.avg) + ' ms early on average.') + '</p>' : '';
+  const extra = tm + (kind === 'write' && MG.last.lyric ? '<div class="mg-sheet small">' + MG.last.lyric.map(l => '<p>' + esc(l) + '</p>').join('') + '</div>' : '');
   res(await finish(O, acc, o.resultLabel || info.title, extra));
 });
 })();

@@ -1,8 +1,9 @@
 /* Dream Academy: Story Mode. 3D toon figures and sets (three.js r128).
    Figures are stylized from each member's editable look: skin, hair colour and hair style. */
 (function () {
-const S3 = window.S3 = { ok:null, cur:null };
+const S3 = window.S3 = { ok:null, cur:null, gfx:'high', calm:false };
 S3.available = () => {
+  if (S3.gfx === 'off') return false;
   if (S3.ok !== null) return S3.ok;
   try { if (!window.THREE) throw 0; const c = document.createElement('canvas'); S3.ok = !!(c.getContext('webgl') || c.getContext('experimental-webgl')); }
   catch (e) { S3.ok = false; }
@@ -197,7 +198,7 @@ function buildSet(scene, kind, o) {
       [-2.5, 0, 2.5].forEach((x, i) => { const c = add(new THREE.ConeGeometry(1.1, 5, 24, 1, true), new THREE.MeshBasicMaterial({ color:col(i === 1 ? '#ffffff' : tint), transparent:true, opacity:.08, side:THREE.DoubleSide, depthWrite:false, blending:THREE.AdditiveBlending }), x, 2.5, -.6);
         anim.push({ tick:t => { c.rotation.z = Math.sin(t * .8 + i) * .25; c.material.opacity = .06 + .05 * (Math.sin(t * 3 + i * 2) + 1) / 2; } }); });
       // Crowd lightsticks.
-      const n = 260, geo = new THREE.SphereGeometry(.035, 6, 4), ls = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color:col(o.light || '#f0b44c') }), n);
+      const n = S3.gfx === 'low' ? 80 : 260, geo = new THREE.SphereGeometry(.035, 6, 4), ls = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color:col(o.light || '#f0b44c') }), n);
       const dm = new THREE.Object3D(), base = [];
       for (let i = 0; i < n; i++) { const x = (Math.random() - .5) * 12, z = 3.2 + Math.random() * 4, y = .2 + (z - 3.2) * .25 + Math.random() * .2; base.push([x, y, z, Math.random() * 6]); }
       scene.add(ls);
@@ -232,9 +233,9 @@ function mount(el, o) {
   const kind = o.set || 'practice';
   let host = el; const W = () => Math.max(50, host.clientWidth), Hh = () => Math.max(50, host.clientHeight || o.height || 220);
   let renderer;
-  try { renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false, powerPreference:'low-power' }); }
+  try { renderer = new THREE.WebGLRenderer({ antialias:S3.gfx !== 'low', alpha:false, powerPreference:'low-power' }); }
   catch (e) { el.classList.add('no3d'); return null; }
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.setPixelRatio(S3.gfx === 'low' ? 1 : Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(W(), Hh());
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.setClearColor(col(kind === 'stage' ? '#050507' : kind === 'mv' ? '#101014' : kind === 'dorm' ? '#1c1b24' : '#25282e'));
@@ -276,7 +277,7 @@ function mount(el, o) {
   function placeCam(t) {
     const base = CAMS[kind];
     let pos = base.pos.slice(), look = base.look.slice();
-    if (kind === 'stage' && o.cuts) {
+    if (kind === 'stage' && o.cuts && !S3.calm) {
       if (t > C.cutAt) { C.cutAt = t + 2 + Math.random() * 2.2; C.shot = ['wide','mid','close','low','side'][Math.floor(Math.random() * 5)]; C.focusIdx = Math.floor(Math.random() * Math.max(1, C.figs.length)); }
       const f = C.figs[C.focusIdx];
       const fx = f ? f.root.position.x : 0;
@@ -288,7 +289,7 @@ function mount(el, o) {
     if (o.scene && C.shot === 'close' && C.figs[C.focusIdx]) { const f = C.figs[C.focusIdx], fx = f.root.position.x, fz = f.root.position.z, hy = f.seated ? 1.0 : 1.32, d = 2.3 + Math.max(0, 1 - cam.aspect) * 3.2; pos = [fx * .9, hy + .12, fz + d]; look = [fx, hy, fz]; }
     if (o.scene && C.shot === 'two' && C.figs.length > 1) { pos = [0, 1.5, 3.6]; look = [0, 1.2, 0]; }
     if (o.close && C.figs[0]) { const fx = C.figs[0].root.position.x; pos = [fx, 1.3, 3.7]; look = [fx, 1.0, 0]; }
-    const yaw = C.yaw + (o.orbit ? Math.sin(t * .15) * .25 : 0);
+    const yaw = C.yaw + (o.orbit && !S3.calm ? Math.sin(t * .15) * .25 : 0);
     const dx = pos[0] - look[0], dz = pos[2] - look[2];
     cam.position.set(look[0] + dx * Math.cos(yaw) + dz * Math.sin(yaw), pos[1], look[2] - dx * Math.sin(yaw) + dz * Math.cos(yaw));
     cam.lookAt(look[0], look[1], look[2]);
@@ -297,7 +298,7 @@ function mount(el, o) {
   function loop() {
     if (C.dead) return;
     C.raf = requestAnimationFrame(loop);
-    if (!document.body.contains(renderer.domElement)) return; // parked: skip drawing
+    if (!document.body.contains(renderer.domElement) || document.hidden) return; // parked or hidden: skip drawing
     const t = clock(), bt = t * C.bpm / 60;
     C.beat = bt;
     C.figs.forEach((f, i) => {
