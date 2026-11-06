@@ -146,11 +146,12 @@ function applyFx(fx, mult) {
 G.applyFx = applyFx;
 /* Fans follow the artist's real trajectory for each era, scaled by momentum: how well
    your choices, releases and rollouts are going compared with what really happened. */
-G.curveMode = () => !S.flags.free && !!(ER.FAN_CURVE && ER.FAN_CURVE[S.artist]);
+G.curveMode = () => !!(ER.FAN_CURVE && ER.FAN_CURVE[S.artist]);
 G.fanTarget = a => {
   const c = ER.FAN_CURVE[S.artist]; if (a <= c[0][0]) return c[0][1];
   for (let i = 1; i < c.length; i++) if (a <= c[i][0]) { const [a0, v0] = c[i - 1], [a1, v1] = c[i]; const t = (a - a0) / (a1 - a0); return Math.exp(Math.log(v0) + (Math.log(v1) - Math.log(v0)) * t); }
-  const l = c[c.length - 1]; return l[1] * Math.pow(1.0008, a - l[0]);
+  // After the real track: slow growth that levels off, so the fan base never passes about 1.7x its 2026 size.
+  const l = c[c.length - 1]; return l[1] * (1 + .7 * (1 - Math.exp(-(a - l[0]) / 700)));
 };
 G.momentum = () => S.mom || 1;
 // Fan boosts saturate: how many fans you can reach depends on what you have released and played.
@@ -295,7 +296,7 @@ G.tasks = function () {
   if (S.stats.money > 5000) out.push(T('charity', 'Support a cause', 1, { kind:'charity', desc:'+Reputation, costs money' }));
   out.push(T('private', 'Private time with friends and family', 1, { kind:'private', desc:'+Energy, +Team mood' }));
   if (a < W('2006-01-01') && !lock) out.push(T('gig', 'Play a local gig', 1, { kind:'gig', desc:'Fans up, a little money' }));
-  if (S.flags.free && !G.active().some(x => ['write','record','finish','pre'].includes(x.st))) out.push(T('newera', 'Start a new era', 0, { kind:'newera', tab:'studio' }));
+  if (S.flags.free && !G.active().some(x => ['write','record','finish','pre'].includes(x.st))) out.push(T('newera', 'Plan your next era', 0, { kind:'newera', tab:'studio' }));
   return out;
 };
 G.taskDone = id => !!S.week.done[id];
@@ -338,7 +339,7 @@ G.doTask = function (id, arg) {
     case 'ghostwrite': applyFx({ clout:3, write:1 }); S.stats.money += 50000 + S.stats.clout * 4000; msg = 'You write a song for someone else. Your name stays off the press release.'; break;
     case 'readfans': { const e = G.currentEra(); applyFx({ hype:3 }); msg = 'Fans have not gone anywhere.'; break; }
     case 'gig': applyFx({ fans:6, energy:-5 }); S.stats.money += 150; msg = 'You play a local fair.'; break;
-    case 'newera': return { goto:'studio' };
+    case 'newera': G.proposeEra(); return { ok:true, msg:'Your label has ideas for the next era.' };
   }
   S.week.used += t.cost; S.week.done[id] = true;
   if (over > 0) { applyFx({ energy:-8 * over }); msg += ` Overtime cost ${8 * over} Energy.`; }
@@ -509,6 +510,7 @@ function startWeek() {
   ER.rivals.forEach(r => { if (r.abs === a && r.who !== S.artist && !S.rivalsSeen[r.title]) { S.rivalsSeen[r.title] = 1;
     S.charts.albums.unshift({ t:r.title, by:ER.artists[r.who].name, rival:true, abs:a, fw:r.units, wk:0 });
     inbox('label', `${ER.artists[r.who].name} releases ${r.title}`, `Expect ${G.fmtN(r.units)} in its first week. Plan around it.`); } });
+  if (G.needsNextEra()) G.proposeEra();
   G.save(true);
 }
 G.startWeek = startWeek;
@@ -566,6 +568,11 @@ function endWeek() {
     const t = c.target || c.peak; c.pos = c.wk <= 4 ? clamp(Math.round(c.pos - (c.pos - t) * .6), 1, 100) : clamp(Math.round(c.pos + rnd(-3, 8) + c.wk * .4), 1, 101);
     if (c.pos < c.peak) c.peak = c.pos; if (c.peak === 1) { G.pj(c.pid).no1 = true; if (!S.ach.no1) ach('no1'); } if (c.pos > 100) c.out = true; });
   S.charts.albums.forEach(c => { c.wk++; });
+  if (S.charts.singles.length > 80) S.charts.singles = S.charts.singles.filter((c, i) => i < 40 || !c.out).slice(0, 80);
+  if (S.charts.albums.length > 60) S.charts.albums.length = 60;
+  if (S.log.length > 600) S.log = S.log.slice(-600);
+  S.eggs.planted = S.eggs.planted.filter((e, i, arr) => !e.done || i >= arr.length - 40);
+  if (S.sponsors.length > 30) S.sponsors = S.sponsors.slice(-30);
   // Natural drift.
   s.heat = Math.max(0, s.heat - 2.5 - (S.flags.hidden ? 3 : 0));
   updateCap();
@@ -576,7 +583,8 @@ function endWeek() {
     if (S.flags.silence) s.heat = Math.max(0, s.heat - 2);
   } else { const gr = .0015 * ((s.rep - 50) / 50) + s.heat * .00004 - (S.flags.silence ? .001 : 0); s.fans *= 1 + (gr > 0 ? gr * clamp(1 - s.fans / G.fanCap(), 0, 1) : gr); }
   if (S.flags.silence) s.heat = Math.max(0, s.heat - 2);
-  s.energy = clamp(s.energy + Math.max(0, G.blocks() - S.week.used) * 4 + 6, 0, 100);
+  const ageSlow = Math.max(0, Math.floor((G.age() - 55) / 8));
+  s.energy = clamp(s.energy + Math.max(0, G.blocks() - S.week.used) * 4 + Math.max(2, 6 - ageSlow), 0, 100);
   if (G.active(a).some(x => x.st === 'tour')) s.energy = clamp(s.energy - 4, 0, 100);
   s.team = clamp(s.team + (s.team < 60 ? .6 : -.2), 0, 100);
   const costs = yr < 2006 ? 25 : (300 + s.clout * 45) * Math.pow(1.03, yr - 2005) * (s.fans > 1e7 ? 5 : s.fans > 1e6 ? 2.5 : 1);
@@ -623,7 +631,7 @@ function doRelease(p) {
   const rec = { pid:p.id, abs:S.abs, fw, total:fw, q:Math.round(q), peak:pos, wk:0, real:p.units, cover };
   S.released.push(rec);
   S.charts.albums.unshift({ t:p.title, by:G.art().name, abs:S.abs, fw, pos, wk:0 });
-  if (G.curveMode()) { if (p.units) S.mom = clamp((S.mom || 1) * clamp(.85 + .15 * fw / p.units, .85, 1.08), .45, 1.6); } else S.stats.fans += fw * 1.2;
+  if (G.curveMode()) { const exp = p.units || (p.type === 'edition' ? S.stats.fans * .002 : S.stats.fans * .025); S.mom = clamp((S.mom || 1) * clamp(.85 + .15 * fw / Math.max(1, exp), .85, 1.08), .45, 1.6); } else S.stats.fans += fw * 1.2;
   S.stats.money += fw * (S.stats.own >= 30 ? 5 : 1.6);
   if (S.mode === 'story' && p.units) { const close = Math.abs(fw / p.units - 1) < .2; scoreCanon(close); }
   pj.released = true; pj.fw = fw;
@@ -656,7 +664,9 @@ function checkGoals(p) {
     return false; });
   const n = S.goals[p.id].filter(Boolean).length; if (n) { applyFx({ clout:n * 2, fans:n }); S.stats.money += n * 50000; }
 }
+ const ACH_MORE = { eras10:'Ten new eras', eras25:'Twenty-five new eras', eras50:'Fifty new eras' };
 const ACH = { firstsong:'First song', no1:'Hot 100 No. 1', million:'A million in a week', aoty:'Album of the Year', stadium:'Stadium tour', masters:'Own your masters', canon90:'Canon Score 90+', eggs10:'Ten eggs decoded', comeback:'The comeback', billion:'Billion-dollar tour', free:'The story is yours' };
+Object.assign(ACH, ACH_MORE);
 G.ACH = ACH;
 function ach(k) { if (S.ach[k]) return; S.ach[k] = S.abs; inbox('fans', `Achievement: ${ACH[k]}`, 'Added to your Legacy.'); }
 function achievements() {
@@ -677,20 +687,46 @@ G.saveRoutine = () => { S.routine = G.tasks().filter(t => !t.req && S.week.done[
 G.applyRoutine = () => { let n = 0; S.routine.forEach(k => { const t = G.tasks().find(x => x.kind === k && !x.req && !S.week.done[x.id]); if (t && S.week.used + t.cost <= G.blocks()) { G.doTask(t.id); n++; } }); return n; };
 
 /* ---------- Free play ---------- */
-G.songTitle = () => { const w = ER.TITLE_WORDS; const r = Math.random(); return r < .4 ? `${pick(w.a)} ${pick(w.b)}` : r < .75 ? pick(w.c) : `The ${pick(w.b)}`; };
-G.newEra = function (title, n, weeks, tour) {
+G.songTitle = () => { const w = ER.TITLE_WORDS; const r = Math.random(); return r < .55 ? `${pick(w.a)} ${pick(w.b)}` : r < .8 ? pick(w.c) : `The ${pick(w.b)}`; };
+// A title nobody has used yet. After enough tries it adds a number, so it can never run out.
+G.freshTitle = (used, gen) => { for (let i = 0; i < 60; i++) { const t = gen(); if (!used.has(t)) return t; } let n = 2, t0 = gen(); while (used.has(`${t0} ${n}`)) n++; return `${t0} ${n}`; };
+G.albumTitle = () => { const used = new Set(S.custom.map(c => c.title).concat(G.art().projects.map(p => p.title)));
+  return G.freshTitle(used, () => Math.random() < .5 ? `${pick(ER.ALBUM_A)} ${pick(ER.ALBUM_B)}` : Math.random() < .5 ? pick(ER.ALBUM_A) : `The ${pick(ER.ALBUM_A)} ${pick(ER.ALBUM_B)}`); };
+G.newEra = function (title, n, weeks, tour, themeId) {
   const a = S.abs, rel = a + clamp(weeks, 16, 80), id = 'c' + (S.custom.length + 1);
   const used = new Set(Object.keys(S.songs)), tracks = [];
-  while (tracks.length < n) { const t = G.songTitle(); if (!used.has(t) && !tracks.includes(t)) tracks.push(t); }
-  const t0 = title || pick(ER.ALBUM_WORDS.filter(x => !S.custom.some(c => c.title === x))) || G.songTitle(), pal = pick(ER.PALETTES.filter(x => x.mood !== 'dark' && x.id !== 'parchment'));
-  const p = { id, title:t0, short:t0, type:'album', custom:true, color:pal.c[0], ink:'#ffffff', genre:S.stats.genre,
-    ws:a, rs:a + Math.round((rel - a) * .35), fs:rel - 8, ps:rel - 4, rel, tracks, extras:[], units:null, cowriters:['Solo','Jack Antonoff','Aaron Dessner','Max Martin','Shellback'], producers:['Jack Antonoff','Aaron Dessner','Max Martin'],
-    goals:[{ k:'units', v:Math.round(S.stats.fans * .03), l:`First week above ${G.fmtN(S.stats.fans * .03)}` }] };
-  if (tour) p.tour = { name:G.tourName(p), kind:'headline', ts:rel + 14, te:rel + 14 + tour, openers:['Vesper Lane','Juno Marlowe'], target:null, tier:'stadium' };
-  S.custom.push(p); inbox('label', `${p.title} is on the calendar`, `Release set for the week of ${G.fmtDate(rel)}.`);
+  while (tracks.length < n) { const t = G.freshTitle(new Set([...used, ...tracks]), G.songTitle); tracks.push(t); }
+  const theme = ER.ERA_THEMES.find(t => t.id === themeId) || pick(ER.ERA_THEMES);
+  const t0 = title || G.albumTitle(), pal = ER.seeded(id + t0)() < .5 ? theme.pals[0] : theme.pals[1];
+  const p = { id, title:t0, short:t0, type:'album', custom:true, theme:theme.id, eraNo:S.custom.length + 1, color:pal[0], ink:'#ffffff', accent:pal[1], genre:theme.genre,
+    look:ER.makeEraLook(theme, pal, id + t0),
+    ws:a, rs:a + Math.round((rel - a) * .35), fs:rel - 8, ps:rel - 4, rel, tracks, extras:[], units:null,
+    cowriters:['Solo','Jack Antonoff','Aaron Dessner','Max Martin','Shellback'], producers:['Jack Antonoff','Aaron Dessner','Max Martin'],
+    goals:[{ k:'units', v:Math.round(S.stats.fans * .025), l:`First week above ${G.fmtN(S.stats.fans * .025)}` }] };
+  if (tour) p.tour = { name:G.tourName(p), kind:'headline', ts:rel + 14, te:rel + 14 + tour, openers:ER.RIVAL_STARS.slice(0, 2), target:null, tier:'stadium' };
+  S.custom.push(p); S.proposal = null; S.breakUntil = 0;
+  inbox('label', `Era ${p.eraNo}: ${p.title}`, `${theme.n}. Release set for the week of ${G.fmtDate(rel)}.`);
+  const k = S.custom.length; if (k >= 10) ach('eras10'); if (k >= 25) ach('eras25'); if (k >= 50) ach('eras50');
   return p;
 };
+/* Endless free play: when an era winds down, the label pitches the next one. */
+G.needsNextEra = () => {
+  if (!(S.flags.free || (S.mode === 'era' && S.custom.length + S.started.length > 0)) || S.proposal || (S.breakUntil && S.abs < S.breakUntil)) return false;
+  if (S.mode === 'era' && !S.flags.free && S.abs < G.FREE_START && !S.flags.pitchOk) { const last = G.allProjects().filter(p => p.type !== 'demos').pop(); if (last && !G.pj(last.id).released) return false; }
+  if (G.active().some(x => ['write','record','finish','pre','release','tourprep','tour'].includes(x.st))) return false;
+  const last = S.custom[S.custom.length - 1]; if (!last) return true;
+  const st = G.stageOf(last, S.abs), w = G.win(last);
+  return st === 'rest' || st === 'none' || (st === 'promo' && S.abs - w.rel >= 16);
+};
+G.proposeEra = function () {
+  const ths = ER.ERA_THEMES.slice().sort(() => Math.random() - .5).slice(0, 3);
+  S.proposal = { abs:S.abs, eraNo:S.custom.length + 1, titles:[G.albumTitle(), G.albumTitle(), G.albumTitle()], themes:ths.map(t => t.id) };
+  S.modal = S.modal.filter(m => m.k !== 'nextera'); S.modal.push({ k:'nextera' });
+  return S.proposal;
+};
+G.takeBreak = function (weeks) { S.proposal = null; S.breakUntil = S.abs + weeks; applyFx({ energy:30, team:5 }); inbox('family', 'A break', `No new music for ${weeks} weeks. Rest up.`); };
 G.startNextReal = function (id) {
+  S.proposal = null; S.modal = S.modal.filter(m => m.k !== 'nextera');
   const p = G.art().projects.find(x => x.id === id); if (!p || S.started.includes(id)) return;
   const first = p.ws != null ? p.ws : p.rs; G.pj(id).shift = S.abs - first; S.started.push(id);
 };

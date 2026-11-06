@@ -43,11 +43,11 @@ function lookFor(ctx, era, key) {
   if (!key && s && G.age() < 15) k = 'early';
   // On the Eras Tour, each week's show is a different act.
   if (!key && ctx === 'tour' && s && era && era.id === 'midnights') { const tp = G.active().find(x => x.st === 'tour' && x.p.id === 'midnights'); if (tp) { k = ERAS_CYCLE[s.abs % ERAS_CYCLE.length]; erasAct = true; } }
-  const e = L[k] || L.early, stage = ['tour','awards','release'].includes(ctx);
+  const e = (!key && era && era.custom && era.look) ? era.look : (L[k] || L.early), stage = ['tour','awards','release'].includes(ctx);
   const o = Object.assign({}, e.base, erasAct && e.eras ? e.eras : stage ? e.stage : e.casual);
   // By the Eras Tour her hair and make-up were the 2023 look in every act.
   if (erasAct) Object.assign(o, { style:'waves', bangs:1, hairLen:.62, tips:0, heartEye:0, hair:L.midnights.base.hair, lips:L.midnights.base.lips }, k === 'lover' ? { heartEye:'#f06fb4' } : {}, ['folklore','evermore'].includes(k) ? { style:'braid' } : {});
-  if (era && era.custom) { o.outfit = era.color; o.accent = T3.shade(era.color, .55); }
+  if (era && era.custom && !era.look) { o.outfit = era.color; o.accent = T3.shade(era.color, .55); }
   if (ctx === 'awards' && !e.stage.top.match(/gown|sequin/)) { o.top = 'gown'; o.sparkle = 1; o.guitar = 0; o.hat = 0; }
   if (ctx === 'awards') o.guitar = 0;
   return o;
@@ -262,11 +262,8 @@ VIEWS.studio = function () {
     const next = s.mode === 'era' ? G.art().projects.filter(p => p.type !== 'demos' && !s.started.includes(p.id) && p.rel > Math.max(...s.started.map(id => G.art().projects.find(q => q.id === id).rel))) : [];
     out.push(card(`<h2>Start a new era</h2>${busy ? '<p class="small muted">Finish the current album first.</p>' : `
       ${next.length ? `<h3>The next real era</h3><div class="chips">${next.slice(0, 3).map(p => `<button class="chip" data-act="nextreal" data-id="${p.id}"><i class="dot" style="background:${p.color}"></i>${h(p.title)}</button>`).join('')}</div><p class="small faint">Starts its writing stage this week, with its real songs.</p>` : ''}
-      <h3>An invented era</h3><label class="field"><span>Album title</span><input id="ne-title" placeholder="Leave blank for a suggestion" maxlength="40"></label>
-      <label class="field"><span>Tracks</span><select id="ne-n">${[10, 12, 13, 14, 16].map(n => `<option ${n === 13 ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
-      <label class="field"><span>Release in</span><select id="ne-w">${[16, 24, 32, 44, 60].map(n => `<option value="${n}" ${n === 32 ? 'selected' : ''}>${n} weeks</option>`).join('')}</select></label>
-      <label class="field"><span>Tour after</span><select id="ne-t"><option value="0">No tour</option><option value="20">20 weeks</option><option value="40" selected>40 weeks</option><option value="70">70 weeks</option></select></label>
-      <button class="btn" data-act="newera">Put it on the calendar</button>`}`));
+      <h3>A new era of your own</h3><p class="small muted">Your label pitches titles and sounds, and every era gets its own look.</p>
+      <button class="btn" data-act="pitch">Plan your next era</button>`}`));
   }
   if (!out.length) out.push(card(`<h2>Studio</h2><p class="muted">No album is being recorded right now.</p>`));
   return out.join('') + catalogCard();
@@ -422,7 +419,7 @@ VIEWS.legacy = function () {
   const P = G.allProjects().filter(p => p.goals);
   return card(`<h2>Legacy</h2><div class="grid3"><div><b class="big">${G.canon()}</b><div class="small muted">Canon Score</div></div><div><b>${s.awards.length}</b><div class="small muted">Awards</div></div><div><b>${Math.round(s.stats.own)}%</b><div class="small muted">Ownership</div></div></div>
     <p class="small muted">The Canon Score measures how close your choices were to what she really did.</p>${spark}`)
-  + card(`<h3>Era gallery</h3><div class="shelf">${s.released.map(r => { const p = G.proj(r.pid); return `<div class="sh">${coverSVG(G.pj(r.pid).cover, 84, r.pid)}<span class="small"><b>${h(p.short || p.title)}</b><br>${G.fmtN(r.total)} sold</span></div>`; }).join('') || '<p class="small muted">Your albums appear here.</p>'}</div>`)
+  + card(`<h3>Era gallery</h3><div class="shelf">${s.released.map(r => { const p = G.proj(r.pid); return `<div class="sh">${coverSVG(G.pj(r.pid).cover, 84, r.pid)}<span class="small"><b>${h(p.short || p.title)}</b>${p.eraNo ? `<br><span class="faint">Era ${p.eraNo}</span>` : ''}<br>${G.fmtN(r.total)} sold</span></div>`; }).join('') || '<p class="small muted">Your albums appear here.</p>'}</div>`)
   + card(`<h3>Era goals</h3>${P.filter(p => s.goals[p.id] || G.stageOf(p, s.abs) !== 'none').map(p => `<div class="logrow"><b>${h(p.title)}</b>${p.goals.map((g, i) => `<div class="small">${s.goals[p.id] ? (s.goals[p.id][i] ? '✅' : '❌') : '⏳'} ${h(g.l)}</div>`).join('')}</div>`).join('') || '<p class="small muted">Goals appear as each era begins.</p>'}`)
   + card(`<h3>Achievements</h3><div class="chips">${Object.keys(G.ACH).map(k => `<span class="chip ${s.ach[k] ? 'on' : ''}">${s.ach[k] ? '★' : '☆'} ${h(G.ACH[k])}</span>`).join('')}</div>`)
   + card(`<h3>Business holdings</h3><p class="small">Masters ownership: ${Math.round(s.stats.own)}%. Money: ${G.fmtM(s.stats.money)}. Industry Clout: ${Math.round(s.stats.clout)}.</p>`)
@@ -453,6 +450,25 @@ function modals() {
   if (m.k === 'release') {
     const p = G.proj(m.pid), r = s.released.find(x => x.pid === m.pid);
     modal(`<span class="eyebrow">Release week</span><h2>${h(p.title)}</h2><div class="coverwrap">${coverSVG(G.pj(p.id).cover, 140, p.id)}<div><p><b>${G.fmtN(r.fw)}</b> first week</p>${r.real ? `<p class="small muted">Real: ${G.fmtN(r.real)}</p>` : ''}<p class="small">Quality ${r.q} · Debut No. ${r.peak}</p></div></div><button class="btn big" data-act="modalok">Continue</button>`);
+    return;
+  }
+  if (m.k === 'nextera') {
+    const P = s.proposal || G.proposeEra(); UI.sel.ne = UI.sel.ne && UI.sel.ne.abs === P.abs ? UI.sel.ne : { abs:P.abs, title:P.titles[0], theme:P.themes[0], weeks:32, n:13, tour:40 };
+    const ne = UI.sel.ne, th = ER.ERA_THEMES.find(t => t.id === ne.theme);
+    const next = s.mode === 'era' ? G.art().projects.filter(p => p.type !== 'demos' && p.type !== 'edition' && !s.started.includes(p.id) && p.rel > Math.max(...s.started.map(id => G.art().projects.find(q => q.id === id).rel)))[0] : null;
+    modal(`<span class="eyebrow">Era ${P.eraNo} · ${h(G.fmtDate(s.abs))}</span><h2>Your next era</h2><p class="small muted">The last era is winding down. Your label has ideas.</p>
+      <div class="stage3d" id="t3era"></div>
+      <h3>Title</h3><div class="chips">${P.titles.map(t => `<button class="chip ${ne.title === t ? 'on' : ''}" data-act="ne" data-k="title" data-v="${h(t)}">${h(t)}</button>`).join('')}</div>
+      <label class="field"><span>Or your own title</span><input id="ne-own" maxlength="40" placeholder="Type a title" value="${P.titles.includes(ne.title) ? '' : h(ne.title)}"></label>
+      <h3>Sound</h3><div class="chips">${P.themes.map(id => { const t = ER.ERA_THEMES.find(x => x.id === id); return `<button class="chip ${ne.theme === id ? 'on' : ''}" data-act="ne" data-k="theme" data-v="${id}"><i class="dot" style="background:${t.pals[0][0]}"></i>${h(t.n)}</button>`; }).join('')}</div>
+      <p class="small muted">${h(th.vibe)}</p>
+      <div class="grid3"><label class="field"><span>Tracks</span><select data-act="nesel" data-k="n">${[10, 12, 13, 14, 16].map(v => `<option ${ne.n === v ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+      <label class="field"><span>Release in</span><select data-act="nesel" data-k="weeks">${[20, 26, 32, 44, 60].map(v => `<option value="${v}" ${ne.weeks === v ? 'selected' : ''}>${v} weeks</option>`).join('')}</select></label>
+      <label class="field"><span>Tour</span><select data-act="nesel" data-k="tour">${[[0, 'None'], [20, '20 weeks'], [40, '40 weeks'], [70, '70 weeks']].map(([v, l]) => `<option value="${v}" ${ne.tour === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
+      <button class="btn big" data-act="startera">Start ${h(ne.title)}</button>
+      <div class="row" style="margin-top:8px">${next ? `<button class="btn ghost sm" data-act="nextreal" data-id="${next.id}">The next real era: ${h(next.title)}</button>` : ''}<button class="btn ghost sm" data-act="erabreak" data-w="26">Take six months off</button><button class="btn ghost sm" data-act="erabreak" data-w="52">Take a year off</button></div>`);
+    const seedId = 'c' + P.eraNo + ne.title, pal = ER.seeded(seedId)() < .5 ? th.pals[0] : th.pals[1], lk = ER.makeEraLook(th, pal, seedId);
+    mount3D('#t3era', { set:'stadium', color:pal[0], figs:[{ look:Object.assign({}, lk.base, lk.stage), anim:'sing', mic:!!lk.stage.mic, guitar:!!lk.stage.guitar }, { look:Object.assign({}, lk.base, lk.casual), x:1.05, z:-.35, ry:-.5, anim:'idle', s:.92 }] }, 'era');
     return;
   }
   if (m.k === 'free') {
@@ -528,9 +544,15 @@ const ACT = {
   pri:d => { const a = UI.sel.pri; const i = a.indexOf(d.k); if (i >= 0) a.splice(i, 1); else { a.push(d.k); if (a.length > 2) a.shift(); } closeModals(); modals(); },
   planok:() => { G.S().priorities = (UI.sel.pri || []).slice(); UI.sel.pri = null; G.S().modal.shift(); closeModals(); render(); },
   modalok:() => { G.S().modal.shift(); closeModals(); render(); },
+  pitch:() => { G.proposeEra(); render(); },
+  ne:d => { UI.sel.ne[d.k] = d.v; const o = $('#ne-own'); if (o) o.value = ''; closeModals(); modals(); },
+  nesel:(d, el) => { UI.sel.ne[d.k] = +el.value; },
+  startera:() => { const ne = UI.sel.ne, own = (($('#ne-own') || {}).value || '').trim(); const p = G.newEra(own || ne.title, ne.n, ne.weeks, ne.tour, ne.theme);
+    G.S().modal = G.S().modal.filter(m => m.k !== 'nextera'); UI.sel.ne = null; closeModals(); toast(`Era ${p.eraNo}: ${p.title} begins.`); UI.tab = 'week'; render(); },
+  erabreak:d => { G.takeBreak(+d.w); G.S().modal = G.S().modal.filter(m => m.k !== 'nextera'); closeModals(); toast('Taking a break.'); render(); },
   freeok:() => { G.S().modal.shift(); G.enterFree(); closeModals(); render(); },
   newera:() => { const t = ($('#ne-title') || {}).value || '', n = +($('#ne-n') || {}).value || 13, w = +($('#ne-w') || {}).value || 32, tr = +($('#ne-t') || {}).value || 0; const p = G.newEra(t.trim(), n, w, tr); toast(`${p.title} is on the calendar.`); UI.tab = 'week'; render(); },
-  nextreal:d => { G.startNextReal(d.id); toast('The next era begins.'); UI.tab = 'week'; render(); },
+  nextreal:d => { G.startNextReal(d.id); G.S().proposal = null; G.S().modal = G.S().modal.filter(m => m.k !== 'nextera'); closeModals(); toast('The next era begins.'); UI.tab = 'week'; render(); },
   menu:() => { const s = G.S(); modal(`<h2>Menu</h2><p class="small muted">Slot ${s.slot} · ${s.mode === 'story' ? 'Story Mode' : 'Era Start'} · ${G.DIFF[s.diff].l}. The game autosaves every week.</p>
       <div class="stack tight"><button class="btn" data-act="savenow">Save now</button><button class="btn ghost" data-act="export">Export save file</button><label class="btn ghost">Import save file<input type="file" accept=".json,application/json" data-act="import" hidden></label><button class="btn ghost" data-act="totitle">Title screen</button><button class="btn ghost" data-act="closem">Close</button></div>`); },
   savenow:() => { G.save(); toast('Saved.'); closeModals(); },
