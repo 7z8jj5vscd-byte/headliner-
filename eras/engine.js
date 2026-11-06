@@ -677,7 +677,7 @@ function startWeek() {
   if (S.mode === 'era' && S.artist === 'taylor' && !S.flags.hidden && !S.flags.hiddenDone && a >= W('2016-09-12') && a < W('2017-08-18')) { S.flags.hidden = true; S.duties = S.duties.filter(d => d.from !== 'publicist'); inbox('publicist', 'Out of public view', 'After the summer of 2016 you step out of sight. You can still write, record and plan in private.'); }
   if (S.flags.hidden && (S.abs >= W('2017-09-04') || (S.mode === 'era' && S.abs >= W('2017-08-18')))) { S.flags.hidden = false; S.flags.hiddenDone = true; inbox('publicist', 'Back in public view', 'Your time out of sight is over.'); }
   // Missed events after a load or an Era Start skip are not replayed.
-  if (S.flags.free && !S.flags.retired && Math.random() < .07) { const d = pick(ER.DRAMA); S.week.pending.push('drama:' + d.id); }
+  if (S.flags.free && !S.flags.retired && Math.random() < .07 * (S.fr && S.fr.drama != null ? S.fr.drama : 1)) { const d = pick(ER.DRAMA); S.week.pending.push('drama:' + d.id); }
   const yw = ER.yw(a);
   if (yw.w === 1 && S.abs > A.startAbs) { const n = G.seasonEnd(); S.modal.push({ k:'plan', seasonDone:n }); }
   if (!S.season || S.season.y !== yw.y) G.seasonInit(yw.y);
