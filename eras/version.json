@@ -1,10 +1,13 @@
 {
- "build": "2026.11.06-8",
- "title": "A whole new look",
+ "build": "2026.11.06-9",
+ "title": "Polish and play anywhere",
  "notes": [
-  "A complete redesign: new navigation bar on phones, a sidebar and live stats panel on desktop, and a new visual style throughout.",
-  "A cinematic title screen with a one-tap Continue button.",
-  "This Week puts the stage up front, shows what you must do, and folds away everything optional.",
-  "All your stats now fit on a phone screen at once."
+  "Real event cards about an album now move with it when you move it in Guided or Sandbox (award shows keep their dates).",
+  "Move a save to another device with a code: Menu, then Move this save.",
+  "Plays offline after your first visit.",
+  "A Last week recap at the top of This Week.",
+  "Swipe left and right to change tabs, a little vibration on taps, and 3D that rests when it's off screen to save battery.",
+  "Separate music settings with a volume slider, and a soft melody over the music.",
+  "An updated Getting started guide, and fairer brand income over time."
  ]
 }

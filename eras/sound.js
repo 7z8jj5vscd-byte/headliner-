@@ -1,8 +1,8 @@
 /* The Eras Life: original generated sound. A soft chord loop that follows the era's mood, crowd
    noise for show nights, and small interface sounds. No recorded or real songs are used. */
 (function () {
-const SND = window.SND = { ctx:null, on:true, music:null, crowd:null, mood:'', vol:.5 };
-try { const v = localStorage.getItem('eras-sound'); if (v != null) SND.on = v === '1'; } catch (e) {}
+const SND = window.SND = { ctx:null, on:true, music:null, crowd:null, mood:'', vol:.5, musicOn:true, musicVol:.12 };
+try { const v = localStorage.getItem('eras-sound'); if (v != null) SND.on = v === '1'; const m = localStorage.getItem('eras-music'); if (m != null) SND.musicOn = m === '1'; const mv = localStorage.getItem('eras-music-vol'); if (mv != null) SND.musicVol = +mv; } catch (e) {}
 
 function ctx() {
   if (!SND.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; SND.ctx = new C(); SND.master = SND.ctx.createGain(); SND.master.gain.value = SND.vol; SND.master.connect(SND.ctx.destination); }
@@ -25,14 +25,16 @@ function note(c, f, t, d, g, wave) {
   o.connect(lp); lp.connect(a); a.connect(SND.musicBus); o.start(t); o.stop(t + d + .05);
 }
 SND.setMood = function (mood) {
-  if (!SND.on) return; const c = ctx(); if (!c) return;
+  if (!SND.on || SND.musicOn === false) return; const c = ctx(); if (!c) return;
   if (SND.mood === mood && SND.music) return; SND.mood = mood; SND.stopMusic();
-  const m = MOODS[mood] || MOODS.pop; SND.musicBus = c.createGain(); SND.musicBus.gain.value = .12; SND.musicBus.connect(SND.master);
+  const m = MOODS[mood] || MOODS.pop; SND.musicBus = c.createGain(); SND.musicBus.gain.value = SND.musicVol; SND.musicBus.connect(SND.master);
   const beat = 60 / m.bpm; let step = 0, next = c.currentTime + .1;
   // A gentle arpeggio over the chords, scheduled a little ahead.
   SND.music = setInterval(() => { while (next < c.currentTime + .4) { const ch = m.chords[Math.floor(step / 8) % m.chords.length], i = step % 8;
       const n = ch[[0, 1, 2, 1, 0, 2, 1, 2][i]] + (i >= 4 ? 12 : 0); note(c, N(n), next, beat * 1.6, .25, m.wave);
       if (i === 0) note(c, N(ch[0] - 12), next, beat * 7, .22, 'sine');
+      // A soft, wandering melody on top: original notes from the chord, now and then.
+      if ((i === 2 || i === 6) && Math.random() < .55) note(c, N(ch[Math.floor(Math.random() * 3)] + 24 + (Math.random() < .3 ? 2 : 0)), next, beat * 2.2, .1, 'sine');
       next += beat / 2; step++; } }, 120);
 };
 SND.stopMusic = function () { if (SND.music) clearInterval(SND.music); SND.music = null; if (SND.musicBus) { try { SND.musicBus.disconnect(); } catch (e) {} } SND.musicBus = null; };
@@ -56,5 +58,7 @@ SND.fanfare = function () {
   if (!SND.musicBus) { SND.musicBus = c.createGain(); SND.musicBus.gain.value = .12; SND.musicBus.connect(SND.master); }
   [[72, 0], [76, .12], [79, .24], [84, .38]].forEach(([n, d]) => note(c, N(n), t + d, .6, .5, 'triangle'));
 };
+SND.setMusic = function (on) { SND.musicOn = on; try { localStorage.setItem('eras-music', on ? '1' : '0'); } catch (e) {} if (!on) SND.stopMusic(); else SND.mood = ''; };
+SND.setMusicVol = function (v) { SND.musicVol = v; try { localStorage.setItem('eras-music-vol', String(v)); } catch (e) {} if (SND.musicBus) SND.musicBus.gain.value = v; };
 SND.toggle = function () { SND.on = !SND.on; try { localStorage.setItem('eras-sound', SND.on ? '1' : '0'); } catch (e) {} if (!SND.on) SND.stopMusic(); else { SND.mood = ''; } return SND.on; };
 })();

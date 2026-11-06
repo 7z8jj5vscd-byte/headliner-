@@ -176,3 +176,9 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/eras/
 - **Life:** free time that inspires songs, your public image, brands of your own, and a What next? card between eras.
 - **Creative tools:** a look designer for every era, stage lighting colours, album titles on covers, and your own names for fans, merch and tours.
 - **A new look:** a bottom navigation bar on phones, a sidebar and live stats panel on desktop, a cinematic title screen, and a redesigned This Week screen.
+
+### Checking the game
+
+`node eras/tests/story-check.js` plays every story headless (Node.js only, no browser), checks the results still match the real careers (Canon Score, first-week sales, tour grosses, Fearless at No. 1), then plays ten years of free play to check money and fans stay sensible. It exits with an error if anything is off. Run it before publishing changes.
+
+The game also works offline after the first visit, and saves can move between devices with a code (Menu → Move this save to another device).

@@ -155,6 +155,8 @@ details.card>summary h2{margin:0}details.card>summary::after{content:"";width:9p
 .mkt{display:flex;flex-direction:column;gap:6px;padding:9px 0;border-top:1px solid var(--rule)}.eracontrol{padding:9px 0;border-top:1px solid var(--rule)}
 .cities{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 12px;margin:8px 0}.city{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;border-bottom:1px solid var(--rule)}.city b{width:22px;text-align:center}
 .sw-row{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0}.swb{width:32px;height:32px;border-radius:50%;border:2px solid var(--rule)}.swb.on{border-color:var(--text);box-shadow:0 0 0 2px var(--era)}
+.recap{display:flex;align-items:flex-start;gap:10px;margin:12px 14px 0;padding:12px 14px;border-radius:18px;border:1px solid color-mix(in srgb,var(--era) 45%,var(--rule));background:color-mix(in srgb,var(--era) 14%,var(--surface))}.recap>div{flex:1;min-width:0}.recap .icon{width:32px;height:32px}
+@media(min-width:980px){.recap{margin:14px 22px 0}}
 .opp{padding:11px 0;border-top:1px solid var(--rule)}.opp:first-of-type{border-top:0}
 /* modals and toasts */
 .modal{position:fixed;inset:0;z-index:50;background:#000a;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;padding:0;animation:fade .18s ease}
@@ -173,35 +175,36 @@ details.card>summary h2{margin:0}details.card>summary::after{content:"";width:9p
 <body>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="data-taylor.js?v=2026.11.06-8"></script>
-<script src="data-world.js?v=2026.11.06-8"></script>
-<script src="data-looks.js?v=2026.11.06-8"></script>
-<script src="data-events-world.js?v=2026.11.06-8"></script>
-<script src="data-forever.js?v=2026.11.06-8"></script>
-<script src="data-beyonce.js?v=2026.11.06-8"></script>
-<script src="data-gaga.js?v=2026.11.06-8"></script>
-<script src="data-scenes.js?v=2026.11.06-8"></script>
-<script src="data-shows.js?v=2026.11.06-8"></script>
-<script src="data-callbacks.js?v=2026.11.06-8"></script>
-<script src="data-goals.js?v=2026.11.06-8"></script>
-<script src="data-freedom.js?v=2026.11.06-8"></script>
-<script src="data-more.js?v=2026.11.06-8"></script>
-<script src="sound.js?v=2026.11.06-8"></script>
-<script src="stage3d.js?v=2026.11.06-8"></script>
-<script src="engine.js?v=2026.11.06-8"></script>
-<script src="extras.js?v=2026.11.06-8"></script>
-<script src="town.js?v=2026.11.06-8"></script>
-<script src="ui.js?v=2026.11.06-8"></script>
-<script src="ui-more.js?v=2026.11.06-8"></script>
-<script src="freedom.js?v=2026.11.06-8"></script>
-<script src="freedom2.js?v=2026.11.06-8"></script>
-<script src="freedom3.js?v=2026.11.06-8"></script>
-<script src="town-ui.js?v=2026.11.06-8"></script>
-<script src="freedom-ui.js?v=2026.11.06-8"></script>
-<script src="freedom2-ui.js?v=2026.11.06-8"></script>
-<script src="freedom3-ui.js?v=2026.11.06-8"></script>
-<script src="creative.js?v=2026.11.06-8"></script>
-<script src="update.js?v=2026.11.06-8"></script>
+<script src="data-taylor.js?v=2026.11.06-9"></script>
+<script src="data-world.js?v=2026.11.06-9"></script>
+<script src="data-looks.js?v=2026.11.06-9"></script>
+<script src="data-events-world.js?v=2026.11.06-9"></script>
+<script src="data-forever.js?v=2026.11.06-9"></script>
+<script src="data-beyonce.js?v=2026.11.06-9"></script>
+<script src="data-gaga.js?v=2026.11.06-9"></script>
+<script src="data-scenes.js?v=2026.11.06-9"></script>
+<script src="data-shows.js?v=2026.11.06-9"></script>
+<script src="data-callbacks.js?v=2026.11.06-9"></script>
+<script src="data-goals.js?v=2026.11.06-9"></script>
+<script src="data-freedom.js?v=2026.11.06-9"></script>
+<script src="data-more.js?v=2026.11.06-9"></script>
+<script src="sound.js?v=2026.11.06-9"></script>
+<script src="stage3d.js?v=2026.11.06-9"></script>
+<script src="engine.js?v=2026.11.06-9"></script>
+<script src="extras.js?v=2026.11.06-9"></script>
+<script src="town.js?v=2026.11.06-9"></script>
+<script src="ui.js?v=2026.11.06-9"></script>
+<script src="ui-more.js?v=2026.11.06-9"></script>
+<script src="freedom.js?v=2026.11.06-9"></script>
+<script src="freedom2.js?v=2026.11.06-9"></script>
+<script src="freedom3.js?v=2026.11.06-9"></script>
+<script src="town-ui.js?v=2026.11.06-9"></script>
+<script src="freedom-ui.js?v=2026.11.06-9"></script>
+<script src="freedom2-ui.js?v=2026.11.06-9"></script>
+<script src="freedom3-ui.js?v=2026.11.06-9"></script>
+<script src="creative.js?v=2026.11.06-9"></script>
+<script src="qol.js?v=2026.11.06-9"></script>
+<script src="update.js?v=2026.11.06-9"></script>
 <script>UI.narrow = window.matchMedia('(max-width:560px)').matches; window.matchMedia('(max-width:560px)').addEventListener('change', e => { UI.narrow = e.matches; if (G.S()) UI.render(); }); UI.start();</script>
 </body>
 </html>
