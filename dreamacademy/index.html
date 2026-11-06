@@ -144,6 +144,13 @@ textarea.code{width:100%;height:120px;font:11px var(--mono);margin:8px 0}
 .troph{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}.tr{background:var(--raised);border:1px solid var(--rule);border-radius:6px;padding:8px;opacity:.5;position:relative}
 .tr b{display:block;font-size:13px}.tr span{font-size:11.5px;color:var(--muted)}.tr em{position:absolute;top:6px;right:8px;font-size:10px;color:var(--amber);font-style:normal}.tr.on{opacity:1;border-color:var(--amber)}
 .judge{font:italic 600 14px/1.45 var(--serif);color:var(--muted);border-left:2px solid var(--rule);padding-left:10px}
+.scn{position:fixed;inset:0;z-index:75;background:#050607;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none}
+.scn-3d{flex:1;min-height:0;position:relative;overflow:hidden}.scn-3d.flat{background:radial-gradient(circle at 50% 40%,#2a2d36,#050607)}
+.scn-box{background:linear-gradient(transparent,#000 18%);padding:28px 18px calc(env(safe-area-inset-bottom,0px) + 18px);min-height:190px;position:relative;cursor:pointer;max-width:720px;width:100%;margin:0 auto}
+.scn-who{display:flex;align-items:center;gap:8px;min-height:30px;margin-bottom:6px}.scn-who b{font-size:14px}.scn-who .faint{margin-left:2px}
+.scn-t{font:600 18px/1.45 var(--serif);margin:0}.scn-t.narr{font-style:italic;color:var(--muted)}.narr{font-size:11px;letter-spacing:.14em;color:var(--rec)}
+.scn-next{position:absolute;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);font-size:11px;color:var(--faint)}
+.av.npc{display:inline-grid;place-items:center;color:#fff;font:700 11px var(--mono);border-radius:50%}
 /* mini-games */
 .mg{position:fixed;inset:0;z-index:80;background:#050607;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px);user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:auto}
 .mg-top{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 8px}.mg-top b{flex:1;font:600 16px var(--serif)}
@@ -178,10 +185,11 @@ textarea.code{width:100%;height:120px;font:11px var(--mono);margin:8px 0}
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="data.js?v=2"></script>
-<script src="engine.js?v=2"></script>
-<script src="stage3d.js?v=1"></script>
+<script src="engine.js?v=3"></script>
+<script src="story.js?v=1"></script>
+<script src="stage3d.js?v=2"></script>
 <script src="minigames.js?v=1"></script>
-<script src="ui.js?v=2"></script>
+<script src="ui.js?v=3"></script>
 <script>UI.start();</script>
 </body>
 </html>

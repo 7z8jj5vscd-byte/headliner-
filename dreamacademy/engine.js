@@ -133,7 +133,7 @@ G.advance = () => {
       return;
     }
     const key = G.planOf(id), a = D.acts[key], before = Object.assign({}, p.sk);
-    const mult = (p.wb < 25 ? .5 : p.wb < 45 ? .8 : 1) * (S.ctrl[id] === 'manual' ? 1.1 : 1) * (S.session[id] ? S.session[id].mult : 1);
+    const mult = (p.wb < 25 ? .5 : p.wb < 45 ? .8 : 1) * (S.ctrl[id] === 'manual' ? 1.1 : 1) * (S.session[id] ? S.session[id].mult : 1) * (G.coachMult ? G.coachMult(id, key) : 1);
     const posK = G.posSkill(id);
     D.skills.forEach(({ k }) => {
       const g = (a.g[k] || 0) * mult * (k === posK ? 1.15 : 1) * (2.4 + Math.random() * 1.6) * (1 - p.sk[k] / 112) + .12;
@@ -232,6 +232,7 @@ function runEval(m) {
     rows.slice(-3).forEach(r => { const p = S.people[r.id]; p.warn = true; p.wb = clamp(p.wb - 4, 5, 100); });
   }
   if (rows.length && rows[0].id === S.focus) S.flags.mvp = 1;
+  S.lastBoard = rows.map(r => ({ id:r.id, g:r.g }));
   S.evalAcc = {};
   const f = rows.find(r => r.id === S.focus);
   if (f) log('Monthly eval: ' + G.name(S.focus) + ' gets ' + f.g + '.', 'eval');
@@ -241,17 +242,13 @@ function runEval(m) {
 /* ---------- Scripted beats ---------- */
 function scripted(m) {
   if (m === 3) q({ kind:'info', title:'Callbacks', eyebrow:'Open Call', text:'All twenty make it through to the academy. The real training begins next month, and so do the monthly evals.' });
-  if (m === 12) q({ kind:'info', title:'Halfway', eyebrow:'Academy', text:'The coaches post a ranking board in the practice room. Nobody admits to looking at it. Everyone looks at it.' });
-  if (m === 18) q({ kind:'info', title:'Cameras arrive', eyebrow:'Academy', text:'A production crew starts filming the trainees. Next month the survival show begins: three missions, a live finale, and only six will debut.' });
-  if (m === 19) q({ kind:'mission', n:1 });
-  if (m === 20) { if (S.mode === 'real' && G.inPlay('lexie')) q({ kind:'withdraw' }); q({ kind:'mission', n:2 }); }
-  if (m === 21) { q({ kind:'mission', n:3 }); q({ kind:'finale' }); }
+  if (m >= 19 && m <= 21 && !G.survivalMonth) { if (m === 20 && S.mode === 'real' && G.inPlay('lexie')) q({ kind:'withdraw' }); q({ kind:'mission', n:m - 18 }); if (m === 21) q({ kind:'finale' }); }
   if (m >= 4 && m <= 30 && m !== 19 && m !== 20 && m !== 21 && (G.p(S.focus).status === 'trainee' || G.p(S.focus).status === 'member')) q({ kind:'evalDay' });
   if (m === 22) q({ kind:'nameGroup' });
   if (m === 23) q({ kind:'positions' });
   if (m === 25) q({ kind:'fandom' });
   if (m === 26) q({ kind:'lightstick' });
-  if (m === 30) q({ kind:'info', eyebrow:'Pre-Debut', title:'Two months to debut', text:'The debut date is announced. Recording wraps, the music video is next, and the documentary crew is everywhere.' });
+
   if (m === 24) q({ kind:'documentary' });
   if (m === 32) { if (!S.group.releases.length) { S.group.prep = Math.max(S.group.prep, 55); q({ kind:'release', debut:true }); } q({ kind:'stage', key:'showcase' }); }
   if (m === 46) q({ kind:'brand' });
@@ -261,6 +258,7 @@ function scripted(m) {
   if (m > 60 && m % 12 === 4) q({ kind:'awards' });
   if (m > 60 && m % 12 === 6 && chance(.6)) q({ kind:'festival' });
   if (m === 84 || m === 120) q({ kind:'renewal' });
+  if (G.storyMonth) G.storyMonth(m);
 }
 
 /* ---------- Random events ---------- */
@@ -463,7 +461,7 @@ G.makeRelease = (cid, debut) => {
   S.flags.hook = null;
   r.lines = lineSplit(ids);
   S.group.releases.push(r);
-  q({ kind:'mv', rid:r.id });
+  S.queue.splice(Math.min(1, S.queue.length), 0, { kind:'mv', rid:r.id });
   const sh = Object.values(r.lines); if (ids.length > 2 && Math.max(...sh) > 30 && chance(.5)) { const lo = ids.slice().sort((a, b) => r.lines[a] - r.lines[b])[0], hi = ids.slice().sort((a, b) => r.lines[b] - r.lines[a])[0]; forceTension('lines', hi, lo); }
   S.group.prep = 0;
   S.group.momentum = clamp(S.group.momentum + 15 + (divisive ? 10 : 0), 0, 100);
@@ -575,7 +573,7 @@ G.view = ev => {
     case 'return': return { eyebrow:'Hiatus', title:n(ev.id) + ' feels ready', text:n(ev.id) + ' says she feels ready to come back. Her Wellbeing is ' + Math.round(G.p(ev.id).wb) + '.',
       choices:[['Welcome her back'], ['Give her more time', 'Two more months']] };
     case 'renewal': return { eyebrow:'Contracts', title:'Contract renewal', text:renewalText(), choices:[['Offer a lighter schedule to everyone', 'More of them stay; the label pushes back'], ['Let each of them decide freely']] };
-    default: { const x = G.view2 && G.view2(ev); return x || { title:'', text:'', choices:[['Continue']] }; }
+    default: { const x = (G.view2 && G.view2(ev)) || (G.view3 && G.view3(ev)); return x || { title:'', text:'', choices:[['Continue']] }; }
     case 'ending': { const e = D.endings[S.ended]; return { eyebrow:'The end', title:e.t, text:e.d, choices:[['See the final numbers']] }; }
   }
   return { title:'', text:'', choices:[['Continue']] };
@@ -653,7 +651,7 @@ G.choose = (ev, i, acc) => {
     case 'return': if (i === 0) { G.endHiatus(ev.id); out = n(ev.id) + ' is back with the group.'; } else { G.p(ev.id).hiatus = 2; out = 'Two more months. No rush.'; } break;
     case 'renewal': out = renewal(i === 0); break;
     case 'ending': break;
-    default: if (G.choose2) out = G.choose2(ev, i, acc) || ''; break;
+    default: out = (G.choose2 && G.choose2(ev, i, acc)) || (G.choose3 && G.choose3(ev, i, acc)) || ''; break;
   }
   done();
   checkTrophies();
@@ -664,7 +662,7 @@ G.choose = (ev, i, acc) => {
 function showScores(acc, focusPlayed) {
   return G.trainees().map(id => {
     const p = S.people[id];
-    const judges = G.stageScore([id], id === S.focus && focusPlayed ? acc : null);
+    const judges = G.stageScore([id], id === S.focus && focusPlayed ? acc : null) + (G.msBonus ? G.msBonus(id) : 0);
     const fans = p.fan + rnd(-4, 4);
     return { id, judges, fans, total:judges * .6 + fans * .4 + rnd(-3, 3) };
   }).sort((a, b) => b.total - a.total);
@@ -675,6 +673,7 @@ function cutPeople(ids, code) {
   S.queue = S.queue.filter(e => !(e.kind === 'drama' && !G.tension(e.tid)));
 }
 function mission(n, acc, i) {
+  if (G.preMission) G.preMission(acc, i);
   const played = i === 0 && acc != null;
   const rows = showScores(acc, played);
   let out;
@@ -682,6 +681,7 @@ function mission(n, acc, i) {
   else { const k = ({ 1:2, 2:Math.max(0, rows.length - 13), 3:3 })[n]; out = rows.slice(-k).map(r => r.id); }
   rows.forEach((r, idx) => { S.people[r.id].fan = clamp(S.people[r.id].fan + (rows.length - idx) * .25, 0, 100); });
   const fr = rows.findIndex(r => r.id === S.focus);
+  S.lastMission = { n, rows:rows.map(r => ({ id:r.id, total:Math.round(r.total * 10) / 10 })), out:out.slice() };
   cutPeople(out, 'M' + n);
   log('Mission ' + n + ': ' + out.map(G.name).join(', ') + ' eliminated.', 'show');
   feed('@eval_tracker', 'Mission ' + n + ' results: ' + out.map(G.name).join(', ') + ' going home. I\'m not okay.', 0);
@@ -690,12 +690,14 @@ function mission(n, acc, i) {
   return t;
 }
 function finale(acc, i) {
+  if (G.preMission) G.preMission(acc, i);
   const played = i === 0 && acc != null;
   const rows = showScores(acc, played);
   let six;
   if (S.mode === 'real') six = D.cast.filter(c => c.real).map(c => c.id);
   else six = rows.slice(0, 6).map(r => r.id);
   const out = G.trainees().filter(id => !six.includes(id));
+  S.lastFinale = { six:six.slice(), out:out.slice(), rows:rows.map(r => ({ id:r.id, total:Math.round(r.total * 10) / 10 })) };
   six.forEach((id, k) => { const p = S.people[id]; p.status = 'member'; p.warn = false; });
   cutPeople(out, 'F');
   S.order = six.concat(S.order.filter(id => !six.includes(id)));
@@ -921,6 +923,7 @@ function checkTrophies() {
 G.checkTrophies = checkTrophies;
 G.takeTrophies = () => { const t = S.newTrophies.slice(); S.newTrophies = []; return t; };
 
+G._ = { q, feed, log, grow, mult, chance, rnd, pick, clamp, r1, startHate };
 /* ---------- Saves ---------- */
 const KEY = 'dreamacademy-save-v1';
 function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -928,7 +931,7 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e
 function save() { if (S) lsSet(KEY, JSON.stringify(S)); }
 G.save = save;
 G.hasSave = () => !!lsGet(KEY);
-function migrate(s) { const d = { session:{}, practice:2, evalAcc:{}, trophies:{}, newTrophies:[], resolved:0 }; Object.keys(d).forEach(k => { if (s[k] == null) s[k] = d[k]; }); return s; }
+function migrate(s) { const d = { session:{}, practice:2, evalAcc:{}, trophies:{}, newTrophies:[], resolved:0, mem:{ helped:{}, promised:{}, gifts:{}, moments:[], goal:null, danger:0, seen:{} } }; Object.keys(d).forEach(k => { if (s[k] == null) s[k] = d[k]; }); return s; }
 G.load = () => { try { const s = JSON.parse(lsGet(KEY)); if (s && s.v === 1) { S = migrate(s); return true; } } catch (e) {} return false; };
 G.wipe = () => { try { localStorage.removeItem(KEY); } catch (e) {} S = null; };
 G.exportSave = () => btoa(unescape(encodeURIComponent(JSON.stringify(S))));

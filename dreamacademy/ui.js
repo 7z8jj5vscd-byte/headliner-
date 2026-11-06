@@ -47,7 +47,7 @@ function cast3(ids) { return ids.map(fig3); }
 function stageCast() { const s = S(); return G.debuted() ? G.activeMembers() : [s.focus].concat(G.trainees().filter(x => x !== s.focus).slice(0, 4)).filter(G.inPlay); }
 function mgOpts(v, kind) {
   const s = S();
-  let ids = v.mgCast === 'focus' ? [s.focus] : stageCast();
+  let ids = v.cast || (v.mgCast === 'focus' ? [s.focus] : stageCast());
   if (!G.inPlay(s.focus) && v.mgCast === 'focus') ids = [G.cast()[0]];
   const o = { cast:cast3(ids), set:v.set, light:s.group.light || '#f0b44c', tint:outfitTint(), skill:G.inPlay(s.focus) ? G.avg(s.focus) : 50,
     title:v.title, chants:D.chants.map(c => c.replace(/\{g\}/g, s.group.formed ? s.group.name : 'DREAM ACADEMY').replace(/\{n\}/g, G.name(pickOf(ids)))), focusIdx:Math.max(0, ids.indexOf(s.focus)) };
@@ -357,9 +357,53 @@ function sheet(html, opts) {
 }
 function closeSheet() { document.querySelectorAll('.modal').forEach(x => x.remove()); }
 
+/* ---------- Scene player: 3D cutscene with dialogue ---------- */
+function npcSpec(k) { const x = D.npcs[k]; return { id:k, look:x.look, outfit:x.outfit, pants:true }; }
+function speakerAv(k, size) {
+  if (G.CAST[k]) return av(k, size);
+  const x = D.npcs[k]; if (!x) return '';
+  return '<span class="av npc" style="width:' + size + 'px;height:' + size + 'px;background:' + (x.outfit || '#333') + '">' + esc(x.name.split(' ').map(w => w[0]).join('').slice(0, 2)) + '</span>';
+}
+function playScene(sc, head) {
+  return new Promise(res => {
+    const keys = sc.cast.slice();
+    sc.lines.forEach(l => { if (l[0] !== 'N' && !keys.includes(l[0]) && (G.CAST[l[0]] || D.npcs[l[0]])) keys.push(l[0]); });
+    const specs = keys.slice(0, 9).map((k, i) => G.CAST[k] ? fig3(k, i) : npcSpec(k));
+    const w = document.createElement('div'); w.className = 'scn';
+    w.innerHTML = '<div class="mg-top"><span class="rec">REC</span><b>' + esc(head || '') + '</b><button class="btn ghost sm" data-skip>Skip scene</button></div>' +
+      '<div class="scn-3d"></div><div class="scn-box" role="button" tabindex="0" aria-label="Next line"><div class="scn-who"></div><p class="scn-t"></p><span class="scn-next mono">TAP ▸</span></div>';
+    document.body.appendChild(w);
+    const view = w.querySelector('.scn-3d');
+    const C = window.S3 ? S3.mount(view, { set:sc.set || 'practice', cast:specs, scene:true, light:S().group.light, tint:outfitTint() }) : null;
+    if (!C) view.classList.add('flat');
+    let k = -1, typing = null;
+    const who = w.querySelector('.scn-who'), tx = w.querySelector('.scn-t');
+    function show() {
+      k++;
+      if (k >= sc.lines.length) return end();
+      const [sp, text, mv] = sc.lines[k], idx = keys.indexOf(sp);
+      if (C) C.talk(sp === 'N' ? -1 : Math.min(idx, 8), mv);
+      who.innerHTML = sp === 'N' ? '<span class="narr mono">NARRATION</span>' : speakerAv(sp, 30) + '<b>' + esc(G.speaker(sp)) + '</b>' + (D.npcs[sp] && D.npcs[sp].role ? '<span class="small faint">' + esc(D.npcs[sp].role) + '</span>' : '');
+      tx.className = 'scn-t' + (sp === 'N' ? ' narr' : '');
+      clearInterval(typing); let c = 0; tx.textContent = '';
+      typing = setInterval(() => { c += 2; tx.textContent = text.slice(0, c); if (c >= text.length) { clearInterval(typing); typing = null; } }, 16);
+      tx.dataset.full = text;
+    }
+    function next() { if (typing) { clearInterval(typing); typing = null; tx.textContent = tx.dataset.full; return; } show(); }
+    function end() { clearInterval(typing); document.removeEventListener('keydown', key); if (C) C.destroy(); w.remove(); res(); }
+    const key = e => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); next(); } if (e.key === 'Escape') end(); };
+    document.addEventListener('keydown', key);
+    w.addEventListener('click', e => { if (e.target.closest('[data-skip]')) return end(); if (e.target.closest('.scn-box') || e.target.closest('.scn-3d')) next(); });
+    show();
+  });
+}
+UI.playScene = playScene;
+
 /* Event sheet. temp = not in the queue (opened from a tab). */
 function openEvent(ev, temp) {
   const v = G.view(ev);
+  if (v && v.scene && !ev.sceneSeen) { closeSheet(); return playScene(v.scene, v.eyebrow).then(() => { ev.sceneSeen = true; G.save(); openEvent(ev, temp); }); }
+  if (v && ev.kind === 'mission' && S().ms && S().ms.n === ev.n && S().ms.team) v.cast = S().ms.team.filter(G.inPlay);
   if (!v) { const s = S(); s.queue = s.queue.filter(x => x !== ev); G.save(); render(); return nextEvent(); }
   const conf = v.conf ? '<div class="confs">' + v.conf.map(([id, t]) => '<div class="conf">' + av(id, 40) + '<div><span class="mono small faint">CONFESSIONAL · ' + esc(G.name(id).toUpperCase()) + '</span><p>' + esc(t) + '</p></div></div>').join('') + '</div>' : '';
   const pair = v.drama ? '<div class="pair big">' + av(v.drama.a, 56) + av(v.drama.b, 56) + '</div>' : '';
