@@ -9,7 +9,7 @@ const fx = (o, m) => G.applyFx(o, m);
 
 /* ---------- What-if branches ---------- */
 G.hooks.answer.push((e, c) => {
-  const s = S(); if (s.mode !== 'story' || !ER.WHATIFS[e.id] || c.c || s.whatif) return;
+  const s = S(); if (s.fr && s.fr.whatif === false) return; if (s.mode !== 'story' || !ER.WHATIFS[e.id] || c.c || s.whatif) return;
   if (!e.ch.some(x => x.c)) return;
   const w = ER.WHATIFS[e.id]; s.whatif = { id:e.id, step:0, next:s.abs + 2 };
   G.inbox('family', w.t, 'You chose differently from what really happened, so a short invented side story begins. The real timeline picks up again when it ends.');

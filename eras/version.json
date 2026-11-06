@@ -1,12 +1,12 @@
 {
- "build": "2026.11.06-4",
- "title": "More freedom",
+ "build": "2026.11.06-5",
+ "title": "Your schedule, your story",
  "notes": [
-  "Song structure: build each song section by section, and pick its tempo, mood and sound.",
-  "Write songs of your own any time, in a notebook, and put them on any album as extra tracks.",
-  "Set an album's track order yourself in the Studio.",
-  "Choose when tour prep starts, from right after release to a four-week crunch.",
-  "Choose how to do videos, announcements, release-week TV, signings, costumes, casting, setlists and mastering.",
-  "Optional opportunities now turn up on This Week, each with its own choices."
+  "Story style for every save: Canon, Guided (deadlines, movable album dates) or Sandbox (move, delay or skip eras, start from any era).",
+  "Deadlines instead of required tasks: choose which weeks to do the work.",
+  "Hand any task to your team for a fee.",
+  "Work ahead on the next album, take a week off, and auto-play weeks.",
+  "Release singles whenever you like, and spend a marketing budget.",
+  "A Coming up calendar on This Week, and more options in Settings."
  ]
 }
