@@ -36,10 +36,11 @@ ER.seeded = function (str) {
   return function () { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
 };
 // Her look for an invented era: always blonde, with the era's sound and palette.
-ER.makeEraLook = function (theme, pal, seed) {
+ER.makeEraLook = function (theme, pal, seed, artist) {
+  const FL = (ER.FREE_LOOK || {})[artist || 'taylor'];
   const r = ER.seeded(seed), pk = a => a[Math.floor(r() * a.length)];
   const blondes = ['#f3db94','#f6e7bd','#efd08a','#f8ecc8','#e9cc86'];
-  const base = { skin:'#f6d9c4', hair:pk(blondes), eyes:'#4a7aa8', brow:'#b8945a', hairGlow:1,
+  const base = { skin:FL ? FL.skin : '#f6d9c4', hair:pk(FL ? FL.hairs : blondes), eyes:FL ? FL.eyes : '#4a7aa8', brow:FL ? FL.brow : '#b8945a', hairGlow:1,
     style:pk(theme.id === 'folk' || theme.id === 'acoustic' ? ['braid','waves','bun'] : theme.id === 'jazz' ? ['waves','bob','bun'] : ['waves','straight','bob','curly','waves']),
     bangs:r() < .7 ? 1 : 0, hairLen:.45 + r() * .25, lips:pk(['#c8102e','#a3123a','#e0457e','#c46d6d','#6d0f24']), liner:r() < .7 ? 1 : 0 };
   if (r() < .15) base.tips = pal[1];

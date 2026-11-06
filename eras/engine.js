@@ -107,8 +107,14 @@ function setupEra(id) {
   // Stats come from the latest album with a preset that starts on or before this one.
   const first = p.ws != null ? p.ws : p.rs;
   const prior = A.projects.filter(q => ERA_PRESET[q.id] && (q.ws != null ? q.ws : q.rs) <= first).pop();
-  const ps = ERA_PRESET[prior ? prior.id : 'ts1'];
-  Object.assign(S.stats, { fans:ps[0], rep:ps[1], heat:ps[2], write:ps[3], clout:ps[4], own:ps[5], money:ps[6], genre:ps[7] });
+  if (A.id === 'taylor') {
+    const ps = ERA_PRESET[prior ? prior.id : 'ts1'];
+    Object.assign(S.stats, { fans:ps[0], rep:ps[1], heat:ps[2], write:ps[3], clout:ps[4], own:ps[5], money:ps[6], genre:ps[7] });
+  } else {
+    const yrs = Math.max(0, (first - A.startAbs) / 52), done = A.projects.filter(q => q.rel != null && q.rel < first).length;
+    Object.assign(S.stats, { rep:68, heat:35, write:clamp(25 + done * 5, 20, 85), clout:clamp(10 + done * 8, 5, 95),
+      own:A.id === 'beyonce' && first >= W('2011-03-28') ? 60 : clamp(done * 3, 0, 40), money:Math.round(2e5 + done * done * 4e6 + yrs * 1e5), genre:p.genre || 30 });
+  }
   S.started = [p.id]; S.mom = 1;
   S.abs = p.ws != null ? p.ws : p.rs;
   // Earlier albums' songs are already out.
@@ -236,7 +242,8 @@ const T = (id, l, cost, o) => Object.assign({ id, l, cost, req:false, kind:'opt'
 G.tasks = function () {
   const a = S.abs, out = [], yw = ER.yw(a), age = G.age();
   // School: a fixed block during school weeks, until she finishes through homeschooling.
-  if (S.mode === 'story' && S.artist === 'taylor' && age >= 11 && a < W('2007-06-04') && !(yw.w >= 23 && yw.w <= 34))
+  const sch = G.art().school;
+  if (S.mode === 'story' && sch && age >= sch.age && a < W(sch.until) && !(yw.w >= 23 && yw.w <= 34))
     out.push(T('school', 'School', 1, { kind:'school', fixed:true, desc:'Keep up with school. This block is fixed.' }));
   G.active().forEach(({ p, st }) => {
     const w = G.win(p), c = counts(p), pid = p.id, pj = G.pj(pid), nm = p.short || p.title;
@@ -366,6 +373,8 @@ G.doTask = function (id, arg) {
 };
 
 /* ---------- Singles ---------- */
+G.peaks = () => S.artist === 'taylor' ? (ER.PEAKS || {}) : ((ER.PEAKS_BY || {})[S.artist] || {});
+G.debuts = () => S.artist === 'taylor' ? (ER.SINGLE_DEBUT || {}) : ((ER.SINGLE_DEBUT_BY || {})[S.artist] || {});
 G.defaultSingle = p => { const pj = G.pj(p.id);
   const realNext = ((ER.REAL_SINGLES || {})[p.id] || []).find(t => S.songs[t] && S.songs[t].st !== 'written' && !pj.singles.includes(t));
   if (realNext) return realNext; const pool = (p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => t + " (Taylor's Version)") : p.tracks.concat(p.extras || [])).filter(t => S.songs[t] && S.songs[t].st !== 'written' && !pj.singles.includes(t));
@@ -374,10 +383,10 @@ G.releaseSingle = function (p, t) {
   const pj = G.pj(p.id); if (pj.singles.includes(t)) return;
   pj.singles.push(t);
   const s = S.songs[t]; const perf = (s.q / 100) * .5 + (S.stats.fans > 1e6 ? .2 : .05) + S.stats.clout / 400 + pj.hype / 500;
-  const real = ER.PEAKS && ER.PEAKS[t];
+  const real = G.peaks()[t];
   let target = real && G.curveMode() ? clamp(Math.round(real * Math.pow(2 - G.momentum(), 1.6) * (1.12 - s.q / 600) + rnd(-1, 1)), 1, 100) : clamp(Math.round(100 - perf * 88 + rnd(-12, 12)), 1, 100);
   if (real === 1 && G.momentum() >= .95 && s.q >= 70) target = 1;
-  const rd = ER.SINGLE_DEBUT && ER.SINGLE_DEBUT[t], streaming = ER.yw(S.abs).y >= 2014;
+  const rd = G.debuts()[t], streaming = ER.yw(S.abs).y >= 2014;
   let pos, jump = false;
   if (rd && G.curveMode() && S.abs < G.FREE_START) {
     if (rd === 1) pos = G.momentum() >= .9 && s.q >= 60 ? 1 : clamp(Math.round(2 + (1 - G.momentum()) * 12 + rnd(0, 2)), 2, 15);
@@ -403,7 +412,9 @@ G.priceOf = (lvl, abs) => { const y = ER.yw(abs).y + (ER.yw(abs).w - 1) / 52; le
 G.tourDemand = (plan, p) => {
   const pf = [0, 1.15, 1, .78][plan.price], prod = (1 + plan.prod * .05) / 1.1;
   // Real tours: the real ticket count, scaled by momentum. Invented tours: from fan size and reputation.
-  if (p && p.tour && p.tour.target && G.curveMode()) return p.tour.target / G.priceOf(2, G.win(p).ts) * G.momentum() * pf * prod;
+  // Real tours are sized from their real gross (or a rough estimate where none is confirmed) during the real story.
+  const ref = p && p.tour && (p.tour.target || p.tour.est);
+  if (ref && G.curveMode() && (!p.custom || p.type === 'farewell' ? !p.custom : false)) return ref / G.priceOf(2, G.win(p).ts) * G.momentum() * pf * prod;
   const wf = (G.world('recession') ? .9 : 1) * (G.world('limits') ? .8 : 1) * (p && p.type === 'farewell' ? 1.6 : 1);
   return wf * 230 * Math.pow(Math.max(1, S.stats.fans), .55) * pf * (.65 + S.stats.rep / 140) * prod;
 };
@@ -646,7 +657,7 @@ function endWeek() {
   if (ER.yw(a).w === 52) { Y.fans1 = s.fans; Y.money1 = s.money; Y.canon = G.canon(); Y.awards = S.awards.filter(x => x.y === yr).length; S.modal.push({ k:'year', y:yr }); }
   achievements();
   S.abs++;
-  if (S.mode === 'story') { const u = JSON.parse(lsGet('eras-unlocked') || '["ts1"]'); G.allProjects().forEach(p => { const w = G.win(p), st = w.ws != null ? w.ws : w.rs; if (p.type !== 'demos' && p.type !== 'edition' && st != null && S.abs >= st && !u.includes(p.id) && G.art().projects.includes(p)) u.push(p.id); }); lsSet('eras-unlocked', JSON.stringify(u)); }
+  if (S.mode === 'story') { const key = G.unlockKey(S.artist), u = JSON.parse(lsGet(key) || JSON.stringify([G.firstEra(S.artist)])); G.allProjects().forEach(p => { const w = G.win(p), st = w.ws != null ? w.ws : w.rs; if (p.type !== 'demos' && p.type !== 'edition' && st != null && S.abs >= st && !u.includes(p.id) && G.art().projects.includes(p)) u.push(p.id); }); lsSet(key, JSON.stringify(u)); }
   startWeek();
 }
 G.chartWeek = function (r, rivalTop) {
@@ -687,6 +698,7 @@ function doRelease(p) {
   const run = (ER.ALBUM_RUNS || {})[p.id] || null;
   // Weeks at No. 1: the real run scaled by how this era went; invented eras earn theirs from sales.
   const no1Target = run ? (run.no1 ? Math.max(1, Math.round(run.no1 * clamp(fw / p.units, .5, 1.5) * clamp(G.momentum(), .7, 1.3))) : 0)
+    : p.units ? (pos === 1 ? (fw > p.units * 1.1 ? 2 : 1) : 0)
     : (pos === 1 ? clamp(Math.round(1 + (fw / Math.max(1, S.stats.fans * .025) - .8) * 6 + rnd(-1, 1)), 1, 10) : 0);
   const rec = { pid:p.id, abs:S.abs, fw, total:fw, q:Math.round(q), peak:pos, pos, debutPos:pos, wk:0, real:p.units, cover, no1w:pos === 1 ? 1 : 0, no1Target, run:run ? Object.assign({}, run) : null };
   S.released.push(rec);
@@ -761,7 +773,7 @@ G.newEra = function (title, n, weeks, tour, themeId) {
   const theme = ER.ERA_THEMES.find(t => t.id === themeId) || pick(ER.ERA_THEMES);
   const t0 = title || G.albumTitle(), pal = ER.seeded(id + t0)() < .5 ? theme.pals[0] : theme.pals[1];
   const p = { id, title:t0, short:t0, type:'album', custom:true, theme:theme.id, eraNo:S.custom.length + 1, color:pal[0], ink:'#ffffff', accent:pal[1], genre:theme.genre,
-    look:ER.makeEraLook(theme, pal, id + t0),
+    look:ER.makeEraLook(theme, pal, id + t0, S.artist),
     ws:a, rs:a + Math.round((rel - a) * .35), fs:rel - 8, ps:rel - 4, rel, tracks, extras:[], units:null,
     cowriters:['Solo','Jack Antonoff','Aaron Dessner','Max Martin','Shellback'], producers:['Jack Antonoff','Aaron Dessner','Max Martin'],
     goals:[{ k:'units', v:Math.round(S.stats.fans * .025), l:`First week above ${G.fmtN(S.stats.fans * .025)}` }] };
@@ -865,5 +877,7 @@ G.slotInfo = slot => { const v = lsGet('eras-slot-' + slot); if (!v) return null
 G.del = slot => { try { localStorage.removeItem('eras-slot-' + slot); } catch (e) {} };
 G.exportSave = () => JSON.stringify(S);
 G.importSave = (txt, slot) => { const s = JSON.parse(txt); if (!s || !s.stats || s.abs == null) throw new Error('Not an Eras Life save'); s.slot = slot; S = s; G.save(); return S; };
-G.unlockedEras = () => { try { return JSON.parse(lsGet('eras-unlocked') || '["ts1"]'); } catch (e) { return ['ts1']; } };
+G.unlockKey = a => a === 'taylor' || !a ? 'eras-unlocked' : 'eras-unlocked-' + a;
+G.firstEra = a => { const A = ER.artists[a || 'taylor']; const p = A.projects.find(q => q.type !== 'demos' && q.type !== 'edition'); return p ? p.id : ''; };
+G.unlockedEras = a => { const f = G.firstEra(a); try { const u = JSON.parse(lsGet(G.unlockKey(a)) || '[]'); return u.includes(f) ? u : [f].concat(u); } catch (e) { return [f]; } };
 })();

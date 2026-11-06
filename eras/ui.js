@@ -31,29 +31,40 @@ function primary() { const a = G.active(); a.sort((x, y) => PRI.indexOf(x.st) - 
 /* ---------- 3D helpers ---------- */
 // The performer's look follows the eras: each era's hair, make-up and costumes.
 const ERAS_CYCLE = ['lover','fearless','evermore','rep','speaknow','red','folklore','1989','ttpd','midnights'];
+function curArtist() { const s = S(); return s ? s.artist : (UI.newg && UI.newg.artist) || 'taylor'; }
+function looksOf(a) { return a === 'taylor' ? ER.LOOKS.taylor : ER.LOOKS[a + '_eras']; }
 function eraKey(era) {
-  const L = ER.LOOKS.taylor; if (!era) return 'early';
+  const L = looksOf(curArtist()); if (!era) return 'early';
   if (L[era.id]) return era.id;
-  return era.custom ? 'showgirl' : 'early';
+  if (era.custom) return curArtist() === 'taylor' ? 'showgirl' : Object.keys(L).pop();
+  // Earlier albums without a look of their own wear the nearest earlier one.
+  const ps = ER.artists[curArtist()].projects, i = ps.findIndex(p => p.id === era.id);
+  for (let j = i; j >= 0; j--) if (L[ps[j].id]) return ps[j].id;
+  return 'early';
 }
 function lookFor(ctx, era, key) {
-  const L = ER.LOOKS.taylor, s = S();
+  const L = looksOf(curArtist()), s = S();
   let k = key || eraKey(era), erasAct = false;
   if (k && k.startsWith('eras:')) { k = k.slice(5); erasAct = true; }
   if (!key && s && G.age() < 15) k = 'early';
   // On the Eras Tour, each week's show is a different act.
-  if (!key && ctx === 'tour' && s && era && era.id === 'midnights') { const tp = G.active().find(x => x.st === 'tour' && x.p.id === 'midnights'); if (tp) { k = ERAS_CYCLE[s.abs % ERAS_CYCLE.length]; erasAct = true; } }
+  if (!key && ctx === 'tour' && s && s.artist === 'taylor' && era && era.id === 'midnights') { const tp = G.active().find(x => x.st === 'tour' && x.p.id === 'midnights'); if (tp) { k = ERAS_CYCLE[s.abs % ERAS_CYCLE.length]; erasAct = true; } }
   const e = (!key && era && era.custom && era.look) ? era.look : (L[k] || L.early), stage = ['tour','awards','release'].includes(ctx);
   const o = Object.assign({}, e.base, erasAct && e.eras ? e.eras : stage ? e.stage : e.casual);
   // By the Eras Tour her hair and make-up were the 2023 look in every act.
-  if (erasAct) Object.assign(o, { style:'waves', bangs:1, hairLen:.62, tips:0, heartEye:0, hair:L.midnights.base.hair, lips:L.midnights.base.lips }, k === 'lover' ? { heartEye:'#f06fb4' } : {}, ['folklore','evermore'].includes(k) ? { style:'braid' } : {});
+  if (erasAct && L.midnights) Object.assign(o, { style:'waves', bangs:1, hairLen:.62, tips:0, heartEye:0, hair:L.midnights.base.hair, lips:L.midnights.base.lips }, k === 'lover' ? { heartEye:'#f06fb4' } : {}, ['folklore','evermore'].includes(k) ? { style:'braid' } : {});
   if (era && era.custom && !era.look) { o.outfit = era.color; o.accent = T3.shade(era.color, .55); }
   if (ctx === 'awards' && !e.stage.top.match(/gown|sequin/)) { o.top = 'gown'; o.sparkle = 1; o.guitar = 0; o.hat = 0; }
   if (ctx === 'awards') o.guitar = 0;
   return o;
 }
 function ageScale() { const s = S(); if (!s) return 1; const a = G.age(); return a < 13 ? .74 : a < 15 ? .84 : a < 17 ? .93 : 1; }
-function otherLook(who, y, stage) { const l = ER.lookAtYear(who, y); return Object.assign({}, l.base, l.stage); }
+function otherLook(who, y) {
+  // Another artist's look in a given year, for shared event cards.
+  const A = ER.artists[who], L = looksOf(who); let key = 'early';
+  A.projects.forEach(p => { if (p.rel != null && ER.yw(p.rel).y <= y && L[p.id]) key = p.id; });
+  const e = L[key] || L.early; return Object.assign({}, e.base, e.stage);
+}
 function sceneFor(x) {
   const s = S(); if (!x) return G.age() < 13 ? 'farm' : 'home';
   const st = x.st, age = G.age();
@@ -127,21 +138,23 @@ function uploads() { try { return JSON.parse(G.lsGet('eras-uploads') || '{}'); }
 /* ---------- Title ---------- */
 function title() {
   const slots = [1, 2, 3].map(n => { const i = G.slotInfo(n); return `<div class="slot"><div><b>Slot ${n}</b><div class="small muted">${i ? `${h(ER.artists[i.artist].name)} · ${i.mode === 'story' ? 'Story' : 'Era Start'} · ${i.y}, week ${i.w}${i.retired ? ' · Retired' : ''}` : 'Empty'}</div></div><div class="row">${i ? `<button class="btn" data-act="load" data-n="${n}">Continue</button><button class="btn ghost sm" data-act="delslot" data-n="${n}" aria-label="Delete slot ${n}">Delete</button>` : `<button class="btn" data-act="newgame" data-n="${n}">New game</button>`}</div></div>`; }).join('');
-  const artists = ['taylor','beyonce','gaga'].map(id => { const a = ER.artists[id]; return `<div class="artist ${a.comingNext ? 'soon' : ''}"><div class="sw" style="background:${a.color || '#d6a93a'}"></div><div><b>${h(a.name)}</b><div class="small muted">${a.comingNext ? 'Coming next. The story is mapped.' : 'Playable: 1989 to 2026, then free play'}</div></div>${a.comingNext ? `<button class="btn ghost sm" data-act="preview" data-id="${id}">Preview</button>` : ''}</div>`; }).join('');
+  const span = { taylor:'From 2001 (age 11)', beyonce:'From 1990 (age 8)', gaga:'From 2000 (age 13)' };
+  const artists = ['taylor','beyonce','gaga'].map(id => { const a = ER.artists[id]; return `<div class="artist"><div class="sw" style="background:${a.color || '#d6a93a'}"></div><div><b>${h(a.name)}</b><div class="small muted">Playable · ${span[id]} to 2026, then free play</div></div><button class="btn ghost sm" data-act="preview" data-id="${id}">Story</button></div>`; }).join('');
   $('#app').innerHTML = `<div class="title">
     <div class="logo"><span class="eyebrow">A week-by-week career game</span><h1>The Eras Life</h1><p class="muted">Live through a documented career from the first demo to the last stadium night, then carry it on yourself.</p></div>
     <div class="stage3d tall" id="t3title"></div>
     ${card(`<h2>Saves</h2><div class="stack tight">${slots}</div><div class="row"><label class="btn ghost sm">Import a save<input type="file" accept=".json,application/json" data-act="import" hidden></label></div>`)}
-    ${card(`<h2>Stories</h2><div class="stack tight">${artists}</div>`)}
+    ${card(`<h2>Stories</h2><p class="small muted">Pick who to play when you start a new game. Each one appears in the others' games as a real chart rival.</p><div class="stack tight">${artists}</div>`)}
     <p class="small faint">An unofficial fan project. No lyrics, audio, album art or photos of real people are used. Figures are stylised and are not likenesses. Event cards stick to the public record.</p></div>`;
   mount3D('#t3title', { set:'stadium', color:'#d6a93a', figs:[{ look:lookFor('tour', null, 'fearless'), anim:'strum' }] }, 'title');
 }
 function newGameFlow() {
   const n = UI.newg; const L = n.look;
   const opt = (k, arr) => `<div class="chips">${arr.map(([l, v]) => `<button class="chip ${L[k] === v ? 'on' : ''}" data-act="look" data-k="${k}" data-v="${v}">${k !== 'style' ? `<i class="dot" style="background:${v}"></i>` : ''}${h(l)}</button>`).join('')}</div>`;
-  const eras = G.unlockedEras(); const P = ER.artists.taylor.projects.filter(p => p.type !== 'demos' && p.type !== 'edition');
+  const AR = ER.artists[n.artist], eras = G.unlockedEras(n.artist); const P = AR.projects.filter(p => p.type !== 'demos' && p.type !== 'edition');
   $('#app').innerHTML = `<div class="title">
     <div class="between"><h1>New game</h1><button class="btn ghost sm" data-act="title">Back</button></div>
+    ${card(`<h2>Artist</h2><div class="chips">${['taylor','beyonce','gaga'].map(id => `<button class="chip ${n.artist === id ? 'on' : ''}" data-act="nartist" data-v="${id}"><i class="dot" style="background:${ER.artists[id].color}"></i>${h(ER.artists[id].name)}</button>`).join('')}</div>`)}
     ${card(`<h2>Mode</h2><div class="chips">
       <button class="chip ${n.mode === 'story' ? 'on' : ''}" data-act="nmode" data-v="story">Story Mode</button>
       <button class="chip ${n.mode === 'era' ? 'on' : ''}" data-act="nmode" data-v="era">Era Start</button></div>
@@ -150,16 +163,16 @@ function newGameFlow() {
     ${card(`<h2>Difficulty</h2><div class="chips">${Object.keys(G.DIFF).map(k => `<button class="chip ${n.diff === k ? 'on' : ''}" data-act="ndiff" data-v="${k}">${G.DIFF[k].l} · ${G.DIFF[k].blocks} blocks</button>`).join('')}</div><p class="small muted">Difficulty changes Time Blocks, penalties and deadlines.</p>`)}
     ${card(`<h2>Era looks</h2><p class="small muted">The 3D performer changes with every era: hair, make-up and stage costumes. Tap an era to preview it.</p>
       <div class="stage3d" id="t3look"></div>
-      <div class="chips">${['early','ts1','fearless','speaknow','red','1989','rep','lover','folklore','evermore','fearlesstv','redtv','midnights','speaknowtv','1989tv','ttpd','showgirl'].map(k => { const pr = ER.artists.taylor.projects.find(q => q.id === k); return `<button class="chip ${n.lookEra === k ? 'on' : ''}" data-act="lookera" data-v="${k}">${pr ? `<i class="dot" style="background:${pr.color}"></i>` + h(pr.short) : 'Childhood'}</button>`; }).join('')}</div>
-      <h3>Eras Tour acts</h3><div class="chips">${ERAS_CYCLE.map(k => { const pr = ER.artists.taylor.projects.find(q => q.id === k); return `<button class="chip ${n.lookEra === 'eras:' + k ? 'on' : ''}" data-act="lookera" data-v="eras:${k}"><i class="dot" style="background:${pr.color}"></i>${h(pr.short)}</button>`; }).join('')}</div>`)}
+      <div class="chips">${(n.artist === 'taylor' ? ['early','ts1','fearless','speaknow','red','1989','rep','lover','folklore','evermore','fearlesstv','redtv','midnights','speaknowtv','1989tv','ttpd','showgirl'] : Object.keys(looksOf(n.artist))).map(k => { const pr = AR.projects.find(q => q.id === k); return `<button class="chip ${n.lookEra === k ? 'on' : ''}" data-act="lookera" data-v="${k}">${pr ? `<i class="dot" style="background:${pr.color}"></i>` + h(pr.short) : 'Childhood'}</button>`; }).join('')}</div>
+      ${n.artist === 'taylor' ? `<h3>Eras Tour acts</h3><div class="chips">${ERAS_CYCLE.map(k => { const pr = AR.projects.find(q => q.id === k); return `<button class="chip ${n.lookEra === 'eras:' + k ? 'on' : ''}" data-act="lookera" data-v="eras:${k}"><i class="dot" style="background:${pr.color}"></i>${h(pr.short)}</button>`; }).join('')}</div>` : ''}`)}
     <button class="btn big" data-act="begin">${n.mode === 'story' ? 'Begin the prologue' : 'Start this era'}</button></div>`;
-  { const k = n.lookEra || 'fearless', base = k.replace('eras:', ''), pr = ER.artists.taylor.projects.find(q => q.id === base), LK = ER.LOOKS.taylor[base];
+  { const LS = looksOf(n.artist), k = n.lookEra && LS[n.lookEra.replace('eras:', '')] ? n.lookEra : Object.keys(LS)[2] || 'early', base = k.replace('eras:', ''), pr = AR.projects.find(q => q.id === base), LK = LS[base];
     const figs = [{ look:lookFor('tour', null, k), anim:'sing', mic:!(k.startsWith('eras:') ? (LK.eras || LK.stage) : LK.stage).guitar, s:k === 'early' ? .78 : 1 }];
     if (!k.startsWith('eras:')) figs.push({ look:lookFor('', null, k), x:1.05, z:-.35, ry:-.5, anim:'idle', s:k === 'early' ? .72 : .92 });
     mount3D('#t3look', { set:k.startsWith('eras:') ? 'stadium' : 'theater', color:pr ? pr.color : '#7a9a4a', figs }, 'look'); }
 }
 function prologue() {
-  const n = UI.newg, A = ER.artists.taylor, i = n.pro.length, pr = A.prologue[i];
+  const n = UI.newg, A = ER.artists[n.artist], i = n.pro.length, pr = A.prologue[i];
   $('#app').innerHTML = `<div class="title"><span class="eyebrow">Prologue · ${i + 1} of ${A.prologue.length}</span><h1>${h(pr.t)}</h1>
     <div class="stage3d" id="t3pro"></div>
     ${card(`<p>${h(pr.x)}</p><div class="stack tight">${pr.ch.map((c, k) => `<button class="choice" data-act="pro" data-i="${k}">${h(c.l)}</button>`).join('')}</div>`)}</div>`;
@@ -221,7 +234,7 @@ VIEWS.life = function () {
   const school = s.abs < ER.ds('2007-06-04') ? (G.age() >= 11 ? 'In school (1 fixed block a week)' : 'Childhood') : 'Finished school through homeschooling';
   return `${card(`<h2>Life</h2><div class="grid3"><div><b>${G.age()}</b><div class="small muted">Age</div></div><div><b>${y}</b><div class="small muted">Year</div></div><div><b>${G.canon()}</b><div class="small muted">Canon Score</div></div></div>
    <h3>Stats</h3>${STAT.map(([k, l]) => `<div class="statrow"><span>${l}</span>${k === 'fans' ? `<b>${G.fmtN(s.stats.fans)}</b>` : bar(s.stats[k]) + `<b>${Math.round(s.stats[k])}</b>`}</div>`).join('')}
-   <div class="statrow"><span>Genre</span><div class="genre"><i style="left:${s.stats.genre}%"></i></div><b class="small">${s.stats.genre < 33 ? 'Country' : s.stats.genre < 66 ? 'Pop' : 'Alternative'}</b></div>
+   <div class="statrow"><span>Genre</span><div class="genre"><i style="left:${s.stats.genre}%"></i></div><b class="small">${h((G.art().genreLabels || ['Country','Pop','Alternative'])[s.stats.genre < 33 ? 0 : s.stats.genre < 66 ? 1 : 2])}</b></div>
    <p class="small muted">Moving the genre meter fast costs radio support and old fans in exchange for new ones.</p>`)}
   ${card(`<h3>Family</h3>${fam.map(p => `<div class="between small"><b>${h(p.n)}</b><span class="muted">${h(p.role)}</span></div>`).join('')}<h3>School</h3><p class="small">${h(school)}</p>`)}
   ${card(`<h2>Event cards</h2><p class="small muted">Your choices beside what really happened.</p>${s.log.slice().reverse().map(l => `<div class="logrow ${l.s ? 'sens' : ''}"><div class="between"><b>${h(l.t)}</b><span class="small muted">${h(G.fmtDate(l.abs))}</span></div>
@@ -323,6 +336,7 @@ VIEWS.tour = function () {
       out.push(card(`<div class="between"><h2>${h(tr.name)}</h2>${pill(stageName(st))}</div><p class="small muted">${h(G.fmtDate(w.ts))} to ${h(G.fmtDate(w.te))} · ${tr.nights} ${tr.tier} nights · ${h(tr.regions.join(', '))}</p>
         <div class="grid3"><div><b>${tr.played}</b><div class="small muted">Shows</div></div><div><b>${G.fmtN(tr.tickets)}</b><div class="small muted">Tickets</div></div><div><b>${G.fmtM(tr.gross)}</b><div class="small muted">Gross</div></div></div>
         ${ER.TOUR_SHOWS[p.id] ? `<p class="small muted">The real tour played about ${ER.TOUR_SHOWS[p.id]} shows.</p>` : ''}
+        ${!p.tour.target && p.tour.est ? `<p class="small muted">Its real gross is not confirmed. The game sizes it from a rough estimate of about ${G.fmtM(p.tour.est)}.</p>` : ''}
         ${p.tour.target ? `<p class="small">Real tour target: about ${G.fmtM(p.tour.target)}. Matching its scale gives a Canon bonus. Going far past it costs Energy.</p>${bar(tr.gross, p.tour.target)}` : ''}
         <p class="small">Openers: ${h((tr.openers || []).join(', ') || 'None')}</p><p class="small muted">Setlist: ${h((tr.setlist || []).join(' · '))}</p>${p.tour.surprise ? '<p class="small">Surprise-song slots: two acoustic songs a night, changing every show.</p>' : ''}`));
       return;
@@ -614,21 +628,25 @@ const ACT = {
   title:() => { UI.newg = null; title(); },
   load:d => { if (G.load(+d.n)) { UI.tab = 'week'; render(); } else toast('That save could not be read.'); },
   delslot:d => { if (confirm(`Delete slot ${d.n}?`)) { G.del(+d.n); title(); } },
-  newgame:d => { UI.newg = { slot:+d.n, mode:'story', diff:'standard', era:'ts1', look:{ hair:LOOKS.hair[3][1], style:'curly', skin:LOOKS.skin[2][1] }, pro:[], lookEra:'fearless' }; newGameFlow(); },
+  newgame:d => { UI.newg = { slot:+d.n, mode:'story', diff:'standard', era:'ts1', look:{ hair:LOOKS.hair[3][1], style:'curly', skin:LOOKS.skin[2][1] }, pro:[], lookEra:'fearless', artist:'taylor' }; newGameFlow(); },
   nmode:d => { UI.newg.mode = d.v; newGameFlow(); }, nera:d => { UI.newg.era = d.v; newGameFlow(); }, ndiff:d => { UI.newg.diff = d.v; newGameFlow(); },
   look:d => { UI.newg.look[d.k] = d.v; newGameFlow(); },
   lookera:d => { UI.newg.lookEra = d.v; newGameFlow(); },
-  pera:d => { UI.sel.pera = +d.i; const a = ER.artists[d.id]; const l = ER.LOOKS[d.id][+d.i]; document.querySelectorAll('.modal [data-act=pera]').forEach(b => b.classList.toggle('on', b.dataset.i === d.i));
-    mount3D('#t3prev', { set:'stadium', color:a.color, figs:[{ look:Object.assign({}, l.base, l.stage), anim:'sing' }] }, 'prev'); },
-  begin:() => { const n = UI.newg; if (n.mode === 'story') return prologue(); G.newGame({ artist:'taylor', mode:'era', era:n.era, diff:n.diff, slot:n.slot, look:n.look }); UI.tab = 'week'; render(); },
-  pro:d => { const n = UI.newg; n.pro.push(+d.i); if (n.pro.length < ER.artists.taylor.prologue.length) return prologue();
-    G.newGame({ artist:'taylor', mode:'story', diff:n.diff, slot:n.slot, look:n.look, prologue:n.pro }); UI.tab = 'week'; render(); },
-  preview:d => { const a = ER.artists[d.id], LK = ER.LOOKS[d.id]; modal(`<span class="eyebrow">Coming next</span><h2>${h(a.name)}</h2>
-      <div class="stage3d" id="t3prev"></div><div class="chips">${LK.map((l, i) => `<button class="chip ${i === LK.length - 1 ? 'on' : ''}" data-act="pera" data-id="${d.id}" data-i="${i}">${h(l.n)}</button>`).join('')}</div><p>${h(a.core)}</p><p class="small muted">${h(a.eggStyle)} ${h(a.songbook)}</p>
-      <div class="ptable">${a.periods.map(r => `<div class="logrow"><div class="between"><b>${h(r[1])}</b><span class="small muted">${h(r[0])}</span></div><div class="small">${h(r[2])}</div><div class="small faint">System: ${h(r[3])}</div></div>`).join('')}</div>
-      <h3>Catalog</h3><p class="small">${a.catalog.map(h).join(' · ')}</p><h3>People</h3><p class="small">${a.people.map(h).join(' · ')}</p>${a.note ? `<p class="small muted">${h(a.note)}</p>` : ''}
-      <p class="small faint">Built after Taylor's story proves the systems. In Taylor's game, ${h(a.name)} already appears as a real chart rival and awards competitor.</p><button class="btn" data-act="closem">Close</button>`);
-      const l = LK[LK.length - 1]; mount3D('#t3prev', { set:'stadium', color:a.color, figs:[{ look:Object.assign({}, l.base, l.stage), anim:'sing' }] }, 'prev'); }
+  nartist:d => { const n = UI.newg; n.artist = d.v; n.era = G.firstEra(d.v); n.lookEra = null; newGameFlow(); },
+  pera:d => { if (UI.showPrev) UI.showPrev(+d.i); },
+  begin:() => { const n = UI.newg; if (n.mode === 'story') return prologue(); G.newGame({ artist:n.artist, mode:'era', era:n.era, diff:n.diff, slot:n.slot, look:n.look }); UI.tab = 'week'; render(); },
+  pro:d => { const n = UI.newg; n.pro.push(+d.i); if (n.pro.length < ER.artists[n.artist].prologue.length) return prologue();
+    G.newGame({ artist:n.artist, mode:'story', diff:n.diff, slot:n.slot, look:n.look, prologue:n.pro }); UI.tab = 'week'; render(); },
+  preview:d => { const a = ER.artists[d.id], P = a.projects.filter(p => p.type !== 'demos' && p.type !== 'edition');
+    modal(`<span class="eyebrow">Playable</span><h2>${h(a.name)}</h2><div class="stage3d" id="t3prev"></div>
+      <div class="chips">${P.map((p, i) => `<button class="chip" data-act="pera" data-id="${d.id}" data-i="${i}"><i class="dot" style="background:${p.color}"></i>${h(p.short)}</button>`).join('')}</div>
+      ${a.core ? `<p>${h(a.core)}</p>` : ''}<h3>Eras</h3>${P.map(p => `<div class="between small"><span>${h(p.title)}</span><span class="muted">${ER.yw(p.rel).y}</span></div>`).join('')}
+      <h3>People</h3><p class="small">${a.people.map(x => h(x.n || x)).join(' · ')}</p>${a.note ? `<p class="small muted">${h(a.note)}</p>` : ''}
+      <button class="btn" data-act="closem">Close</button>`);
+    const show = i => { const p = P[i]; const L = looksOf(d.id); let k = 'early'; a.projects.forEach(q => { if (q.rel <= p.rel && L[q.id]) k = q.id; }); const e = L[k];
+      document.querySelectorAll('.modal [data-act=pera]').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+      mount3D('#t3prev', { set:'stadium', color:p.color, figs:[{ look:Object.assign({}, e.base, e.stage), anim:'sing', mic:!e.stage.guitar }] }, 'prev'); };
+    UI.showPrev = show; show(P.length - 1); },
 };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT' || el.tagName === 'INPUT') return;
