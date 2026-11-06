@@ -63,12 +63,16 @@ function figure(p) {
   [-1, 1].forEach(s => { M(new THREE.SphereGeometry(.017, 8, 6), '#1a1414', s * .045, .0, .118, hd); M(new THREE.BoxGeometry(.04, .008, .01), shade(hair, .15), s * .047, .045, .118, hd); });
   M(new THREE.BoxGeometry(.04, .009, .01), '#9c4a4a', 0, -.058, .12, hd);
   const hm = mat(hair);
-  M(new THREE.SphereGeometry(.142, 18, 10, 0, Math.PI * 2, 0, Math.PI * .34), hm, 0, .012, -.004, hd).scale.set(1, 1.08, 1.02);
-  M(new THREE.SphereGeometry(.143, 18, 12, Math.PI, Math.PI, 0, Math.PI * .66), hm, 0, .012, -.006, hd).scale.set(1, 1.08, 1.02);
+  // Hair shell: full top, sides and back down past the ears, with only the face left open, plus bangs.
+  const hs = mat(hair, { side:THREE.DoubleSide }), H2 = Math.PI / 2;
+  M(new THREE.SphereGeometry(.152, 22, 12, 0, Math.PI * 2, 0, Math.PI * .36), hs, 0, .014, -.004, hd).scale.set(1.02, 1.1, 1.04);
+  M(new THREE.SphereGeometry(.153, 22, 14, H2 + .78, Math.PI * 2 - 1.56, 0, Math.PI * .7), hs, 0, .014, -.008, hd).scale.set(1.03, 1.1, 1.04);
+  M(new THREE.SphereGeometry(.151, 18, 6, H2 - .8, 1.6, Math.PI * .3, Math.PI * .12), hs, 0, .014, 0, hd).scale.set(1.02, 1.1, 1.06);
+  [-1, 1].forEach(sd => { const lk = M(new THREE.BoxGeometry(.035, st === 'bob' ? .17 : st === 'curly' ? .1 : .2, .06), hm, sd * .122, -.04, .055, hd); lk.rotation.z = sd * .06; });
   if (st === 'long' || st === 'wavy') {
     const b = M(new THREE.CylinderGeometry(.14, st === 'wavy' ? .19 : .16, .42, 16, 1, true, Math.PI * .55, Math.PI * .9), mat(hair, { side:THREE.DoubleSide }), 0, -.16, -.01, hd);
     if (st === 'wavy') for (let i = 0; i < 8; i++) { const a = Math.PI * (.65 + i * .1); M(new THREE.SphereGeometry(.045, 8, 6), hm, Math.sin(a) * .17, -.33 + (i % 2) * .04, Math.cos(a) * .17, hd); }
-    [-1, 1].forEach(s => M(new THREE.BoxGeometry(.04, .3, .07), hm, s * .125, -.1, .03, hd));
+    [-1, 1].forEach(s => M(new THREE.BoxGeometry(.04, .32, .08), hm, s * .13, -.14, .02, hd));
   }
   if (st === 'curly') { for (let i = 0; i < 22; i++) { const a = i / 22 * Math.PI * 2, y = -.12 + (i % 3) * .1; if (Math.cos(a) > .55 && y < .05) continue;
     M(new THREE.SphereGeometry(.06, 8, 6), hm, Math.sin(a) * .16, y + .06, Math.cos(a) * .15 - .02, hd); } }
@@ -76,7 +80,6 @@ function figure(p) {
   if (st === 'pony') { const t = M(new THREE.ConeGeometry(.06, .34, 10), hm, 0, -.08, -.17, hd); t.rotation.x = -.35; t.rotation.z = Math.PI; }
   if (st === 'bun') M(new THREE.SphereGeometry(.07, 10, 8), hm, 0, .12, -.1, hd);
   // fringe
-  M(new THREE.BoxGeometry(.19, .035, .04), hm, 0, .118, .095, hd).rotation.x = -.45;
   if (p.seated) { R.legs.forEach(l => { l.rotation.x = -1.5; l.userData.knee.rotation.x = 1.5; }); G.position.y = -.38; }
   R.base = { y:G.position.y };
   return R;
