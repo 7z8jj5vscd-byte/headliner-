@@ -104,6 +104,17 @@ function slotsHtml() {
     (x.month ? 'Month ' + pad3(x.month) + ' · ' + esc(G.name(x.focus)) + (x.group ? ' · ' + esc(x.group) : '') + ' · ' + esc(G.DIFF[x.diff].l) + (x.ended ? ' · ended' : '') : 'Empty') + '</span></div>' +
     (x.month ? '<button class="btn sm" data-slot="' + x.n + '">Play</button>' : '<button class="btn sm ghost" data-newslot="' + x.n + '">New</button>') + '</div>').join('') + '</div>';
 }
+function dailyHtml() {
+  const d = G.daily();
+  return '<div class="slot daily"><div><b>Daily challenge · ' + esc(MG.INFO[d.kind].title.split(': ').pop()) + '</b><span class="small faint">Score ' + Math.round(d.target * 100) + '%+ · ' +
+    (d.done ? 'cleared today' : d.best != null ? 'best ' + Math.round(d.best * 100) + '%' : 'not played') + ' · streak ' + d.streak + '</span></div><button class="btn sm' + (d.done ? ' ghost' : '') + '" data-a="daily">Play</button></div>';
+}
+function pastRuns() {
+  const pr = G.profile();
+  sheet('<span class="eyebrow">This device</span><h2>Past runs</h2>' + (pr.runs.length ? pr.runs.map(r => '<div class="logrow"><div class="between"><b>' + esc(D.endings[r.ending] ? D.endings[r.ending].t : r.ending) + '</b><span class="mono small faint">' + esc(r.date) + '</span></div>' +
+    '<p class="small muted">' + esc(G.name(r.focus)) + ' · ' + esc(r.group || '') + ' · ' + esc((G.DIFF[r.diff] || {}).l || '') + (r.challenge ? ' · ' + esc(G.CHALLENGES[r.challenge].l) : '') + ' · ' + G.fmt(r.fans) + ' fans · best #' + (r.best > 100 ? '—' : r.best) + ' · ' + r.wins + ' awards · ' + r.trophies + ' trophies</p></div>').join('') : '<p class="small muted">Finish a run to see it here.</p>') +
+    '<h3>Collection</h3><p class="small">' + Object.keys(pr.cards).length + ' photocards and ' + Object.keys(pr.trophies).length + ' trophies collected across all runs.</p>');
+}
 function title(hasSave) {
   app().innerHTML = '<section class="title">' +
     '<div class="slate"><span class="rec">REC</span><span class="mono">TAPE 01 · FAN-MADE</span></div>' +
@@ -113,7 +124,8 @@ function title(hasSave) {
     '<div class="cast-strip">' + D.cast.map(c => av(c.id, 44)).join('') + '</div>' +
     (hasSave ? '<button class="btn big" data-a="continue">Continue · Slot ' + G.slot() + ' · Month ' + S().month + '</button>' : '') +
     '<button class="btn big ' + (hasSave ? 'ghost' : '') + '" data-a="new">New run in slot ' + G.slot() + '</button>' +
-    '<h3>Save slots</h3>' + slotsHtml() +
+    '<h3>Save slots</h3>' + slotsHtml() + dailyHtml() +
+    '<button class="btn ghost sm" data-a="pastruns">Past runs (' + G.profile().runs.length + ')</button> ' +
     '<button class="btn ghost sm" data-a="settings">Settings</button>' +
     '<p class="notice">Unofficial fan game. Not affiliated with HYBE, Geffen, Netflix or any of the people in it. It uses real names and stylized looks; songs, eras, scores and drama are invented, and it never invents bullying, scandals or health crises for anyone.</p>' +
     '</section>';
@@ -126,7 +138,11 @@ function title(hasSave) {
     const a = e.target.closest('[data-a]'); if (!a) return;
     if (a.dataset.a === 'continue') game();
     if (a.dataset.a === 'new') { if (hasSave && !confirm('Start a new run in slot ' + G.slot() + '? The current run there will be replaced.')) return; setupScreen(); }
-    if (a.dataset.a === 'settings') settingsSheet(); };
+    if (a.dataset.a === 'settings') settingsSheet();
+    if (a.dataset.a === 'pastruns') pastRuns();
+    if (a.dataset.a === 'daily') { const d = G.daily(); MG.run(d.kind, { cast:[{ id:'sophia', look:G.CAST.sophia.look, outfit:'#3a3f4a' }], skill:60, set:d.kind === 'live' ? 'stage' : undefined, title:'Daily challenge: ' + MG.INFO[d.kind].title, chants:['Go!'] })
+      .then(acc => { const r = G.dailyResult(acc); title(G.hasSave() && G.load()); if (acc != null) toast(r.done ? 'Daily challenge cleared!' : 'Best today: ' + Math.round(r.best * 100) + '%'); }); }
+  };
 }
 function setupScreen() {
   const c = D.cast;
@@ -138,17 +154,25 @@ function setupScreen() {
       '<button class="choice ' + (setup.mode === 'open' ? 'on' : '') + '" data-mode="open"><b>Open result</b><span>Scores and votes decide who goes home and who debuts.</span></button>' +
     '</div>' +
     '<h2>Difficulty</h2><div class="seg three">' + Object.keys(G.DIFF).map(k => '<button class="choice ' + ((setup.diff || 'normal') === k ? 'on' : '') + '" data-diff="' + k + '"><b>' + G.DIFF[k].l + '</b><span>' + esc(G.DIFF[k].d) + '</span></button>').join('') + '</div>' +
+    '<h2>Challenge</h2><div class="chips">' + Object.keys(G.CHALLENGES).map(k => '<button class="chip ' + ((setup.challenge || 'none') === k ? 'on' : '') + '" data-chal="' + k + '" title="' + esc(G.CHALLENGES[k].d) + '">' + G.CHALLENGES[k].l + '</button>').join('') + '</div>' +
+    ((setup.challenge || 'none') !== 'none' ? '<p class="small muted">' + esc(G.CHALLENGES[setup.challenge].d) + '</p>' : '') +
+    '<h2>Start at</h2><div class="chips">' + G.STARTS.map(([m, l]) => '<button class="chip ' + ((setup.start || 1) === m ? 'on' : '') + '" data-start="' + m + '">' + esc(l) + '</button>').join('') + '</div>' +
+    ((setup.start || 1) > 1 ? '<p class="small muted">The months before are played for you on autoplay, with every event resolved by its first choice.</p>' : '') +
+    (G.profile().ngp ? '<label class="toggle"><input type="checkbox" data-ngp' + (setup.ngp ? ' checked' : '') + '><span>New Game+: focus starts +5 in every skill, 3 practice sessions a month, trophies carry over</span></label>' : '') +
     '<h2>Who do the cameras follow?</h2><p class="muted small">Your focus member. You can switch to any trainee and plan her month at any time.</p>' +
     '<div class="pickgrid">' + c.map(x => '<button class="pick ' + (setup.focus === x.id ? 'on' : '') + '" data-f="' + x.id + '">' + av(x.id, 56) + '<b>' + esc(x.first) + '</b><span>' + esc(x.from) + '</span></button>').join('') + '</div>' +
-    '<button class="btn big" data-a="go">Start: Month 001</button>' +
+    '<button class="btn big" data-a="go">Start: Month ' + pad3(setup.start || 1) + '</button>' +
     '</section>';
   app().onclick = e => {
     const m = e.target.closest('[data-mode]'), f = e.target.closest('[data-f]'), a = e.target.closest('[data-a]'), dd = e.target.closest('[data-diff]');
     if (dd) { setup.diff = dd.dataset.diff; setupScreen(); return; }
+    const ch = e.target.closest('[data-chal]'); if (ch) { setup.challenge = ch.dataset.chal; setupScreen(); return; }
+    const stt = e.target.closest('[data-start]'); if (stt) { setup.start = +stt.dataset.start; setupScreen(); return; }
+    const ng = e.target.closest('[data-ngp]'); if (ng) { setup.ngp = ng.checked; return; }
     if (m) { setup.mode = m.dataset.mode; setupScreen(); }
     else if (f) { setup.focus = f.dataset.f; setupScreen(); }
     else if (a && a.dataset.a === 'back') title(G.hasSave() && G.load());
-    else if (a && a.dataset.a === 'go') { G.newGame(setup); try { localStorage.removeItem('dreamacademy-save-v1' + (G.slot() === 1 ? '' : '-s' + G.slot()) + '-prev'); } catch (x) {} G.save(); tab = 'plan'; game(); }
+    else if (a && a.dataset.a === 'go') { G.newGame(setup); if ((setup.start || 1) > 1) { app().innerHTML = '<section class="title"><h2>Fast-forwarding to month ' + pad3(setup.start) + '…</h2></section>'; G.fastForward(setup.start); } try { localStorage.removeItem('dreamacademy-save-v1' + (G.slot() === 1 ? '' : '-s' + G.slot()) + '-prev'); } catch (x) {} G.save(); tab = 'plan'; game(); }
   };
 }
 
@@ -420,7 +444,12 @@ function storyTab() {
     '<p class="small muted">Each beat from the real group\'s first years, and how your run compares. Match or beat 8 for a trophy.</p>' +
     B.map(b => '<div class="beat ' + (b.ok === true ? 'ok' : b.ok === false ? 'no' : '') + '"><span class="mono small faint">' + esc(b.date) + '</span><p><b>Real:</b> ' + esc(b.real) + '</p><p><b>Yours:</b> ' + esc(b.yours) + '</p><i>' + (b.ok === true ? '✓' : b.ok === false ? '✗' : '…') + '</i></div>').join('') + '</section>' +
     '<section class="card"><div class="between"><h3>Trophies</h3><span class="mono small">' + Object.keys(s.trophies).length + ' / ' + D.trophies.length + '</span></div><div class="troph">' +
-    D.trophies.map(([id, t, d]) => '<div class="tr ' + (s.trophies[id] ? 'on' : '') + '"><b>' + esc(t) + '</b><span>' + esc(d) + '</span>' + (s.trophies[id] ? '<em class="mono">M' + pad3(s.trophies[id]) + '</em>' : '') + '</div>').join('') + '</div></section>';
+    D.trophies.map(([id, t, d]) => '<div class="tr ' + (s.trophies[id] ? 'on' : '') + '"><b>' + esc(t) + '</b><span>' + esc(d) + '</span>' + (s.trophies[id] ? '<em class="mono">M' + pad3(s.trophies[id]) + '</em>' : '') + '</div>').join('') + '</div></section>' + binder();
+}
+function binder() {
+  const cards = G.cards ? G.cards() : []; if (!cards.length) return '<section class="card"><h3>Photocards</h3><p class="small muted">Cards come from releases, evals, first places, anniversaries and member arcs.</p></section>';
+  return '<section class="card"><div class="between"><h3>Photocard binder</h3><span class="mono small">' + cards.length + ' CARDS</span></div><div class="binder">' +
+    cards.slice().reverse().map(c => '<div class="pc' + (c.rare ? ' rare' : '') + '" style="--pc:' + (ERA_COL[c.concept] || '#3a3f4a') + '">' + av(c.id, 64) + '<b>' + esc(G.name(c.id)) + '</b><span>' + esc(c.label) + '</span><em>' + esc(c.era) + '</em></div>').join('') + '</div></section>';
 }
 
 /* Practice room */
