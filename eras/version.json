@@ -1,13 +1,13 @@
 {
- "build": "2026.11.06-9",
- "title": "Polish and play anywhere",
+ "build": "2026.11.06-10",
+ "title": "New ways to play",
  "notes": [
-  "Real event cards about an album now move with it when you move it in Guided or Sandbox (award shows keep their dates).",
-  "Move a save to another device with a code: Menu, then Move this save.",
-  "Plays offline after your first visit.",
-  "A Last week recap at the top of This Week.",
-  "Swipe left and right to change tabs, a little vibration on taps, and 3D that rests when it's off screen to save battery.",
-  "Separate music settings with a volume slider, and a soft melody over the music.",
-  "An updated Getting started guide, and fairer brand income over time."
+  "Concert mini-game: on show nights, tap along to the big song. Good timing lifts the review.",
+  "Build your tour show act by act: effects like rain, fireworks or a flying platform, and costume changes.",
+  "Music videos: pick three shots and watch the cut.",
+  "Merch designer: design shirts, hoodies, posters, vinyl, totes and bracelet kits that sell every week, and more on tour.",
+  "Loop: an invented streaming app with trends, playlist pitches and its own chart (from 2012).",
+  "Create your own artist: a fully invented career from the first open mic.",
+  "Fixed: the stage designer now appears the first time you open the Tour Desk."
  ]
 }

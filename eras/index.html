@@ -157,6 +157,15 @@ details.card>summary h2{margin:0}details.card>summary::after{content:"";width:9p
 .sw-row{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0}.swb{width:32px;height:32px;border-radius:50%;border:2px solid var(--rule)}.swb.on{border-color:var(--text);box-shadow:0 0 0 2px var(--era)}
 .recap{display:flex;align-items:flex-start;gap:10px;margin:12px 14px 0;padding:12px 14px;border-radius:18px;border:1px solid color-mix(in srgb,var(--era) 45%,var(--rule));background:color-mix(in srgb,var(--era) 14%,var(--surface))}.recap>div{flex:1;min-width:0}.recap .icon{width:32px;height:32px}
 @media(min-width:980px){.recap{margin:14px 22px 0}}
+.rhbox{margin:10px 0;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--era) 14%,var(--raised))}
+#rhythm{position:fixed;inset:0;z-index:90;background:radial-gradient(120% 80% at 50% 0%,color-mix(in srgb,var(--era) 30%,#000),#05040a);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px);gap:10px;touch-action:none;user-select:none}
+.rh-top{display:flex;justify-content:space-between;align-items:center;font-size:14px}.rh-top span{font:800 22px var(--serif)}
+#rh-c{flex:1;width:100%;min-height:0;border-radius:18px;background:#0006}
+.rh-lanes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.rh-l{height:84px;border-radius:18px;border:1px solid var(--rule);background:var(--raised);font-size:24px;color:var(--text)}.rh-l:active{background:var(--era);color:var(--era-ink)}
+.rh-skip{align-self:center}
+.actrow{display:grid;grid-template-columns:1fr auto;gap:6px 8px;align-items:center;padding:8px 0;border-top:1px solid var(--rule)}.actrow b{grid-column:1/-1;font-size:13px}.actrow select{width:100%}
+.merchwrap{display:flex;gap:14px;align-items:center;margin:8px 0}.merchwrap svg{background:var(--raised);border-radius:16px;padding:8px;flex:none}
+.shelf .sh svg{background:var(--raised);border-radius:12px;padding:4px}
 .opp{padding:11px 0;border-top:1px solid var(--rule)}.opp:first-of-type{border-top:0}
 /* modals and toasts */
 .modal{position:fixed;inset:0;z-index:50;background:#000a;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;padding:0;animation:fade .18s ease}
@@ -175,36 +184,38 @@ details.card>summary h2{margin:0}details.card>summary::after{content:"";width:9p
 <body>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="data-taylor.js?v=2026.11.06-9"></script>
-<script src="data-world.js?v=2026.11.06-9"></script>
-<script src="data-looks.js?v=2026.11.06-9"></script>
-<script src="data-events-world.js?v=2026.11.06-9"></script>
-<script src="data-forever.js?v=2026.11.06-9"></script>
-<script src="data-beyonce.js?v=2026.11.06-9"></script>
-<script src="data-gaga.js?v=2026.11.06-9"></script>
-<script src="data-scenes.js?v=2026.11.06-9"></script>
-<script src="data-shows.js?v=2026.11.06-9"></script>
-<script src="data-callbacks.js?v=2026.11.06-9"></script>
-<script src="data-goals.js?v=2026.11.06-9"></script>
-<script src="data-freedom.js?v=2026.11.06-9"></script>
-<script src="data-more.js?v=2026.11.06-9"></script>
-<script src="sound.js?v=2026.11.06-9"></script>
-<script src="stage3d.js?v=2026.11.06-9"></script>
-<script src="engine.js?v=2026.11.06-9"></script>
-<script src="extras.js?v=2026.11.06-9"></script>
-<script src="town.js?v=2026.11.06-9"></script>
-<script src="ui.js?v=2026.11.06-9"></script>
-<script src="ui-more.js?v=2026.11.06-9"></script>
-<script src="freedom.js?v=2026.11.06-9"></script>
-<script src="freedom2.js?v=2026.11.06-9"></script>
-<script src="freedom3.js?v=2026.11.06-9"></script>
-<script src="town-ui.js?v=2026.11.06-9"></script>
-<script src="freedom-ui.js?v=2026.11.06-9"></script>
-<script src="freedom2-ui.js?v=2026.11.06-9"></script>
-<script src="freedom3-ui.js?v=2026.11.06-9"></script>
-<script src="creative.js?v=2026.11.06-9"></script>
-<script src="qol.js?v=2026.11.06-9"></script>
-<script src="update.js?v=2026.11.06-9"></script>
+<script src="data-taylor.js?v=2026.11.06-10"></script>
+<script src="data-world.js?v=2026.11.06-10"></script>
+<script src="data-looks.js?v=2026.11.06-10"></script>
+<script src="data-events-world.js?v=2026.11.06-10"></script>
+<script src="data-forever.js?v=2026.11.06-10"></script>
+<script src="data-beyonce.js?v=2026.11.06-10"></script>
+<script src="data-gaga.js?v=2026.11.06-10"></script>
+<script src="data-scenes.js?v=2026.11.06-10"></script>
+<script src="data-shows.js?v=2026.11.06-10"></script>
+<script src="data-callbacks.js?v=2026.11.06-10"></script>
+<script src="data-goals.js?v=2026.11.06-10"></script>
+<script src="data-freedom.js?v=2026.11.06-10"></script>
+<script src="data-more.js?v=2026.11.06-10"></script>
+<script src="sound.js?v=2026.11.06-10"></script>
+<script src="stage3d.js?v=2026.11.06-10"></script>
+<script src="engine.js?v=2026.11.06-10"></script>
+<script src="extras.js?v=2026.11.06-10"></script>
+<script src="town.js?v=2026.11.06-10"></script>
+<script src="ui.js?v=2026.11.06-10"></script>
+<script src="ui-more.js?v=2026.11.06-10"></script>
+<script src="freedom.js?v=2026.11.06-10"></script>
+<script src="freedom2.js?v=2026.11.06-10"></script>
+<script src="freedom3.js?v=2026.11.06-10"></script>
+<script src="play.js?v=2026.11.06-10"></script>
+<script src="town-ui.js?v=2026.11.06-10"></script>
+<script src="freedom-ui.js?v=2026.11.06-10"></script>
+<script src="freedom2-ui.js?v=2026.11.06-10"></script>
+<script src="freedom3-ui.js?v=2026.11.06-10"></script>
+<script src="creative.js?v=2026.11.06-10"></script>
+<script src="qol.js?v=2026.11.06-10"></script>
+<script src="play-ui.js?v=2026.11.06-10"></script>
+<script src="update.js?v=2026.11.06-10"></script>
 <script>UI.narrow = window.matchMedia('(max-width:560px)').matches; window.matchMedia('(max-width:560px)').addEventListener('change', e => { UI.narrow = e.matches; if (G.S()) UI.render(); }); UI.start();</script>
 </body>
 </html>

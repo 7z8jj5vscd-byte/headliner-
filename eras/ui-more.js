@@ -84,7 +84,7 @@ ACT.pack = d => { G.packaging(d.p, d.v, d.v === 'secret'); toast(d.v === 'secret
 /* ---------- Tour Desk: stage designer ---------- */
 const tour0 = VIEWS.tour;
 VIEWS.tour = function () {
-  const s = S(), plan = UI.sel.plan; let des = '';
+  const inner = tour0(), s = S(), plan = UI.sel.plan; let des = '';
   if (plan && plan.pid && !(G.pj(plan.pid).tour && G.pj(plan.pid).tour.approved)) {
     plan.design = plan.design || { stage:'round', light:ER.LIGHTS[0], acts:5 };
     des = card(`<h3>Stage designer</h3><p class="small muted">A good flow (four to eight acts, songs from many eras) lifts every show.</p>
@@ -92,7 +92,7 @@ VIEWS.tour = function () {
       <div class="chips">${ER.LIGHTS.map(c => `<button class="chip ${plan.design.light === c ? 'on' : ''}" data-act="sdes" data-k="light" data-v="${c}"><i class="dot" style="background:${c}"></i></button>`).join('')}</div>
       <label class="field"><span>Acts: ${plan.design.acts}</span><input type="range" min="1" max="10" value="${plan.design.acts}" data-act="sacts"></label>`);
   }
-  return des + tour0();
+  return des + inner;
 };
 ACT.sdes = d => { UI.sel.plan.design[d.k] = d.v; rerender(); };
 ACT.sacts = (d, el) => { UI.sel.plan.design.acts = +el.value; rerender(); };
