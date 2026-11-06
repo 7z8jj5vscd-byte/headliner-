@@ -164,7 +164,7 @@ G.advance = () => {
     if (gp.prep) S.group.prep = clamp(S.group.prep + gp.prep + G.stageSkill(G.activeMembers()) * .05, 0, 100);
     const F = S.group.fans;
     if (effectivePlan() === 'promo') { grow(F * .02 * (S.group.momentum / 50 + .3) + 40000); S.group.momentum += 6; }
-    if (effectivePlan() === 'tour') { grow(F * .03 + 70000); S.group.momentum += 7; S.group.tourMonths = (S.group.tourMonths || 0) + 1;
+    if (effectivePlan() === 'tour') { if (G.tourMonth) G.tourMonth(R); grow(F * .03 + 70000); S.group.momentum += 7; S.group.tourMonths = (S.group.tourMonths || 0) + 1;
       if (S.group.tourMonths === 1 && !S.flags.firstTour) { S.flags.firstTour = 1; log('First tour: the group plays its first run of dates abroad.', 'story'); } }
     if (effectivePlan() === 'train') G.activeMembers().forEach((a, i, arr) => arr.forEach(b => { if (a < b) G.addBond(a, b, 1); }));
     if (effectivePlan() !== 'tour') S.group.tourMonths = 0;
@@ -624,7 +624,7 @@ G.choose = (ev, i, acc) => {
       if (!ev.nom) { out = 'They present the award and look great doing it.'; break; }
       const s = G.stageScore(G.activeMembers(), acc), pk = G.bestRecentPeak(14);
       S.rec.noms += 2;
-      const win = chance(.15 + Math.max(0, 40 - pk) / 120 + (s >= 75 ? .1 : 0));
+      const win = chance(.15 + Math.max(0, 40 - pk) / 120 + (s >= 75 ? .1 : 0) + (S.flags.campaign ? .15 : 0)); S.flags.campaign = 0;
       if (s >= 75) { S.group.momentum = clamp(S.group.momentum + 15, 0, 100); mult(1.12); }
       if (win) { S.rec.wins++; S.group.awards.push({ m:S.month, t:pick(['Best Pop Group Performance','Best New Artist','Group of the Year','Best Choreography']) }); }
       log('Awards night: ' + (win ? 'a win.' : 'nominated, no win.') + ' Stage score ' + Math.round(s) + '.', 'story');
@@ -865,7 +865,7 @@ G.choose2 = (ev, i, acc) => {
       return acc == null ? 'The director gets a solid, safe video.' : 'Video score ' + Math.round(a * 100) + '. ' + (a >= .8 ? 'The teaser trends within an hour.' : a >= .5 ? 'A good-looking video.' : 'It will need a lot of editing.'); }
     case 'musicShow': { const r = S.group.releases.find(x => x.id === ev.rid); if (!r) return '';
       const sc = G.stageScore(G.activeMembers(), acc);
-      const p = clamp((r.power + (sc - 50) / 3 - 40) / 55, .03, .9);
+      const p = clamp((r.power + (sc - 50) / 3 - 40 - (G.rivalPressure ? G.rivalPressure() : 0)) / 55, .03, .9);
       if (chance(p)) { S.rec.showWins = (S.rec.showWins || 0) + 1; S.group.momentum = clamp(S.group.momentum + 6, 0, 100);
         const first = S.rec.showWins === 1; if (first) log('First music show win with "' + r.title + '".', 'release');
         feed('@chartwatcher', S.group.name + (first ? ' got their FIRST WIN' : ' win again') + ' with "' + r.title + '"!', 1);
