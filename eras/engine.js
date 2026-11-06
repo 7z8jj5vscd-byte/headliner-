@@ -71,7 +71,8 @@ G.yw = () => ER.yw(S.abs);
 G.fmtDate = abs => { const d = ER.dateOf(abs); return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric', timeZone:'UTC' }); };
 G.fmtN = n => { n = Math.round(n); const a = Math.abs(n); if (a >= 1e9) return (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + 'B'; if (a >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'; if (a >= 1e4) return Math.round(n / 1e3) + 'K'; if (a >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K'; return String(n); };
 G.fmtM = n => (n < 0 ? '−$' : '$') + G.fmtN(Math.abs(n));
-G.blocks = () => { if (S.week.forcedRest) return 1; return DIFF[S.diff].blocks + (S.flags.easyBlocks || 0); };
+G.mod = id => !!(S && S.mods && S.mods.includes(id));
+G.blocks = () => { if (S.week.forcedRest) return 1; const b = DIFF[S.diff].blocks + (S.flags.easyBlocks || 0); return G.mod('fewblocks') ? Math.max(2, b - 2) : b; };
 G.canon = () => S.canon.total ? Math.round(S.canon.hit / S.canon.total * 100) : 100;
 G.unlocked = tab => {
   if (S.mode !== 'story') return true;
@@ -92,6 +93,8 @@ G.newGame = function (o) {
     eggs:{ planted:[], log:[], fatigue:0, decoded:0 }, feed:[], awards:[], charts:{ albums:[], singles:[] },
     recap:null, years:{}, routine:[], ach:{}, goals:{}, flags:{}, priorities:[], recovery:null, history:[],
     rivalsSeen:{}, modal:[], ffStop:'', journal:[], guide:{} };
+  S.goal = o.goal || 'none'; S.mods = (o.mods || []).slice();
+  if (G.mod('rich')) { S.stats.money += 2000000; S.stats.team = 50; }
   if (o.prologue) o.prologue.forEach((ci, i) => { const c = A.prologue[i].ch[ci]; applyFx(c.fx); scoreCanon(!!c.c); S.log.push({ abs:A.born + i * 200, id:'pro' + i, t:A.prologue[i].t, l:c.l, canon:!!c.c, truth:A.prologue[i].truth }); });
   if (S.mode === 'era') setupEra(o.era);
   inbox('family', 'A new start', S.mode === 'story' ? 'Every week you get Time Blocks to spend. Required tasks come first. Real events interrupt with a decision. Press Advance Week when you are done.' : 'Era Start: the event track is off, and you control the calendar for this era.');
@@ -147,6 +150,7 @@ function applyFx(fx, mult) {
     else if (k === 'hype') { const e = G.currentEra() || G.active()[0] && G.active()[0].p; if (e) G.pj(e.id).hype = clamp(G.pj(e.id).hype + v, 0, 100); }
     else if (k === 'quality') { G.active().forEach(x => { G.pj(x.p.id).qmod = (G.pj(x.p.id).qmod || 0) + v; }); }
     else if (k === 'genre') s.genre = clamp(s.genre + v, 0, 100);
+    else if (k === 'heat' && v > 0 && G.mod('tabloids')) s.heat = clamp(s.heat + v * 2, 0, 100);
     else if (s[k] != null) s[k] = clamp(s[k] + v, 0, 100);
   }
 }
@@ -192,6 +196,7 @@ G.writable = () => {
 };
 G.writeSong = function (t, co, insp, appr) {
   const item = G.writable().find(x => x.t === t); if (!item) return null;
+  if (G.mod('solo')) co = 'Solo';
   const cw = G.art().cowriters[co] || { bonus:0 };
   let q = rnd(32, 52) + S.stats.write * .42 + cw.bonus + (item.p.solo && co === 'Solo' ? 5 : 0) + (S.flags.hidden ? 4 : 0) + (G.world('lockdown') ? 3 : 0) + (S.flags.focus ? 3 : 0);
   S.flags.focus = false;
@@ -386,6 +391,7 @@ G.doTask = function (id, arg) {
     case 'newera': G.proposeEra(); return { ok:true, msg:'Your label has ideas for the next era.' };
   }
   S.week.used += t.cost; S.week.done[id] = true; G.guideTick('block');
+  G.seasonTick({ write:'songs', early:t.early === 'notebook' ? 'songs' : '', fanevent:'fanevents', livestream:'fanevents', rest:'rest', interview:'interviews' }[t.kind] || '');
   if (over > 0) { applyFx({ energy:-8 * over }); msg += ` Overtime cost ${8 * over} Energy.`; }
   return { ok:true, msg };
 };
@@ -395,6 +401,35 @@ G.makeBracelet = function (word, colors) {
   word = String(word || '').toUpperCase().replace(/[^A-Z0-9 ]/g, '').slice(0, 12).trim(); if (!word) return null;
   S.bracelets = S.bracelets || []; S.bracelets.unshift({ word, colors:(colors || []).slice(0, 4), abs:S.abs, traded:0 }); if (S.bracelets.length > 40) S.bracelets.length = 40;
   applyFx({ fans:.3 }); G.journalAdd('A new bracelet', `You made one that says ${word}.`); return S.bracelets[0];
+};
+/* ---------- Season goals ---------- */
+G.seasonInit = function (y) {
+  const r = ER.seeded('season' + y + S.artist + (S.created || 0)), act = G.active().map(x => x.st), lock = G.world('lockdown');
+  const ok = g => !g.needs || (g.needs === 'tour' ? act.includes('tour') || act.includes('tourprep') : g.needs === 'write' ? act.includes('write') || act.includes('record') || G.earlyYears()
+    : g.needs === 'eggs' ? G.unlocked('eggs') : g.needs === 'single' ? act.some(x => ['pre','release','promo'].includes(x)) : g.needs === 'press' ? G.unlocked('press') && !S.flags.hidden : g.needs === 'story' ? S.mode === 'story' && !S.flags.free : true);
+  const pool = ER.SEASON_POOL.filter(g => ok(g) && !(lock && g.id === 'shows')), picked = [];
+  while (picked.length < 3 && pool.length) { const g = pool.splice(Math.floor(r() * pool.length), 1)[0]; const n = g.n[Math.floor(r() * g.n.length)]; picked.push({ id:g.id, l:g.l.replace('{n}', n), n, prog:0, done:false, end:!!g.end, reward:g.reward }); }
+  S.season = { y, goals:picked };
+};
+G.seasonTick = function (id, by) {
+  const ss = S && S.season; if (!ss) return; ss.goals.forEach(g => { if (g.id !== id || g.done || g.end) return; g.prog += (by || 1);
+    if (g.prog >= g.n) { g.done = true; applyFx(g.reward); inbox('manager', 'Season goal complete', `${g.l}. Reward: ${G.fxText(g.reward)}.`); G.journalAdd('Season goal complete', g.l); } });
+};
+G.seasonEnd = function () {
+  const ss = S.season; if (!ss) return null;
+  ss.goals.filter(g => g.end && !g.done).forEach(g => { if (g.id === 'rep' && S.stats.rep >= g.n) { g.done = true; applyFx(g.reward); } });
+  const n = ss.goals.filter(g => g.done).length; if (n === 3) { applyFx({ fans:2, clout:3 }); S.stats.money += 250000; ach('season3'); }
+  S.seasonsDone = (S.seasonsDone || 0) + n; return n;
+};
+/* ---------- Career goals ---------- */
+G.goalProgress = function () {
+  const g = ER.CAREER_GOALS.find(x => x.id === S.goal); if (!g || g.id === 'none') return null;
+  const tours = Object.values(S.pj).map(x => x.tour && x.tour.gross || 0);
+  const v = { no1weeks:S.released.reduce((a, r) => a + (r.no1w || 0), 0), masters:S.stats.own, tour:Math.max(0, ...tours), canon:G.canon(), fans:S.stats.fans, awards:S.awards.length }[g.id];
+  let done = v >= g.target;
+  if (g.id === 'masters' && S.abs >= W('2021-01-01') && !S.goalDone) done = false;
+  if (g.id === 'canon' && S.abs < W('2026-12-01')) done = false;
+  return { g, v, done };
 };
 /* ---------- Show nights ---------- */
 // The night itself, after the week's shows are played: city, opener, surprise songs and a crowd moment.
@@ -462,7 +497,7 @@ G.pickScene = function (t) {
   return { k, t:fill(sc.t), x:fill(sc.x), set:sc.set, with:sc.with, ch:sc.ch.map(c => ({ l:fill(c.l), fx:c.fx, r:fill(c.r) })) };
 };
 G.resolveScene = function (sc, ci) {
-  const c = sc.ch[ci]; if (!c) return null; applyFx(c.fx);
+  const c = sc.ch[ci]; if (!c) return null; applyFx(c.fx); G.seasonTick('scenes');
   // Some choices come back weeks later. Choices that cost nothing in trust tend to pay off.
   if (ER.CALLBACKS && ER.CALLBACKS[sc.k] && Math.random() < .55) {
     const fx = c.fx || {}, risky = (fx.rep || 0) < 0 || (fx.team || 0) < 0 || (fx.clout || 0) < 0 || (fx.heat || 0) >= 4;
@@ -581,7 +616,7 @@ G.playShows = function (p) {
   if (!n) return 'A travel week between shows.';
   const dem = G.tourDemand(tr, p), sell = clamp(dem / (tr.nights * CAP[tr.tier]) * rnd(.95, 1.04), .3, 1);
   const price = G.priceOf(tr.price, S.abs), tix = Math.round(n * CAP[tr.tier] * sell), gross = tix * price;
-  tr.played += n; tr.tickets += tix; tr.gross += gross;
+  tr.played += n; tr.tickets += tix; tr.gross += gross; G.seasonTick('shows', n);
   const net = gross * (.36 - tr.prod * .04) * (S.stats.own > 30 ? 1.05 : 1);
   S.stats.money += net; if (!G.curveMode()) S.stats.fans += tix * .12 * (S.flags.bracelets ? 1.2 : 1);
   applyFx({ energy:-(5 + n * 1.6), clout:.4 });
@@ -608,6 +643,7 @@ G.eggTargets = () => {
   return out.slice(0, 14);
 };
 G.plantEgg = function (type, target, pid) {
+  G.seasonTick('eggs');
   const et = ER.EGG_TYPES.find(x => x.id === type) || ER.EGG_TYPES[0];
   S.eggs.planted.push({ id:G.uid(), type:et.id, n:et.n, target:target.id, tl:target.l, diff:et.diff, abs:S.abs, prog:0, need:et.diff * 2 + 1, done:false, pid });
   if (pid) G.pj(pid).egg = true;
@@ -641,7 +677,8 @@ function startWeek() {
   // Missed events after a load or an Era Start skip are not replayed.
   if (S.flags.free && !S.flags.retired && Math.random() < .07) { const d = pick(ER.DRAMA); S.week.pending.push('drama:' + d.id); }
   const yw = ER.yw(a);
-  if (yw.w === 1 && S.abs > A.startAbs) S.modal.push({ k:'plan' });
+  if (yw.w === 1 && S.abs > A.startAbs) { const n = G.seasonEnd(); S.modal.push({ k:'plan', seasonDone:n }); }
+  if (!S.season || S.season.y !== yw.y) G.seasonInit(yw.y);
   if (S.mode === 'story' && a === FREE_START && !S.flags.free) S.modal.push({ k:'free' });
   // Team assignments.
   const act = G.active().filter(x => !['none','rest'].includes(x.st));
@@ -685,6 +722,7 @@ G.answer = function (id, ci) {
   applyFx(c.fx); S.seen[id] = ci;
   if (!e.s && e.ch.some(x => x.c)) scoreCanon(!!c.c);
   if (e.award) { S.awards.push({ n:e.award, abs:S.abs, y:e.year }); if (e.award === 'Album of the Year' && !S.ach.aoty) ach('aoty'); }
+  G.seasonTick('cards');
   if (e.egg) S.eggs.log.push({ n:e.egg, abs:S.abs });
   if (e.unlock) S.flags[e.unlock] = true;
   if (e.id === 'wipe') { S.flags.wiped = S.abs; S.flags.hidden = false; S.flags.hiddenDone = true; }
@@ -731,7 +769,7 @@ function endWeek() {
   // Singles chart movement.
   S.charts.singles.forEach(c => { if (c.abs >= a || c.out) return; c.wk++;
     const t = c.target || c.peak; if (c.jump && c.wk === 1) { c.pos = t; c.jump = false; } else c.pos = c.wk <= 4 ? clamp(Math.round(c.pos - (c.pos - t) * .6), 1, 100) : clamp(Math.round(c.pos + rnd(-3, 8) + c.wk * .4), 1, 101);
-    if (c.pos < c.peak) c.peak = c.pos; if (c.peak === 1) { G.pj(c.pid).no1 = true; if (!S.ach.no1) ach('no1'); if (!c.counted && c.debut !== 1) { c.counted = 1; S.no1count = (S.no1count || 0) + 1; } } if (c.pos > 100) c.out = true; });
+    if (c.pos < c.peak) c.peak = c.pos; if (c.peak <= 10 && !c.top10) { c.top10 = 1; G.seasonTick('top10'); } if (c.peak === 1) { G.pj(c.pid).no1 = true; if (!S.ach.no1) ach('no1'); if (!c.counted && c.debut !== 1) { c.counted = 1; S.no1count = (S.no1count || 0) + 1; } } if (c.pos > 100) c.out = true; });
   S.charts.albums.forEach(c => { c.wk++; });
   if (S.charts.singles.length > 80) S.charts.singles = S.charts.singles.filter((c, i) => i < 40 || !c.out).slice(0, 80);
   if (S.charts.albums.length > 60) S.charts.albums.length = 60;
@@ -742,7 +780,7 @@ function endWeek() {
   s.heat = Math.max(0, s.heat - 2.5 - (S.flags.hidden ? 3 : 0));
   updateCap();
   if (G.curveMode()) {
-    const base = clamp(1 + (s.rep - 65) / 400 + (s.team - 60) / 800 + (S.recovery ? -.12 : 0), .65, 1.12);
+    const base = clamp(1 + (s.rep - 65) / 400 + (s.team - 60) / 800 + (S.recovery ? -.12 : 0) - (G.mod('slowfans') ? .12 : 0), .55, 1.12);
     S.mom = clamp((S.mom || 1) + (base - (S.mom || 1)) * .07, .45, 1.6);
     if (S.abs < G.FREE_START) S.mom = clamp(S.mom, .7, 1.3);
     const tgt = G.fanTarget(a + 1) * S.mom; s.fans = Math.max(10, s.fans + (tgt - s.fans) * .3);
@@ -858,14 +896,16 @@ function checkGoals(p) {
   if (G.pj(p.id).released && p.type !== 'edition') S.modal.push({ k:'wrap', pid:p.id });
   const n = S.goals[p.id].filter(Boolean).length; if (n) { applyFx({ clout:n * 2, fans:n }); S.stats.money += n * 50000; }
 }
-  const ACH_FUN = { fivestar:'A five-star show', surprise25:'25 different surprise songs', vault:'Opened the vault', honours:'Won at The Music Honours', allTV:'All four Taylor\'s Versions at No. 1' };
+  const ACH_GOALS = { goal:'Career goal reached', season3:'A perfect season' };
+ const ACH_FUN = { fivestar:'A five-star show', surprise25:'25 different surprise songs', vault:'Opened the vault', honours:'Won at The Music Honours', allTV:'All four Taylor\'s Versions at No. 1' };
  const ACH_FAREWELL = { farewell:'The Farewell Tour', retired:'Retired', unretired:'The comeback after retirement' };
 const ACH_MORE = { eras10:'Ten new eras', eras25:'Twenty-five new eras', eras50:'Fifty new eras' };
 const ACH = { firstsong:'First song', no1:'Hot 100 No. 1', million:'A million in a week', aoty:'Album of the Year', stadium:'Stadium tour', masters:'Own your masters', canon90:'Canon Score 90+', eggs10:'Ten eggs decoded', comeback:'The comeback', billion:'Billion-dollar tour', free:'The story is yours' };
-Object.assign(ACH, ACH_MORE, ACH_FAREWELL, ACH_FUN);
+Object.assign(ACH, ACH_MORE, ACH_FAREWELL, ACH_FUN, ACH_GOALS);
 G.ACH = ACH;
 function ach(k) { if (S.ach[k]) return; S.ach[k] = S.abs; inbox('fans', `Achievement: ${ACH[k]}`, 'Added to your Legacy.'); }
 function achievements() {
+  { const gp = G.goalProgress(); if (gp && gp.done && !S.goalDone) { S.goalDone = S.abs; ach('goal'); S.modal.push({ k:'goaldone' }); } }
   if (Object.values(S.pj).some(x => (x.diary || []).some(d => d.stars === 5))) ach('fivestar');
   if (Object.keys(S.surprisePlayed || {}).length >= 25) ach('surprise25');
   if (Object.keys(S.songs).some(t => S.songs[t].fromVault)) ach('vault');
@@ -877,7 +917,7 @@ function achievements() {
 
 G.returnToPublic = function () { if (!S.flags.hidden) return; S.flags.hidden = false; S.flags.hiddenDone = true; applyFx({ heat:15, hype:10 }); inbox('publicist', 'You are back', 'You stepped back into public view early. The press noticed.'); };
 /* ---------- Fast-forward ---------- */
-G.quietWeek = () => !S.week.pending.length && !G.requiredLeft().length && !S.modal.length;
+G.quietWeek = () => !G.mod('noff') && !S.week.pending.length && !G.requiredLeft().length && !S.modal.length;
 G.fastForwardSummary = function (max) {
   const f0 = S.stats.fans, m0 = S.stats.money, a0 = S.abs, j0 = (S.journal || []).length, aw0 = S.awards.length;
   const n = G.fastForward(max);

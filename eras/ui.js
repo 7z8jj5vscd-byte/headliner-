@@ -165,6 +165,11 @@ function newGameFlow() {
       <button class="chip ${n.mode === 'era' ? 'on' : ''}" data-act="nmode" data-v="era">Era Start</button></div>
       <p class="small muted">${n.mode === 'story' ? 'Start at the beginning of her life. Weeks advance in order, and real events happen on their real dates.' : 'Start from any unlocked era, with the catalog and team of that moment. The event track is off and you control the calendar.'}</p>
       ${n.mode === 'era' ? `<div class="chips">${P.map(p => { const ok = eras.includes(p.id); return `<button class="chip ${n.era === p.id ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="nera" data-v="${p.id}"><i class="dot" style="background:${p.color}"></i>${h(p.short)}${ok ? '' : ' (locked)'}</button>`; }).join('')}</div><p class="small faint">Eras unlock when Story Mode reaches them.</p>` : ''}`)}
+    ${card(`<h2>Your goal</h2><p class="small muted">A personal goal for this run. It changes nothing in the story, only what you are chasing.</p>
+      <div class="chips">${ER.CAREER_GOALS.map(g => `<button class="chip ${(n.goal || 'none') === g.id ? 'on' : ''}" data-act="ngoal" data-v="${g.id}">${h(g.n)}</button>`).join('')}</div>
+      <p class="small">${h((ER.CAREER_GOALS.find(g => g.id === (n.goal || 'none')) || {}).d || '')}</p>`)}
+    ${card(`<h2>Twists</h2><p class="small muted">Optional modifiers. Pick any, or none.</p>
+      ${ER.MODIFIERS.map(m => `<button class="choice ${(n.mods || []).includes(m.id) ? 'on' : ''}" data-act="nmod" data-v="${m.id}">${h(m.n)}<div class="small muted">${h(m.d)}</div></button>`).join('')}`)}
     ${card(`<h2>Difficulty</h2><div class="chips">${Object.keys(G.DIFF).map(k => `<button class="chip ${n.diff === k ? 'on' : ''}" data-act="ndiff" data-v="${k}">${G.DIFF[k].l} · ${G.DIFF[k].blocks} blocks</button>`).join('')}</div><p class="small muted">Difficulty changes Time Blocks, penalties and deadlines.</p>`)}
     ${card(`<h2>Era looks</h2><p class="small muted">The 3D performer changes with every era: hair, make-up and stage costumes. Tap an era to preview it.</p>
       <div class="stage3d" id="t3look"></div>
@@ -241,10 +246,18 @@ VIEWS.week = function () {
   <div class="actions"><button class="btn big" data-act="advance">Advance Week</button>
     <button class="btn ghost" data-act="ff" ${G.quietWeek() ? '' : 'disabled'} title="Skips quiet weeks only. Stops at every real event and deadline.">Fast-forward</button></div>
   <div class="row small"><button class="btn ghost sm" data-act="saveroutine">Save routine</button><button class="btn ghost sm" data-act="applyroutine" ${s.routine.length ? '' : 'disabled'}>Apply routine (${s.routine.length})</button></div>
+  ${seasonCard()}
   ${chartShow()}
   ${r ? card(`<h3>Last week</h3><div class="grid3"><div><b class="${r.fans >= 0 ? 'pos' : 'neg'}">${r.fans >= 0 ? '+' : ''}${G.fmtN(r.fans)}</b><span class="small muted"> fans</span></div><div><b class="${r.money >= 0 ? 'pos' : 'neg'}">${G.fmtM(r.money)}</b><span class="small muted"> money</span></div><div><b>${G.fmtN(r.units)}</b><span class="small muted"> units sold</span></div></div>
     ${r.lines.map(l => `<p class="small">${h(l)}</p>`).join('')}${r.team.map(l => `<p class="small muted">${h(l)}</p>`).join('')}`) : ''}`;
 };
+function seasonCard() {
+  const s = S(); const ss = s.season; const gp = G.goalProgress(); let out = '';
+  if (ss && ss.goals.length) out += card(`<h3>Season goals for ${ss.y}</h3>${ss.goals.map(g => `<div class="statrow"><span>${g.done ? '✅' : '⬜'} ${h(g.l)}</span>${g.end ? '' : bar(g.prog, g.n)}<b class="small">${g.end ? (g.done ? 'Done' : 'Year end') : `${Math.min(g.prog, g.n)}/${g.n}`}</b></div>`).join('')}<p class="small faint">Rewards arrive as soon as a goal is done. All three in a year earns a bonus.</p>`);
+  if (gp) out += card(`<h3>Your goal: ${h(gp.g.n)}</h3><p class="small muted">${h(gp.g.d)}</p><div class="statrow"><span>Progress</span>${bar(gp.v, gp.g.target)}<b class="small">${gp.g.id === 'tour' || gp.g.id === 'fans' ? (gp.g.id === 'tour' ? G.fmtM(gp.v) : G.fmtN(gp.v)) : Math.round(gp.v)}</b></div>${s.goalDone ? '<p class="small pos">Reached!</p>' : ''}`);
+  if (s.mods && s.mods.length) out += `<p class="small faint" style="margin:0 16px">Twists: ${s.mods.map(id => h((ER.MODIFIERS.find(m => m.id === id) || {}).n)).join(', ')}</p>`;
+  return out;
+}
 function chartShow() {
   const s = S(), prev = s.chartPrev || { singles:{}, albums:{} };
   const sg = s.charts.singles.filter(c => !c.out && c.abs < s.abs).sort((a, b) => a.pos - b.pos).slice(0, 4);
@@ -481,7 +494,8 @@ VIEWS.legacy = function () {
   const mx = Math.max(1, ...hist.map(x => x.fans));
   const spark = hist.length > 2 ? `<svg viewBox="0 0 300 70" class="spark" aria-label="Fans over time"><polyline fill="none" stroke="var(--era)" stroke-width="2" points="${hist.map((x, i) => `${(i / (hist.length - 1) * 300).toFixed(1)},${(68 - x.fans / mx * 64).toFixed(1)}`).join(' ')}"/></svg>` : '';
   const P = G.allProjects().filter(p => p.goals);
-  return card(`<h2>Legacy</h2><div class="grid3"><div><b class="big">${G.canon()}</b><div class="small muted">Canon Score</div></div><div><b>${s.awards.length}</b><div class="small muted">Awards</div></div><div><b>${Math.round(s.stats.own)}%</b><div class="small muted">Ownership</div></div></div>
+  const gp = G.goalProgress();
+  return (gp ? card(`<h3>Career goal: ${h(gp.g.n)}</h3><p class="small">${s.goalDone ? `Reached on ${h(G.fmtDate(s.goalDone))}.` : 'Not reached yet.'}</p>${s.mods && s.mods.length ? `<p class="small muted">Played with: ${s.mods.map(id => h((ER.MODIFIERS.find(m => m.id === id) || {}).n)).join(', ')}</p>` : ''}<p class="small muted">Season goals completed: ${s.seasonsDone || 0}</p>`) : '') + card(`<h2>Legacy</h2><div class="grid3"><div><b class="big">${G.canon()}</b><div class="small muted">Canon Score</div></div><div><b>${s.awards.length}</b><div class="small muted">Awards</div></div><div><b>${Math.round(s.stats.own)}%</b><div class="small muted">Ownership</div></div></div>
     <p class="small muted">The Canon Score measures how close your choices were to what she really did.</p>${spark}`)
   + card(`<h3>Era gallery</h3><div class="shelf">${s.released.map(r => { const p = G.proj(r.pid); return `<div class="sh">${coverSVG(G.pj(r.pid).cover, 84, r.pid)}<span class="small"><b>${h(p.short || p.title)}</b>${p.eraNo ? `<br><span class="faint">Era ${p.eraNo}</span>` : ''}<br>${G.fmtN(r.total)} sold</span></div>`; }).join('') || '<p class="small muted">Your albums appear here.</p>'}</div>`)
   + card(`<h3>Era goals</h3>${P.filter(p => s.goals[p.id] || G.stageOf(p, s.abs) !== 'none').map(p => `<div class="logrow"><b>${h(p.title)}</b>${p.goals.map((g, i) => `<div class="small">${s.goals[p.id] ? (s.goals[p.id][i] ? '✅' : '❌') : '⏳'} ${h(g.l)}</div>`).join('')}</div>`).join('') || '<p class="small muted">Goals appear as each era begins.</p>'}`)
@@ -506,10 +520,13 @@ function modals() {
   const s = S(); if (!s || document.querySelector('.modal')) return;
   if (s.week.pending.length) return eventModal(s.week.pending[0]);
   const m = s.modal[0]; if (!m) return;
+  if (m.k === 'goaldone') { const gp = G.goalProgress();
+    modal(`<span class="eyebrow">Career goal</span><h2>You did it</h2><p>${h(gp ? gp.g.d : '')}</p><p class="small muted">Reached on ${h(G.fmtDate(s.abs))}. Keep playing as long as you like.</p><button class="btn big" data-act="modalok">Keep going</button>`);
+    if (window.SND) SND.fanfare(); return; }
   if (m.k === 'plan') {
     const pr = [['writing','Writing'],['fans','Fans'],['press','Press'],['rest','Rest'],['business','Business']];
     UI.sel.pri = UI.sel.pri || [];
-    const el = modal(`<span class="eyebrow">Week 1</span><h2>Your plan for ${G.yw().y}</h2><p class="small muted">Pick two priorities. Tasks tied to them work 25% better all year.</p><div class="chips">${pr.map(([k, l]) => `<button class="chip ${UI.sel.pri.includes(k) ? 'on' : ''}" data-act="pri" data-k="${k}">${l}</button>`).join('')}</div><button class="btn big" data-act="planok">Set the plan</button>`);
+    const el = modal(`<span class="eyebrow">Week 1</span>${m.seasonDone != null ? `<p class="small">Last season: <b>${m.seasonDone} of 3</b> goals done.${m.seasonDone === 3 ? ' A perfect season.' : ''}</p>` : ''}<h2>Your plan for ${G.yw().y}</h2><p class="small muted">Pick two priorities. Tasks tied to them work 25% better all year.</p><div class="chips">${pr.map(([k, l]) => `<button class="chip ${UI.sel.pri.includes(k) ? 'on' : ''}" data-act="pri" data-k="${k}">${l}</button>`).join('')}</div><button class="btn big" data-act="planok">Set the plan</button>`);
     return;
   }
   if (m.k === 'year') {
@@ -885,15 +902,17 @@ const ACT = {
   title:() => { UI.newg = null; title(); },
   load:d => { if (G.load(+d.n)) { UI.tab = 'week'; render(); previouslyModal(); } else toast('That save could not be read.'); },
   delslot:d => { if (confirm(`Delete slot ${d.n}?`)) { G.del(+d.n); title(); } },
-  newgame:d => { UI.newg = { slot:+d.n, mode:'story', diff:'standard', era:'ts1', look:{ hair:LOOKS.hair[3][1], style:'curly', skin:LOOKS.skin[2][1] }, pro:[], lookEra:'fearless', artist:'taylor' }; newGameFlow(); },
+  newgame:d => { UI.newg = { slot:+d.n, mode:'story', diff:'standard', era:'ts1', look:{ hair:LOOKS.hair[3][1], style:'curly', skin:LOOKS.skin[2][1] }, pro:[], lookEra:'fearless', artist:'taylor', goal:'none', mods:[] }; newGameFlow(); },
+  ngoal:d => { UI.newg.goal = d.v; newGameFlow(); },
+  nmod:d => { const a = UI.newg.mods, i = a.indexOf(d.v); if (i >= 0) a.splice(i, 1); else a.push(d.v); newGameFlow(); },
   nmode:d => { UI.newg.mode = d.v; newGameFlow(); }, nera:d => { UI.newg.era = d.v; newGameFlow(); }, ndiff:d => { UI.newg.diff = d.v; newGameFlow(); },
   look:d => { UI.newg.look[d.k] = d.v; newGameFlow(); },
   lookera:d => { UI.newg.lookEra = d.v; newGameFlow(); },
   nartist:d => { const n = UI.newg; n.artist = d.v; n.era = G.firstEra(d.v); n.lookEra = null; newGameFlow(); },
   pera:d => { if (UI.showPrev) UI.showPrev(+d.i); },
-  begin:() => { const n = UI.newg; if (n.mode === 'story') return prologue(); G.newGame({ artist:n.artist, mode:'era', era:n.era, diff:n.diff, slot:n.slot, look:n.look }); UI.tab = 'week'; render(); },
+  begin:() => { const n = UI.newg; if (n.mode === 'story') return prologue(); G.newGame({ artist:n.artist, mode:'era', era:n.era, diff:n.diff, slot:n.slot, look:n.look, goal:n.goal, mods:n.mods }); UI.tab = 'week'; render(); },
   pro:d => { const n = UI.newg; n.pro.push(+d.i); if (n.pro.length < ER.artists[n.artist].prologue.length) return prologue();
-    G.newGame({ artist:n.artist, mode:'story', diff:n.diff, slot:n.slot, look:n.look, prologue:n.pro }); UI.tab = 'week'; render(); },
+    G.newGame({ artist:n.artist, mode:'story', diff:n.diff, slot:n.slot, look:n.look, prologue:n.pro, goal:n.goal, mods:n.mods }); UI.tab = 'week'; render(); },
   preview:d => { const a = ER.artists[d.id], P = a.projects.filter(p => p.type !== 'demos' && p.type !== 'edition');
     modal(`<span class="eyebrow">Playable</span><h2>${h(a.name)}</h2><div class="stage3d" id="t3prev"></div>
       <div class="chips">${P.map((p, i) => `<button class="chip" data-act="pera" data-id="${d.id}" data-i="${i}"><i class="dot" style="background:${p.color}"></i>${h(p.short)}</button>`).join('')}</div>
