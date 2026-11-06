@@ -73,7 +73,7 @@ const P = [
    ws:'2018-11-19', rs:'2019-01-07', fs:'2019-04-01', ps:'2019-04-13', rel:'2019-08-23',
    tracks:['I Forgot That You Existed','Cruel Summer','Lover','The Man','The Archer','I Think He Knows','Miss Americana & the Heartbreak Prince','Paper Rings','Cornelia Street','Death by a Thousand Cuts','London Boy',"Soon You'll Get Better",'False God','You Need to Calm Down','Afterglow','ME!',"It's Nice to Have a Friend",'Daylight'],
    extras:['All of the Girls You Loved Before','Christmas Tree Farm','Beautiful Ghosts','Only the Young'],
-   tour:{ name:'Lover Fest', kind:'headline', short:true, maxNights:14, ts:'2020-06-20', te:'2020-08-01', openers:[], target:null, tier:'stadium',
+   tour:{ name:'Lover Fest', kind:'headline', est:120e6,  short:true, maxNights:14, ts:'2020-06-20', te:'2020-08-01', openers:[], target:null, tier:'stadium',
      note:'A short run of stadium festival dates in summer 2020: Lover Fest East and West in the US, plus Brazil and European festival slots.' },
    units:867000, cowriters:['Jack Antonoff','Joel Little','Louis Bell','Frank Dukes'], producers:['Jack Antonoff','Joel Little','Louis Bell','Frank Dukes'],
    goals:[{k:'units',v:850000,l:'First week above 850,000'},{k:'own',v:40,l:'Own your new masters'}] },

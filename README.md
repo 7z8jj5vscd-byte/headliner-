@@ -122,7 +122,7 @@ Any push to a `claude/...` branch is merged into `main` by `.github/workflows/au
 
 ## The Eras Life
 
-A week-by-week career game through Taylor Swift's documented public career, from the first demo tapes in 2001 to the end of 2026. After that, the story is yours to carry on with invented songs, eras and drama. It is an unofficial fan project: it uses no lyrics, audio, album art or photos, and event cards stick to the public record, with no invented private dialogue or quotes.
+A week-by-week career game through three documented public careers: Taylor Swift (from 2001), Beyoncé (from 1990, through Destiny's Child and every solo era) and Lady Gaga (from 2000, from open-mic nights to Mayhem), each to the end of 2026. After that, the story is yours to carry on with invented songs, eras and drama. It is an unofficial fan project: it uses no lyrics, audio, album art or photos, and event cards stick to the public record, with no invented private dialogue or quotes.
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/eras/
 
@@ -148,4 +148,4 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/eras/
 
 **Saves.** Three slots, autosave every week, and export and import of save files.
 
-Beyoncé's and Lady Gaga's stories are mapped and can be previewed from the title screen. They become playable once Taylor's story has proved the systems. Dates and figures come from the design report and still need a card-by-card fact-check.
+**Three playable stories.** Pick Taylor Swift, Beyoncé or Lady Gaga when you start a new game. Each has a prologue, real eras with their real dates and song titles, public-record event cards, people, co-writers, era-by-era 3D looks (from Destiny's Child to Cowboy Carter, from the Fame bob to Mayhem), and real-success anchors for fans, first weeks, single peaks and tours. Tours without a confirmed real gross are sized from a rough estimate. All three share the world events, free play, the farewell tour and retirement, and each appears in the others' games as a real chart rival, with crossover cards such as the 2009 VMAs and the "Telephone" video. Lady Gaga's past assault appears only through her own public advocacy, as the design report set out. Dates and figures come from the design report and still need a card-by-card fact-check.
