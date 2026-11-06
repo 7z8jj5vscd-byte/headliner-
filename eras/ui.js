@@ -5,7 +5,7 @@ const $ = s => document.querySelector(s);
 const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const S = () => G.S();
 const UI = window.UI = { tab:'week', sel:{}, toast:null, newg:null };
-const TABS = [['week','This Week'],['town','Town'],['life','Life'],['songbook','Songbook'],['studio','Studio'],['rollout','Rollout'],['cover','Cover Studio'],['tour','Tour Desk'],['inbox','Team Inbox'],['eggs','Easter Eggs'],['fandom','Fandom'],['press','Press and People'],['charts','Charts and Awards'],['legacy','Legacy']];
+const TABS = [['week','Your Week'],['town','Town'],['life','Life'],['songbook','Songbook'],['studio','Studio'],['rollout','Rollout'],['cover','Cover Studio'],['tour','Tour Desk'],['inbox','Team Inbox'],['eggs','Easter Eggs'],['fandom','Fandom'],['press','Press and People'],['charts','Charts and Awards'],['legacy','Legacy']];
 const TABNAME = Object.fromEntries(TABS);
 const GROUPS = [['home', 'Home', ['week','inbox','town']], ['music', 'Music', ['songbook','studio','rollout','cover']], ['stage', 'Stage', ['tour','fandom','eggs']], ['career', 'Career', ['press','charts','legacy']], ['life', 'Life', ['life']]];
 const SVG = d => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -984,7 +984,7 @@ document.addEventListener('change', e => {
 });
 window.addEventListener('resize', () => { if (G.S() && UI.tab === 'week') mount3D('#t3stage', stageSpec(), 'main'); });
 // Helpers for add-on modules.
-Object.assign(UI, { h, card, bar, pill, modal, closeModals, mount3D, lookFor, showScene, sessionResult, VIEWS, ACT, stageName, coverSVG:UI.coverSVG, toast });
+Object.assign(UI, { h, card, bar, pill, modal, closeModals, mount3D, lookFor, showScene, sessionResult, VIEWS, ACT, stageName, coverSVG:UI.coverSVG, toast, primary, seasonCard, chartShow });
 UI.modalKinds = UI.modalKinds || {};
 UI.start = () => { title(); };
 })();

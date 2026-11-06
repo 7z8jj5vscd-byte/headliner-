@@ -59,11 +59,11 @@ VIEWS.week = function () { return recapStrip() + week0(); };
 
 /* ---------- Getting started ---------- */
 ER.GUIDE.splice(0, ER.GUIDE.length,
-  { id:'block', l:'Spend a Time Block on a task', hint:'Tap "Do" on a task. The squares at the top are your blocks for the week.' },
-  { id:'opt', l:'Open "Things you could do"', hint:'Optional tasks are folded away on This Week. Tap the heading to see them.' },
+  { id:'block', l:'Play a card', hint:'Tap a card in your hand to play it into your week. Cards marked Due must be played this week.' },
+  { id:'combo', l:'Trigger a combo', hint:'Some cards work together. Play a pair in the same week for a bonus. The combo chips show how close you are.' },
   { id:'scene', l:'Make a choice in a scene', hint:'Many tasks open a little scene with a choice.' },
   { id:'tab', l:'Visit another section', hint:'Use the bar at the bottom (or the sidebar on a computer). Sections unlock as the career grows.' },
-  { id:'advance', l:'Press Advance Week', hint:'Real events interrupt with a decision. Each card ends with what really happened. Settings has more story styles.' });
+  { id:'advance', l:'Press Advance Week', hint:'Wrap the week when you are done. Real events interrupt with a decision, and each one ends with what really happened.' });
 const opt0 = ACT.optopen; ACT.optopen = (d, el) => { opt0(d, el); if (S()) G.guideTick('opt'); };
 
 /* ---------- Phone polish ---------- */

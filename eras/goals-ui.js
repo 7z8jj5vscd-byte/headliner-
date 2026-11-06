@@ -39,7 +39,7 @@ ACT.yrshare = () => { const r = G.yearRecap(S().recapYear); recapImage(r).toBlob
 function scenCard() { const s = S(), x = s.scen; if (!x) return ''; const sc = ER.SCENARIOS.find(y => y.id === x.id); if (!sc) return ''; const best = G.scenBest()[x.id + ':' + s.artist];
   return card(`<div class="between"><span class="eyebrow">Scenario: ${h(sc.n)}</span>${x.done ? pill('Done', 'ok') : x.failed ? pill('Over') : pill(`${s.abs - x.start} weeks`)}</div><p class="small">${h(sc.goal)}.${x.done ? ` Finished in ${x.weeks} weeks.` : ''}${best ? ` Your best: ${best} weeks.` : ''}</p>`, 'world'); }
 const week0 = VIEWS.week;
-VIEWS.week = function () { const html = week0(), add = recapCard() + scenCard(); if (!add) return html; const i = html.indexOf('<div class="stagewrap'); return i < 0 ? add + html : html.slice(0, i) + add + html.slice(i); };
+VIEWS.week = function () { const html = week0(), add = recapCard() + scenCard(); if (!add) return html; const i = html.indexOf('<div class="actions">'); return i < 0 ? html + add : html.slice(0, i) + add + html.slice(i); };
 
 /* ---------- Legacy: score, ending, Hall of Fame ---------- */
 function hofRows(list) { return list.slice(0, 10).map((x, i) => `<div class="chart"><b>${i + 1}</b><div><b>${h(x.name)}</b><div class="small muted">${h(x.ending)} · ${x.year}${x.own ? ' · your own artist' : ''}</div></div><span class="small">${x.score}</span></div>`).join(''); }
