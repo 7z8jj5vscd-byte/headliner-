@@ -246,11 +246,14 @@ function counts(p) {
     const rec = all.filter(t => S.songs[t + " (Taylor's Version)"]).length;
     return { target:all.length, written:all.length, recorded:rec };
   }
-  const written = p.tracks.filter(t => S.songs[t]).length;
-  const recorded = p.tracks.filter(t => S.songs[t] && S.songs[t].st !== 'written').length;
-  return { target:p.tracks.length, written, recorded };
+  const tr = G.liveTracks(p);
+  const written = tr.filter(t => S.songs[t]).length;
+  const recorded = tr.filter(t => S.songs[t] && S.songs[t].st !== 'written').length;
+  return { target:tr.length, written, recorded };
 }
 G.counts = counts;
+// The album's songs, minus any you cut (cut songs can go in the vault).
+G.liveTracks = p => { const cut = (S.pj[p.id] && S.pj[p.id].cut) || []; return cut.length ? p.tracks.filter(t => !cut.includes(t)) : p.tracks; };
 
 /* ---------- Tasks ---------- */
 const T = (id, l, cost, o) => Object.assign({ id, l, cost, req:false, kind:'opt' }, o || {});
@@ -837,7 +840,7 @@ G.chartWeek = function (r, rivalTop) {
 };
 function doRelease(p) {
   const pj = G.pj(p.id), c = counts(p);
-  const songs = p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => S.songs[t + " (Taylor's Version)"]).filter(Boolean) : p.tracks.map(t => S.songs[t]).filter(x => x && x.st !== 'written');
+  const songs = p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => S.songs[t + " (Taylor's Version)"]).filter(Boolean) : G.liveTracks(p).map(t => S.songs[t]).filter(x => x && x.st !== 'written');
   let q = songs.length ? songs.reduce((a, x) => a + x.q, 0) / songs.length : 30;
   q *= .6 + .4 * (c.recorded / Math.max(1, c.target));
   q -= pj.missed * 3; q += (pj.qmod || 0);
@@ -1032,7 +1035,7 @@ G.freeNominations = function () {
 /* ---------- The vault ---------- */
 // Songs you wrote that did not make an album can be saved to the vault and released later.
 G.vaultable = () => Object.keys(S.songs).filter(t => { const so = S.songs[t]; if (so.saved || so.tv) return false; const p = G.proj(so.p);
-  return so.st !== 'released' && p && G.pj(p.id).released && !p.tracks.includes(t); });
+  return so.st !== 'released' && p && G.pj(p.id).released && !G.liveTracks(p).includes(t); });
 G.saveToVault = t => { const so = S.songs[t]; if (!so) return; so.saved = S.abs; G.journalAdd(`"${t}" goes in the vault`, 'One day, maybe.'); };
 G.vaultSongs = () => Object.keys(S.songs).filter(t => S.songs[t].saved && S.songs[t].st !== 'released');
 G.releaseVault = function (titles) {
