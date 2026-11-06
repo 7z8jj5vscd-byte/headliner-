@@ -8,6 +8,19 @@ const app = () => $('#app');
 let tab = 'plan', setup = { mode:'real', focus:'sophia' };
 try { tab = localStorage.getItem('da-tab') || 'plan'; } catch (e) {}
 const S = () => G.S();
+/* Device settings (not part of a save). */
+const SET = Object.assign({ gfx:'high', vol:.8, music:true, text:'m', calm:false, statsOnly:false, tips:true }, (() => { try { return JSON.parse(localStorage.getItem('da-settings')) || {}; } catch (e) { return {}; } })());
+try { if (matchMedia('(prefers-reduced-motion: reduce)').matches && localStorage.getItem('da-settings') == null) SET.calm = true; } catch (e) {}
+function applySet() {
+  try { localStorage.setItem('da-settings', JSON.stringify(SET)); } catch (e) {}
+  if (window.S3) { S3.gfx = SET.gfx; S3.calm = SET.calm; }
+  if (window.MG) { MG.setVol(SET.vol); MG.statsOnly = SET.statsOnly; }
+  document.body.classList.toggle('t-s', SET.text === 's'); document.body.classList.toggle('t-l', SET.text === 'l'); document.body.classList.toggle('calm', SET.calm);
+}
+applySet();
+let musicOn = false;
+document.addEventListener('pointerdown', () => { if (!musicOn && SET.music && window.MG) { musicOn = true; MG.music(true); } }, { once:false });
+let logKind = 'all', logWho = 'all', undoSnap = null;
 
 /* ---------- Avatars: stylized busts drawn from each person's look ---------- */
 const ERA_COL = { 'Bright Pop':'#d9a441', 'Dance Break':'#c2413b', 'Girl Crush':'#3b3f8f', 'Soft Ballad':'#8a9bb0', 'Experimental':'#5d8a3a', 'Y2K Revival':'#b84f9c',
@@ -85,6 +98,11 @@ function toast(t) { let el = $('.toast'); if (!el) { el = document.createElement
 
 /* ---------- Title and setup ---------- */
 UI.start = () => { if (G.load()) title(true); else title(false); };
+function slotsHtml() {
+  return '<div class="slots">' + G.slots().map(x => '<div class="slot' + (x.n === G.slot() ? ' cur' : '') + '"><div><b>Slot ' + x.n + '</b><span class="small faint">' +
+    (x.month ? 'Month ' + pad3(x.month) + ' · ' + esc(G.name(x.focus)) + (x.group ? ' · ' + esc(x.group) : '') + ' · ' + esc(G.DIFF[x.diff].l) + (x.ended ? ' · ended' : '') : 'Empty') + '</span></div>' +
+    (x.month ? '<button class="btn sm" data-slot="' + x.n + '">Play</button>' : '<button class="btn sm ghost" data-newslot="' + x.n + '">New</button>') + '</div>').join('') + '</div>';
+}
 function title(hasSave) {
   app().innerHTML = '<section class="title">' +
     '<div class="slate"><span class="rec">REC</span><span class="mono">TAPE 01 · FAN-MADE</span></div>' +
@@ -92,15 +110,22 @@ function title(hasSave) {
     '<p class="lead">120,000 auditions. Twenty trainees. Three missions, one live finale, six names. Then the hard part: twelve years of being a group.</p>' +
     '<div class="stage3d title3d" id="t3d"></div>' +
     '<div class="cast-strip">' + D.cast.map(c => av(c.id, 44)).join('') + '</div>' +
-    (hasSave ? '<button class="btn big" data-a="continue">Continue · Month ' + S().month + '</button>' : '') +
-    '<button class="btn big ' + (hasSave ? 'ghost' : '') + '" data-a="new">New run</button>' +
+    (hasSave ? '<button class="btn big" data-a="continue">Continue · Slot ' + G.slot() + ' · Month ' + S().month + '</button>' : '') +
+    '<button class="btn big ' + (hasSave ? 'ghost' : '') + '" data-a="new">New run in slot ' + G.slot() + '</button>' +
+    '<h3>Save slots</h3>' + slotsHtml() +
+    '<button class="btn ghost sm" data-a="settings">Settings</button>' +
     '<p class="notice">Unofficial fan game. Not affiliated with HYBE, Geffen, Netflix or any of the people in it. It uses real names and stylized looks; songs, eras, scores and drama are invented, and it never invents bullying, scandals or health crises for anyone.</p>' +
     '</section>';
   if (window.S3) { const c = S3.attach($('#t3d'), 'title', { set:'stage', orbit:true, light:'#f0b44c', tint:'#e5484d',
       cast:D.cast.filter(c => c.real).map((c, i) => ({ id:c.id, look:c.look, outfit:'#c2413b', pants:i % 2 === 0 })) }); if (c) c.dance(true, 112); }
-  app().onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return;
+  app().onclick = e => {
+    const sl = e.target.closest('[data-slot]'), ns = e.target.closest('[data-newslot]');
+    if (sl) { G.setSlot(+sl.dataset.slot); if (G.load()) game(); return; }
+    if (ns) { G.setSlot(+ns.dataset.newslot); setupScreen(); return; }
+    const a = e.target.closest('[data-a]'); if (!a) return;
     if (a.dataset.a === 'continue') game();
-    if (a.dataset.a === 'new') setupScreen(); };
+    if (a.dataset.a === 'new') { if (hasSave && !confirm('Start a new run in slot ' + G.slot() + '? The current run there will be replaced.')) return; setupScreen(); }
+    if (a.dataset.a === 'settings') settingsSheet(); };
 }
 function setupScreen() {
   const c = D.cast;
@@ -111,16 +136,18 @@ function setupScreen() {
       '<button class="choice ' + (setup.mode === 'real' ? 'on' : '') + '" data-mode="real"><b>Real result</b><span>Eliminations and the final six follow the real show. You shape everything else.</span></button>' +
       '<button class="choice ' + (setup.mode === 'open' ? 'on' : '') + '" data-mode="open"><b>Open result</b><span>Scores and votes decide who goes home and who debuts.</span></button>' +
     '</div>' +
+    '<h2>Difficulty</h2><div class="seg three">' + Object.keys(G.DIFF).map(k => '<button class="choice ' + ((setup.diff || 'normal') === k ? 'on' : '') + '" data-diff="' + k + '"><b>' + G.DIFF[k].l + '</b><span>' + esc(G.DIFF[k].d) + '</span></button>').join('') + '</div>' +
     '<h2>Who do the cameras follow?</h2><p class="muted small">Your focus member. You can switch to any trainee and plan her month at any time.</p>' +
     '<div class="pickgrid">' + c.map(x => '<button class="pick ' + (setup.focus === x.id ? 'on' : '') + '" data-f="' + x.id + '">' + av(x.id, 56) + '<b>' + esc(x.first) + '</b><span>' + esc(x.from) + '</span></button>').join('') + '</div>' +
     '<button class="btn big" data-a="go">Start: Month 001</button>' +
     '</section>';
   app().onclick = e => {
-    const m = e.target.closest('[data-mode]'), f = e.target.closest('[data-f]'), a = e.target.closest('[data-a]');
+    const m = e.target.closest('[data-mode]'), f = e.target.closest('[data-f]'), a = e.target.closest('[data-a]'), dd = e.target.closest('[data-diff]');
+    if (dd) { setup.diff = dd.dataset.diff; setupScreen(); return; }
     if (m) { setup.mode = m.dataset.mode; setupScreen(); }
     else if (f) { setup.focus = f.dataset.f; setupScreen(); }
     else if (a && a.dataset.a === 'back') title(G.hasSave() && G.load());
-    else if (a && a.dataset.a === 'go') { G.newGame(setup); G.save(); tab = 'plan'; game(); }
+    else if (a && a.dataset.a === 'go') { G.newGame(setup); try { localStorage.removeItem('dreamacademy-save-v1' + (G.slot() === 1 ? '' : '-s' + G.slot()) + '-prev'); } catch (x) {} G.save(); tab = 'plan'; game(); }
   };
 }
 
@@ -145,15 +172,17 @@ function tabs() {
 function render() {
   const s = S(); if (!s) return title(false);
   const ch = G.ch();
-  const body = ({ plan:planTab, cast:castTab, drama:dramaTab, feed:feedTab, charts:chartsTab, story:storyTab, log:logTab })[tab] || planTab;
+  const tipHtml = tipFor();
+  const body0 = ({ plan:planTab, cast:castTab, drama:dramaTab, feed:feedTab, charts:chartsTab, story:storyTab, log:logTab })[tab] || planTab;
   const waiting = s.queue.length;
+  const body = () => tipHtml + body0();
   app().innerHTML =
     '<header class="top"><div class="between"><div><span class="rec">REC</span> <span class="mono date">MONTH ' + pad3(s.month) + '<span class="faint">/144</span></span></div>' +
     '<div class="row"><div class="chap mono">CH ' + ch.n + '<br>' + esc(ch.name.toUpperCase()) + '</div><button class="btn ghost sm" data-a="menu">Menu</button></div></div>' + stats() + '</header>' + tabs() +
     '<main>' + body() + '</main>' +
     '<footer class="foot">' + (s.ended ? '<button class="btn big" data-a="final">The final numbers</button>'
       : waiting ? '<button class="btn big warnbtn" data-a="next">' + waiting + ' decision' + (waiting > 1 ? 's' : '') + ' waiting</button>'
-      : '<button class="btn big" data-a="advance">Advance to month ' + pad3(s.month + 1) + '</button>') + '</footer>';
+      : '<div class="footrow"><button class="btn big" data-a="advance">Advance to month ' + pad3(s.month + 1) + '</button><button class="btn big ghost skipbtn" data-a="skip" title="Advance until something happens (up to 6 months)" aria-label="Skip quiet months">⏩</button></div>') + '</footer>';
   app().onclick = onClick;
   app().onchange = onChange;
   const el = $('#p3d');
@@ -161,6 +190,24 @@ function render() {
   G.takeTrophies().forEach((id, k) => { const t = D.trophies.find(x => x[0] === id); if (t) setTimeout(() => toast('Trophy: ' + t[1]), 400 + k * 2600); });
 }
 UI.render = render;
+
+/* Tutorial tips: shown once each, at the top of the tab they explain. */
+const TIPS = [
+  ['plan', 'plan', () => true, 'Each month, pick what every trainee works on. Your focus member is planned by hand; others run on autoplay styles you can change. Then press Advance.'],
+  ['train', 'plan', () => G.cast().some(G.canTrain), '"Train now" plays this month\'s lesson as a mini-game. A good score multiplies her gains for the month, up to ×1.7.'],
+  ['eval', 'plan', () => S().month >= 4 && S().month <= 30, 'From month 4, every month ends with an eval. On eval day you choose a skill to show the coaches. The bottom three get a warning.'],
+  ['practice', 'plan', () => S().month >= 5, 'The Practice room gives two free extra sessions a month. Use them on the skills that hold someone back.'],
+  ['drama', 'drama', () => S().tensions.length > 0, 'Tensions heat up every month nobody deals with them. Sitting them down works best when their bond is decent.'],
+  ['feed', 'feed', () => !!S().hate, 'A hate train costs momentum, fans and Wellbeing. If the group did nothing wrong, silence often works. A bad apology makes it worse.'],
+  ['group', 'plan', () => G.debuted(), 'Now there is a group schedule. Record to build prep, release at 60 (single) or 85 (EP), promote and tour while the song is fresh, and rest before people break.'],
+  ['story', 'story', () => true, 'This tab compares your run with the real group\'s first years. Match or beat 8 beats for a trophy.'],
+  ['skip', 'plan', () => S().month >= 6, 'The ⏩ button skips quiet months and stops as soon as something needs you.'],
+];
+function tipFor() {
+  const s = S(); if (!SET.tips) return '';
+  const t = TIPS.find(x => x[1] === tab && !s.tips[x[0]] && x[2]());
+  return t ? '<section class="card tip"><div class="between"><span class="eyebrow">Tip</span><button class="btn ghost sm" data-tip="' + t[0] + '">Got it</button></div><p class="small">' + esc(t[3]) + '</p></section>' : '';
+}
 
 /* Plan */
 const ACT_SHORT = { vo:'Vocal', da:'Dance', ra:'Rap', pe:'Stage', so:'Write', ch:'Fans', bond:'Bond', rest:'Rest', solo:'Solo' };
@@ -181,7 +228,7 @@ function planTab() {
   h = '<section class="card room"><div class="stage3d" id="p3d"></div><div class="between roomrow"><div><b>Practice room</b><div class="small muted">Free sessions this month: ' + s.practice + ' of 2. Drag to look around.</div></div>' +
     '<button class="btn sm" data-a="practice" ' + (s.practice > 0 && G.working().length ? '' : 'disabled') + '>Practice</button></div></section>' + h;
   const ids = G.cast().slice().sort((a, b) => (b === s.focus) - (a === s.focus) || (s.ctrl[b] === 'manual') - (s.ctrl[a] === 'manual'));
-  h += '<section class="card"><h3>This month</h3>' + ids.map(id => planRow(id)).join('') + '</section>';
+  h += '<section class="card"><div class="between"><h3>This month</h3><select class="ctrl" data-bulk aria-label="Set every autoplayed member"><option value="">Set all autoplay…</option>' + Object.keys(D.styles).map(k => '<option value="' + k + '">' + D.styles[k].l + '</option>').join('') + '</select></div>' + ids.map(id => planRow(id)).join('') + '</section>';
   return h;
 }
 function planRow(id) {
@@ -338,8 +385,11 @@ function practiceSheet(sel) {
 
 /* Log */
 function logTab() {
-  const s = S();
-  return '<section class="card"><h3>Production log</h3>' + s.log.slice(0, 160).map(l => '<div class="logrow k-' + l.kind + '"><span class="mono faint small">M' + pad3(l.m) + '</span> ' + esc(l.t) + '</div>').join('') + '</section>';
+  const s = S(), kinds = [['all','All'],['story','Story'],['show','Show'],['eval','Evals'],['drama','Drama'],['release','Releases'],['hate','Backlash']];
+  const rows = s.log.filter(l => (logKind === 'all' || l.kind === logKind || (logKind === 'story' && l.kind === 'chapter')) && (logWho === 'all' || l.t.indexOf(G.name(logWho)) >= 0));
+  return '<section class="card"><h3>Production log</h3><div class="chips">' + kinds.map(([k, l]) => '<button class="chip ' + (logKind === k ? 'on' : '') + '" data-logk="' + k + '">' + l + '</button>').join('') + '</div>' +
+    '<label class="field inline"><span>Member</span><select data-logwho><option value="all">Everyone</option>' + s.order.map(id => '<option value="' + id + '"' + (logWho === id ? ' selected' : '') + '>' + esc(G.name(id)) + '</option>').join('') + '</select></label>' +
+    (rows.length ? '' : '<p class="small muted">Nothing here yet.</p>') + rows.slice(0, 200).map(l => '<div class="logrow k-' + l.kind + '"><span class="mono faint small">M' + pad3(l.m) + '</span> ' + esc(l.t) + '</div>').join('') + '</section>';
 }
 
 /* ---------- Sheets ---------- */
@@ -386,6 +436,7 @@ function playScene(sc, head) {
       who.innerHTML = sp === 'N' ? '<span class="narr mono">NARRATION</span>' : speakerAv(sp, 30) + '<b>' + esc(G.speaker(sp)) + '</b>' + (D.npcs[sp] && D.npcs[sp].role ? '<span class="small faint">' + esc(D.npcs[sp].role) + '</span>' : '');
       tx.className = 'scn-t' + (sp === 'N' ? ' narr' : '');
       clearInterval(typing); let c = 0; tx.textContent = '';
+      if (SET.calm) { tx.textContent = text; tx.dataset.full = text; return; }
       typing = setInterval(() => { c += 2; tx.textContent = text.slice(0, c); if (c >= text.length) { clearInterval(typing); typing = null; } }, 16);
       tx.dataset.full = text;
     }
@@ -411,6 +462,7 @@ function openEvent(ev, temp) {
     (v.note ? '<p class="small faint">' + esc(v.note) + '</p>' : '') +
     '<div class="stack tight">' + v.choices.map((c, i) => '<button class="choice" data-ch="' + i + '"><b>' + esc(c[0]) + '</b>' + (c[1] ? '<span>' + esc(c[1]) + '</span>' : '') + '</button>').join('') + '</div>',
     { lock:!temp, cls:ev.kind === 'archive' ? 'archive' : ev.kind === 'hate' ? 'hatem' : '' });
+  const snapBefore = G.snap();
   m.onclick = async e => {
     const b = e.target.closest('[data-ch]');
     if (!b) { if (temp && (e.target === m || e.target.closest('[data-a="close"]'))) closeSheet(); return; }
@@ -418,16 +470,17 @@ function openEvent(ev, temp) {
     let acc = null;
     const games = v.games || (v.perform ? ['live', null] : null), kind = games && games[i];
     if (kind) { m.style.display = 'none'; acc = await runGame(kind, mgOpts(v, kind)); m.style.display = ''; if (acc == null && v.perform) acc = null; }
+    undoSnap = !temp && S().diff !== 'hard' && !['archive','info','ending'].includes(ev.kind) ? snapBefore : null;
     const out = G.choose(ev, i, acc);
     if (temp) { const s = S(); s.queue = s.queue.filter(x => !(x.kind === ev.kind && (ev.tid ? x.tid === ev.tid : true))); G.save(); }
     if (out) result(out, acc, () => { closeSheet(); render(); if (!temp) nextEvent(); });
-    else { closeSheet(); render(); if (!temp) nextEvent(); }
+    else { undoSnap = null; closeSheet(); render(); if (!temp) nextEvent(); }
   };
 }
 function result(text, acc, cb) {
   const parts = String(text).split('\n');
-  const m = sheet((acc != null ? '<span class="eyebrow">Score ' + Math.round(acc * 100) + '%</span>' : '') + '<p class="big">' + esc(parts[0]) + '</p>' + parts.slice(1).map(x => '<p class="judge">' + esc(x) + '</p>').join('') + '<button class="btn big" data-a="ok">Continue</button>', { lock:true });
-  m.onclick = e => { if (e.target.closest('[data-a="ok"]')) cb(); };
+  const m = sheet((acc != null ? '<span class="eyebrow">Score ' + Math.round(acc * 100) + '%</span>' : '') + '<p class="big">' + esc(parts[0]) + '</p>' + parts.slice(1).map(x => '<p class="judge">' + esc(x) + '</p>').join('') + '<button class="btn big" data-a="ok">Continue</button>' + (undoSnap ? '<button class="btn ghost sm undo" data-a="undo">Undo this choice</button>' : ''), { lock:true });
+  m.onclick = e => { if (e.target.closest('[data-a="ok"]')) { undoSnap = null; cb(); } if (e.target.closest('[data-a="undo"]')) { G.restore(undoSnap); undoSnap = null; closeSheet(); render(); nextEvent(); toast('Choice undone.'); } };
 }
 function nextEvent() {
   const s = S(); if (!s) return;
@@ -461,7 +514,7 @@ function finalScreen() {
     '<div class="grid2"><div><b>' + G.fmt(s.group.fans) + '</b><span>fans</span></div><div><b>' + s.group.releases.length + '</b><span>releases</span></div><div><b>' + (s.rec.best > 100 ? '—' : '#' + s.rec.best) + '</b><span>best chart peak</span></div><div><b>' + s.rec.wins + '</b><span>awards won</span></div>' +
     '<div><b>' + s.rec.no1 + '</b><span>No. 1s</span></div><div><b>' + G.cohesion(G.members().concat(s.alumni)) + '</b><span>cohesion</span></div></div>' +
     '<div class="cast-strip">' + G.members().concat(s.alumni).map(id => av(id, 48)).join('') + '</div>' +
-    '<button class="btn big" data-a="newrun">New run</button><button class="btn big ghost" data-a="close">Look around</button>');
+    '<button class="btn big" data-a="share">Save a share card</button><button class="btn big ghost" data-a="newrun">New run</button><button class="btn big ghost" data-a="close">Look around</button>');
 }
 
 /* Menu. */
@@ -470,6 +523,10 @@ function menu() {
   sheet('<span class="eyebrow">Menu</span><h2>' + esc(s.group.formed ? s.group.name : 'Dream Academy') + '</h2>' +
     '<label class="toggle"><input type="checkbox" data-set="askAll"' + (s.settings.askAll ? ' checked' : '') + '><span>Ask me about every tension, even between autoplayed members</span></label>' +
     '<div class="stack tight">' +
+    '<button class="choice" data-a="settings"><b>Settings</b><span>Graphics, sound, text size, motion, mini-games, tips</span></button>' +
+    (G.canRewind() ? '<button class="choice" data-a="rewind"><b>Rewind one month</b><span>Go back to the start of last month</span></button>' : '') +
+    '<button class="choice" data-a="glossary"><b>Glossary</b><span>What every stat and system means</span></button>' +
+    '<button class="choice" data-a="share"><b>Share card</b><span>Save an image of this run</span></button>' +
     '<button class="choice" data-a="export"><b>Export save</b><span>Copy a save code to keep or move to another device</span></button>' +
     '<button class="choice" data-a="import"><b>Import save</b><span>Paste a save code</span></button>' +
     (s.month >= 100 && !s.ended ? '<button class="choice" data-a="endnow"><b>Write the final chapter</b><span>End the story now and see the ending</span></button>' : '') +
@@ -481,6 +538,62 @@ function about() {
     '<p>An unofficial fan game, not affiliated with HYBE, Geffen, Netflix or any of the people in it. It follows the shape of the real story, from the 2021 open call through The Debut: Dream Academy (2023) and the group\'s first years, then invents the future.</p>' +
     '<p class="small">Real: names, where each contestant is from, how they left the show, the real finale scores, and the dated archive cards. Invented: every song, era, chart, eval, skill number, quote and drama. Drama stays in the style of a survival show: rivalries, line distribution, cliques, misunderstandings. The game never invents bullying, betrayal, crimes, scandals or health crises, hate trains never target one member by name, and anyone who was a minor on the show only gets light, competitive drama.</p>' +
     '<p class="small faint">Sources for the real timeline: Wikipedia (Dream Academy), Wikiwand (Katseye), generasia, TheWrap and news reports, as collected in the design report.</p>');
+}
+
+function settingsSheet() {
+  const seg = (key, opts) => '<div class="chips">' + opts.map(([v, l]) => '<button class="chip ' + (SET[key] === v ? 'on' : '') + '" data-setk="' + key + '" data-setv="' + v + '">' + l + '</button>').join('') + '</div>';
+  const tg = (key, l) => '<label class="toggle"><input type="checkbox" data-sett="' + key + '"' + (SET[key] ? ' checked' : '') + '><span>' + l + '</span></label>';
+  sheet('<span class="eyebrow">Settings</span><h2>Settings</h2><p class="small faint">Saved on this device for every slot.</p>' +
+    '<h3>Graphics</h3>' + seg('gfx', [['high','High'],['low','Low (faster)'],['off','No 3D']]) +
+    '<h3>Sound</h3><label class="field"><span>Volume ' + Math.round(SET.vol * 100) + '%</span><input type="range" min="0" max="1" step=".05" value="' + SET.vol + '" data-vol></label>' + tg('music', 'Background music') +
+    '<h3>Text size</h3>' + seg('text', [['s','Small'],['m','Medium'],['l','Large']]) +
+    '<h3>Comfort</h3>' + tg('calm', 'Reduce motion (no camera cuts or orbiting, instant dialogue)') + tg('statsOnly', 'Skip every mini-game and resolve it from stats') + tg('tips', 'Show tutorial tips') +
+    (S() ? '<button class="btn ghost sm" data-a="resettips">Show all tips again</button>' : ''));
+}
+function glossary() {
+  const rows = [['Skills', 'Vocal, Dance, Rap, Performance, Songwriting and Charisma, 0 to 99. Lessons and practice raise them; they drive every stage score.'],
+    ['Wellbeing (WB)', 'Below 45 training slows, below 25 she struggles on stage and a break is suggested. Rest, breaks and good bonds restore it.'],
+    ['Fan Favor', 'How much fans love her personally. It decides survival show votes and grows with content, fansigns and great stages.'],
+    ['Bond and cohesion', 'Bond is how two people get on (−50 to 50). Cohesion is the average bond in the group. Close groups survive drama and backlash.'],
+    ['Evals', 'Monthly grades from D to A+ during training and pre-debut, based on skill level, growth and your eval-day stage.'],
+    ['Tensions and heat', 'Drama between two people. Heat rises every month nobody deals with it, up to a blowup at 5.'],
+    ['Momentum', 'How hot the group is right now. Releases, promotion, tours and viral moments raise it; it fades every month.'],
+    ['Label pressure', 'How much the label wants. High pressure brings demands and more backlash risk.'],
+    ['Prep', 'How ready the next release is. 60 for a single, 85 for an EP.'],
+    ['Hate train', 'Backlash aimed at the group, in five stages from Whispers to Peak backlash.'],
+    ['Positions', 'Leader, main vocal, main dancer, main rapper and center. Each trains its skill 15% faster.'],
+    ['Difficulty', 'Easy trains faster with kinder charts; Hard trains slower, charts are tougher, and rewind and undo are off.']];
+  sheet('<span class="eyebrow">Glossary</span><h2>How it all works</h2>' + rows.map(([t, d]) => '<div class="logrow"><b>' + esc(t) + '</b><p class="small muted">' + esc(d) + '</p></div>').join(''));
+}
+function shareCard() {
+  const s = S(), c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
+  const g = c.getContext('2d');
+  g.fillStyle = '#0d0e10'; g.fillRect(0, 0, 1080, 1350);
+  g.fillStyle = '#e5484d'; g.beginPath(); g.arc(96, 110, 16, 0, 7); g.fill();
+  g.font = '700 30px monospace'; g.fillText('REC · DREAM ACADEMY: STORY MODE', 128, 121);
+  g.fillStyle = '#ecebe6'; g.font = '700 92px Georgia, serif'; g.fillText(s.group.formed ? s.group.name : 'Trainee year', 80, 290);
+  g.font = '500 40px Georgia, serif'; g.fillStyle = '#a5a7ad'; g.fillText('Month ' + s.month + ' of 144 · ' + G.DIFF[s.diff || 'normal'].l + (s.ended ? ' · ' + D.endings[s.ended].t : ''), 80, 360);
+  const stat = [['Fans', G.fmt(s.group.fans)], ['Best chart peak', s.rec.best > 100 ? '—' : '#' + s.rec.best], ['No. 1s', s.rec.no1], ['Awards', s.rec.wins], ['Music show wins', s.rec.showWins || 0], ['Trophies', Object.keys(s.trophies).length + ' / ' + D.trophies.length]];
+  stat.forEach(([l, v], i) => { const x = 80 + (i % 2) * 480, y = 470 + Math.floor(i / 2) * 190; g.fillStyle = '#16181c'; g.fillRect(x, y, 440, 160); g.fillStyle = '#ecebe6'; g.font = '700 64px monospace'; g.fillText(String(v), x + 30, y + 90); g.fillStyle = '#73777f'; g.font = '500 28px sans-serif'; g.fillText(l, x + 30, y + 135); });
+  g.fillStyle = '#ecebe6'; g.font = '600 34px Georgia, serif';
+  const who = (G.members().length ? G.members() : G.cast()).map(G.name).join(' · ');
+  g.fillText(who.length > 52 ? who.slice(0, 50) + '…' : who, 80, 1080);
+  g.fillStyle = '#73777f'; g.font = '500 24px sans-serif'; g.fillText('Unofficial fan game. Songs, charts and drama are invented.', 80, 1250);
+  c.toBlob(b => {
+    const file = new File([b], 'dream-academy-run.png', { type:'image/png' });
+    if (navigator.canShare && navigator.canShare({ files:[file] })) { navigator.share({ files:[file], title:'My Dream Academy run' }).catch(() => {}); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'dream-academy-run.png'; document.body.appendChild(a); a.click(); a.remove();
+    toast('Share card saved.');
+  });
+}
+function skipMonths() {
+  const s = S(); let last = null; const lines = [], chart = []; let n = 0;
+  for (let i = 0; i < 6; i++) { const R = G.advance(); if (!R) break; n++; last = R; lines.push(...R.lines.map(l => 'M' + pad3(R.m) + ': ' + l)); chart.push(...R.chart); if (S().queue.length || S().ended) break; }
+  if (!last) return;
+  render();
+  if (n > 1) { last.lines = ['Skipped ' + n + ' months.'].concat(lines); last.chart = chart.slice(-4); last.fans0 = last.fans0; }
+  report(last);
+  void s;
 }
 
 /* ---------- Input ---------- */
@@ -498,10 +611,19 @@ function onClick(e) {
   const ps = e.target.closest('[data-psel]'); if (ps) { practiceSheet(ps.dataset.psel); return; }
   const pk = e.target.closest('[data-pk]'); if (pk) { const id = pk.dataset.id, k = pk.dataset.pk; closeSheet();
     runGame(G.MG_KIND[k], { cast:cast3([id]), skill:G.avg(id) }).then(acc => { const g = G.practice(id, k, acc); G.save(); render(); if (g) toast(G.name(id) + ': ' + D.skills.find(x => x.k === k).l + ' +' + g); }); return; }
+  const tp = e.target.closest('[data-tip]'); if (tp) { s.tips[tp.dataset.tip] = 1; G.save(); render(); return; }
+  const lk2 = e.target.closest('[data-logk]'); if (lk2) { logKind = lk2.dataset.logk; render(); return; }
+  const sk = e.target.closest('[data-setk]'); if (sk) { SET[sk.dataset.setk] = sk.dataset.setv; applySet(); if (sk.dataset.setk === 'gfx' && window.S3) S3.release(); settingsSheet(); if (document.querySelector('#app .top')) render(); return; }
   const a = e.target.closest('[data-a]'); if (!a) return;
   const id = a.dataset.id;
   switch (a.dataset.a) {
     case 'advance': { const R = G.advance(); if (R) { render(); report(R); } break; }
+    case 'skip': skipMonths(); break;
+    case 'settings': settingsSheet(); break;
+    case 'glossary': glossary(); break;
+    case 'share': shareCard(); break;
+    case 'rewind': if (G.rewind()) { closeSheet(); render(); nextEvent(); toast('Back to month ' + S().month + '.'); } break;
+    case 'resettips': S().tips = {}; G.save(); closeSheet(); render(); toast('Tips will show again.'); break;
     case 'next': nextEvent(); break;
     case 'final': finalScreen(); break;
     case 'menu': menu(); break;
@@ -532,6 +654,14 @@ function onChange(e) {
   const c = e.target.closest('[data-ctrl]'); if (c) { G.setCtrl(c.dataset.ctrl, c.value); G.save(); render(); return; }
   const p = e.target.closest('[data-partner]'); if (p) { s.partner[p.dataset.partner] = p.value; G.save(); return; }
   const st = e.target.closest('[data-set]'); if (st) { s.settings[st.dataset.set] = st.checked; G.save(); }
+  const bk = e.target.closest('[data-bulk]'); if (bk && bk.value) { G.cast().forEach(id => { if (s.ctrl[id] !== 'manual') G.setCtrl(id, bk.value); }); G.save(); render(); toast('Every autoplayed member is now ' + D.styles[bk.value].l + '.'); return; }
+  const lw = e.target.closest('[data-logwho]'); if (lw) { logWho = lw.value; render(); return; }
 }
-document.addEventListener('change', e => { if (e.target.closest('.modal')) onChange(e); });
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches && t.matches('[data-sett]')) { SET[t.dataset.sett] = t.checked; applySet(); if (t.dataset.sett === 'music' && window.MG) { MG.music(SET.music); musicOn = SET.music; } if (document.querySelector('#app .top')) render(); return; }
+  if (t.matches && t.matches('[data-vol]')) { SET.vol = +t.value; applySet(); return; }
+  if (t.closest('.modal')) onChange(e);
+});
+
 })();
