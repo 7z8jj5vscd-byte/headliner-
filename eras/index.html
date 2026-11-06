@@ -23,6 +23,8 @@
  --serif:"Fraunces",Georgia,serif;--sans:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--r:14px}
 *{box-sizing:border-box}
 html{background:var(--ground);-webkit-text-size-adjust:100%}
+html.hi-contrast{--ground:#000;--surface:#0b0b0b;--raised:#161616;--rule:#7a7a7a;--text:#fff;--muted:#e6e6e6;--faint:#cfcfcf}
+html.hi-contrast .btn:not(.ghost),html.hi-contrast .chip.on,html.hi-contrast .tab.on{outline:2px solid #fff}
 html.big-text body{font-size:16px}html.big-text .small{font-size:14px}html.huge-text body{font-size:18px}html.huge-text .small{font-size:15.5px}
 body{margin:0;background:radial-gradient(1200px 600px at 50% -200px,color-mix(in srgb,var(--era) 28%,transparent),transparent 70%),var(--ground);color:var(--text);font:14px/1.5 var(--sans);min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.4;cursor:not-allowed}
@@ -119,10 +121,13 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 <script src="data-shows.js?v=13"></script>
 <script src="data-callbacks.js?v=1"></script>
 <script src="data-goals.js?v=1"></script>
+<script src="data-more.js?v=1"></script>
 <script src="sound.js?v=1"></script>
-<script src="stage3d.js?v=14"></script>
-<script src="engine.js?v=20"></script>
-<script src="ui.js?v=20"></script>
+<script src="stage3d.js?v=21"></script>
+<script src="engine.js?v=21"></script>
+<script src="extras.js?v=1"></script>
+<script src="ui.js?v=21"></script>
+<script src="ui-more.js?v=1"></script>
 <script>UI.narrow = window.matchMedia('(max-width:560px)').matches; window.matchMedia('(max-width:560px)').addEventListener('change', e => { UI.narrow = e.matches; if (G.S()) UI.render(); }); UI.start();</script>
 </body>
 </html>

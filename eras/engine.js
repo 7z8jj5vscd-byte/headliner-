@@ -392,6 +392,7 @@ G.doTask = function (id, arg) {
   }
   S.week.used += t.cost; S.week.done[id] = true; G.guideTick('block');
   G.seasonTick({ write:'songs', early:t.early === 'notebook' ? 'songs' : '', fanevent:'fanevents', livestream:'fanevents', rest:'rest', interview:'interviews' }[t.kind] || '');
+  G.hooks.task.forEach(f => { try { f(t, arg); } catch (x) {} });
   if (over > 0) { applyFx({ energy:-8 * over }); msg += ` Overtime cost ${8 * over} Energy.`; }
   return { ok:true, msg };
 };
@@ -701,6 +702,7 @@ function startWeek() {
     if (old.length) { const song = pick(old), m = pick(ER.MEMORIES); inbox('fans', m.t.replace('{song}', song), m.x.replace(/\{song\}/g, song), { memory:ER.MEMORIES.indexOf(m), song }); } }
   if (S.flags.free && !S.flags.retired && ER.yw(a).w === 6 && S.awardsYear !== ER.yw(a).y) { S.awardsYear = ER.yw(a).y; const n = G.freeNominations(); if (n.length) S.modal.push({ k:'honours', y:ER.yw(a).y, noms:n }); }
   if (S.challenge) G.checkChallenge();
+  G.hooks.week.forEach(f => { try { f(a); } catch (x) {} });
   (S.callbacks || []).filter(c => c.at <= a).forEach(c => { const cb = ER.CALLBACKS[c.k][c.good ? 'good' : 'bad']; applyFx(cb.fx);
     inbox(c.good ? 'publicist' : 'manager', cb.s, `${cb.x} (A follow-up to "${c.t}".)`); G.journalAdd(cb.s, cb.x); });
   S.callbacks = (S.callbacks || []).filter(c => c.at > a);
@@ -728,6 +730,7 @@ G.answer = function (id, ci) {
   if (e.id === 'wipe') { S.flags.wiped = S.abs; S.flags.hidden = false; S.flags.hiddenDone = true; }
   if (e.id === 'surpriseguests') S.flags.surpriseGuests = true;
   S.log.push({ abs:S.abs, id, t:e.t, l:c.l, canon:!!c.c, s:!!e.s, world:!!e.world, truth:e.truth, real:(e.ch.find(x => x.c) || {}).l });
+  G.hooks.answer.forEach(f => { try { f(e, c, ci); } catch (x) {} });
   S.week.pending = S.week.pending.filter(x => x !== id);
   return { r:c.r, truth:e.truth };
 };
@@ -843,7 +846,8 @@ function doRelease(p) {
   const genreGap = Math.abs(S.stats.genre - (p.genre || S.stats.genre));
   const perf = .36 * q / 100 + .22 * clamp(pj.hype + cover / 5, 0, 100) / 100 + .2 * S.stats.rep / 100 + .1 * S.stats.team / 100 + .12 * (1 - genreGap / 100);
   const f = p.units ? clamp(.4 + .9 * (perf - .15), .65, 1.3) : clamp(.4 + .9 * (perf - .15), .4, 1.4);
-  const fw = Math.round(p.units ? p.units * f : p.type === 'edition' ? S.stats.fans * .002 * f : Math.max(5000, S.stats.fans * .025 * f));
+  const trendBoost = p.trend ? 1.15 : 1;
+  const fw = Math.round(trendBoost * (p.units ? p.units * f : p.type === 'edition' ? S.stats.fans * .002 * f : Math.max(5000, S.stats.fans * .025 * f)));
   const rivalSame = S.charts.albums.filter(c => c.rival && c.abs === S.abs).reduce((m, c) => Math.max(m, c.fw), 0);
   let pos = fw > 150000 ? 1 : fw > 60000 ? clamp(Math.round(8 - fw / 20000), 1, 8) : clamp(Math.round(40 - fw / 2000), 2, 40);
   if (pos === 1 && rivalSame > fw) pos = 2;
@@ -903,6 +907,8 @@ const ACH_MORE = { eras10:'Ten new eras', eras25:'Twenty-five new eras', eras50:
 const ACH = { firstsong:'First song', no1:'Hot 100 No. 1', million:'A million in a week', aoty:'Album of the Year', stadium:'Stadium tour', masters:'Own your masters', canon90:'Canon Score 90+', eggs10:'Ten eggs decoded', comeback:'The comeback', billion:'Billion-dollar tour', free:'The story is yours' };
 Object.assign(ACH, ACH_MORE, ACH_FAREWELL, ACH_FUN, ACH_GOALS);
 G.ACH = ACH;
+G.hooks = { week:[], answer:[], task:[], load:[] };
+G.ach = k => ach(k);
 function ach(k) { if (S.ach[k]) return; S.ach[k] = S.abs; inbox('fans', `Achievement: ${ACH[k]}`, 'Added to your Legacy.'); }
 function achievements() {
   { const gp = G.goalProgress(); if (gp && gp.done && !S.goalDone) { S.goalDone = S.abs; ach('goal'); S.modal.push({ k:'goaldone' }); } }
@@ -1122,7 +1128,7 @@ function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return n
 function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
 G.lsGet = lsGet; G.lsSet = lsSet;
 G.save = function (auto) { if (!S) return; S.saved = Date.now(); lsSet('eras-slot-' + S.slot, JSON.stringify(S)); };
-G.load = function (slot) { const v = lsGet('eras-slot-' + slot); if (!v) return null; try { S = JSON.parse(v); S.slot = slot; return S; } catch (e) { return null; } };
+G.load = function (slot) { const v = lsGet('eras-slot-' + slot); if (!v) return null; try { S = JSON.parse(v); S.slot = slot; G.hooks.load.forEach(f => { try { f(S); } catch (x) {} }); return S; } catch (e) { return null; } };
 G.slotInfo = slot => { const v = lsGet('eras-slot-' + slot); if (!v) return null; try { const s = JSON.parse(v); return { retired:!!(s.flags && s.flags.retired), y:ER.yw(s.abs).y, w:ER.yw(s.abs).w, mode:s.mode, artist:s.artist, saved:s.saved, canon:s.canon }; } catch (e) { return null; } };
 G.del = slot => { try { localStorage.removeItem('eras-slot-' + slot); } catch (e) {} };
 G.exportSave = () => JSON.stringify(S);

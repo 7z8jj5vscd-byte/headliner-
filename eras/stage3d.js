@@ -255,7 +255,7 @@ function loop() {
       if (!c.isConnected || !s.scene) continue; any = true;
       if (!s.drag) s.rotY *= .98;
       s.root.rotation.y = s.rotY;
-      s.figs.forEach(f => anim(f, t));
+      if (!T3.reduced) s.figs.forEach(f => anim(f, t));
       s.scene.traverse(o => { if (o.userData.sweep !== undefined) o.rotation.z = Math.sin(t * .8 + o.userData.sweep) * .35;
         if (o.userData.flash !== undefined) o.intensity = Math.random() < .03 ? 2.5 : o.intensity * .8; });
       s.r.render(s.scene, s.cam); }
