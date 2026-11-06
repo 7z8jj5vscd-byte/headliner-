@@ -166,3 +166,13 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/eras/
 - **Tour prep timing.** Choose when preparation for a tour starts, from right after release down to a four-week crunch. The real show dates do not move.
 - **Ways to do tasks.** Videos, announcements, release-week TV, signings, costumes, casting, setlists and mastering each offer different approaches with their own trade-offs.
 - **Opportunities.** Optional offers turn up on This Week, such as late-night shows, film songs, retreats, features, documentaries and remixes. All of them are invented, and you can take them or let them pass.
+
+### Your game, your way
+
+- **Story style** for each save: *Canon* (the real calendar), *Guided* (deadlines instead of required tasks, and album dates you can move) or *Sandbox* (move, delay or skip eras, start from any era, buy back masters). Real events keep their real dates in every style.
+- **Your schedule:** hand any task to your team for a fee, work ahead on the next album, take a week off, auto-play weeks, and see what's coming up in the calendar.
+- **Releases:** singles whenever you like, a marketing budget across radio, video, social, billboards and press, cut songs, deluxe-only tracks, any collaborator, new versions of old songs, and side projects.
+- **Touring:** routes built city by city, legs added or cancelled mid-tour, a setlist you can change on the road, and shows you book yourself.
+- **Life:** free time that inspires songs, your public image, brands of your own, and a What next? card between eras.
+- **Creative tools:** a look designer for every era, stage lighting colours, album titles on covers, and your own names for fans, merch and tours.
+- **A new look:** a bottom navigation bar on phones, a sidebar and live stats panel on desktop, a cinematic title screen, and a redesigned This Week screen.
