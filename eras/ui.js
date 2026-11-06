@@ -404,12 +404,18 @@ VIEWS.people = function () {
 };
 VIEWS.charts = function () {
   const s = S();
-  const albums = s.released.filter(r => s.abs - r.abs < 40).map(r => ({ t:G.proj(r.pid).title, by:G.art().name, u:r.fw * Math.pow(.62, Math.max(0, r.wk)) + r.fw * .012, you:true }))
-    .concat(s.charts.albums.filter(c => c.rival && s.abs - c.abs < 30).map(c => ({ t:c.t, by:c.by, u:c.fw * Math.pow(.6, c.wk) + c.fw * .01, rival:true })));
-  const fill = ['Invented Band A','Various Artists','A Soundtrack','A Country Duo','A Boy Band','A Rapper','A Rock Band','An Indie Act'].map((n, i) => ({ t:n, by:'', u:90000 / (i + 1.2) }));
-  const list = albums.concat(fill).sort((a, b) => b.u - a.u).slice(0, 10);
+  // Your albums sit at their own chart positions; rivals and other albums fill the rest by sales.
+  const mine = s.released.filter(r => r.pos != null && r.pos <= 200 && s.abs - r.abs < 400).map(r => ({ t:G.proj(r.pid).title, by:G.art().name, pos:r.pos, you:true, r }));
+  const others = s.charts.albums.filter(c => c.rival && s.abs - c.abs < 30).map(c => ({ t:c.t, by:c.by, u:c.fw * Math.pow(.6, c.wk) + c.fw * .01, rival:true }))
+    .concat(['Invented Band A','Various Artists','A Soundtrack','A Country Duo','A Boy Band','A Rapper','A Rock Band','An Indie Act','A Pop Duo','A Singer-Songwriter'].map((n, i) => ({ t:n, by:'', u:90000 / (i + 1.2) })))
+    .sort((a, b) => b.u - a.u);
+  const list = []; let oi = 0;
+  for (let pos = 1; pos <= 10; pos++) { const m = mine.find(x => x.pos === pos && !list.includes(x)); if (m) list.push(m); else if (others[oi]) list.push(Object.assign({ pos }, others[oi++])); }
   const singles = s.charts.singles.filter(c => !c.out).slice(0, 10).sort((a, b) => a.pos - b.pos);
-  return card(`<h2>Billboard 200 this week</h2><p class="small faint">Simulated chart. Rival albums appear on their real release dates.</p>${list.map((c, i) => `<div class="chart ${c.you ? 'you' : c.rival ? 'rival' : ''}"><b>${i + 1}</b><div><b>${h(c.t)}</b><div class="small muted">${h(c.by)}</div></div><span class="small">${G.fmtN(c.u)}</span></div>`).join('')}`)
+  const runs = s.released.filter(r => G.proj(r.pid) && G.proj(r.pid).type !== 'edition').slice().reverse();
+  return card(`<h2>Billboard 200 this week</h2><p class="small faint">Simulated chart, updated every week. Rival albums appear on their real release dates.</p>${list.map(c => `<div class="chart ${c.you ? 'you' : c.rival ? 'rival' : ''}"><b>${c.pos}</b><div><b>${h(c.t)}</b><div class="small muted">${h(c.by)}${c.you ? ` · ${c.r.wk} weeks on the chart` : ''}</div></div><span class="small">${c.you ? '' : G.fmtN(c.u)}</span></div>`).join('')}
+    ${mine.filter(m => m.pos > 10).map(m => `<p class="small muted">${h(m.t)} is at No. ${m.pos}.</p>`).join('')}`)
+  + card(`<h2>Your album runs</h2><p class="small faint">Real runs are approximate.</p>${runs.map(r => { const p = G.proj(r.pid), run = r.run; return `<div class="between small"><span>${h(p.title)}</span><span>Peak ${r.peak}${r.no1w ? ` · ${r.no1w} wk at No. 1` : ''}${run ? ` <span class="muted">(real: ${run.no1 ? run.no1 + ' wk at No. 1' : 'peak ' + run.peak})</span>` : ''}</span></div>`; }).join('') || '<p class="small muted">Nothing released yet.</p>'}`)
   + card(`<h2>Hot 100: your singles</h2>${singles.map(c => `<div class="chart you"><b>${c.pos}</b><div><b>${h(c.t)}</b><div class="small muted">Peak ${c.peak}${c.real ? ` (real peak ${c.real})` : ''} · ${c.wk} weeks</div></div></div>`).join('') || '<p class="small muted">No singles on the chart.</p>'}`)
   + card(`<h2>Awards</h2>${s.awards.map(a => `<div class="between small"><span>🏆 ${h(a.n)}</span><span class="muted">${a.y}</span></div>`).join('') || '<p class="small muted">None yet.</p>'}`)
   + card(`<h2>First weeks</h2>${s.released.map(r => { const p = G.proj(r.pid); return `<div class="between small"><span>${h(p.title)}</span><span>${G.fmtN(r.fw)}${r.real ? ` <span class="muted">(real ${G.fmtN(r.real)})</span>` : ''}</span></div>`; }).join('') || '<p class="small muted">Nothing released yet.</p>'}`);

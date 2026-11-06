@@ -132,6 +132,12 @@ ER.PEAKS = {
  'cardigan':1, 'exile':6, 'the 1':4, 'willow':1, "Love Story (Taylor's Version)":11, "All Too Well (10 Minute Version) (Taylor's Version)":1,
  'Anti-Hero':1, 'Lavender Haze':2, 'Karma':2, "Is It Over Now? (Taylor's Version)":1, 'Fortnight':1, 'The Fate of Ophelia':1
 };
+// Real Billboard 200 runs (approximate): weeks at No. 1, or for albums that never topped it,
+// the peak position and how many weeks after release it came.
+ER.ALBUM_RUNS = {
+ ts1:{ peak:5, peakWeek:65 }, fearless:{ no1:11 }, speaknow:{ no1:6 }, red:{ no1:7 }, '1989':{ no1:11 }, rep:{ no1:4 },
+ lover:{ no1:1 }, folklore:{ no1:8 }, evermore:{ no1:4 }, midnights:{ no1:6 }, ttpd:{ no1:15 }
+};
 // Real tour scale: approximate show counts, used for the manager's suggested plan.
 ER.TOUR_SHOWS = { fearless:105, speaknow:111, red:86, '1989':85, rep:53, midnights:149 };
 })();

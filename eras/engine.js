@@ -584,6 +584,9 @@ function endWeek() {
   G.allProjects().forEach(p => { if (G.stageOf(p, a) === 'release') { const r = doRelease(p); R.lines.push(r); Y.releases.push(p.title); } });
   // Weekly album sales.
   let units = 0;
+  // Album chart positions move every week.
+  const rivalTop = S.charts.albums.filter(c => c.rival && c.abs === a).reduce((m, c) => Math.max(m, c.fw), 0);
+  S.released.forEach(r => { if (r.abs >= a || r.wk > 400) return; G.chartWeek(r, rivalTop); });
   S.released.forEach(r => { if (r.abs >= a) return; r.wk++; const w = r.fw * Math.pow(.62, r.wk) + r.fw * .012 + (r.fw * .002 * Math.max(0, 1 - r.wk / 300)); units += w; r.total += w; });
   const per = s.own >= 30 ? 5 : 1.6, inc = units * per;
   s.money += inc; if (!G.curveMode()) s.fans += units * .55; Y.units += units;
@@ -603,6 +606,7 @@ function endWeek() {
   if (G.curveMode()) {
     const base = clamp(1 + (s.rep - 65) / 400 + (s.team - 60) / 800 + (S.recovery ? -.12 : 0), .65, 1.12);
     S.mom = clamp((S.mom || 1) + (base - (S.mom || 1)) * .07, .45, 1.6);
+    if (S.abs < G.FREE_START) S.mom = clamp(S.mom, .7, 1.3);
     const tgt = G.fanTarget(a + 1) * S.mom; s.fans = Math.max(10, s.fans + (tgt - s.fans) * .3);
     if (S.flags.silence) s.heat = Math.max(0, s.heat - 2);
   } else { const gr = .0015 * ((s.rep - 50) / 50) + s.heat * .00004 - (S.flags.silence ? .001 : 0); s.fans *= 1 + (gr > 0 ? gr * clamp(1 - s.fans / G.fanCap(), 0, 1) : gr); }
@@ -634,6 +638,23 @@ function endWeek() {
   if (S.mode === 'story') { const u = JSON.parse(lsGet('eras-unlocked') || '["ts1"]'); G.allProjects().forEach(p => { const w = G.win(p), st = w.ws != null ? w.ws : w.rs; if (p.type !== 'demos' && p.type !== 'edition' && st != null && S.abs >= st && !u.includes(p.id) && G.art().projects.includes(p)) u.push(p.id); }); lsSet('eras-unlocked', JSON.stringify(u)); }
   startWeek();
 }
+G.chartWeek = function (r, rivalTop) {
+  if (r.pos == null) r.pos = r.peak || 50; if (r.no1w == null) r.no1w = r.peak === 1 ? 1 : 0;
+  const wk = r.wk + 1, weekly = r.fw * Math.pow(.62, wk) + r.fw * .012;
+  let pos;
+  if (r.no1Target && r.no1w < r.no1Target && r.pos <= 3) {
+    // A big week for a rival can knock you off the top for a week.
+    pos = rivalTop > weekly * 1.1 ? 2 : 1;
+  } else if (r.run && r.run.peak && wk <= r.run.peakWeek) {
+    // A slow climb to the real peak.
+    // Climb from the debut position to the real peak, a little better or worse depending on how the era went.
+    const start = r.debutPos || r.pos, goal = clamp(Math.round(r.run.peak * clamp(2 - (r.real ? r.fw / r.real : 1), .6, 1.6)), 2, 40);
+    const t = wk / r.run.peakWeek; pos = Math.max(goal, Math.round(start + (goal - start) * t + rnd(-1, 1)));
+  } else {
+    pos = Math.round(r.pos + (r.pos < 10 ? rnd(1, 3) : r.pos < 50 ? rnd(1, 5) : rnd(2, 9)) - (r.wk < 2 ? 1 : 0));
+  }
+  r.pos = clamp(pos, 1, 201); if (r.pos === 1) r.no1w++; if (r.pos < r.peak) r.peak = r.pos;
+};
 function doRelease(p) {
   const pj = G.pj(p.id), c = counts(p);
   const songs = p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => S.songs[t + " (Taylor's Version)"]).filter(Boolean) : p.tracks.map(t => S.songs[t]).filter(x => x && x.st !== 'written');
@@ -645,14 +666,18 @@ function doRelease(p) {
   const cover = G.coverScore(p, pj.cover || (pj.cover = G.autoCover(p)));
   const genreGap = Math.abs(S.stats.genre - (p.genre || S.stats.genre));
   const perf = .36 * q / 100 + .22 * clamp(pj.hype + cover / 5, 0, 100) / 100 + .2 * S.stats.rep / 100 + .1 * S.stats.team / 100 + .12 * (1 - genreGap / 100);
-  const f = clamp(.4 + .9 * (perf - .15), .4, 1.4);
+  const f = p.units ? clamp(.4 + .9 * (perf - .15), .65, 1.3) : clamp(.4 + .9 * (perf - .15), .4, 1.4);
   const fw = Math.round(p.units ? p.units * f : p.type === 'edition' ? S.stats.fans * .002 * f : Math.max(5000, S.stats.fans * .025 * f));
   const pos = fw > 150000 ? 1 : fw > 60000 ? clamp(Math.round(8 - fw / 20000), 1, 8) : clamp(Math.round(40 - fw / 2000), 2, 40);
   // Songs come out.
   songs.forEach(x => { x.st = 'released'; });
   (p.extras || []).forEach(t => { const x = S.songs[t]; if (x && x.st === 'recorded') x.st = 'released'; });
   if (p.type === 'rerecord') { S.stats.own = clamp(S.stats.own + 6, 0, 100); }
-  const rec = { pid:p.id, abs:S.abs, fw, total:fw, q:Math.round(q), peak:pos, wk:0, real:p.units, cover };
+  const run = (ER.ALBUM_RUNS || {})[p.id] || null;
+  // Weeks at No. 1: the real run scaled by how this era went; invented eras earn theirs from sales.
+  const no1Target = run ? (run.no1 ? Math.max(1, Math.round(run.no1 * clamp(fw / p.units, .5, 1.5) * clamp(G.momentum(), .7, 1.3))) : 0)
+    : (pos === 1 ? clamp(Math.round(1 + (fw / Math.max(1, S.stats.fans * .025) - .8) * 6 + rnd(-1, 1)), 1, 10) : 0);
+  const rec = { pid:p.id, abs:S.abs, fw, total:fw, q:Math.round(q), peak:pos, pos, debutPos:pos, wk:0, real:p.units, cover, no1w:pos === 1 ? 1 : 0, no1Target, run:run ? Object.assign({}, run) : null };
   S.released.push(rec);
   S.charts.albums.unshift({ t:p.title, by:G.art().name, abs:S.abs, fw, pos, wk:0 });
   if (G.curveMode()) { const exp = p.units || (p.type === 'edition' ? S.stats.fans * .002 : S.stats.fans * .025); S.mom = clamp((S.mom || 1) * clamp(.85 + .15 * fw / Math.max(1, exp), .85, 1.08), .45, 1.6); } else S.stats.fans += fw * 1.2;
