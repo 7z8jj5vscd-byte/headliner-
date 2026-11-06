@@ -50,6 +50,31 @@ ER.FAN_MAIL = [
  { from:'Ellie, 19', x:'I found a clue in your last video and nobody believes me.', ch:[{ l:'Send back a single winking emoji', fx:{ hype:3, heat:1 }, r:'Ellie becomes a legend in the fandom.' }, { l:'Say nothing', fx:{}, r:'The mystery continues.' }] }
 ];
 
+// Song memories: an old song comes back years later. {song} is one of your released titles.
+ER.MEMORIES = [
+ { t:'"{song}" is trending again', x:'Years after it came out, "{song}" is suddenly everywhere online. A new generation has found it.',
+   ch:[{ l:'Play it at your next show', fx:{ fans:2, hype:2 }, r:'The crowd sings louder than you do.' }, { l:'Post the old demo', fx:{ fans:1, heat:2 }, r:'Fans compare it line by line with the album version.' }] },
+ { t:'A wedding song', x:'A fan writes that "{song}" was their first dance, ten years ago, and they still play it every anniversary.',
+   ch:[{ l:'Send them an anniversary card', fx:{ rep:1, fans:1 }, r:'They frame it next to the wedding photo.' }, { l:'Dedicate it at a show', fx:{ fans:1 }, r:'They were in the crowd.' }] },
+ { t:'Back to "{song}"', x:'Your band asks to rework "{song}" for the setlist. It has not been played live in years.',
+   ch:[{ l:'Do a slowed-down version', fx:{ rep:1, write:1 }, r:'It feels brand new.' }, { l:'Play it exactly as it was', fx:{ fans:1 }, r:'Nostalgia hits everyone at once.' }] },
+ { t:'The song that started it', x:'A young singer says "{song}" is the reason they started writing.',
+   ch:[{ l:'Invite them to the studio for a day', fx:{ rep:2, energy:-2 }, r:'They take notes on everything.' }, { l:'Send a note of encouragement', fx:{ rep:1 }, r:'They post it, shaking.' }] }
+];
+// Invented rival stars send the occasional note. They are fictional, never real artists.
+ER.RIVAL_NOTES = [
+ { from:'Vesper Lane', x:'Saw the numbers. Annoyingly brilliant. Congratulations.' },
+ { from:'Nova Kincaid', x:'Your bridge on the new record has been stuck in my head for a week. Rude.' },
+ { from:'Juno Marlowe', x:'Let us do a duet one day. I mean it this time.' },
+ { from:'Sasha Vale', x:'My little sister made me go to your show. I cried. Do not tell anyone.' }
+];
+// Daily challenges: a short era from the real story with one goal. Same for everyone on the same day.
+ER.CHALLENGES = [
+ { goal:'units', n:'Beat the real first week', d:'Release the album with a first week above the real one.' },
+ { goal:'single', n:'Top five single', d:'Get a single from this era into the top five.' },
+ { goal:'fans', n:'Grow the fan base', d:'Grow your fans by 15% before the weeks run out.' },
+ { goal:'canon', n:'Live it like she did', d:'Make every real choice the way she did (Era Start has no event cards, so finish the era with no missed tasks).' }
+];
 // Invented award show after 2026.
 ER.FREE_AWARDS = { n:'The Music Honours', cats:['Album of the Year','Song of the Year','Best Live Act','Artist of the Year'] };
 })();
