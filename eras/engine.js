@@ -366,7 +366,9 @@ G.doTask = function (id, arg) {
 };
 
 /* ---------- Singles ---------- */
-G.defaultSingle = p => { const pj = G.pj(p.id); const pool = (p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => t + " (Taylor's Version)") : p.tracks.concat(p.extras || [])).filter(t => S.songs[t] && S.songs[t].st !== 'written' && !pj.singles.includes(t));
+G.defaultSingle = p => { const pj = G.pj(p.id);
+  const realNext = ((ER.REAL_SINGLES || {})[p.id] || []).find(t => S.songs[t] && S.songs[t].st !== 'written' && !pj.singles.includes(t));
+  if (realNext) return realNext; const pool = (p.type === 'rerecord' ? p.tracks.concat(p.vaultSongs || []).map(t => t + " (Taylor's Version)") : p.tracks.concat(p.extras || [])).filter(t => S.songs[t] && S.songs[t].st !== 'written' && !pj.singles.includes(t));
   pool.sort((a, b) => S.songs[b].q - S.songs[a].q); return pool[0]; };
 G.releaseSingle = function (p, t) {
   const pj = G.pj(p.id); if (pj.singles.includes(t)) return;
@@ -375,8 +377,16 @@ G.releaseSingle = function (p, t) {
   const real = ER.PEAKS && ER.PEAKS[t];
   let target = real && G.curveMode() ? clamp(Math.round(real * Math.pow(2 - G.momentum(), 1.6) * (1.12 - s.q / 600) + rnd(-1, 1)), 1, 100) : clamp(Math.round(100 - perf * 88 + rnd(-12, 12)), 1, 100);
   if (real === 1 && G.momentum() >= .95 && s.q >= 70) target = 1;
-  const pos = clamp(target + Math.round(rnd(0, 6)), 1, 100);
-  S.charts.singles.unshift({ t, pid:p.id, abs:S.abs, debut:pos, peak:pos, pos, target, real, wk:0 });
+  const rd = ER.SINGLE_DEBUT && ER.SINGLE_DEBUT[t], streaming = ER.yw(S.abs).y >= 2014;
+  let pos, jump = false;
+  if (rd && G.curveMode() && S.abs < G.FREE_START) {
+    if (rd === 1) pos = G.momentum() >= .9 && s.q >= 60 ? 1 : clamp(Math.round(2 + (1 - G.momentum()) * 12 + rnd(0, 2)), 2, 15);
+    else if (rd > target * 4) { pos = clamp(Math.round(rd * (2 - G.momentum()) + rnd(-5, 5)), target + 1, 100); jump = true; }
+    else pos = clamp(Math.round(rd * Math.pow(2 - G.momentum(), 1.4)), 1, 100);
+    target = Math.min(target, pos);
+  } else pos = clamp(target + Math.round(streaming ? rnd(0, 2) : rnd(0, 6)), 1, 100);
+  S.charts.singles.unshift({ t, pid:p.id, abs:S.abs, debut:pos, peak:pos, pos, target, real, realDebut:rd || null, jump, wk:0 });
+  if (pos === 1) { G.pj(p.id).no1 = true; if (!S.ach.no1) ach('no1'); S.no1count = (S.no1count || 0) + 1; }
   s.single = true; if (s.st === 'recorded' && S.abs >= G.win(p).rel) s.st = 'released';
 
   feed(`"${t}" is out and I have listened 40 times`);
@@ -545,6 +555,7 @@ G.answer = function (id, ci) {
     S.log.push({ abs:S.abs, id, t:d.t, l:c.l, drama:true }); S.week.pending = S.week.pending.filter(x => x !== id); return { r:'The story moves on.' };
   }
   const e = G.findEvent(id); const c = e.ch[ci];
+  if (c.single) { const sp = G.proj(c.single[0]); if (sp && S.songs[c.single[1]] && S.songs[c.single[1]].st !== 'written') G.releaseSingle(sp, c.single[1]); }
   if (e.cancelTour) G.cancelTour(G.proj(e.cancelTour), 'pandemic');
   if (c.hide) { S.flags.hidden = true; S.duties = S.duties.filter(d => d.from !== 'publicist'); inbox('publicist', 'Out of public view', 'No interviews, posts or appearances. You can still write, record and plan in private.'); }
   applyFx(c.fx); S.seen[id] = ci;
@@ -592,8 +603,8 @@ function endWeek() {
   s.money += inc; if (!G.curveMode()) s.fans += units * .55; Y.units += units;
   // Singles chart movement.
   S.charts.singles.forEach(c => { if (c.abs >= a || c.out) return; c.wk++;
-    const t = c.target || c.peak; c.pos = c.wk <= 4 ? clamp(Math.round(c.pos - (c.pos - t) * .6), 1, 100) : clamp(Math.round(c.pos + rnd(-3, 8) + c.wk * .4), 1, 101);
-    if (c.pos < c.peak) c.peak = c.pos; if (c.peak === 1) { G.pj(c.pid).no1 = true; if (!S.ach.no1) ach('no1'); if (!c.counted) { c.counted = 1; S.no1count = (S.no1count || 0) + 1; } } if (c.pos > 100) c.out = true; });
+    const t = c.target || c.peak; if (c.jump && c.wk === 1) { c.pos = t; c.jump = false; } else c.pos = c.wk <= 4 ? clamp(Math.round(c.pos - (c.pos - t) * .6), 1, 100) : clamp(Math.round(c.pos + rnd(-3, 8) + c.wk * .4), 1, 101);
+    if (c.pos < c.peak) c.peak = c.pos; if (c.peak === 1) { G.pj(c.pid).no1 = true; if (!S.ach.no1) ach('no1'); if (!c.counted && c.debut !== 1) { c.counted = 1; S.no1count = (S.no1count || 0) + 1; } } if (c.pos > 100) c.out = true; });
   S.charts.albums.forEach(c => { c.wk++; });
   if (S.charts.singles.length > 80) S.charts.singles = S.charts.singles.filter((c, i) => i < 40 || !c.out).slice(0, 80);
   if (S.charts.albums.length > 60) S.charts.albums.length = 60;

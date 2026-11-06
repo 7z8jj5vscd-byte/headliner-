@@ -138,6 +138,31 @@ ER.ALBUM_RUNS = {
  ts1:{ peak:5, peakWeek:65 }, fearless:{ no1:11 }, speaknow:{ no1:6 }, red:{ no1:7 }, '1989':{ no1:11 }, rep:{ no1:4 },
  lover:{ no1:1 }, folklore:{ no1:8 }, evermore:{ no1:4 }, midnights:{ no1:6 }, ttpd:{ no1:15 }
 };
+// Her real singles for each era, in release order. Rollout suggests these first.
+ER.REAL_SINGLES = {
+ ts1:['Tim McGraw','Teardrops on My Guitar','Our Song','Picture to Burn',"Should've Said No"],
+ fearless:['Love Story','White Horse','You Belong with Me','Fifteen','Fearless'],
+ speaknow:['Mine','Back to December','Mean','The Story of Us','Sparks Fly','Ours'],
+ red:['We Are Never Ever Getting Back Together','Begin Again','I Knew You Were Trouble','22','Red','Everything Has Changed'],
+ '1989':['Shake It Off','Blank Space','Style','Bad Blood','Wildest Dreams','Out of the Woods','New Romantics'],
+ rep:['Look What You Made Me Do','...Ready for It?','End Game','Delicate'],
+ lover:['ME!','You Need to Calm Down','Lover','The Man'],
+ folklore:['cardigan','exile','betty'],
+ evermore:['willow','no body no crime','coney island'],
+ fearlesstv:["Love Story (Taylor's Version)","You All Over Me (Taylor's Version)","Mr. Perfectly Fine (Taylor's Version)"],
+ redtv:["All Too Well (10 Minute Version) (Taylor's Version)","I Bet You Think About Me (Taylor's Version)"],
+ midnights:['Anti-Hero','Lavender Haze','Karma'],
+ speaknowtv:["I Can See You (Taylor's Version)"],
+ '1989tv':["Is It Over Now? (Taylor's Version)"],
+ ttpd:['Fortnight','I Can Do It with a Broken Heart'],
+ showgirl:['The Fate of Ophelia','Opalite'],
+ encore:['Patient Zero']
+};
+// Real Hot 100 debut positions for singles where they are well known.
+// "We Are Never Ever Getting Back Together" entered at No. 72 and jumped to No. 1 the next week.
+ER.SINGLE_DEBUT = { 'We Are Never Ever Getting Back Together':72, 'Shake It Off':1, 'cardigan':1, 'willow':1,
+ "All Too Well (10 Minute Version) (Taylor's Version)":1, 'Anti-Hero':1, 'Lavender Haze':2, "Is It Over Now? (Taylor's Version)":1,
+ 'Fortnight':1, 'The Fate of Ophelia':1 };
 // Real tour scale: approximate show counts, used for the manager's suggested plan.
 ER.TOUR_SHOWS = { fearless:105, speaknow:111, red:86, '1989':85, rep:53, midnights:149 };
 })();
