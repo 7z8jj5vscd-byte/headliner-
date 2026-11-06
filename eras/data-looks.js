@@ -136,6 +136,7 @@ ER.PEAKS = {
 // the peak position and how many weeks after release it came.
 ER.ALBUM_RUNS = {
  ts1:{ peak:5, peakWeek:65 }, fearless:{ no1:11 }, speaknow:{ no1:6 }, red:{ no1:7 }, '1989':{ no1:11 }, rep:{ no1:4 },
+ b_dc1:{ debut:69, peak:67, peakWeek:4 }, g_mayhem:{ no1:1 },
  lover:{ no1:1 }, folklore:{ no1:8 }, evermore:{ no1:4 }, midnights:{ no1:6 }, ttpd:{ no1:15 }, showgirl:{ no1:7 }
 };
 // Her real singles for each era, in release order. Rollout suggests these first.

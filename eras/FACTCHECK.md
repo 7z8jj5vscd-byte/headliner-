@@ -15,6 +15,15 @@ Levels:
 - **Midnights' weeks at No. 1: 6, confirmed (as of early 2024).** Source: [Guinness World Records](https://www.guinnessworldrecords.com/world-records/636372-most-cumulative-weeks-at-no-1-on-us-albums-chart-solo-female).
 - **The July 3, 2026 wedding: reported, not confirmed in the sources found.** Reports cited save-the-date invitations for New York City on July 3, 2026, after earlier reports of June 13 in Rhode Island. The couple had not confirmed it in those reports. The card stays, following the design report, and its note now says "reported." Sources: [Marie Claire UK](https://www.marieclaire.co.uk/entertainment/celebrity-news/taylor-swift-wedding-date-revealed), [Newcastle Herald](https://www.newcastleherald.com.au/story/9222138/taylor-swifts-wedding-date-and-location-revealed).
 
+## Second live check (November 2026)
+
+- **Songwriters Hall of Fame: confirmed.** Inducted June 11, 2026 in New York, in her first year of eligibility. The card's date and note now match. Sources: [Variety](https://au.variety.com/2026/music/global/taylor-swift-inducted-songwriters-hall-of-fame-32184/), [American Songwriter](https://americansongwriter.com/taylor-swift-inducted-into-songwriters-hall-of-fame-on-her-first-year-of-eligibility).
+- **iHeartRadio Music Awards: confirmed.** Showgirl won Pop Album of the Year and Album of the Year on March 26, 2026, among seven wins. Sources: [Variety](https://au.variety.com/2026/music/global/taylor-swift-most-wins-at-iheartradio-music-awards-2026-34694/), [The Hollywood Reporter](https://www.hollywoodreporter.com/music/music-news/2026-iheartradio-music-awards-winners-list-1236548440/).
+- **Destiny's Child's 1998 debut: corrected.** It entered the Billboard 200 at about No. 69 and peaked at No. 67. The game now debuts it at No. 69. No reliable first-week sales figure was found, so the game's 15K stays an estimate. Source: [Wikipedia](https://en.wikipedia.org/wiki/Destiny%27s_Child_(album)).
+- **Mayhem: debut confirmed.** No. 1 with 219,000 units. Total weeks at No. 1 were not found; the game uses one. Source: [NPR via WBHM](https://wbhm.org/npr-story/lady-gagas-mayhem-shakes-up-the-charts-at-no-1).
+
+Still needing a source: the $26 million wedding donations, the Encore release (September 25, 2026) and the October 2026 wedding photos; the Met Gala and Act III card; the Super Bowl LX cameo and Devil Wears Prada 2 songs; weeks at No. 1 for Beyoncé's and Gaga's other albums.
+
 ## What changed in this pass
 
 - Brit Awards 2021 card: removed the claim that she was the first woman and the first non-British artist to receive the Global Icon award. The card now only says she received it.
