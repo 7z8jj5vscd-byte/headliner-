@@ -1,10 +1,11 @@
 {
- "build": "2026.11.06-2",
- "title": "Town: free roam",
+ "build": "2026.11.06-3",
+ "title": "Title screen fixes",
  "notes": [
-  "New Town tab: play any venue you can fill, from open mic nights to a one-night stadium show, or busk on a street corner.",
-  "This week in town: five side gigs and activities each week, like guest-judging, commercials, songwriting camps and road trips.",
-  "Level up and pick perks such as Workhorse, Hitmaker and Showstopper.",
-  "Upgrade your studio, buy gear and homes, and hire a vocal coach, choreographer, stylist or trainer. The real story still happens on its dates."
+  "The title screen now shows your version and whether an update is available, with an Update now button.",
+  "Check for updates on the title screen now tells you the result.",
+  "The daily challenge row no longer jumps in after the page loads or wraps onto two lines.",
+  "The 3D stage fades in, stays sharp when you rotate your phone, and no longer gets stuck spinning after a swipe.",
+  "The update banner fits phone screens."
  ]
 }

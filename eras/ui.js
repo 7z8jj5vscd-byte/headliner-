@@ -14,7 +14,7 @@ const LOOKS = {
 };
 
 /* ---------- Utilities ---------- */
-function toast(m) { UI.toast = m; const t = $('#toast'); if (!t) return; t.textContent = m; t.classList.add('on'); clearTimeout(UI.tt); UI.tt = setTimeout(() => t.classList.remove('on'), 2600); }
+function toast(m) { UI.toast = m; let t = $('#toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); } t.textContent = m; t.classList.add('on'); clearTimeout(UI.tt); UI.tt = setTimeout(() => t.classList.remove('on'), 2600); }
 UI.toastMsg = toast;
 function eraTheme() {
   const s = S(); const e = s && G.currentEra(); const root = document.documentElement;
@@ -140,15 +140,20 @@ UI.coverSVG = coverSVG;
 function uploads() { try { return JSON.parse(G.lsGet('eras-uploads') || '{}'); } catch (e) { return {}; } }
 
 /* ---------- Title ---------- */
+// The last two weeks of daily challenges, drawn with the title so nothing jumps in after it.
+function dailyHist() { let best = {}; try { best = JSON.parse(localStorage.getItem('eras-daily-best') || '{}'); } catch (e) {}
+  const days = Array.from({ length:14 }, (_, i) => { const x = new Date(Date.now() - (13 - i) * 864e5); return best[`${x.getUTCFullYear()}-${x.getUTCMonth() + 1}-${x.getUTCDate()}`]; });
+  return `<div id="daily-hist" class="dhist" aria-label="Daily challenges won in the last 14 days: ${days.filter(Boolean).length}">${days.map(w => `<i class="${w ? 'won' : ''}" title="${w ? 'Won' : 'Not won'}"></i>`).join('')}</div>`; }
 function title() {
   const slots = [1, 2, 3].map(n => { const i = G.slotInfo(n); return `<div class="slot"><div><b>Slot ${n}</b><div class="small muted">${i ? `${h(ER.artists[i.artist].name)} · ${i.mode === 'story' ? 'Story' : 'Era Start'} · ${i.y}, week ${i.w}${i.retired ? ' · Retired' : ''}` : 'Empty'}</div></div><div class="row">${i ? `<button class="btn" data-act="load" data-n="${n}">Continue</button><button class="btn ghost sm" data-act="delslot" data-n="${n}" aria-label="Delete slot ${n}">Delete</button>` : `<button class="btn" data-act="newgame" data-n="${n}">New game</button>`}</div></div>`; }).join('');
   const span = { taylor:'From 2001 (age 11)', beyonce:'From 1990 (age 8)', gaga:'From 2000 (age 13)' };
   const artists = ['taylor','beyonce','gaga'].map(id => { const a = ER.artists[id]; return `<div class="artist"><div class="sw" style="background:${a.color || '#d6a93a'}"></div><div><b>${h(a.name)}</b><div class="small muted">Playable · ${span[id]} to 2026, then free play</div></div><button class="btn ghost sm" data-act="preview" data-id="${id}">Story</button></div>`; }).join('');
   $('#app').innerHTML = `<div class="title">
     <div class="logo"><span class="eyebrow">A week-by-week career game</span><h1>The Eras Life</h1><p class="muted">Live through a documented career from the first demo to the last stadium night, then carry it on yourself.</p></div>
+    <div id="ver-line" class="ver-line" role="status">${window.UPD ? UPD.line() : ''}</div>
     <div class="stage3d tall" id="t3title"></div>
     ${card(`<h2>Daily challenge</h2>${(() => { const c = G.challengeToday(), A = ER.artists[c.artist]; return `<p><b>${h(c.n)}</b> as ${h(A.name)}, ${h(c.title)} era.</p><p class="small muted">${h(c.d)} Everyone gets the same challenge today. Streak: ${G.challengeStreak()} day${G.challengeStreak() === 1 ? '' : 's'}.</p>`; })()}
-      <div class="row"><button class="btn" data-act="daily">Play today's challenge</button>${G.slotInfo('daily') ? '<button class="btn ghost sm" data-act="dailyload">Continue it</button>' : ''}</div><p class="small faint">It has its own save, so your slots are never touched.</p>`)}
+      <div class="row"><button class="btn" data-act="daily">Play today's challenge</button>${G.slotInfo('daily') ? '<button class="btn ghost sm" data-act="dailyload">Continue it</button>' : ''}</div>${dailyHist()}<p class="small faint">It has its own save, so your slots are never touched.</p>`)}
     ${card(`<h2>Saves</h2><div class="stack tight">${slots}</div><div class="row"><label class="btn ghost sm">Import a save<input type="file" accept=".json,application/json" data-act="import" hidden></label></div>`)}
     ${card(`<h2>Stories</h2><p class="small muted">Pick who to play when you start a new game. Each one appears in the others' games as a real chart rival.</p><div class="stack tight">${artists}</div>`)}
     <p class="small faint">An unofficial fan project. No lyrics, audio, album art or photos of real people are used. Figures are stylised and are not likenesses. Event cards stick to the public record.</p></div>`;

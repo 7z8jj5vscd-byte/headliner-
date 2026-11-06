@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="The Eras Life">
 <meta name="theme-color" content="#14111c">
 <meta name="color-scheme" content="dark">
+<meta http-equiv="Cache-Control" content="no-cache">
 <meta name="description" content="The Eras Life: a week-by-week career game through a documented music career, from the first demo to the last stadium night.">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon.png">
@@ -51,7 +52,7 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 @media(max-width:560px){.groups{display:flex}}
 .bracelets{display:flex;flex-direction:column;gap:6px;margin-top:8px}.bracelet{display:flex;gap:2px;flex-wrap:wrap}.bracelet i{font-style:normal;font-weight:800;font-size:11px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#1a1a1a;box-shadow:inset 0 -2px 0 #0002}
 .tcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}.tcard{border:2px solid;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:2px;background:var(--raised);font-size:12px;min-height:110px}.tcard .ti{font-size:20px}.tcard .tr{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-top:auto}
-#upd-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:70;display:flex;gap:8px;align-items:center;background:var(--raised);border:1px solid var(--era);border-radius:14px;padding:10px 12px;box-shadow:0 8px 30px #0009;max-width:calc(100% - 24px);font-size:13px}
+#upd-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:70;display:flex;gap:8px;align-items:center;background:var(--raised);border:1px solid var(--era);border-radius:14px;padding:10px 12px;box-shadow:0 8px 30px #0009;width:calc(100% - 24px);max-width:520px;font-size:13px}#upd-banner>span{flex:1;min-width:0}#upd-banner button{flex:none;white-space:nowrap}
 #upd-banner button{border:0;border-radius:999px;padding:6px 12px;font-weight:700;background:var(--era);color:var(--era-ink)}#upd-banner button[data-upd=later]{background:transparent;color:var(--muted);border:1px solid var(--rule)}
 .newlist{padding-left:18px;margin:8px 0 14px}.newlist li{margin:6px 0}
 .review{font-size:26px;color:#ffd166;letter-spacing:2px;margin:6px 0}
@@ -76,6 +77,11 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 .stage3d{width:100%;height:230px;border-radius:var(--r);overflow:hidden;background:linear-gradient(#0003,#0006),var(--surface);border:1px solid var(--rule);position:relative}
 .stage3d.tall{height:300px;margin:12px 0}.stage3d.short{height:170px;margin:8px 0}
 .stage3d canvas{display:block;cursor:grab}
+.ver-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 16px 0;padding:8px 12px;border:1px solid var(--rule);border-radius:12px;background:var(--surface);font-size:12.5px;color:var(--muted);min-height:44px}
+.ver-line .ok{color:#6fcf97}.ver-line .btn{margin-left:auto}.ver-line .dot-new{width:9px;height:9px;border-radius:50%;background:#f2c94c;box-shadow:0 0 0 4px #f2c94c33;flex:none}
+.dhist{display:flex;gap:4px;margin:10px 0 2px}.dhist i{flex:1;max-width:18px;aspect-ratio:1;border-radius:4px;border:1px solid var(--rule);background:transparent}.dhist i.won{background:#3fa66b;border-color:#3fa66b}
+.stage3d canvas.t3{touch-action:pan-y}
+
 .stage3d.off3d{height:60px}.stage3d.off3d::after{content:"3D is off (turn it on in the menu)";position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);font-size:12px}
 .stage3d.no3d::after{content:"3D view needs WebGL";position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);font-size:12px}
 .caption{position:absolute;left:10px;bottom:10px;right:10px;background:#000a;border-radius:10px;padding:7px 10px;font-size:13px;pointer-events:none}
@@ -113,27 +119,27 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 <body>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="data-taylor.js?v=2026.11.06-2"></script>
-<script src="data-world.js?v=2026.11.06-2"></script>
-<script src="data-looks.js?v=2026.11.06-2"></script>
-<script src="data-events-world.js?v=2026.11.06-2"></script>
-<script src="data-forever.js?v=2026.11.06-2"></script>
-<script src="data-beyonce.js?v=2026.11.06-2"></script>
-<script src="data-gaga.js?v=2026.11.06-2"></script>
-<script src="data-scenes.js?v=2026.11.06-2"></script>
-<script src="data-shows.js?v=2026.11.06-2"></script>
-<script src="data-callbacks.js?v=2026.11.06-2"></script>
-<script src="data-goals.js?v=2026.11.06-2"></script>
-<script src="data-more.js?v=2026.11.06-2"></script>
-<script src="sound.js?v=2026.11.06-2"></script>
-<script src="stage3d.js?v=2026.11.06-2"></script>
-<script src="engine.js?v=2026.11.06-2"></script>
-<script src="extras.js?v=2026.11.06-2"></script>
-<script src="town.js?v=2026.11.06-2"></script>
-<script src="ui.js?v=2026.11.06-2"></script>
-<script src="ui-more.js?v=2026.11.06-2"></script>
-<script src="town-ui.js?v=2026.11.06-2"></script>
-<script src="update.js?v=2026.11.06-2"></script>
+<script src="data-taylor.js?v=2026.11.06-3"></script>
+<script src="data-world.js?v=2026.11.06-3"></script>
+<script src="data-looks.js?v=2026.11.06-3"></script>
+<script src="data-events-world.js?v=2026.11.06-3"></script>
+<script src="data-forever.js?v=2026.11.06-3"></script>
+<script src="data-beyonce.js?v=2026.11.06-3"></script>
+<script src="data-gaga.js?v=2026.11.06-3"></script>
+<script src="data-scenes.js?v=2026.11.06-3"></script>
+<script src="data-shows.js?v=2026.11.06-3"></script>
+<script src="data-callbacks.js?v=2026.11.06-3"></script>
+<script src="data-goals.js?v=2026.11.06-3"></script>
+<script src="data-more.js?v=2026.11.06-3"></script>
+<script src="sound.js?v=2026.11.06-3"></script>
+<script src="stage3d.js?v=2026.11.06-3"></script>
+<script src="engine.js?v=2026.11.06-3"></script>
+<script src="extras.js?v=2026.11.06-3"></script>
+<script src="town.js?v=2026.11.06-3"></script>
+<script src="ui.js?v=2026.11.06-3"></script>
+<script src="ui-more.js?v=2026.11.06-3"></script>
+<script src="town-ui.js?v=2026.11.06-3"></script>
+<script src="update.js?v=2026.11.06-3"></script>
 <script>UI.narrow = window.matchMedia('(max-width:560px)').matches; window.matchMedia('(max-width:560px)').addEventListener('change', e => { UI.narrow = e.matches; if (G.S()) UI.render(); }); UI.start();</script>
 </body>
 </html>
