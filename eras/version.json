@@ -1,11 +1,11 @@
 {
- "build": "2026.11.06-11",
- "title": "Goals and legacy",
+ "build": "2026.11.06-12",
+ "title": "The Week Board",
  "notes": [
-  "A year in review every January, which you can save or share as an image.",
-  "A legacy score and an ending that depends on how your career went, plus a Hall of Fame across all your saves.",
-  "Scenarios: Start broke, Speedrun to a stadium, One shot at No. 1, No team, and A million fans, each with a best time.",
-  "Rivals with storylines: invented stars who can become friends or bitter rivals.",
-  "Twelve new achievements."
+  "Your week is now a card game: every task is a card in your hand. Tap a card to play it into your week.",
+  "Combos: play the right cards together in the same week for bonuses, such as Studio flow, Fan frenzy and Recharged.",
+  "Instant feedback: stat changes float up, cards fly into their slots, confetti for combos, five-star shows and No. 1 debuts, and a reveal when you wrap the week.",
+  "Energy, Hype and Blocks rings on the stage, filters for your hand, and a deadline strip.",
+  "A livelier look with moving background light and glossy cards."
  ]
 }
