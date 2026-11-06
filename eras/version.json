@@ -1,0 +1,9 @@
+{
+ "build": "2026.11.06-1",
+ "title": "Updates you can see",
+ "notes": [
+  "The game now tells you when a new version is out: a banner offers a one-tap update, and you see what's new afterwards.",
+  "Settings shows your version and has a Check for updates button.",
+  "It checks when you open the game, every few minutes, and whenever you come back to it."
+ ]
+}
