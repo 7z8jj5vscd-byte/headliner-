@@ -54,6 +54,9 @@ function lookFor(ctx, era, key) {
   // By the Eras Tour her hair and make-up were the 2023 look in every act.
   if (erasAct && L.midnights) Object.assign(o, { style:'waves', bangs:1, hairLen:.62, tips:0, heartEye:0, hair:L.midnights.base.hair, lips:L.midnights.base.lips }, k === 'lover' ? { heartEye:'#f06fb4' } : {}, ['folklore','evermore'].includes(k) ? { style:'braid' } : {});
   if (era && era.custom && !era.look) { o.outfit = era.color; o.accent = T3.shade(era.color, .55); }
+  // Later in a tour the stage look changes: a second costume for the second half.
+  if (!key && !erasAct && ctx === 'tour' && s && era) { const tr = (s.pj[era.id] || {}).tour; if (tr && tr.played > (tr.nights || 0) / 2 && o.outfit && o.accent) {
+    const a = o.accent; o.accent = o.outfit; o.outfit = a; o.sparkle = 1; if (o.top === 'dress') o.top = 'sequin'; } }
   if (ctx === 'awards' && !e.stage.top.match(/gown|sequin/)) { o.top = 'gown'; o.sparkle = 1; o.guitar = 0; o.hat = 0; }
   if (ctx === 'awards') o.guitar = 0;
   return o;
@@ -234,9 +237,20 @@ VIEWS.week = function () {
   <div class="actions"><button class="btn big" data-act="advance">Advance Week</button>
     <button class="btn ghost" data-act="ff" ${G.quietWeek() ? '' : 'disabled'} title="Skips quiet weeks only. Stops at every real event and deadline.">Fast-forward</button></div>
   <div class="row small"><button class="btn ghost sm" data-act="saveroutine">Save routine</button><button class="btn ghost sm" data-act="applyroutine" ${s.routine.length ? '' : 'disabled'}>Apply routine (${s.routine.length})</button></div>
+  ${chartShow()}
   ${r ? card(`<h3>Last week</h3><div class="grid3"><div><b class="${r.fans >= 0 ? 'pos' : 'neg'}">${r.fans >= 0 ? '+' : ''}${G.fmtN(r.fans)}</b><span class="small muted"> fans</span></div><div><b class="${r.money >= 0 ? 'pos' : 'neg'}">${G.fmtM(r.money)}</b><span class="small muted"> money</span></div><div><b>${G.fmtN(r.units)}</b><span class="small muted"> units sold</span></div></div>
     ${r.lines.map(l => `<p class="small">${h(l)}</p>`).join('')}${r.team.map(l => `<p class="small muted">${h(l)}</p>`).join('')}`) : ''}`;
 };
+function chartShow() {
+  const s = S(), prev = s.chartPrev || { singles:{}, albums:{} };
+  const sg = s.charts.singles.filter(c => !c.out && c.abs < s.abs).sort((a, b) => a.pos - b.pos).slice(0, 4);
+  const al = s.released.filter(r => r.pos != null && r.pos <= 200 && r.abs < s.abs).sort((a, b) => a.pos - b.pos).slice(0, 3);
+  if (!sg.length && !al.length) return '';
+  const mv = (now, was) => was == null ? '<span class="pill">New</span>' : now < was ? `<span class="pos">▲ ${was - now}</span>` : now > was ? `<span class="neg">▼ ${now - was}</span>` : '<span class="muted">=</span>';
+  return card(`<h3>On the charts this week</h3>
+    ${al.map(r => `<div class="between small"><span><b>No. ${r.pos}</b> ${h(G.proj(r.pid).title)} <span class="faint">album</span></span>${mv(r.pos, prev.albums[r.pid])}</div>`).join('')}
+    ${sg.map(c => `<div class="between small"><span><b>No. ${c.pos}</b> ${h(c.t)}${c.real ? ` <span class="faint">(real peak ${c.real})</span>` : ''}</span>${mv(c.pos, prev.singles[c.t])}</div>`).join('')}`);
+}
 VIEWS.life = function () {
   const s = S(), A = G.art(), y = G.yw().y;
   const fam = A.people.filter(p => p.g === 'Family' && p.from <= y && (!p.to || p.to >= y));
@@ -467,6 +481,7 @@ VIEWS.legacy = function () {
     <p class="small muted">The Canon Score measures how close your choices were to what she really did.</p>${spark}`)
   + card(`<h3>Era gallery</h3><div class="shelf">${s.released.map(r => { const p = G.proj(r.pid); return `<div class="sh">${coverSVG(G.pj(r.pid).cover, 84, r.pid)}<span class="small"><b>${h(p.short || p.title)}</b>${p.eraNo ? `<br><span class="faint">Era ${p.eraNo}</span>` : ''}<br>${G.fmtN(r.total)} sold</span></div>`; }).join('') || '<p class="small muted">Your albums appear here.</p>'}</div>`)
   + card(`<h3>Era goals</h3>${P.filter(p => s.goals[p.id] || G.stageOf(p, s.abs) !== 'none').map(p => `<div class="logrow"><b>${h(p.title)}</b>${p.goals.map((g, i) => `<div class="small">${s.goals[p.id] ? (s.goals[p.id][i] ? '✅' : '❌') : '⏳'} ${h(g.l)}</div>`).join('')}</div>`).join('') || '<p class="small muted">Goals appear as each era begins.</p>'}`)
+  + tradingCards()
   + card(`<h3>Photo booth</h3><p class="small muted">Pose your performer in any era look you have reached, then save the picture.</p>
       <div class="chips">${G.allProjects().filter(p => p.type !== 'demos' && G.pj(p.id).released).map(p => `<button class="chip ${UI.sel.booth === p.id ? 'on' : ''}" data-act="booth" data-v="${p.id}">${h(p.short || p.title)}</button>`).join('') || '<span class="small muted">Release an album first.</span>'}</div>
       ${UI.sel.booth ? `<div class="chips">${[['stadium','Stadium'],['awards','Awards'],['press','Red carpet'],['studio','Studio'],['home','Home']].map(([k, l]) => `<button class="chip ${UI.sel.boothSet === k ? 'on' : ''}" data-act="boothset" data-v="${k}">${l}</button>`).join('')}</div>
@@ -676,6 +691,18 @@ function awardNight(id) {
   mount3D('#t3award', { set:st.step === 'carpet' ? 'press' : 'awards', color:(era || {}).color || '#e8c66a', figs:[{ look, anim, mic:st.step === 'perform', s:ageScale() }] }, 'award');
 }
 function moodOf(e) { if (!e) return 'country'; const th = e.theme; return ER.ERA_MOOD[e.id] || (th ? ({ country:'country', folk:'quiet', acoustic:'quiet', darkpop:'dark', jazz:'romantic', orchestral:'romantic' })[th] || 'pop' : 'pop'); }
+function tradingCards() {
+  const s = S(), cards = [];
+  s.awards.forEach(a => cards.push({ r:/Album of the Year|Hall of Fame|Oscar|Academy/.test(a.n) ? 'legend' : 'rare', t:a.n, sub:String(a.y), icon:'🏆' }));
+  s.charts.singles.filter(c => c.peak === 1).forEach(c => cards.push({ r:c.debut === 1 ? 'legend' : 'rare', t:c.t, sub:c.debut === 1 ? 'Debuted at No. 1' : 'Reached No. 1', icon:'🎵' }));
+  s.released.forEach(r => { const p = G.proj(r.pid); if (p && r.fw >= 1e6) cards.push({ r:'legend', t:p.title, sub:`${G.fmtN(r.fw)} first week`, icon:'💿' }); });
+  Object.keys(s.pj).forEach(id => (s.pj[id].diary || []).filter(d => d.stars === 5).slice(0, 3).forEach(d => cards.push({ r:'rare', t:`${d.city}, five stars`, sub:d.moment, icon:'⭐' })));
+  (s.journal || []).slice(0, 4).forEach(j => cards.push({ r:'common', t:j.t, sub:G.fmtDate(j.abs), icon:'📸' }));
+  if (!cards.length) return '';
+  const col = Object.fromEntries(ER.CARD_RARITY.map(x => [x[0], x]));
+  return card(`<h3>Era cards (${cards.length})</h3><p class="small muted">Collected from your awards, No. 1s, million-selling weeks, five-star shows and moments.</p>
+    <div class="tcards">${cards.slice(0, 30).map(c => `<div class="tcard" style="border-color:${col[c.r][2]}"><span class="ti">${c.icon}</span><b>${h(c.t)}</b><span class="small muted">${h(c.sub || '')}</span><span class="tr" style="color:${col[c.r][2]}">${col[c.r][1]}</span></div>`).join('')}</div>`);
+}
 function boothDraw() {
   const p = G.proj(UI.sel.booth); if (!p) return; const pose = UI.sel.boothPose || 'sing', set = UI.sel.boothSet || 'stadium';
   mount3D('#t3booth', { set, color:p.color, figs:[{ look:lookFor(set === 'studio' ? 'studio' : set === 'home' ? '' : 'tour', p), anim:pose, mic:pose === 'sing' }] }, 'booth');
@@ -688,6 +715,9 @@ const ACT = {
     if (t && t.kind === 'record' && !d.arg) return studioSession(t.p);
     const r = G.doTask(d.id, d.arg || undefined); if (r && r.err) return after(r);
     if (r && r.msg) toast(r.msg);
+    if (t && t.kind === 'duet') { const opts = (G.S().rc || []).map(x => x.n);
+      return showScene({ k:'duet', t:'A duet', x:'Your label suggests a one-off collaboration with another star. All of them are invented rivals.', set:'studio', with:'producer',
+        ch:opts.map(n => ({ l:`Record with ${n}`, fx:{}, r:'', who:n })) }); }
     if (t && t.kind === 'shows' && r && r.ok) { const p = G.proj(t.p); if (p.tour.kind !== 'opening' && !/travel week/.test(r.msg || '')) { render(); UI.show = { sh:G.showSetup(p), step:'opener', picks:[] }; return showNight(); } }
     const sc = t && r && r.ok ? G.pickScene(t) : null; if (sc) { render(); return showScene(sc); } render(); },
   booth:d => { UI.sel.booth = d.v; UI.sel.boothSet = UI.sel.boothSet || 'stadium'; UI.sel.boothPose = UI.sel.boothPose || 'sing'; render(); boothDraw(); },
@@ -713,7 +743,9 @@ const ACT = {
     showScene({ t:`A letter from ${f.from}`, x:f.x, set:'home', with:'fan', ch:f.ch }); },
   q3d:() => { const next = { high:'low', low:'off', off:'high' }[T3.quality] || 'high'; T3.setQuality(next); toast(`3D: ${next === 'high' ? 'High' : next === 'low' ? 'Low (faster on older phones)' : 'Off'}`); closeModals(); render(); },
   sound:() => { const on = SND.toggle(); UI.heard = true; if (on) SND.setMood(moodOf(G.currentEra())); toast(on ? 'Sound on.' : 'Sound off.'); closeModals(); },
-  scene:d => { const sc = UI.scene; if (!sc) return closeModals(); const c = G.resolveScene(sc, +d.i); UI.scene = null;
+  scene:d => { const sc = UI.scene; if (!sc) return closeModals();
+    if (sc.k === 'duet') { const who = sc.ch[+d.i].who, t = G.tasks().find(x => x.kind === 'duet'); if (t && G.canSpend(t.cost)) { G.S().week.used += t.cost; G.S().week.done[t.id] = true; }
+      const title = G.recordDuet(who); UI.scene = null; closeModals(); render(); return sessionResult('A duet', [{ x:`You and ${who} record "${title}".` }, { x:`${who} is an invented rival. The song goes on the next album as a bonus track.`, c:'small muted' }]); } const c = G.resolveScene(sc, +d.i); UI.scene = null;
     const box = document.querySelector('#scch'); if (box) box.innerHTML = `<p><b>${h(c.r)}</b></p><p class="small muted">${h(G.fxText(c.fx))}</p><button class="btn big" data-act="scenedone">Continue</button>`; },
   scenedone:() => { closeModals(); render(); },
   wsel:(d, el) => { UI.ws[d.k] = el.value; }, wpick:d => { UI.ws[d.k] = d.v; writeSession(UI.ws.pid); },
