@@ -143,6 +143,8 @@ function title() {
   $('#app').innerHTML = `<div class="title">
     <div class="logo"><span class="eyebrow">A week-by-week career game</span><h1>The Eras Life</h1><p class="muted">Live through a documented career from the first demo to the last stadium night, then carry it on yourself.</p></div>
     <div class="stage3d tall" id="t3title"></div>
+    ${card(`<h2>Daily challenge</h2>${(() => { const c = G.challengeToday(), A = ER.artists[c.artist]; return `<p><b>${h(c.n)}</b> as ${h(A.name)}, ${h(c.title)} era.</p><p class="small muted">${h(c.d)} Everyone gets the same challenge today. Streak: ${G.challengeStreak()} day${G.challengeStreak() === 1 ? '' : 's'}.</p>`; })()}
+      <div class="row"><button class="btn" data-act="daily">Play today's challenge</button>${G.slotInfo('daily') ? '<button class="btn ghost sm" data-act="dailyload">Continue it</button>' : ''}</div><p class="small faint">It has its own save, so your slots are never touched.</p>`)}
     ${card(`<h2>Saves</h2><div class="stack tight">${slots}</div><div class="row"><label class="btn ghost sm">Import a save<input type="file" accept=".json,application/json" data-act="import" hidden></label></div>`)}
     ${card(`<h2>Stories</h2><p class="small muted">Pick who to play when you start a new game. Each one appears in the others' games as a real chart rival.</p><div class="stack tight">${artists}</div>`)}
     <p class="small faint">An unofficial fan project. No lyrics, audio, album art or photos of real people are used. Figures are stylised and are not likenesses. Event cards stick to the public record.</p></div>`;
@@ -216,7 +218,8 @@ VIEWS.week = function () {
   const taskRow = t => { const done = G.taskDone(t.id); return `<div class="task ${done ? 'done' : ''} ${t.req ? 'req' : ''}"><div class="cost">${'●'.repeat(Math.max(1, t.cost))}</div><div class="tl"><b>${h(t.l)}</b>${t.desc ? `<div class="small muted">${h(t.desc)}</div>` : ''}</div>
     ${done ? '<span class="pill ok">Done</span>' : t.fixed ? '' : `<div class="row">${t.tab && t.tab !== 'week' ? `<button class="btn ghost sm" data-act="tab" data-v="${t.tab}">Open</button>` : ''}<button class="btn sm" data-act="do" data-id="${h(t.id)}" ${G.canSpend(t.cost) ? '' : 'disabled'}>Do</button></div>`}</div>`; };
   const r = s.recap;
-  return `${s.guide && !s.guide.done && s.week ? card(`<span class="eyebrow">Getting started</span>${ER.GUIDE.map(g => `<div class="small"><b>${s.guide[g.id] ? '✅' : '⬜'} ${h(g.l)}</b> <span class="muted">${h(g.hint)}</span></div>`).join('')}`, 'world') : ''}
+  return `  ${s.challenge && !s.challenge.done ? card(`<span class="eyebrow">Daily challenge</span><p class="small"><b>${h(s.challenge.n)}</b>: ${h(s.challenge.d)} Until ${h(G.fmtDate(s.challenge.until))}.</p>`, 'world') : ''}
+  ${s.guide && !s.guide.done && s.week && !s.challenge ? card(`<span class="eyebrow">Getting started</span>${ER.GUIDE.map(g => `<div class="small"><b>${s.guide[g.id] ? '✅' : '⬜'} ${h(g.l)}</b> <span class="muted">${h(g.hint)}</span></div>`).join('')}`, 'world') : ''}
   ${s.recovery ? card(`<b>Recovery goal:</b> raise your ${s.recovery.k === 'rep' ? 'Public Reputation' : 'team mood'} to 30. Weeks are harder until you do.`, 'warn') : ''}
   ${G.worldNotes().map(n => card(`<span class="eyebrow">The world right now</span><p class="small">${h(n)}</p>`, 'world')).join('')}
   ${s.flags.retired ? card(`<span class="eyebrow">Retired</span><p class="small">You retired in ${ER.yw(s.flags.retired).y}. Weeks are quiet now. Come out of retirement from the tasks below whenever you like.</p>`, 'world') : ''}
@@ -251,8 +254,8 @@ VIEWS.songbook = function () {
   const s = S(), A = G.art(), groups = {};
   G.writable().forEach(w => { (groups[w.p.id] = groups[w.p.id] || []).push(w); });
   const act = G.active().filter(x => (x.st === 'write' || x.st === 'record') && x.p.type !== 'rerecord');
-  if (!act.length) return card(`<h2>Songbook</h2><p class="muted">No era is in its writing stage right now. The Songbook only offers songs that belong to the current era.</p>`) + catalogCard();
-  return act.map(({ p, st }) => {
+  if (!act.length) return vaultCard() + card(`<h2>Songbook</h2><p class="muted">No era is in its writing stage right now. The Songbook only offers songs that belong to the current era.</p>`) + catalogCard();
+  return vaultCard() + act.map(({ p, st }) => {
     const all = p.tracks.map(t => [t, 'album']).concat((p.extras || []).map(t => [t, 'bonus'])).concat((p.vault || []).map(t => [t, 'vault']));
     const c = G.counts(p), co = UI.sel['co:' + p.id] || (p.cowriters || ['Solo'])[0];
     const tv = p.vaultFor && G.proj(p.vaultFor);
@@ -267,6 +270,14 @@ function catalogCard() {
   const s = S(), cat = Object.keys(s.songs);
   if (!cat.length) return '';
   return card(`<h3>Your catalog (${cat.length})</h3><div class="small muted">${cat.slice(-40).map(t => h(t)).join(' · ')}</div>`);
+}
+function vaultCard() {
+  const s = S(), can = G.vaultable(), saved = G.vaultSongs(); if (!can.length && !saved.length) return '';
+  UI.sel.vpick = UI.sel.vpick || [];
+  return card(`<h2>The vault</h2><p class="small muted">Songs you wrote that did not make the album. Save the ones you love, then release them later.</p>
+    ${can.map(t => `<div class="between small"><span>${h(t)}</span><button class="btn ghost sm" data-act="vsave" data-t="${h(t)}">Save to the vault</button></div>`).join('')}
+    ${saved.length ? `<h3>In the vault</h3><div class="chips">${saved.map(t => `<button class="chip ${UI.sel.vpick.includes(t) ? 'on' : ''}" data-act="vpick" data-t="${h(t)}">${h(t)} · ${s.songs[t].q}</button>`).join('')}</div>
+      <button class="btn sm" data-act="vrelease" ${UI.sel.vpick.length ? '' : 'disabled'}>Release "From the Vault" (${UI.sel.vpick.length}) · 1 block</button>` : ''}`);
 }
 VIEWS.studio = function () {
   const s = S(), out = [];
@@ -379,7 +390,7 @@ VIEWS.inbox = function () {
   const s = S(); const F = { manager:'Manager', publicist:'Publicist', label:'Label', family:'Mom', collab:'Collaborator', promoter:'Promoter', fans:'Fan club' };
   return card(`<div class="between"><h2>Team Inbox</h2><button class="btn ghost sm" data-act="readall">Mark all read</button></div>
     ${s.duties.length ? `<h3>Assignments</h3>${s.duties.map(d => `<div class="between small"><span>${h(d.l)}</span><span class="muted">Due ${h(G.fmtDate(d.due))}</span></div>`).join('')}` : ''}
-    <h3>Messages</h3>${s.inbox.map(m => `<div class="msg ${m.read ? '' : 'unread'}" data-act="read" data-id="${m.id}">${m.mail != null && !m.replied ? `<button class="btn sm" style="float:right" data-act="reply" data-id="${m.id}">Reply</button>` : ''}<div class="between"><b>${h(m.subj)}</b><span class="small muted">${h(F[m.from] || m.from)}</span></div><div class="small muted">${h(m.x)}</div><div class="small faint">${h(G.fmtDate(m.abs))}</div></div>`).join('') || '<p class="small muted">No messages.</p>'}`);
+    <h3>Messages</h3>${s.inbox.map(m => `<div class="msg ${m.read ? '' : 'unread'}" data-act="read" data-id="${m.id}">${m.memory != null && !m.replied ? `<button class="btn sm" style="float:right" data-act="memory" data-id="${m.id}">Respond</button>` : ''}${m.mail != null && !m.replied ? `<button class="btn sm" style="float:right" data-act="reply" data-id="${m.id}">Reply</button>` : ''}<div class="between"><b>${h(m.subj)}</b><span class="small muted">${h(F[m.from] || m.from)}</span></div><div class="small muted">${h(m.x)}</div><div class="small faint">${h(G.fmtDate(m.abs))}</div></div>`).join('') || '<p class="small muted">No messages.</p>'}`);
 };
 VIEWS.eggs = function () {
   const s = S(), E = s.eggs, tg = G.eggTargets();
@@ -494,6 +505,10 @@ function modals() {
     modal(`<span class="eyebrow">Release week</span><h2>${h(p.title)}</h2><div class="coverwrap">${coverSVG(G.pj(p.id).cover, 140, p.id)}<div><p><b>${G.fmtN(r.fw)}</b> first week</p>${r.real ? `<p class="small muted">Real: ${G.fmtN(r.real)}</p>` : ''}<p class="small">Quality ${r.q} · Debut No. ${r.peak}</p></div></div><button class="btn big" data-act="modalok">Continue</button>`);
     return;
   }
+  if (m.k === 'challenge') { const c = s.challenge;
+    modal(`<span class="eyebrow">Daily challenge</span><h2>${c.won ? 'Challenge complete' : 'Not this time'}</h2><p>${h(c.n)}: ${h(c.d)}</p><p class="small muted">Streak: ${G.challengeStreak()} day${G.challengeStreak() === 1 ? '' : 's'}. Come back tomorrow for a new one.</p>
+      <div class="stack tight"><button class="btn big" data-act="modalok">Keep playing this save</button><button class="btn ghost" data-act="totitle">Back to the title screen</button></div>`);
+    if (c.won && window.SND) SND.fanfare(); return; }
   if (m.k === 'wrap') {
     const w = G.eraWrap(m.pid); if (!w) { s.modal.shift(); return modals(); }
     modal(`<span class="eyebrow">Era wrap-up</span><h2>${h(w.p.title)}</h2><div class="coverwrap">${coverSVG(G.pj(w.p.id).cover, 110, w.p.id)}<div>
@@ -687,6 +702,13 @@ const ACT = {
   awcarpet:d => { UI.award.carpet = d.v; UI.award.step = 'perform'; awardNight(UI.award.id); },
   awperf:d => { UI.award.perf = d.v; UI.award.step = 'reveal'; if (d.v && window.SND) SND.crowd(3); awardNight(UI.award.id); },
   awreveal:() => { const a = UI.award; G.awardNight(G.findEvent(a.id), a.carpet, a.perf); UI.awardSeen[a.id] = 1; UI.award = null; if (window.SND) SND.fanfare(); closeModals(); eventModal(a.id); },
+  vsave:d => { G.saveToVault(d.t); toast(`"${d.t}" is in the vault.`); render(); },
+  vpick:d => { const a = UI.sel.vpick, i = a.indexOf(d.t); if (i >= 0) a.splice(i, 1); else if (a.length < 6) a.push(d.t); render(); },
+  vrelease:() => { if (!G.canSpend(1)) return toast('No blocks left.'); const best = G.releaseVault(UI.sel.vpick); if (!best) return; G.S().week.used++; UI.sel.vpick = []; if (window.SND) SND.fanfare(); toast(`From the Vault is out. "${best}" leads.`); render(); },
+  memory:d => { const s = G.S(), m = s.inbox.find(x => x.id === d.id); if (!m) return; const f = ER.MEMORIES[m.memory]; m.read = true; m.replied = true;
+    showScene({ t:f.t.replace('{song}', m.song), x:f.x.replace(/\{song\}/g, m.song), set:'stadium', with:'fan', ch:f.ch }); },
+  daily:() => { if (G.slotInfo('daily') && !confirm('Start today\'s challenge again? Your current challenge save will be replaced.')) return; G.startChallenge(); UI.tab = 'week'; render(); },
+  dailyload:() => { if (G.load('daily')) { UI.tab = 'week'; render(); } },
   reply:d => { const s = G.S(), m = s.inbox.find(x => x.id === d.id); if (!m) return; const f = ER.FAN_MAIL[m.mail]; m.read = true; m.replied = true;
     showScene({ t:`A letter from ${f.from}`, x:f.x, set:'home', with:'fan', ch:f.ch }); },
   sound:() => { const on = SND.toggle(); UI.heard = true; if (on) SND.setMood(moodOf(G.currentEra())); toast(on ? 'Sound on.' : 'Sound off.'); closeModals(); },

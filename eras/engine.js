@@ -652,8 +652,11 @@ function startWeek() {
   if (S.flags.retired && ER.yw(a).w === 1 && Math.random() < .25) feed(pick(['it has been years and i still check for a comeback every morning','imagine one more era. just one.','the farewell tour was the best night of my life']));
   if (a >= W('2006-06-01') && !S.flags.retired && S.released.length && Math.random() < .14) {
     const m = pick(ER.FAN_MAIL); inbox('fans', `A letter from ${m.from}`, m.x, { mail:ER.FAN_MAIL.indexOf(m) }); }
+  if (!S.flags.retired && S.released.length >= 3 && Math.random() < .05) { const old = Object.keys(S.songs).filter(t => S.songs[t].st === 'released' && a - (S.songs[t].abs || 0) > 260);
+    if (old.length) { const song = pick(old), m = pick(ER.MEMORIES); inbox('fans', m.t.replace('{song}', song), m.x.replace(/\{song\}/g, song), { memory:ER.MEMORIES.indexOf(m), song }); } }
   if (S.flags.free && !S.flags.retired && ER.yw(a).w === 6 && S.awardsYear !== ER.yw(a).y) { S.awardsYear = ER.yw(a).y; const n = G.freeNominations(); if (n.length) S.modal.push({ k:'honours', y:ER.yw(a).y, noms:n }); }
-  if (G.needsNextEra()) G.proposeEra();
+  if (S.challenge) G.checkChallenge();
+  if (G.needsNextEra() && !S.challenge) G.proposeEra();
   G.save(true);
 }
 G.startWeek = startWeek;
@@ -809,6 +812,7 @@ function doRelease(p) {
   if (fw >= 1e6 && !S.ach.million) ach('million');
   if (!pj.singles.length) { const sg = G.defaultSingle(p); if (sg) G.releaseSingle(p, sg); }
   S.modal.push({ k:'release', pid:p.id });
+  if (pos === 1 && Math.random() < .35) { const n = pick(ER.RIVAL_NOTES); inbox('collab', `A note from ${n.from}`, `${n.x} (${n.from} is an invented rival in this game.)`); }
   inbox('label', `${p.title}: first week`, `${G.fmtN(fw)} units${p.units ? ` (the real figure was ${G.fmtN(p.units)})` : ''}. Debut at No. ${pos}.`);
   return `${p.title} is out: ${G.fmtN(fw)} first week.`;
 }
@@ -955,6 +959,51 @@ G.freeNominations = function () {
   out.forEach(n => { n.won = Math.random() < n.chance; if (n.won) S.awards.push({ n:`${ER.FREE_AWARDS.n}: ${n.cat}`, abs:S.abs, y:y + 1 }); });
   return out;
 };
+/* ---------- The vault ---------- */
+// Songs you wrote that did not make an album can be saved to the vault and released later.
+G.vaultable = () => Object.keys(S.songs).filter(t => { const so = S.songs[t]; if (so.saved || so.tv) return false; const p = G.proj(so.p);
+  return so.st !== 'released' && p && G.pj(p.id).released && !p.tracks.includes(t); });
+G.saveToVault = t => { const so = S.songs[t]; if (!so) return; so.saved = S.abs; G.journalAdd(`"${t}" goes in the vault`, 'One day, maybe.'); };
+G.vaultSongs = () => Object.keys(S.songs).filter(t => S.songs[t].saved && S.songs[t].st !== 'released');
+G.releaseVault = function (titles) {
+  titles = titles.filter(t => S.songs[t] && S.songs[t].saved && S.songs[t].st !== 'released').slice(0, 6); if (!titles.length) return null;
+  titles.forEach(t => { S.songs[t].st = 'released'; S.songs[t].fromVault = S.abs; });
+  const best = titles.slice().sort((a, b) => S.songs[b].q - S.songs[a].q)[0], p = G.proj(S.songs[best].p);
+  applyFx({ fans:1 + titles.length * .5, hype:8 }); G.releaseSingle(p, best);
+  inbox('label', 'From the Vault', `${titles.length} song${titles.length > 1 ? 's' : ''} from the vault are out. "${best}" is the focus track.`);
+  feed(`FROM THE VAULT. "${best}". I need a minute.`); G.journalAdd('Opened the vault', titles.map(t => `"${t}"`).join(', '));
+  return best;
+};
+/* ---------- Daily challenge ---------- */
+G.challengeToday = function () {
+  const d = new Date(), key = `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`, r = ER.seeded('eras-daily-' + key);
+  const artists = ['taylor','beyonce','gaga'], a = artists[Math.floor(r() * 3)];
+  const eras = ER.artists[a].projects.filter(p => p.type === 'album' && p.units);
+  const p = eras[Math.floor(r() * eras.length)], c = ER.CHALLENGES[Math.floor(r() * ER.CHALLENGES.length)];
+  return { key, artist:a, era:p.id, title:p.title, goal:c.goal, n:c.n, d:c.d };
+};
+G.startChallenge = function () {
+  const c = G.challengeToday(); G.newGame({ artist:c.artist, mode:'era', era:c.era, diff:'standard', slot:'daily', look:{} });
+  const p = G.proj(c.era), w = G.win(p); S.challenge = Object.assign({}, c, { start:S.abs, until:w.rel + 8, fans0:S.stats.fans, missed:0 });
+  inbox('family', `Daily challenge: ${c.n}`, `${c.d} You have until the week of ${G.fmtDate(S.challenge.until)}.`);
+  return S.challenge;
+};
+G.checkChallenge = function () {
+  const c = S.challenge; if (!c || c.done) return;
+  const p = G.proj(c.era), r = S.released.find(x => x.pid === c.era);
+  let won = null;
+  if (c.goal === 'units' && r) won = r.fw > (p.units || 0);
+  if (c.goal === 'single' && S.charts.singles.some(x => x.pid === c.era && x.peak <= 5)) won = true;
+  if (c.goal === 'fans' && S.stats.fans >= c.fans0 * 1.15) won = true;
+  if (c.goal === 'canon' && r) won = !G.pj(c.era).missed;
+  if (won === null && S.abs >= c.until) won = false;
+  if (won === null) return;
+  c.done = true; c.won = !!won;
+  const best = JSON.parse(lsGet('eras-daily-best') || '{}'); if (won) { best[c.key] = true; lsSet('eras-daily-best', JSON.stringify(best)); }
+  S.modal.push({ k:'challenge' });
+};
+G.challengeStreak = () => { const best = JSON.parse(lsGet('eras-daily-best') || '{}'); let n = 0; const d = new Date();
+  for (let i = 0; i < 365; i++) { const x = new Date(d.getTime() - i * 864e5), k = `${x.getUTCFullYear()}-${x.getUTCMonth() + 1}-${x.getUTCDate()}`; if (best[k]) n++; else if (i > 0) break; } return n; };
 G.takeBreak = function (weeks) { S.proposal = null; S.breakUntil = S.abs + weeks; applyFx({ energy:30, team:5 }); inbox('family', 'A break', `No new music for ${weeks} weeks. Rest up.`); };
 G.startNextReal = function (id) {
   S.proposal = null; S.modal = S.modal.filter(m => m.k !== 'nextera');
