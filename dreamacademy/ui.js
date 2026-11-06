@@ -87,6 +87,7 @@ function statusTags(id) {
   const p = G.p(id), out = [];
   if (id === S().focus) out.push(tag('Focus', 'focus'));
   if (p.hiatus) out.push(tag('On a break', 'calm'));
+  if (p.injury > 0) out.push(tag('Injured ' + p.injury + 'mo', 'bad'));
   if (p.warn) out.push(tag('Eval warning', 'warn'));
   if (p.status === 'solo') out.push(tag('Solo', 'calm'));
   if (p.status === 'cut') out.push(tag(({ M1:'Out at Mission 1', M2:'Out at Mission 2', M3:'Out at Mission 3', W:'Withdrew', F:'Out at the finale' })[p.out] || 'Left the show'));
@@ -227,6 +228,19 @@ function planTab() {
   }
   h = '<section class="card room"><div class="stage3d" id="p3d"></div><div class="between roomrow"><div><b>Practice room</b><div class="small muted">Free sessions this month: ' + s.practice + ' of 2. Drag to look around.</div></div>' +
     '<button class="btn sm" data-a="practice" ' + (s.practice > 0 && G.working().length ? '' : 'disabled') + '>Practice</button></div></section>' + h;
+  if (G.voteMeter && s.month >= 18 && s.month <= 21 && G.trainees().length) {
+    const vm = G.voteMeter(), cut = s.month === 21 ? 6 : [0, 0, 0][0] || Math.max(6, vm.length - ({ 18:2, 19:2, 20:5 })[s.month] || 6);
+    h += '<section class="card"><div class="between"><h3>Vote meter</h3><span class="tag ' + (G.editLabel().indexOf('Villain') >= 0 || G.editLabel().indexOf('Rough') >= 0 ? 'bad' : 'calm') + '">' + esc(G.editLabel()) + '</span></div>' +
+      vm.map((r, i) => '<div class="vm ' + (r.id === s.focus ? 'me' : '') + (i >= cut ? ' danger' : '') + '"><span class="mono faint">' + (i + 1) + '</span>' + av(r.id, 22) + '<span>' + esc(G.name(r.id)) + '</span>' + bar(r.v) + '<b class="mono">' + Math.round(r.v) + '</b></div>').join('') +
+      '<p class="small faint">Fan Favor decides the online vote. Red rows are below the safe line. How the show edits her choices moves her votes every month.</p></section>';
+  }
+  const rh = G.rankHist ? G.rankHist() : [];
+  if (rh.length >= 2 && !G.debuted()) {
+    const w = 300, hh = 70, mx = Math.max(...rh.map(r => r.of)), pts = rh.map((r, i) => [6 + i * (w - 12) / Math.max(1, rh.length - 1), 6 + (r.r - 1) / Math.max(1, mx - 1) * (hh - 12)]);
+    h += '<section class="card"><div class="between"><h3>' + esc(G.name(s.focus)) + '\'s eval rank</h3><span class="mono small">NOW #' + rh[rh.length - 1].r + ' OF ' + rh[rh.length - 1].of + '</span></div>' +
+      '<svg class="rankh" viewBox="0 0 ' + w + ' ' + hh + '" role="img" aria-label="Eval rank over time"><path d="' + pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ') + '"/>' +
+      pts.map((p, i) => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5"/>').join('') + '</svg><p class="small faint">Top of the chart is rank 1. Months ' + rh[0].m + ' to ' + rh[rh.length - 1].m + '.</p></section>';
+  }
   const ids = G.cast().slice().sort((a, b) => (b === s.focus) - (a === s.focus) || (s.ctrl[b] === 'manual') - (s.ctrl[a] === 'manual'));
   h += '<section class="card"><div class="between"><h3>This month</h3><select class="ctrl" data-bulk aria-label="Set every autoplayed member"><option value="">Set all autoplay…</option>' + Object.keys(D.styles).map(k => '<option value="' + k + '">' + D.styles[k].l + '</option>').join('') + '</select></div>' + ids.map(id => planRow(id)).join('') + '</section>';
   return h;
@@ -240,7 +254,7 @@ function planRow(id) {
     ctl = '<div class="chips acts">' + G.acts(id).map(k => '<button class="chip ' + (cur === k ? 'on' : '') + '" data-act="' + k + '" data-id="' + id + '" title="' + esc(D.acts[k].l) + '">' + ACT_SHORT[k] + '</button>').join('') + '</div>';
     const ses = s.session[id];
     if (ses) ctl += '<p class="small sess">Lesson done: ' + Math.round(ses.acc * 100) + '% · gains ×' + ses.mult.toFixed(2) + ' this month</p>';
-    else if (G.canTrain(id)) ctl += '<button class="btn sm trainbtn" data-train="' + id + '">Train now: ' + esc(MG.INFO[G.MG_KIND[cur]].title.split(': ')[1]) + '</button><span class="small faint"> boosts this month\'s gains up to ×1.7</span>';
+    else if (G.canTrain(id)) ctl += '<button class="btn sm trainbtn" data-train="' + id + '">Train now: ' + esc(MG.INFO[G.MG_KIND[cur]].title.split(': ')[1]) + (G.tier ? ' · ' + G.TIER[G.tier(id, cur)] : '') + '</button><span class="small faint"> boosts this month\'s gains up to ×1.7</span>';
     if (cur === 'bond') { const pt = G.partnerOf(id);
       ctl += '<label class="field inline"><span>With</span><select data-partner="' + id + '">' + G.partners(id).map(o => '<option value="' + o + '"' + (o === pt ? ' selected' : '') + '>' + esc(G.name(o)) + ' (bond ' + G.bond(id, o) + ')</option>').join('') + '</select></label>'; }
   } else ctl = '<p class="small muted">Autoplay: ' + esc(D.acts[cur].l) + (cur === 'bond' ? ' with ' + esc(G.name(G.partnerOf(id) || id)) : '') + '</p>';
@@ -277,6 +291,7 @@ function profile(id) {
     '<h3>Skills</h3>' + D.skills.map(({ k, l }) => '<div class="statrow"><span>' + l + '</span>' + bar(p.sk[k]) + '<b>' + Math.round(p.sk[k]) + '</b></div>').join('') +
     '<div class="statrow"><span>Wellbeing</span>' + bar(p.wb, p.wb < 30 ? 'bad' : p.wb < 50 ? 'warn' : 'ok') + '<b>' + Math.round(p.wb) + '</b></div>' +
     '<div class="statrow"><span>Fan Favor</span>' + bar(p.fan) + '<b>' + Math.round(p.fan) + '</b></div>' +
+    (id === s.focus && G.coachFavor && !G.debuted() ? '<h3>Coach favor</h3>' + ['J0','J1','J2'].map(c => '<div class="statrow"><span>' + esc(D.npcs[c].name) + '</span>' + bar(G.coachFavor()[c] / .3) + '<b>' + Math.round(G.coachFavor()[c]) + '</b></div>').join('') + '<p class="small faint">Strong eval-day stages in a coach\'s area win favor. At 30 she offers private lessons.</p>' : '') +
     (p.grades.length ? '<h3>Evals</h3><div class="grades">' + p.grades.slice(-14).map(g => '<span class="grade g' + g.g.replace('+', 'p') + '" title="Month ' + g.m + '">' + g.g + '</span>').join('') + '</div>' : '') +
     (bonds.length ? '<h3>Bonds</h3><div class="bonds">' + bonds.map(([o, v]) => '<div class="bondrow">' + av(o, 26) + '<span>' + esc(G.name(o)) + '</span>' + bondBar(v) + '<b class="mono">' + (v > 0 ? '+' : '') + v + '</b></div>').join('') + '</div>' : '') +
     '<p class="small faint">Skill numbers are game numbers, not claims about anyone.</p>' +
@@ -607,7 +622,7 @@ function onClick(e) {
   const lk = e.target.closest('[data-look]'); if (lk) { G.p(lk.dataset.id).look[lk.dataset.look] = lk.dataset.v; G.save(); lookEditor(lk.dataset.id); render(); return; }
   const br = e.target.closest('[data-brk]'); if (br) { G.startHiatus(br.dataset.id, +br.dataset.brk); G.save(); closeSheet(); render(); toast(G.name(br.dataset.id) + ' is on a break.'); return; }
   const tr = e.target.closest('[data-train]'); if (tr) { const id = tr.dataset.train, kind = G.MG_KIND[G.planOf(id)];
-    runGame(kind, { cast:cast3([id]), skill:G.avg(id) }).then(acc => { const mlt = G.trainResult(id, acc); G.save(); render(); if (mlt) toast(G.name(id) + ': ' + Math.round(acc * 100) + '% · gains ×' + mlt.toFixed(2)); }); return; }
+    runGame(kind, { cast:cast3([id]), skill:G.p(id).sk[G.planOf(id)] + (G.tier ? G.tier(id, G.planOf(id)) * 5 : 0) }).then(acc => { const mlt = G.trainResult(id, acc); G.save(); render(); if (mlt) toast(G.name(id) + ': ' + Math.round(acc * 100) + '% · gains ×' + mlt.toFixed(2)); }); return; }
   const ps = e.target.closest('[data-psel]'); if (ps) { practiceSheet(ps.dataset.psel); return; }
   const pk = e.target.closest('[data-pk]'); if (pk) { const id = pk.dataset.id, k = pk.dataset.pk; closeSheet();
     runGame(G.MG_KIND[k], { cast:cast3([id]), skill:G.avg(id) }).then(acc => { const g = G.practice(id, k, acc); G.save(); render(); if (g) toast(G.name(id) + ': ' + D.skills.find(x => x.k === k).l + ' +' + g); }); return; }
