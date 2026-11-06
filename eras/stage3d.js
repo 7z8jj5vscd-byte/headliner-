@@ -220,7 +220,8 @@ T3.view = function (el, spec, slot) {
       s = T3.slots[slot] = { r, key:'', scene:null, cam:new THREE.PerspectiveCamera(32, 1, .1, 60), figs:[], rotY:0, drag:null };
       const c = r.domElement; c.style.touchAction = 'pan-y'; c.className = 't3';
       c.addEventListener('pointerdown', e => { s.drag = { x:e.clientX, r:s.rotY }; });
-      window.addEventListener('pointerup', () => { s.drag = null; });
+      const stop = () => { s.drag = null; }; window.addEventListener('pointerup', stop); c.addEventListener('pointercancel', stop); c.addEventListener('pointerleave', stop);
+      c.style.opacity = '0'; c.style.transition = 'opacity .35s';
       c.addEventListener('pointermove', e => { if (s.drag) s.rotY = s.drag.r + (e.clientX - s.drag.x) * .01; });
     }
     if (s.r.domElement.parentNode !== el) el.appendChild(s.r.domElement);
@@ -239,9 +240,14 @@ T3.view = function (el, spec, slot) {
     const w = el.clientWidth || 320, h = el.clientHeight || 220;
     s.r.setSize(w, h, false); s.r.domElement.style.width = '100%'; s.r.domElement.style.height = '100%';
     s.cam.aspect = w / h; s.cam.updateProjectionMatrix();
+    s.el = el; requestAnimationFrame(() => { s.r.domElement.style.opacity = '1'; });
     loop(); return true;
   } catch (e) { T3.ok = false; return false; }
 };
+// Keep every view sharp and in proportion when the phone rotates or the window changes size.
+let rz = 0; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => {
+  for (const k in T3.slots) { const s = T3.slots[k], el = s.el; if (!el || !el.isConnected) continue;
+    const w = el.clientWidth || 320, h = el.clientHeight || 220; s.r.setSize(w, h, false); s.cam.aspect = w / h; s.cam.updateProjectionMatrix(); } }, 150); });
 function dispose(sc) { sc.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) [].concat(o.material).forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }); }); }
 function loop() {
   if (T3.raf) return;

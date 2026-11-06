@@ -180,10 +180,6 @@ function decorate() {
       <label class="field"><span>Your own song titles (optional, separated by commas)</span><input id="ne-titles" value="${h(UI.sel.ne.titles || '')}" placeholder="Titles only"></label></div>`); }
   // Retirement screen: pass the torch.
   const tt = $('.modal [data-act=totitle]'); if (tt && s && s.flags.retired && !$('#torch-btn')) tt.insertAdjacentHTML('beforebegin', '<button id="torch-btn" class="btn ghost" data-act="nextgen">Pass the torch to a protégé</button>');
-  // Title screen: the last two weeks of daily challenges.
-  const dc = document.querySelector('[data-act=daily]'); if (dc && !$('#daily-hist')) { let best = {}; try { best = JSON.parse(localStorage.getItem('eras-daily-best') || '{}'); } catch (e) {}
-    const days = Array.from({ length:14 }, (_, i) => { const x = new Date(Date.now() - (13 - i) * 864e5); return best[`${x.getUTCFullYear()}-${x.getUTCMonth() + 1}-${x.getUTCDate()}`]; });
-    dc.closest('.row').insertAdjacentHTML('afterend', `<div id="daily-hist" class="row small" aria-label="Last 14 days">${days.map(w => `<span title="${w ? 'Won' : 'Not won'}">${w ? '🟩' : '⬜'}</span>`).join('')}</div>`); }
 }
 ACT.nepal = d => { UI.sel.ne.pal = +d.i; document.querySelectorAll('.modal [data-act=nepal]').forEach(b => b.classList.toggle('on', b.dataset.i === d.i)); };
 document.addEventListener('input', e => { if (e.target.id === 'ne-titles' && UI.sel.ne) UI.sel.ne.titles = e.target.value; });
