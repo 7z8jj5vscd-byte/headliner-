@@ -32,7 +32,7 @@ function primary() { const a = G.active(); a.sort((x, y) => PRI.indexOf(x.st) - 
 // The performer's look follows the eras: each era's hair, make-up and costumes.
 const ERAS_CYCLE = ['lover','fearless','evermore','rep','speaknow','red','folklore','1989','ttpd','midnights'];
 function curArtist() { const s = S(); return s ? s.artist : (UI.newg && UI.newg.artist) || 'taylor'; }
-function looksOf(a) { return a === 'taylor' ? ER.LOOKS.taylor : ER.LOOKS[a + '_eras']; }
+function looksOf(a) { return a === 'taylor' ? ER.LOOKS.taylor : (ER.LOOKS[a + '_eras'] || ER.LOOKS.generic_eras); }
 function eraKey(era) {
   const L = looksOf(curArtist()); if (!era) return 'early';
   if (L[era.id]) return era.id;
@@ -44,6 +44,7 @@ function eraKey(era) {
 }
 function lookFor(ctx, era, key) {
   const L = looksOf(curArtist()), s = S();
+  if (s && s.wardrobe && ctx === 'tour' && !key && G.proj(s.wardrobe)) era = G.proj(s.wardrobe);
   let k = key || eraKey(era), erasAct = false;
   if (k && k.startsWith('eras:')) { k = k.slice(5); erasAct = true; }
   if (!key && s && G.age() < 15) k = 'early';
@@ -520,6 +521,7 @@ function modals() {
   const s = S(); if (!s || document.querySelector('.modal')) return;
   if (s.week.pending.length) return eventModal(s.week.pending[0]);
   const m = s.modal[0]; if (!m) return;
+  if (UI.modalKinds[m.k]) return UI.modalKinds[m.k](m, s);
   if (m.k === 'goaldone') { const gp = G.goalProgress();
     modal(`<span class="eyebrow">Career goal</span><h2>You did it</h2><p>${h(gp ? gp.g.d : '')}</p><p class="small muted">Reached on ${h(G.fmtDate(s.abs))}. Keep playing as long as you like.</p><button class="btn big" data-act="modalok">Keep going</button>`);
     if (window.SND) SND.fanfare(); return; }
@@ -940,5 +942,8 @@ document.addEventListener('change', e => {
   const f = ACT[el.dataset.act]; if (f) f(el.dataset, el);
 });
 window.addEventListener('resize', () => { if (G.S() && UI.tab === 'week') mount3D('#t3stage', stageSpec(), 'main'); });
+// Helpers for add-on modules.
+Object.assign(UI, { h, card, bar, pill, modal, closeModals, mount3D, lookFor, showScene, sessionResult, VIEWS, ACT, stageName, coverSVG:UI.coverSVG, toast });
+UI.modalKinds = UI.modalKinds || {};
 UI.start = () => { title(); };
 })();
