@@ -1,12 +1,14 @@
 {
- "build": "2026.11.06-5",
- "title": "Your schedule, your story",
+ "build": "2026.11.06-6",
+ "title": "Albums, tours and life",
  "notes": [
-  "Story style for every save: Canon, Guided (deadlines, movable album dates) or Sandbox (move, delay or skip eras, start from any era).",
-  "Deadlines instead of required tasks: choose which weeks to do the work.",
-  "Hand any task to your team for a fee.",
-  "Work ahead on the next album, take a week off, and auto-play weeks.",
-  "Release singles whenever you like, and spend a marketing budget.",
-  "A Coming up calendar on This Week, and more options in Settings."
+  "Cut songs from an album (Guided or Sandbox) and choose deluxe-only tracks.",
+  "Write and record with any collaborator you've worked with, plus invented ones.",
+  "Release acoustic, remix, live, extended and piano versions.",
+  "Side projects: a surprise EP, a holiday album, a soundtrack or covers.",
+  "Build tours city by city, add or cancel legs mid-tour, and change the setlist on the road.",
+  "Book your own shows: one-off nights, festivals and residencies.",
+  "Free time that inspires songs, your public image, invented brands, and buying back masters in Sandbox.",
+  "A What next? card between eras."
  ]
 }

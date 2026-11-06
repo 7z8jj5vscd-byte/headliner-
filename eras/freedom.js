@@ -99,7 +99,7 @@ G.releaseSingle = function (p, t) { const so = S().songs[t]; const bump = so && 
 
 /* ---------- Tracklist ---------- */
 G.tracklist = function (pid) {
-  const p = G.proj(pid), pj = G.pj(pid), base = p.tracks.concat(G.ownFor(pid).filter(t => !S().songs[t].off));
+  const p = G.proj(pid), pj = G.pj(pid), base = G.liveTracks(p).concat(G.ownFor(pid).filter(t => !S().songs[t].off));
   const order = (pj.order || []).filter(t => base.includes(t));
   base.forEach(t => { if (!order.includes(t)) order.push(t); });
   return order;

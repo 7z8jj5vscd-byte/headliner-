@@ -82,6 +82,8 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 .crscore{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 4px;padding:8px 10px;border-radius:10px;background:var(--raised);font-size:13px}
 .tlist{list-style:none;margin:8px 0;padding:0}.tlist li{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--rule)}.tlist .tn{width:22px;color:var(--faint);font-variant-numeric:tabular-nums;text-align:right}.tlist .tt{flex:1;min-width:0;display:flex;flex-direction:column}.tlist .tt b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mkt{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-top:1px solid var(--rule)}.eracontrol{padding:8px 0;border-top:1px solid var(--rule)}
+.cities{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 12px;margin:8px 0}.city{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;border-bottom:1px solid var(--rule)}.city b{width:22px;text-align:center}
+.btn.ghost.on{background:var(--era);color:var(--era-ink)}
 .opp{padding:10px 0;border-top:1px solid var(--rule)}.opp:first-of-type{border-top:0}
 .ver-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 16px 0;padding:8px 12px;border:1px solid var(--rule);border-radius:12px;background:var(--surface);font-size:12.5px;color:var(--muted);min-height:44px}
 .ver-line .ok{color:#6fcf97}.ver-line .btn{margin-left:auto}.ver-line .dot-new{width:9px;height:9px;border-radius:50%;background:#f2c94c;box-shadow:0 0 0 4px #f2c94c33;flex:none}
@@ -125,32 +127,34 @@ p{margin:0 0 8px}.small{font-size:12.5px}.muted{color:var(--muted)}.faint{color:
 <body>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="data-taylor.js?v=2026.11.06-5"></script>
-<script src="data-world.js?v=2026.11.06-5"></script>
-<script src="data-looks.js?v=2026.11.06-5"></script>
-<script src="data-events-world.js?v=2026.11.06-5"></script>
-<script src="data-forever.js?v=2026.11.06-5"></script>
-<script src="data-beyonce.js?v=2026.11.06-5"></script>
-<script src="data-gaga.js?v=2026.11.06-5"></script>
-<script src="data-scenes.js?v=2026.11.06-5"></script>
-<script src="data-shows.js?v=2026.11.06-5"></script>
-<script src="data-callbacks.js?v=2026.11.06-5"></script>
-<script src="data-goals.js?v=2026.11.06-5"></script>
-<script src="data-freedom.js?v=2026.11.06-5"></script>
-<script src="data-more.js?v=2026.11.06-5"></script>
-<script src="sound.js?v=2026.11.06-5"></script>
-<script src="stage3d.js?v=2026.11.06-5"></script>
-<script src="engine.js?v=2026.11.06-5"></script>
-<script src="extras.js?v=2026.11.06-5"></script>
-<script src="town.js?v=2026.11.06-5"></script>
-<script src="ui.js?v=2026.11.06-5"></script>
-<script src="ui-more.js?v=2026.11.06-5"></script>
-<script src="freedom.js?v=2026.11.06-5"></script>
-<script src="freedom2.js?v=2026.11.06-5"></script>
-<script src="town-ui.js?v=2026.11.06-5"></script>
-<script src="freedom-ui.js?v=2026.11.06-5"></script>
-<script src="freedom2-ui.js?v=2026.11.06-5"></script>
-<script src="update.js?v=2026.11.06-5"></script>
+<script src="data-taylor.js?v=2026.11.06-6"></script>
+<script src="data-world.js?v=2026.11.06-6"></script>
+<script src="data-looks.js?v=2026.11.06-6"></script>
+<script src="data-events-world.js?v=2026.11.06-6"></script>
+<script src="data-forever.js?v=2026.11.06-6"></script>
+<script src="data-beyonce.js?v=2026.11.06-6"></script>
+<script src="data-gaga.js?v=2026.11.06-6"></script>
+<script src="data-scenes.js?v=2026.11.06-6"></script>
+<script src="data-shows.js?v=2026.11.06-6"></script>
+<script src="data-callbacks.js?v=2026.11.06-6"></script>
+<script src="data-goals.js?v=2026.11.06-6"></script>
+<script src="data-freedom.js?v=2026.11.06-6"></script>
+<script src="data-more.js?v=2026.11.06-6"></script>
+<script src="sound.js?v=2026.11.06-6"></script>
+<script src="stage3d.js?v=2026.11.06-6"></script>
+<script src="engine.js?v=2026.11.06-6"></script>
+<script src="extras.js?v=2026.11.06-6"></script>
+<script src="town.js?v=2026.11.06-6"></script>
+<script src="ui.js?v=2026.11.06-6"></script>
+<script src="ui-more.js?v=2026.11.06-6"></script>
+<script src="freedom.js?v=2026.11.06-6"></script>
+<script src="freedom2.js?v=2026.11.06-6"></script>
+<script src="freedom3.js?v=2026.11.06-6"></script>
+<script src="town-ui.js?v=2026.11.06-6"></script>
+<script src="freedom-ui.js?v=2026.11.06-6"></script>
+<script src="freedom2-ui.js?v=2026.11.06-6"></script>
+<script src="freedom3-ui.js?v=2026.11.06-6"></script>
+<script src="update.js?v=2026.11.06-6"></script>
 <script>UI.narrow = window.matchMedia('(max-width:560px)').matches; window.matchMedia('(max-width:560px)').addEventListener('change', e => { UI.narrow = e.matches; if (G.S()) UI.render(); }); UI.start();</script>
 </body>
 </html>

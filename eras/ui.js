@@ -227,7 +227,7 @@ UI.render = render;
 /* ---------- Views ---------- */
 const VIEWS = {};
 VIEWS.week = function () {
-  const s = S(), x = primary(), tasks = G.tasks(), req = tasks.filter(t => t.req), opt = tasks.filter(t => !t.req);
+  const s = S(), x = primary(), tasks = G.tasks(), req = tasks.filter(t => t.req), opt = tasks.filter(t => !t.req && t.kind !== 'freetime');
   const act = G.active().filter(y => y.p.type !== 'demos');
   const dl = [];
   G.allProjects().forEach(p => { const w = G.win(p); [[w.rel, `${p.title} release`], [w.ts, `${p.tour && p.tour.name} begins`], [w.te, `${p.tour && p.tour.name} ends`], [w.ps, `${p.title} pre-release starts`]].forEach(([a, l]) => { if (a != null && a >= s.abs && a < s.abs + 10) dl.push([a, l]); }); });
@@ -297,7 +297,7 @@ VIEWS.songbook = function () {
     const c = G.counts(p), co = UI.sel['co:' + p.id] || (p.cowriters || ['Solo'])[0];
     const tv = p.vaultFor && G.proj(p.vaultFor);
     return card(`<div class="between"><h2>${h(p.title)}</h2>${pill(stageName(st))}</div>${p.type !== 'demos' ? `<p class="small muted">${c.written} of ${c.target} album songs written.</p>${bar(c.written, c.target)}` : '<p class="small muted">Early songs and demos. Confidence labels show how well documented each title is.</p>'}
-      <label class="field"><span>Co-writer</span><select data-act="selco" data-p="${p.id}">${(p.cowriters || ['Solo']).map(n => `<option ${n === co ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
+      <label class="field"><span>Co-writer</span><select data-act="selco" data-p="${p.id}">${(G.cowriterOptions ? G.cowriterOptions(p) : (p.cowriters || ['Solo'])).map(n => `<option ${n === co ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
       <p class="small faint">${h((A.cowriters[co] || {}).note || '')}</p>
       <div class="songs">${all.map(([t, k]) => { const so = s.songs[t]; return `<div class="song ${so ? 'has' : ''}"><div><b>${h(t)}</b><div class="small muted">${k === 'vault' ? `Vault: locked until ${h(tv ? tv.title : "Taylor's Version")}` : k === 'bonus' ? 'Bonus or other release' : 'Album track'}${p.confidence ? ' · ' + h(p.confidence[t] || 'reported') : ''}</div></div>
         ${so && so.insp ? `<span class="small faint">About: ${h(so.insp)}</span>` : ''}${so ? `<span class="pill">${so.st === 'written' ? 'Written' : so.st === 'recorded' ? 'Recorded' : so.st === 'vault' ? 'In the vault' : 'Released'} · ${so.q}</span>` : `<button class="btn sm" data-act="write" data-t="${h(t)}" data-p="${p.id}" ${G.canSpend(2) ? '' : 'disabled'}>Write · 2</button>`}</div>`; }).join('')}</div>`);
@@ -322,7 +322,7 @@ VIEWS.studio = function () {
     const c = G.counts(p), pj = G.pj(p.id), prod = UI.sel['pr:' + p.id] || (p.producers || ['Producer'])[0];
     const rec = G.recordable().filter(r => r.p.id === p.id);
     out.push(card(`<div class="between"><h2>${h(p.title)}</h2>${pill(stageName(st))}</div><p class="small muted">${c.recorded} of ${c.target} tracks recorded.</p>${bar(c.recorded, c.target)}
-      ${st === 'write' ? '<p class="small muted">Recording opens when the stage moves on.</p>' : `<label class="field"><span>Producer</span><select data-act="selpr" data-p="${p.id}">${(p.producers || ['Producer']).map(n => `<option ${n === prod ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
+      ${st === 'write' ? '<p class="small muted">Recording opens when the stage moves on.</p>' : `<label class="field"><span>Producer</span><select data-act="selpr" data-p="${p.id}">${(G.producerOptions ? G.producerOptions(p) : (p.producers || ['Producer'])).map(n => `<option ${n === prod ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
       <div class="songs">${rec.map(r => `<div class="song"><div><b>${h(r.tv || r.t)}</b>${r.vault ? '<div class="small muted">From the vault</div>' : ''}</div><button class="btn sm" data-act="record" data-t="${h(r.t)}" data-p="${p.id}" ${G.canSpend(1) ? '' : 'disabled'}>Record · 1</button></div>`).join('') || '<p class="small muted">Nothing written is waiting to be recorded.</p>'}</div>`}
       ${st === 'finish' ? `<h3>Finishing</h3>${ER.FINISH.map(f => `<div class="between small"><span>${h(f[1])}</span>${pj.fin[f[0]] ? pill('Done', 'ok') : f[0] === 'cover' ? `<button class="btn ghost sm" data-act="tab" data-v="cover">Cover Studio</button>` : `<button class="btn sm" data-act="do" data-id="fin:${p.id}:${f[0]}" data-arg="${f[0] === 'edition' ? h(UI.sel['ed:' + p.id] || 'deluxe') : ''}">Do · ${f[2]}</button>`}</div>`).join('')}
         <label class="field"><span>Editions</span><select data-act="seled" data-p="${p.id}">${['standard','deluxe'].concat(p.type === 'rerecord' ? ['vault'] : []).map(e => `<option ${(UI.sel['ed:' + p.id] || 'deluxe') === e ? 'selected' : ''}>${e}</option>`).join('')}</select></label>` : ''}`));
@@ -689,12 +689,12 @@ function writeSession(pid, title) {
   if (title) w.t = title;
   // Recent real cards are offered as inspiration: write what you know.
   const recent = s.log.filter(l => !l.s && !l.world && !l.drama && s.abs - l.abs < 40 && l.id && !l.id.startsWith('pro')).slice(-3).reverse();
-  const insps = recent.map(l => ({ id:'card:' + l.id, n:`What just happened: ${l.t}` })).concat(ER.INSPIRATIONS);
+  const insps = recent.map(l => ({ id:'card:' + l.id, n:`What just happened: ${l.t}` })).concat(G.extraInsp ? G.extraInsp() : [], ER.INSPIRATIONS);
   if (!w.insp) w.insp = insps[0].id;
   closeModals();
   modal(`<span class="eyebrow">Writing session · ${h(p.short || p.title)}</span><h2>Write a song</h2><div class="stage3d short" id="t3write"></div>
     <label class="field"><span>Song</span><select data-act="wsel" data-k="t">${opts.map(o => `<option ${o.t === w.t ? 'selected' : ''}>${h(o.t)}</option>`).join('')}</select></label>
-    <label class="field"><span>Co-writer</span><select data-act="wsel" data-k="co">${(p.cowriters || ['Solo']).map(n => `<option ${n === w.co ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
+    <label class="field"><span>Co-writer</span><select data-act="wsel" data-k="co">${(G.cowriterOptions ? G.cowriterOptions(p) : (p.cowriters || ['Solo'])).map(n => `<option ${n === w.co ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
     <h3>What is it about?</h3><div class="chips">${insps.map(i => `<button class="chip ${w.insp === i.id ? 'on' : ''}" data-act="wpick" data-k="insp" data-v="${h(i.id)}">${h(i.n)}</button>`).join('')}</div>
     <h3>How do you write it?</h3><div class="chips">${ER.APPROACHES.map(a => `<button class="chip ${w.appr === a.id ? 'on' : ''}" data-act="wpick" data-k="appr" data-v="${a.id}">${h(a.n)}</button>`).join('')}</div>
     <p class="small faint">Writing about something that really just happened helps, and so does an approach that suits the subject. Only the title is real; the game never uses lyrics.</p>
@@ -709,7 +709,7 @@ function studioSession(pid, title) {
   closeModals();
   modal(`<span class="eyebrow">Studio session · ${h(p.short || p.title)}</span><h2>Record a track</h2><div class="stage3d short" id="t3rec"></div>
     <label class="field"><span>Song</span><select data-act="rsel" data-k="t">${opts.map(o => `<option value="${h(o.t)}" ${o.t === r.t ? 'selected' : ''}>${h(o.tv || o.t)}</option>`).join('')}</select></label>
-    <label class="field"><span>Producer</span><select data-act="rsel" data-k="prod">${(p.producers || ['Producer']).map(n => `<option ${n === r.prod ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
+    <label class="field"><span>Producer</span><select data-act="rsel" data-k="prod">${(G.producerOptions ? G.producerOptions(p) : (p.producers || ['Producer'])).map(n => `<option ${n === r.prod ? 'selected' : ''}>${h(n)}</option>`).join('')}</select></label>
     <h3>The take</h3>${ER.TAKES.map(tk => `<button class="choice ${r.take === tk.id ? 'on' : ''}" data-act="rpick" data-v="${tk.id}">${h(tk.n)}<div class="small muted">${h(tk.d)}</div></button>`).join('')}
     <button class="btn big" data-act="rgo" style="margin-top:10px">Record it · 1 block</button><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="closem">Not now</button></div>`);
   mount3D('#t3rec', { set:'studio', color:p.color, figs:[{ look:lookFor('studio', p), anim:'sing', mic:true }, { look:T3.TEAM.producer, x:-1.2, z:-.4, ry:.5, anim:'talk', s:.92 }] }, 'rec');
