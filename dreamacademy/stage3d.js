@@ -99,6 +99,10 @@ const MOVES = {
   body:(R, p) => { const a = Math.sin(p * Math.PI * 2); R.torso.rotation.x = a * .18; R.hips.position.z = -a * .04; arms(R, .7, .7, 1.9, 1.9, .5, -.5); R.legs.forEach(l => { l.userData.knee.rotation.x = (1 + a) * .2; }); },
   fairy:(R) => { arms(R, 2.3, 2.3, 2.5, 2.5, -.4, .4); R.hd.rotation.z = .22; R.torso.rotation.y = .1; },
   bow:(R, p) => { R.torso.rotation.x = .7; arms(R, .1, .1, .1, .1); },
+  talk:(R, p, t) => { const a = Math.sin(t * 5.2), b = Math.sin(t * 3.1 + 1); arms(R, .35 + Math.max(0, a) * .5, .2 + Math.max(0, b) * .35, .9 + a * .3, .4, -.1, .1); R.hd.rotation.x = Math.sin(t * 6) * .05; R.hd.rotation.y = Math.sin(t * 1.4) * .12; },
+  cry:(R, p, t) => { arms(R, 2.2, 2.2, 2.6, 2.6, -.5, .5); R.hd.rotation.x = .35; R.torso.rotation.x = .15 + Math.sin(t * 7) * .02; },
+  cheer:(R, p) => { const j = Math.abs(Math.sin(p * Math.PI * 2)); R.root.position.y = R.base.y + j * .12; arms(R, 2.9, 2.9, .2, .2, .4, -.4); },
+  hug:(R) => { arms(R, 1.5, 1.5, 1.2, 1.2, -.6, .6); R.torso.rotation.x = .1; },
   sit:(R, p, t) => { arms(R, .9, .9, 1.4, 1.4); R.hd.rotation.y = Math.sin(t * .6) * .2; },
   // Mirror game directions
   L:(R) => { arms(R, .4, 1.6, .2, .2, 0, -1.2); R.hips.position.x = -.08; R.torso.rotation.z = .12; R.legs[1].rotation.z = .3; },
@@ -142,6 +146,40 @@ function buildSet(scene, kind, o) {
       add(new THREE.RingGeometry(.25, .32, 4), basic('#f0b44c', { side:THREE.DoubleSide }), 0, .01, .4).rotation.x = -Math.PI / 2;
     }
   }
+  if (kind === 'dorm') {
+    const floor = add(new THREE.PlaneGeometry(12, 10), mat('#5a4636'), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
+    add(new THREE.PlaneGeometry(12, 5), mat('#3d3a4a'), 0, 2.5, -3);
+    add(new THREE.CircleGeometry(1.8, 32), mat('#7a3b4a'), 0, .01, .3).rotation.x = -Math.PI / 2;
+    // bunk bed
+    [[-3.1, -2.2]].forEach(([x, z]) => { const wood = mat('#8a6a4a'); [0, 1].forEach(l => { add(new THREE.BoxGeometry(2, .12, .95), wood, x, .45 + l * 1.2, z); add(new THREE.BoxGeometry(1.9, .12, .85), mat(l ? '#c7cbe0' : '#e0c7cf'), x, .56 + l * 1.2, z); });
+      [-1, 1].forEach(sx => [-1, 1].forEach(sz => add(new THREE.BoxGeometry(.08, 2.2, .08), wood, x + sx * .95, 1.1, z + sz * .44))); });
+    // couch
+    add(new THREE.BoxGeometry(2.4, .45, .8), mat('#4b5b78'), 2.6, .3, -2.1); add(new THREE.BoxGeometry(2.4, .7, .2), mat('#4b5b78'), 2.6, .7, -2.5);
+    // lamp + window glow
+    add(new THREE.CylinderGeometry(.03, .03, 1.5, 6), mat('#222'), 4, .75, -2.4); add(new THREE.ConeGeometry(.25, .3, 16, 1, true), mat('#ffe2a8', { emissive:'#a8792a', side:THREE.DoubleSide }), 4, 1.55, -2.4);
+    add(new THREE.PlaneGeometry(1.8, 1.2), basic('#1b2a4a'), 0, 2.3, -2.98);
+    for (let i = 0; i < 14; i++) add(new THREE.SphereGeometry(.015, 4, 4), basic('#fff6d0'), -.8 + Math.random() * 1.6, 1.8 + Math.random() * 1, -2.97);
+    const lampL = new THREE.PointLight(0xffc98a, .9, 9); lampL.position.set(3.6, 1.8, -1.6); scene.add(lampL);
+  }
+  if (kind === 'office' || kind === 'studio') {
+    const floor = add(new THREE.PlaneGeometry(12, 10), mat(kind === 'office' ? '#3a3d44' : '#2b2622'), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
+    add(new THREE.PlaneGeometry(12, 5), mat(kind === 'office' ? '#d8d6cf' : '#3a2f2a'), 0, 2.5, -3);
+    if (kind === 'office') {
+      add(new THREE.PlaneGeometry(3.6, 1.8), basic('#9fc3e6'), -2.6, 2.1, -2.97);
+      for (let i = 0; i < 6; i++) add(new THREE.BoxGeometry(.35, .5 + Math.random() * 1.2, .05), basic('#6f8fb0'), -4 + i * .55, 1.45 + Math.random() * .2, -2.95);
+      add(new THREE.BoxGeometry(2.4, .08, 1), mat('#1f2228'), 1.4, .78, -1.6); add(new THREE.BoxGeometry(2.2, .74, .9), mat('#2a2d36'), 1.4, .37, -1.6);
+      add(new THREE.BoxGeometry(1.6, .9, .05), basic('#0a0a0c'), 2.6, 2.2, -2.95);
+      const scr = add(new THREE.PlaneGeometry(1.5, .8), basic('#e5484d'), 2.6, 2.2, -2.92); anim.push({ tick:t => { scr.material.color = col(['#e5484d','#f0b44c','#9ec5ff','#b89cff'][Math.floor(t / 2) % 4]); } });
+      add(new THREE.CylinderGeometry(.18, .22, .5, 12), mat('#2e6b3a'), -4.2, .25, -2.4); add(new THREE.SphereGeometry(.45, 10, 8), mat('#3f8a4a'), -4.2, .85, -2.4);
+    } else {
+      add(new THREE.PlaneGeometry(4, 1.6), basic('#10161c'), -1.5, 2.1, -2.97);
+      add(new THREE.BoxGeometry(3.6, .4, 1), mat('#1f1b18'), -1.5, .9, -2.4);
+      for (let i = 0; i < 16; i++) add(new THREE.BoxGeometry(.06, .12, .06), basic(i % 3 ? '#6fcf97' : '#f0b44c'), -3 + i * .2, 1.12, -2.1);
+      for (let i = 0; i < 5; i++) add(new THREE.BoxGeometry(.6, .6, .12), mat('#4a3a30'), 3.6, .5 + i * .62, -2.9);
+      add(new THREE.CylinderGeometry(.015, .015, 1.4, 6), mat('#999'), .9, .7, .6); add(new THREE.CylinderGeometry(.05, .04, .16, 10), mat('#333'), .9, 1.45, .62);
+      const wl = new THREE.PointLight(0xffb070, .7, 8); wl.position.set(-1, 2.5, 0); scene.add(wl);
+    }
+  }
   if (kind === 'stage' || kind === 'mv') {
     const floor = add(new THREE.CircleGeometry(7, 48), new THREE.MeshPhongMaterial({ color:col('#0c0c10'), shininess:80, specular:col('#333') }), 0, 0, 0); floor.rotation.x = -Math.PI / 2;
     const tint = o.tint || '#e5484d';
@@ -181,6 +219,9 @@ const CAMS = {
   eval:{ pos:[0, 3.8, 6.6], look:[0, .8, 0] },
   stage:{ pos:[0, 1.7, 7.2], look:[0, 1.2, 0] },
   mv:{ pos:[0, 1.5, 5.2], look:[0, 1.1, 0] },
+  dorm:{ pos:[0, 1.6, 5.2], look:[0, 1.0, 0] },
+  office:{ pos:[0, 1.6, 5.2], look:[0, 1.05, 0] },
+  studio:{ pos:[0, 1.6, 5.2], look:[0, 1.05, 0] },
 };
 function mount(el, o) {
   o = o || {};
@@ -193,7 +234,7 @@ function mount(el, o) {
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(W(), Hh());
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.setClearColor(col(kind === 'stage' ? '#050507' : kind === 'mv' ? '#101014' : '#25282e'));
+  renderer.setClearColor(col(kind === 'stage' ? '#050507' : kind === 'mv' ? '#101014' : kind === 'dorm' ? '#1c1b24' : '#25282e'));
   el.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
   if (kind === 'stage') scene.fog = new THREE.Fog(col('#050507'), 8, 18);
@@ -216,6 +257,8 @@ function mount(el, o) {
   C.dance = (on, bpm) => { C.dancing = on; if (bpm) C.bpm = bpm; if (!on) C.figs.forEach(resetPose); };
   C.play = (move, who) => { C.seq = null; C.figs.forEach((f, i) => { if (who == null || who === i) f.move = move; }); };
   C.demo = (moves, beatSec) => new Promise(res => { C.seq = { moves, t0:clock(), dur:beatSec || .7, res }; });
+  C.talk = (i, move) => { C.seq = null; C.figs.forEach((f, k) => { f.move = k === i ? (move || 'talk') : (f.keep || null); }); if (i >= 0) { C.focusIdx = i; C.shot = 'close'; } else C.shot = 'wide'; };
+  C.pose = (i, move) => { if (C.figs[i]) { C.figs[i].keep = move; C.figs[i].move = move; } };
   C.flashHit = c => { C.flash = 1; flashLight.color = col(c || '#ffffff'); };
   C.focus = i => { C.focusIdx = i; C.shot = 'close'; C.cutAt = clock() + 2.5; };
   C.setShot = s => { C.shot = s; C.cutAt = clock() + 3; };
@@ -239,6 +282,8 @@ function mount(el, o) {
       if (C.shot === 'low') { pos = [0, .5, 5]; look = [0, 1.5, 0]; }
       if (C.shot === 'side') { pos = [4.5, 1.8, 4.2]; look = [0, 1.1, 0]; }
     }
+    if (o.scene && C.shot === 'close' && C.figs[C.focusIdx]) { const f = C.figs[C.focusIdx], fx = f.root.position.x, fz = f.root.position.z, hy = f.seated ? 1.0 : 1.32, d = 2.3 + Math.max(0, 1 - cam.aspect) * 3.2; pos = [fx * .9, hy + .12, fz + d]; look = [fx, hy, fz]; }
+    if (o.scene && C.shot === 'two' && C.figs.length > 1) { pos = [0, 1.5, 3.6]; look = [0, 1.2, 0]; }
     if (o.close && C.figs[0]) { const fx = C.figs[0].root.position.x; pos = [fx, 1.3, 3.7]; look = [fx, 1.0, 0]; }
     const yaw = C.yaw + (o.orbit ? Math.sin(t * .15) * .25 : 0);
     const dx = pos[0] - look[0], dz = pos[2] - look[2];
