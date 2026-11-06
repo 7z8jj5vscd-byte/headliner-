@@ -221,8 +221,8 @@ function planTab() {
       '<div class="chips">' + Object.keys(D.groupPlans).map(k => '<button class="chip ' + (s.group.plan === k ? 'on' : '') + '" data-gp="' + k + '">' + D.groupPlans[k].l + '</button>').join('') + '</div>' +
       '<p class="small muted">' + esc(D.groupPlans[s.group.plan].d) + (s.group.plan === 'tour' && ep !== 'tour' ? ' <span class="neg">No release in the last 8 months, so this will be a training month.</span>' : '') + '</p>' +
       '<div class="row">' + bar(s.group.prep, s.group.prep >= 85 ? 'ok' : '') + '<span class="small faint">60 single · 85 EP</span></div>' +
-      (s.month >= 32 ? '<button class="btn ' + (G.canRelease() ? '' : 'sm ghost') + '" data-a="release" ' + (G.canRelease() ? '' : 'disabled') + '>' + (G.canRelease() ? 'Release next song' : 'Release at prep 60') + '</button>' : '<p class="small faint">The debut single is set for month 032.</p>') +
-      '</section>';
+      (s.month >= 32 ? '<button class="btn ' + (G.canRelease() ? '' : 'sm ghost') + '" data-a="release" ' + (G.canRelease() ? '' : 'disabled') + '>' + (G.canRelease() ? 'Plan the next comeback' : 'Comeback at prep 60') + '</button>' : '<p class="small faint">The debut single is set for month 032.</p>') +
+      '</section>' + tourCard();
   } else if (s.month < 19) {
     h += '<section class="card note"><p class="small">Training years. Each month you plan lessons, then the coaches grade everyone from D to A+. The bottom three get a warning. The survival show starts in month 019.</p></section>';
   }
@@ -364,6 +364,27 @@ function spark(ch) {
   const d = ch.map((v, i) => (i ? 'L' : 'M') + (i * step).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
   return '<svg class="spark" viewBox="0 0 ' + w + ' ' + hgt + '" width="' + w + '" height="' + hgt + '" aria-hidden="true"><line x1="0" x2="' + w + '" y1="' + y(10) + '" y2="' + y(10) + '" class="ref"/><path d="' + d + '"/></svg>';
 }
+function tourCard() {
+  if (!G.tour) return '';
+  const t = G.tour(), s = S();
+  if (t) return '<section class="card"><div class="between"><h3>' + esc(t.name) + '</h3><span class="mono small">' + t.done + ' / ' + t.cities.length + ' SHOWS</span></div>' + bar(t.done / t.cities.length * 100) +
+    '<p class="small">' + esc(G.TOUR.SIZES[t.size].l) + ' · ' + t.regions.map(r => G.TOUR.REGIONS.find(x => x[0] === r)[1]).join(', ') + ' · ' + esc(G.TOUR.PRICE[t.price].l) + ' prices</p>' +
+    (t.cap ? '<p class="small muted">' + Math.round(t.sold / t.cap * 100) + '% sold so far · ' + G.fmtMoney(t.gross) + ' gross</p>' : '<p class="small muted">Keep the schedule on Touring to play the next shows.</p>') + '</section>';
+  if (!G.recentRelease(8)) return '';
+  return '<section class="card"><div class="between"><h3>World tour</h3><span class="mono small">' + G.fmtMoney(G.money()) + '</span></div><p class="small muted">A release is out, so you can plan a tour: venue size, regions and ticket prices.</p><button class="btn sm" data-a="tourplan">Plan a tour</button></section>';
+}
+let tourDraft = { size:'hall', regions:['asia','na'], price:'mid' };
+function tourSheet() {
+  const T = G.TOUR, d = tourDraft, s = S();
+  const shows = d.regions.reduce((t, r) => t + T.REGIONS.find(x => x[0] === r)[2], 0), cost = T.SIZES[d.size].cost * 1e6;
+  const est = Math.round(Math.min(T.SIZES[d.size].cap, s.group.fans * .0016 * T.PRICE[d.price].demand) / T.SIZES[d.size].cap * 100);
+  sheet('<span class="eyebrow">Tour planner</span><h2>Plan the tour</h2>' +
+    '<h3>Venues</h3><div class="chips">' + Object.keys(T.SIZES).map(k => '<button class="chip ' + (d.size === k ? 'on' : '') + '" data-tsz="' + k + '">' + T.SIZES[k].l + ' (' + G.fmt(T.SIZES[k].cap) + ')</button>').join('') + '</div>' +
+    '<h3>Regions</h3><div class="chips">' + T.REGIONS.map(([k, l, c]) => '<button class="chip ' + (d.regions.includes(k) ? 'on' : '') + '" data-trg="' + k + '">' + l + ' · ' + c + '</button>').join('') + '</div>' +
+    '<h3>Ticket prices</h3><div class="chips">' + Object.keys(T.PRICE).map(k => '<button class="chip ' + (d.price === k ? 'on' : '') + '" data-tpr="' + k + '">' + T.PRICE[k].l + ' ($' + T.PRICE[k].p + ')</button>').join('') + '</div>' +
+    '<p class="small">' + shows + ' shows over about ' + Math.max(1, Math.ceil(shows / 6)) + ' months · production ' + G.fmtMoney(cost) + ' · estimated ' + est + '% sold. Members from a region draw bigger home crowds. High prices risk backlash.</p>' +
+    '<button class="btn big" data-a="tourgo" ' + (d.regions.length ? '' : 'disabled') + '>Announce the tour</button>');
+}
 function chartsTab() {
   const s = S(), r = s.group.releases.slice().reverse();
   return '<section class="card"><div class="between"><h3>Releases</h3><span class="mono small">BEST No. ' + (s.rec.best > 100 ? '—' : s.rec.best) + '</span></div>' +
@@ -371,7 +392,20 @@ function chartsTab() {
       spark(x.chart) + '<div class="peak"><b class="mono">' + (x.peak > 100 ? '—' : '#' + x.peak) + '</b><span class="small faint">' + (x.album ? 'EP #' + x.album : 'peak') + '</span></div></div>').join('') : '<p class="small muted">Nothing out yet.</p>') +
     '<p class="small faint">Chart lines run month by month; the dotted line is the top 10. The charts are fictional.</p></section>' +
     '<section class="card"><h3>Awards</h3><p class="small">' + s.rec.wins + ' win' + (s.rec.wins === 1 ? '' : 's') + ' from ' + s.rec.noms + ' nominations · ' + s.rec.no1 + ' No. 1' + (s.rec.no1 === 1 ? '' : 's') + ' · ' + s.rec.viral + ' viral moment' + (s.rec.viral === 1 ? '' : 's') + '</p>' +
-    s.group.awards.map(a => '<div class="logrow"><span class="mono faint small">M' + pad3(a.m) + '</span> ' + esc(a.t) + ', ' + esc(D.awards) + '</div>').join('') + '</section>';
+    s.group.awards.map(a => '<div class="logrow"><span class="mono faint small">M' + pad3(a.m) + '</span> ' + esc(a.t) + ', ' + esc(D.awards) + '</div>').join('') + '</section>' + careerCards();
+}
+function careerCards() {
+  if (!G.rivals) return '';
+  const s = S(), c = s.car || {}, rv = G.rivals().filter(r => r.out);
+  let h = '';
+  if (rv.length) h += '<section class="card"><h3>Rival groups</h3>' + rv.map(r => '<div class="rel"><div class="tl"><b>' + esc(r.name) + '</b><div class="small muted">Latest: "' + esc(r.songs[0].t) + '" · M' + pad3(r.songs[0].m) + ' · strength ' + Math.round(r.power) + '</div></div><div class="peak"><b class="mono">' + (r.songs[0].peak > 100 ? '—' : '#' + r.songs[0].peak) + '</b><span class="small faint">peak</span></div></div>').join('') + '<p class="small faint">A strong rival comeback makes music show wins harder that month.</p></section>';
+  const side = (c.units || []).map(u => '<div class="logrow"><b>Unit ' + esc(u.name) + '</b> (' + u.ids.map(G.name).join(' and ') + ') · ' + u.songs.length + ' single' + (u.songs.length === 1 ? '' : 's') + (u.songs.length ? ', best No. ' + Math.min(...u.songs.map(x => x.peak)) : '') + '</div>').join('') +
+    (c.solo ? '<div class="logrow"><b>' + esc(G.name(c.solo.id)) + ' solo</b> · M' + pad3(c.solo.m) + '</div>' : '') +
+    (c.collabs || []).map(x => '<div class="logrow"><b>Feature with ' + esc(x.a) + '</b> · M' + pad3(x.m) + ' · No. ' + (x.peak > 100 ? '—' : x.peak) + '</div>').join('');
+  if (side) h += '<section class="card"><h3>Side projects</h3>' + side + '</section>';
+  h += '<section class="card"><div class="between"><h3>Money</h3><span class="mono small">' + G.fmtMoney(G.money()) + '</span></div><p class="small faint">From streaming, tours, merch, deals and awards. Spent on tour production, teaser campaigns and award campaigns.</p>' +
+    (c.ledger || []).slice(0, 8).map(l => '<div class="logrow"><span class="mono faint small">M' + pad3(l.m) + '</span> ' + esc(l.why) + ' <b class="mono ' + (l.amt < 0 ? 'neg' : 'pos') + '">' + G.fmtMoney(l.amt) + '</b></div>').join('') + '</section>';
+  return h;
 }
 
 function linesBar(L) {
@@ -615,7 +649,10 @@ function skipMonths() {
 function onClick(e) {
   const s = S();
   const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; try { localStorage.setItem('da-tab', tab); } catch (x) {} render(); window.scrollTo(0, 0); return; }
-  const gp = e.target.closest('[data-gp]'); if (gp) { s.group.plan = gp.dataset.gp; G.save(); render(); return; }
+  const gp = e.target.closest('[data-gp]'); if (gp) { if (gp.dataset.gp === 'tour' && G.tour && !G.tour() && G.recentRelease(8)) { tourSheet(); return; } s.group.plan = gp.dataset.gp; G.save(); render(); return; }
+  const tz = e.target.closest('[data-tsz]'); if (tz) { tourDraft.size = tz.dataset.tsz; tourSheet(); return; }
+  const tg = e.target.closest('[data-trg]'); if (tg) { const k = tg.dataset.trg, r = tourDraft.regions; tourDraft.regions = r.includes(k) ? r.filter(x => x !== k) : r.concat([k]); tourSheet(); return; }
+  const tpz = e.target.closest('[data-tpr]'); if (tpz) { tourDraft.price = tpz.dataset.tpr; tourSheet(); return; }
   const ac = e.target.closest('[data-act]'); if (ac) { G.setPlan(ac.dataset.id, ac.dataset.act); G.save(); render(); return; }
   const pr = e.target.closest('[data-prof]'); if (pr) { profile(pr.dataset.prof); return; }
   const td = e.target.closest('[data-tid]'); if (td) { openEvent({ kind:'drama', tid:+td.dataset.tid }, true); return; }
@@ -634,6 +671,8 @@ function onClick(e) {
   switch (a.dataset.a) {
     case 'advance': { const R = G.advance(); if (R) { render(); report(R); } break; }
     case 'skip': skipMonths(); break;
+    case 'tourplan': tourSheet(); break;
+    case 'tourgo': G.planTour(tourDraft.size, tourDraft.regions, tourDraft.price); G.save(); closeSheet(); render(); nextEvent(); toast('Tour announced.'); break;
     case 'settings': settingsSheet(); break;
     case 'glossary': glossary(); break;
     case 'share': shareCard(); break;

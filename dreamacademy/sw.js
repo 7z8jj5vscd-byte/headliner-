@@ -1,6 +1,6 @@
 /* Dream Academy: offline support. Network first for the game files, falling back to the cache. */
-const CACHE = 'dreamacademy-v6';
-const FILES = ['./', 'index.html', 'data.js?v=2', 'engine.js?v=4', 'story.js?v=2', 'depth.js?v=2', 'stage3d.js?v=4', 'minigames.js?v=2', 'ui.js?v=5', 'manifest.json', 'icon.png', 'apple-touch-icon.png',
+const CACHE = 'dreamacademy-v8';
+const FILES = ['./', 'index.html', 'data.js?v=2', 'engine.js?v=5', 'story.js?v=2', 'depth.js?v=2', 'career.js?v=1', 'stage3d.js?v=4', 'minigames.js?v=2', 'ui.js?v=6', 'manifest.json', 'icon.png', 'apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => Promise.all(FILES.map(f => c.add(f).catch(() => {})))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
