@@ -60,6 +60,8 @@ function lookFor(ctx, era, key) {
     const a = o.accent; o.accent = o.outfit; o.outfit = a; o.sparkle = 1; if (o.top === 'dress') o.top = 'sequin'; } }
   if (ctx === 'awards' && !e.stage.top.match(/gown|sequin/)) { o.top = 'gown'; o.sparkle = 1; o.guitar = 0; o.hat = 0; }
   if (ctx === 'awards') o.guitar = 0;
+  // Your own changes from the look designer.
+  if (s && s.lookMods) { const md = s.lookMods[(era && era.id) || 'early']; if (md) { Object.assign(o, md.all || {}, (stage ? md.stage : md.casual) || {}); if (md.stage && md.stage.top && !stage) {} } }
   return o;
 }
 function ageScale() { const s = S(); if (!s) return 1; const a = G.age(); return a < 13 ? .74 : a < 15 ? .84 : a < 17 ? .93 : 1; }
@@ -88,7 +90,7 @@ function stageSpec() {
   if (set === 'tv') figs.push({ look:T3.TEAM.publicist, x:1.15, z:-.2, ry:-.6, anim:'talk', s:.95 });
   if (set === 'rehearsal') figs.push({ look:T3.TEAM.manager, x:-1.3, z:-.3, ry:.5, anim:'idle', s:.95 });
   if (set === 'home' || set === 'farm') figs.push({ look:T3.TEAM.family, x:1.1, z:-.3, ry:-.5, anim:'idle', s:.95 });
-  return { set, color:era ? era.color : '#7a9a4a', figs };
+  return { set, color:G.stageColor ? G.stageColor(era) : (era ? era.color : '#7a9a4a'), figs };
 }
 function eventSpec(e) {
   const t = (e.t + ' ' + e.x).toLowerCase();
@@ -134,7 +136,9 @@ function coverSVG(c, size, pid) {
   const finish = fin === 'grain' ? `<filter id="${id}f"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .28 0"/></filter><rect width="100" height="100" filter="url(#${id}f)"/>`
     : fin === 'foil' ? `<linearGradient id="${id}l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><rect width="100" height="100" fill="url(#${id}l)"/>`
     : fin === 'gloss' ? `<ellipse cx="30" cy="12" rx="60" ry="22" fill="#fff" opacity=".16"/>` : '';
-  return `<svg class="cv" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Album cover design">${bg}${shapes[sym] || ''}${frame}${finish}</svg>`;
+  const ttl = c.text && c.text !== 'none' && c.title ? String(c.title).slice(0, 28) : '', fs = ttl.length > 16 ? 6.5 : ttl.length > 10 ? 8 : 10;
+  const text = ttl ? `<text x="50" y="${c.text === 'top' ? 14 : 92}" text-anchor="middle" font-size="${fs}" font-family="${c.font === 'sans' ? 'DM Sans, sans-serif' : c.font === 'script' ? 'Brush Script MT, cursive' : 'Fraunces, Georgia, serif'}" font-weight="700" fill="${C === A ? '#fff' : C}" stroke="#0006" stroke-width=".25">${h(ttl)}</text>` : '';
+  return `<svg class="cv" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Album cover design">${bg}${shapes[sym] || ''}${frame}${finish}${text}</svg>`;
 }
 UI.coverSVG = coverSVG;
 function uploads() { try { return JSON.parse(G.lsGet('eras-uploads') || '{}'); } catch (e) { return {}; } }
@@ -204,7 +208,7 @@ function render() {
   const blocks = G.blocks(), used = s.week.used;
   const top = `<header class="top"><div class="between"><div><div class="date">${h(G.fmtDate(s.abs))}</div><div class="small muted">Week ${yw.w} of 52 · Age ${G.age()}${e ? ' · ' + h(e.short || e.title) + ' era' : ''}</div></div>
     <div class="row"><div class="blocks" title="Time Blocks">${Array.from({ length:blocks }, (_, i) => `<i class="${i < used ? 'used' : ''}"></i>`).join('')}${used > blocks ? `<b class="over">+${used - blocks}</b>` : ''}</div><button class="icon" data-act="menu" aria-label="Menu">☰</button></div></div>
-    <div class="statline">${[['fans', G.fmtN(s.stats.fans), G.art().fanName], ['rep', Math.round(s.stats.rep), 'Rep'], ['heat', Math.round(s.stats.heat), 'Heat'], ['energy', Math.round(s.stats.energy), 'Energy'], ['money', G.fmtM(s.stats.money), 'Money'], ['canon', G.canon(), 'Canon']].map(([k, v, l]) => `<div class="st"><b>${v}</b><span>${l}</span></div>`).join('')}</div></header>`;
+    <div class="statline">${[['fans', G.fmtN(s.stats.fans), (G.fanName ? G.fanName() : G.art().fanName)], ['rep', Math.round(s.stats.rep), 'Rep'], ['heat', Math.round(s.stats.heat), 'Heat'], ['energy', Math.round(s.stats.energy), 'Energy'], ['money', G.fmtM(s.stats.money), 'Money'], ['canon', G.canon(), 'Canon']].map(([k, v, l]) => `<div class="st"><b>${v}</b><span>${l}</span></div>`).join('')}</div></header>`;
   const GROUPS = [['Now', ['week','town','inbox','life']], ['Music', ['songbook','studio','rollout','cover']], ['Stage', ['tour','fandom','eggs']], ['Career', ['press','charts','legacy']]];
   const grp = GROUPS.find(g => g[1].includes(UI.tab)) || GROUPS[0];
   const groupNav = `<nav class="groups" aria-label="Sections">${GROUPS.map(g => { const un = g[1].includes('inbox') ? s.inbox.filter(m => !m.read).length : 0; return `<button class="grp ${g === grp ? 'on' : ''}" data-act="tab" data-v="${g[1].find(k => G.unlocked(k)) || 'week'}">${h(g[0])}${un ? `<i class="badge">${un}</i>` : ''}</button>`; }).join('')}</nav>`;
@@ -217,7 +221,7 @@ function render() {
       <div class="stack tight"><button class="btn" data-act="export">Export a backup</button><button class="btn ghost" data-act="backuplater">Remind me later</button></div>`); }
   if (UI.tab === 'legacy' && UI.sel.booth) boothDraw();
   if (window.SND && SND.on && UI.heard) SND.setMood(moodOf(e));
-  if (UI.tab === 'tour') { const v = $('#t3venue'); if (v) mount3D('#t3venue', { set:UI.sel.tier || 'arena', color:(e || {}).color, figs:[{ look:lookFor('tour', e), anim:'sing', mic:true }] }, 'venue'); }
+  if (UI.tab === 'tour') { const v = $('#t3venue'); if (v) mount3D('#t3venue', { set:UI.sel.tier || 'arena', color:G.stageColor ? G.stageColor(e) : (e || {}).color, figs:[{ look:lookFor('tour', e), anim:'sing', mic:true }] }, 'venue'); }
   if (UI.tab === 'charts' || UI.tab === 'legacy') {}
   const nb = document.querySelector('.tab.on'); if (nb) nb.scrollIntoView({ block:'nearest', inline:'center' });
   modals();
@@ -361,12 +365,12 @@ VIEWS.cover = function () {
   const s = S(), ps = G.allProjects().filter(p => p.type !== 'demos' && (['finish','pre','release','promo','tourprep','tour','rest'].includes(G.stageOf(p, s.abs)) || G.pj(p.id).released));
   if (!ps.length) return card(`<h2>Cover Studio</h2><p class="muted">Covers are designed in an album's finishing stage. Every cover is original, not a copy of a real one.</p>`);
   const pid = UI.sel.cover && ps.find(p => p.id === UI.sel.cover) ? UI.sel.cover : ps[ps.length - 1].id, p = G.proj(pid), pj = G.pj(pid);
-  const d = UI.sel.design && UI.sel.design.pid === pid ? UI.sel.design : (UI.sel.design = Object.assign({ pid }, pj.cover || G.autoCover(p), { auto:false }));
+  const d = UI.sel.design && UI.sel.design.pid === pid ? UI.sel.design : (UI.sel.design = Object.assign({ pid }, pj.cover || G.autoCover(p), { auto:false })); d.title = p.title;
   const sel = (k, arr, lab) => `<label class="field"><span>${lab}</span><select data-act="cv" data-k="${k}">${arr.map(v => `<option value="${v.id || v}" ${d[k] === (v.id || v) ? 'selected' : ''}>${h(v.n || v)}</option>`).join('')}</select></label>`;
   const inFinish = G.stageOf(p, s.abs) === 'finish' && !pj.fin.cover;
   return card(`<h2>Cover Studio</h2><div class="chips">${ps.map(q => `<button class="chip ${q.id === pid ? 'on' : ''}" data-act="cvp" data-id="${q.id}">${h(q.short || q.title)}</button>`).join('')}</div>
-    <div class="coverwrap">${coverSVG(d, 200, d.upload ? pid : null)}<div><b>${h(p.title)}</b><p class="small muted">Album titles sit beside the art, not on it.</p><p class="small">Fan and critic reaction: <b>${G.coverScore(p, d)}</b></p></div></div>
-    ${sel('pal', ER.PALETTES, 'Palette')}${sel('sym', ER.SYMBOLS, 'Image')}${sel('lay', ER.LAYOUTS, 'Layout')}${sel('fin', ER.FINISHES, 'Finish')}
+    <div class="coverwrap">${coverSVG(d, 200, d.upload ? pid : null)}<div><b>${h(p.title)}</b><p class="small muted">Put the title on the art, or keep it beside it.</p><p class="small">Fan and critic reaction: <b>${G.coverScore(p, d)}</b></p></div></div>
+    ${sel('pal', ER.PALETTES, 'Palette')}${sel('sym', ER.SYMBOLS, 'Image')}${sel('lay', ER.LAYOUTS, 'Layout')}${sel('fin', ER.FINISHES, 'Finish')}${sel('text', [{ id:'none', n:'No title' }, { id:'top', n:'Title at the top' }, { id:'bottom', n:'Title at the bottom' }], 'Title on the cover')}${d.text && d.text !== 'none' ? sel('font', [{ id:'serif', n:'Serif' }, { id:'sans', n:'Clean' }, { id:'script', n:'Handwritten' }], 'Lettering') : ''}
     <div class="row"><button class="btn" data-act="savecover">${inFinish ? 'Save cover · 2 blocks' : 'Save cover'}</button><button class="btn ghost sm" data-act="variant">Add a variant cover (${pj.cover && pj.cover.variants || 0})</button>
     <label class="btn ghost sm">Use your own image<input type="file" accept="image/*" data-act="upload" hidden></label>${uploads()[pid] ? `<button class="btn ghost sm" data-act="unupload">Remove image</button>` : ''}</div>
     <p class="small faint">Your own images stay in this browser on this device. They are not built into the game or shared with its link. Variant covers sell extra copies, but more than three risks fan backlash.</p>`)
@@ -454,7 +458,7 @@ VIEWS.fandom = function () {
     <button class="btn sm" data-act="bracelet">Make it</button></div>
     <p class="small faint">Ideas: ${G.allProjects().filter(p => p.type === 'album').slice(-4).map(p => h(String(p.short || p.title).toUpperCase().slice(0, 12))).join(' · ')}</p>
     <div class="bracelets">${(s.bracelets || []).slice(0, 8).map(b => `<div class="bracelet">${b.word.split('').map((ch, i) => `<i style="background:${b.colors[i % b.colors.length] || '#f6d38a'}">${h(ch)}</i>`).join('')}</div>`).join('')}</div>`);
-  return braceletCard + card(`<h2>${h(A.fanName)}</h2><div class="grid3"><div><b>${G.fmtN(s.stats.fans)}</b><div class="small muted">Fans</div></div><div><b>${G.fmtN(hard)}</b><div class="small muted">Hardcore</div></div><div><b>${s.eggs.decoded}</b><div class="small muted">Eggs decoded</div></div></div>
+  return braceletCard + card(`<h2>${h(G.fanName ? G.fanName() : A.fanName)}</h2><div class="grid3"><div><b>${G.fmtN(s.stats.fans)}</b><div class="small muted">Fans</div></div><div><b>${G.fmtN(hard)}</b><div class="small muted">Hardcore</div></div><div><b>${s.eggs.decoded}</b><div class="small muted">Eggs decoded</div></div></div>
     ${G.curveMode() ? `<div class="statrow"><span>Momentum vs reality</span>${bar(G.momentum() * 50, 80)}<b>${Math.round(G.momentum() * 100)}%</b></div><p class="small faint">Your fan base follows her real growth in each era. Above 100% you are doing better than she did, and below it worse.</p>` : ''}
     <h3>Fan events</h3>${ev.map(([k, l, c]) => `<div class="between small"><span>${h(l)}</span><button class="btn sm" data-act="fan" data-k="${k}" data-c="${c}" ${G.canSpend(c) ? '' : 'disabled'}>Do · ${c}</button></div>`).join('')}`)
   + card(`<h3>Fan theories</h3><p class="small faint">Simulated posts from invented usernames only, never real accounts.</p>${s.feed.slice(0, 20).map(f => `<div class="post"><b>@${h(f.h)}</b> <span class="small">${h(f.x)}</span><div class="small faint">${h(G.fmtDate(f.abs))}</div></div>`).join('') || '<p class="small muted">Quiet so far.</p>'}`);
@@ -614,7 +618,7 @@ function modals() {
       <div class="grid3"><div><b>${c.no1}</b><div class="small muted">No. 1 singles</div></div><div><b>${c.awards}</b><div class="small muted">Awards</div></div><div><b>${c.aoty}</b><div class="small muted">Album of the Year</div></div></div>
       <div class="grid3"><div><b>${G.fmtN(c.shows)}</b><div class="small muted">Shows</div></div><div><b>${G.fmtN(c.tickets)}</b><div class="small muted">Tickets</div></div><div><b>${G.fmtM(c.gross)}</b><div class="small muted">Tour gross</div></div></div>
       ${c.best ? `<p class="small">Biggest first week: <b>${h(c.best.t)}</b>, ${G.fmtN(c.best.fw)}.</p>` : ''}
-      <p class="small">${c.invented ? `${c.invented} eras of your own after the real story. ` : ''}${G.fmtN(c.fans)} ${h(A.fanName)} · ${Math.round(c.own)}% of the masters · Canon Score ${c.canon}</p>
+      <p class="small">${c.invented ? `${c.invented} eras of your own after the real story. ` : ''}${G.fmtN(c.fans)} ${h(G.fanName ? G.fanName() : A.fanName)} · ${Math.round(c.own)}% of the masters · Canon Score ${c.canon}</p>
       <div class="shelf">${s.released.slice(-12).map(r => { const p = G.proj(r.pid); return p ? `<div class="sh">${coverSVG(G.pj(r.pid).cover, 64, r.pid)}<span class="small">${h(p.short || p.title)}</span></div>` : ''; }).join('')}</div>
       <div class="stack tight" style="margin-top:12px"><button class="btn big" data-act="modalok">Enjoy retirement</button><button class="btn ghost" data-act="totitle">Back to the title screen</button></div>
       <p class="small faint">Retired saves keep going quietly. You can come out of retirement from This Week whenever you like.</p>`);
