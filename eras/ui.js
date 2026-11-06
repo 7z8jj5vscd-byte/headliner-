@@ -5,7 +5,7 @@ const $ = s => document.querySelector(s);
 const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const S = () => G.S();
 const UI = window.UI = { tab:'week', sel:{}, toast:null, newg:null };
-const TABS = [['week','This Week'],['life','Life'],['songbook','Songbook'],['studio','Studio'],['rollout','Rollout'],['cover','Cover Studio'],['tour','Tour Desk'],['inbox','Team Inbox'],['eggs','Easter Eggs'],['fandom','Fandom'],['press','Press and People'],['charts','Charts and Awards'],['legacy','Legacy']];
+const TABS = [['week','This Week'],['town','Town'],['life','Life'],['songbook','Songbook'],['studio','Studio'],['rollout','Rollout'],['cover','Cover Studio'],['tour','Tour Desk'],['inbox','Team Inbox'],['eggs','Easter Eggs'],['fandom','Fandom'],['press','Press and People'],['charts','Charts and Awards'],['legacy','Legacy']];
 const STAT = [['fans','Fans'],['rep','Public Reputation'],['heat','Press Heat'],['write','Songwriting'],['clout','Industry Clout'],['own','Ownership'],['energy','Energy'],['team','Team mood']];
 const LOOKS = {
   hair:[['Honey','#c8954f'],['Platinum','#efe0b9'],['Auburn','#8a3b1f'],['Dark brown','#3a2417'],['Black','#141414'],['Copper','#b5562b']],
@@ -200,7 +200,7 @@ function render() {
   const top = `<header class="top"><div class="between"><div><div class="date">${h(G.fmtDate(s.abs))}</div><div class="small muted">Week ${yw.w} of 52 · Age ${G.age()}${e ? ' · ' + h(e.short || e.title) + ' era' : ''}</div></div>
     <div class="row"><div class="blocks" title="Time Blocks">${Array.from({ length:blocks }, (_, i) => `<i class="${i < used ? 'used' : ''}"></i>`).join('')}${used > blocks ? `<b class="over">+${used - blocks}</b>` : ''}</div><button class="icon" data-act="menu" aria-label="Menu">☰</button></div></div>
     <div class="statline">${[['fans', G.fmtN(s.stats.fans), G.art().fanName], ['rep', Math.round(s.stats.rep), 'Rep'], ['heat', Math.round(s.stats.heat), 'Heat'], ['energy', Math.round(s.stats.energy), 'Energy'], ['money', G.fmtM(s.stats.money), 'Money'], ['canon', G.canon(), 'Canon']].map(([k, v, l]) => `<div class="st"><b>${v}</b><span>${l}</span></div>`).join('')}</div></header>`;
-  const GROUPS = [['Now', ['week','inbox','life']], ['Music', ['songbook','studio','rollout','cover']], ['Stage', ['tour','fandom','eggs']], ['Career', ['press','charts','legacy']]];
+  const GROUPS = [['Now', ['week','town','inbox','life']], ['Music', ['songbook','studio','rollout','cover']], ['Stage', ['tour','fandom','eggs']], ['Career', ['press','charts','legacy']]];
   const grp = GROUPS.find(g => g[1].includes(UI.tab)) || GROUPS[0];
   const groupNav = `<nav class="groups" aria-label="Sections">${GROUPS.map(g => { const un = g[1].includes('inbox') ? s.inbox.filter(m => !m.read).length : 0; return `<button class="grp ${g === grp ? 'on' : ''}" data-act="tab" data-v="${g[1].find(k => G.unlocked(k)) || 'week'}">${h(g[0])}${un ? `<i class="badge">${un}</i>` : ''}</button>`; }).join('')}</nav>`;
   const nav = groupNav + `<nav class="tabs" aria-label="Game tabs">${TABS.filter(([k]) => !UI.narrow || grp[1].includes(k)).map(([k, l]) => { const ok = G.unlocked(k); const un = k === 'inbox' ? s.inbox.filter(m => !m.read).length : 0; return `<button class="tab ${UI.tab === k ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="tab" data-v="${k}">${h(l)}${un ? `<i class="badge">${un}</i>` : ''}${ok ? '' : ' 🔒'}</button>`; }).join('')}</nav>`;

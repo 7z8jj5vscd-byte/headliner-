@@ -2,7 +2,7 @@
    the newest build is. When they differ, a banner offers a one-tap update; after updating, the
    game shows what's new. Bump with: python3 eras/tools/bump_version.py "Title" "Note" ... */
 (function () {
-const BUILD = '2026.11.06-1';
+const BUILD = '2026.11.06-2';
 const UPD = window.UPD = { build:BUILD, latest:null, notes:[], title:'', checked:0 };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
