@@ -200,6 +200,10 @@ function render() {
   const nav = groupNav + `<nav class="tabs" aria-label="Game tabs">${TABS.filter(([k]) => !UI.narrow || grp[1].includes(k)).map(([k, l]) => { const ok = G.unlocked(k); const un = k === 'inbox' ? s.inbox.filter(m => !m.read).length : 0; return `<button class="tab ${UI.tab === k ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="tab" data-v="${k}">${h(l)}${un ? `<i class="badge">${un}</i>` : ''}${ok ? '' : ' 🔒'}</button>`; }).join('')}</nav>`;
   $('#app').innerHTML = top + nav + `<main id="main">${(VIEWS[UI.tab] || VIEWS.week)()}</main><div id="toast" class="toast"></div>`;
   if (UI.tab === 'week') mount3D('#t3stage', stageSpec(), 'main');
+  if (!document.querySelector('.modal') && s.abs - (s.lastBackup != null ? s.lastBackup : (s.lastBackup = s.abs)) > 104 && (!UI.backupSnooze || s.abs - UI.backupSnooze > 52) && s.slot !== 'daily') {
+    UI.backupSnooze = s.abs;
+    modal(`<h2>Back up your save?</h2><p class="small">This save lives only in this browser. Clearing your browser data or switching devices would lose it. Export a backup file now and then to keep it safe.</p>
+      <div class="stack tight"><button class="btn" data-act="export">Export a backup</button><button class="btn ghost" data-act="backuplater">Remind me later</button></div>`); }
   if (UI.tab === 'legacy' && UI.sel.booth) boothDraw();
   if (window.SND && SND.on && UI.heard) SND.setMood(moodOf(e));
   if (UI.tab === 'tour') { const v = $('#t3venue'); if (v) mount3D('#t3venue', { set:UI.sel.tier || 'arena', color:(e || {}).color, figs:[{ look:lookFor('tour', e), anim:'sing', mic:true }] }, 'venue'); }
@@ -612,6 +616,34 @@ function eventModal(id) {
 }
 
 /* ---------- Actions ---------- */
+/* ---------- Settings ---------- */
+UI.prefs = (() => { try { return Object.assign({ text:'normal', quick:false }, JSON.parse(localStorage.getItem('eras-settings') || '{}')); } catch (e) { return { text:'normal', quick:false }; } })();
+function savePrefs() { try { localStorage.setItem('eras-settings', JSON.stringify(UI.prefs)); } catch (e) {} applyPrefs(); }
+function applyPrefs() { document.documentElement.classList.toggle('big-text', UI.prefs.text === 'large'); document.documentElement.classList.toggle('huge-text', UI.prefs.text === 'larger'); }
+applyPrefs();
+function settingsModal() {
+  closeModals(); const P = UI.prefs;
+  modal(`<h2>Settings</h2>
+    <h3>Text size</h3><div class="chips">${[['normal','Normal'],['large','Large'],['larger','Larger']].map(([k, l]) => `<button class="chip ${P.text === k ? 'on' : ''}" data-act="pref" data-k="text" data-v="${k}">${l}</button>`).join('')}</div>
+    <h3>Quick mode</h3><p class="small muted">Skips scenes, writing and studio sessions, and show nights, for faster play. Real event cards still appear.</p>
+    <div class="chips"><button class="chip ${!P.quick ? 'on' : ''}" data-act="pref" data-k="quick" data-v="0">Off</button><button class="chip ${P.quick ? 'on' : ''}" data-act="pref" data-k="quick" data-v="1">On</button></div>
+    <h3>3D</h3><div class="chips">${[['high','High'],['low','Low (faster)'],['off','Off']].map(([k, l]) => `<button class="chip ${T3.quality === k ? 'on' : ''}" data-act="pref3d" data-v="${k}">${l}</button>`).join('')}</div>
+    <h3>Sound</h3><div class="chips"><button class="chip ${window.SND && SND.on ? 'on' : ''}" data-act="prefsound" data-v="1">On</button><button class="chip ${window.SND && !SND.on ? 'on' : ''}" data-act="prefsound" data-v="0">Off</button></div>
+    <button class="btn big" data-act="closem" style="margin-top:12px">Done</button>`);
+}
+/* ---------- Previously on ---------- */
+function previouslyModal() {
+  const s = S(), A = G.art(), e = G.currentEra(), act = G.active().filter(x => x.p.type !== 'demos');
+  const dl = []; G.allProjects().forEach(p => { const w = G.win(p); [[w.rel, `${p.title} release`], [w.ts, `${p.tour && p.tour.name} begins`]].forEach(([a, l]) => { if (a != null && a >= s.abs && a < s.abs + 26) dl.push([a, l]); }); });
+  dl.sort((a, b) => a[0] - b[0]);
+  const last = s.log.filter(l => !l.world).slice(-3).reverse();
+  modal(`<span class="eyebrow">Previously on The Eras Life</span><h2>${h(A.name)}, ${h(G.fmtDate(s.abs))}</h2><div class="stage3d short" id="t3prevon"></div>
+    <p class="small">Age ${G.age()}${e ? ` · the ${h(e.short || e.title)} era` : ''}${act.length ? ` · ${act.map(x => `${h(x.p.short || x.p.title)}: ${h(stageName(x.st))}`).join(', ')}` : ''}</p>
+    ${dl.length ? `<h3>Coming up</h3>${dl.slice(0, 3).map(([a, l]) => `<div class="between small"><span>${h(l)}</span><span class="muted">${h(G.fmtDate(a))}</span></div>`).join('')}` : ''}
+    ${last.length ? `<h3>Your last choices</h3>${last.map(l => `<p class="small"><b>${h(l.t)}:</b> ${h(l.l)}</p>`).join('')}` : ''}
+    <button class="btn big" data-act="closem">Pick up where you left off</button>`);
+  mount3D('#t3prevon', stageSpec(), 'prevon');
+}
 /* ---------- Scenes and sessions ---------- */
 const TEAMFIG = { publicist:'publicist', manager:'manager', label:'label', family:'family', producer:'producer', fan:'fan' };
 function sceneFigs(sc) {
@@ -711,6 +743,7 @@ function after(r) { if (r && r.err) toast(r.err); else if (r && r.msg) toast(r.m
 const ACT = {
   tab:d => { UI.tab = d.v; if (d.v !== 'week') G.guideTick('tab'); render(); window.scrollTo(0, 0); },
   do:d => { const t = G.tasks().find(x => x.id === d.id);
+    if (UI.prefs.quick) { const r = G.doTask(d.id, d.arg || undefined); return after(r); }
     if (t && t.kind === 'write' && !d.arg) return writeSession(t.p);
     if (t && t.kind === 'record' && !d.arg) return studioSession(t.p);
     const r = G.doTask(d.id, d.arg || undefined); if (r && r.err) return after(r);
@@ -838,14 +871,19 @@ const ACT = {
   freeok:() => { G.S().modal.shift(); G.enterFree(); closeModals(); render(); },
   newera:() => { const t = ($('#ne-title') || {}).value || '', n = +($('#ne-n') || {}).value || 13, w = +($('#ne-w') || {}).value || 32, tr = +($('#ne-t') || {}).value || 0; const p = G.newEra(t.trim(), n, w, tr); toast(`${p.title} is on the calendar.`); UI.tab = 'week'; render(); },
   nextreal:d => { G.startNextReal(d.id); G.S().proposal = null; G.S().modal = G.S().modal.filter(m => m.k !== 'nextera'); closeModals(); toast('The next era begins.'); UI.tab = 'week'; render(); },
+  settings:() => settingsModal(),
+  pref:d => { UI.prefs[d.k] = d.k === 'quick' ? d.v === '1' : d.v; savePrefs(); settingsModal(); },
+  pref3d:d => { T3.setQuality(d.v); settingsModal(); },
+  prefsound:d => { if (window.SND && SND.on !== (d.v === '1')) SND.toggle(); UI.heard = true; settingsModal(); },
+  backuplater:() => { UI.backupSnooze = G.S().abs; closeModals(); },
   menu:() => { const s = G.S(); modal(`<h2>Menu</h2><p class="small muted">Slot ${s.slot} · ${s.mode === 'story' ? 'Story Mode' : 'Era Start'} · ${G.DIFF[s.diff].l}. The game autosaves every week.</p>
-      <div class="stack tight"><button class="btn" data-act="savenow">Save now</button><button class="btn ghost" data-act="q3d">3D: ${T3.quality === 'high' ? 'High' : T3.quality === 'low' ? 'Low (faster)' : 'Off'}</button><button class="btn ghost" data-act="sound">Sound: ${window.SND && SND.on ? 'on' : 'off'}</button><button class="btn ghost" data-act="export">Export save file</button><label class="btn ghost">Import save file<input type="file" accept=".json,application/json" data-act="import" hidden></label><button class="btn ghost" data-act="totitle">Title screen</button><button class="btn ghost" data-act="closem">Close</button></div>`); },
+      <div class="stack tight"><button class="btn" data-act="savenow">Save now</button><button class="btn ghost" data-act="settings">Settings</button><button class="btn ghost" data-act="q3d">3D: ${T3.quality === 'high' ? 'High' : T3.quality === 'low' ? 'Low (faster)' : 'Off'}</button><button class="btn ghost" data-act="sound">Sound: ${window.SND && SND.on ? 'on' : 'off'}</button><button class="btn ghost" data-act="export">Export save file</button><label class="btn ghost">Import save file<input type="file" accept=".json,application/json" data-act="import" hidden></label><button class="btn ghost" data-act="totitle">Title screen</button><button class="btn ghost" data-act="closem">Close</button></div>`); },
   savenow:() => { G.save(); toast('Saved.'); closeModals(); },
-  export:() => { const b = new Blob([G.exportSave()], { type:'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `eras-life-slot${G.S().slot}-${G.yw().y}.json`; document.body.appendChild(a); a.click(); a.remove(); toast('Save file downloaded.'); },
+  export:() => { G.S().lastBackup = G.S().abs;  const b = new Blob([G.exportSave()], { type:'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `eras-life-slot${G.S().slot}-${G.yw().y}.json`; document.body.appendChild(a); a.click(); a.remove(); toast('Save file downloaded.'); },
   totitle:() => { G.save(); G.set(null); closeModals(); title(); },
   // Title flow
   title:() => { UI.newg = null; title(); },
-  load:d => { if (G.load(+d.n)) { UI.tab = 'week'; render(); } else toast('That save could not be read.'); },
+  load:d => { if (G.load(+d.n)) { UI.tab = 'week'; render(); previouslyModal(); } else toast('That save could not be read.'); },
   delslot:d => { if (confirm(`Delete slot ${d.n}?`)) { G.del(+d.n); title(); } },
   newgame:d => { UI.newg = { slot:+d.n, mode:'story', diff:'standard', era:'ts1', look:{ hair:LOOKS.hair[3][1], style:'curly', skin:LOOKS.skin[2][1] }, pro:[], lookEra:'fearless', artist:'taylor' }; newGameFlow(); },
   nmode:d => { UI.newg.mode = d.v; newGameFlow(); }, nera:d => { UI.newg.era = d.v; newGameFlow(); }, ndiff:d => { UI.newg.diff = d.v; newGameFlow(); },
