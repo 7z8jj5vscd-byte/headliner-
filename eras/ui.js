@@ -189,9 +189,13 @@ function render() {
   const top = `<header class="top"><div class="between"><div><div class="date">${h(G.fmtDate(s.abs))}</div><div class="small muted">Week ${yw.w} of 52 · Age ${G.age()}${e ? ' · ' + h(e.short || e.title) + ' era' : ''}</div></div>
     <div class="row"><div class="blocks" title="Time Blocks">${Array.from({ length:blocks }, (_, i) => `<i class="${i < used ? 'used' : ''}"></i>`).join('')}${used > blocks ? `<b class="over">+${used - blocks}</b>` : ''}</div><button class="icon" data-act="menu" aria-label="Menu">☰</button></div></div>
     <div class="statline">${[['fans', G.fmtN(s.stats.fans), G.art().fanName], ['rep', Math.round(s.stats.rep), 'Rep'], ['heat', Math.round(s.stats.heat), 'Heat'], ['energy', Math.round(s.stats.energy), 'Energy'], ['money', G.fmtM(s.stats.money), 'Money'], ['canon', G.canon(), 'Canon']].map(([k, v, l]) => `<div class="st"><b>${v}</b><span>${l}</span></div>`).join('')}</div></header>`;
-  const nav = `<nav class="tabs" aria-label="Game tabs">${TABS.map(([k, l]) => { const ok = G.unlocked(k); const un = k === 'inbox' ? s.inbox.filter(m => !m.read).length : 0; return `<button class="tab ${UI.tab === k ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="tab" data-v="${k}">${h(l)}${un ? `<i class="badge">${un}</i>` : ''}${ok ? '' : ' 🔒'}</button>`; }).join('')}</nav>`;
+  const GROUPS = [['Now', ['week','inbox','life']], ['Music', ['songbook','studio','rollout','cover']], ['Stage', ['tour','fandom','eggs']], ['Career', ['press','charts','legacy']]];
+  const grp = GROUPS.find(g => g[1].includes(UI.tab)) || GROUPS[0];
+  const groupNav = `<nav class="groups" aria-label="Sections">${GROUPS.map(g => { const un = g[1].includes('inbox') ? s.inbox.filter(m => !m.read).length : 0; return `<button class="grp ${g === grp ? 'on' : ''}" data-act="tab" data-v="${g[1].find(k => G.unlocked(k)) || 'week'}">${h(g[0])}${un ? `<i class="badge">${un}</i>` : ''}</button>`; }).join('')}</nav>`;
+  const nav = groupNav + `<nav class="tabs" aria-label="Game tabs">${TABS.filter(([k]) => !UI.narrow || grp[1].includes(k)).map(([k, l]) => { const ok = G.unlocked(k); const un = k === 'inbox' ? s.inbox.filter(m => !m.read).length : 0; return `<button class="tab ${UI.tab === k ? 'on' : ''}" ${ok ? '' : 'disabled'} data-act="tab" data-v="${k}">${h(l)}${un ? `<i class="badge">${un}</i>` : ''}${ok ? '' : ' 🔒'}</button>`; }).join('')}</nav>`;
   $('#app').innerHTML = top + nav + `<main id="main">${(VIEWS[UI.tab] || VIEWS.week)()}</main><div id="toast" class="toast"></div>`;
   if (UI.tab === 'week') mount3D('#t3stage', stageSpec(), 'main');
+  if (UI.tab === 'legacy' && UI.sel.booth) boothDraw();
   if (window.SND && SND.on && UI.heard) SND.setMood(moodOf(e));
   if (UI.tab === 'tour') { const v = $('#t3venue'); if (v) mount3D('#t3venue', { set:UI.sel.tier || 'arena', color:(e || {}).color, figs:[{ look:lookFor('tour', e), anim:'sing', mic:true }] }, 'venue'); }
   if (UI.tab === 'charts' || UI.tab === 'legacy') {}
@@ -397,7 +401,12 @@ VIEWS.fandom = function () {
   if (G.world('lockdown')) { ev.length = 0; ev.push(['livestream', 'Livestream for fans from home', 1]); if (s.flags.secretsessions) ev.push(['zoom', 'Surprise fans on a video call', 1]); }
   else if (!s.flags.hidden) ev.push(['meet', 'Surprise fans at a meet-up', 2]);
   if (s.flags.hidden) { ev.length = 0; ev.push(['readfans', 'Quietly read the fan theories', 1]); }
-  return card(`<h2>${h(A.fanName)}</h2><div class="grid3"><div><b>${G.fmtN(s.stats.fans)}</b><div class="small muted">Fans</div></div><div><b>${G.fmtN(hard)}</b><div class="small muted">Hardcore</div></div><div><b>${s.eggs.decoded}</b><div class="small muted">Eggs decoded</div></div></div>
+  const braceletCard = card(`<h3>Friendship bracelets</h3><p class="small muted">Make a bracelet. You trade them at shows, and each one helps a show night a little.</p>
+    <div class="row"><input id="br-word" maxlength="12" placeholder="Up to 12 letters" style="flex:1;background:var(--raised);border:1px solid var(--rule);border-radius:10px;padding:8px 10px">
+    <button class="btn sm" data-act="bracelet">Make it</button></div>
+    <p class="small faint">Ideas: ${G.allProjects().filter(p => p.type === 'album').slice(-4).map(p => h(String(p.short || p.title).toUpperCase().slice(0, 12))).join(' · ')}</p>
+    <div class="bracelets">${(s.bracelets || []).slice(0, 8).map(b => `<div class="bracelet">${b.word.split('').map((ch, i) => `<i style="background:${b.colors[i % b.colors.length] || '#f6d38a'}">${h(ch)}</i>`).join('')}</div>`).join('')}</div>`);
+  return braceletCard + card(`<h2>${h(A.fanName)}</h2><div class="grid3"><div><b>${G.fmtN(s.stats.fans)}</b><div class="small muted">Fans</div></div><div><b>${G.fmtN(hard)}</b><div class="small muted">Hardcore</div></div><div><b>${s.eggs.decoded}</b><div class="small muted">Eggs decoded</div></div></div>
     ${G.curveMode() ? `<div class="statrow"><span>Momentum vs reality</span>${bar(G.momentum() * 50, 80)}<b>${Math.round(G.momentum() * 100)}%</b></div><p class="small faint">Your fan base follows her real growth in each era. Above 100% you are doing better than she did, and below it worse.</p>` : ''}
     <h3>Fan events</h3>${ev.map(([k, l, c]) => `<div class="between small"><span>${h(l)}</span><button class="btn sm" data-act="fan" data-k="${k}" data-c="${c}" ${G.canSpend(c) ? '' : 'disabled'}>Do · ${c}</button></div>`).join('')}`)
   + card(`<h3>Fan theories</h3><p class="small faint">Simulated posts from invented usernames only, never real accounts.</p>${s.feed.slice(0, 20).map(f => `<div class="post"><b>@${h(f.h)}</b> <span class="small">${h(f.x)}</span><div class="small faint">${h(G.fmtDate(f.abs))}</div></div>`).join('') || '<p class="small muted">Quiet so far.</p>'}`);
@@ -447,6 +456,11 @@ VIEWS.legacy = function () {
     <p class="small muted">The Canon Score measures how close your choices were to what she really did.</p>${spark}`)
   + card(`<h3>Era gallery</h3><div class="shelf">${s.released.map(r => { const p = G.proj(r.pid); return `<div class="sh">${coverSVG(G.pj(r.pid).cover, 84, r.pid)}<span class="small"><b>${h(p.short || p.title)}</b>${p.eraNo ? `<br><span class="faint">Era ${p.eraNo}</span>` : ''}<br>${G.fmtN(r.total)} sold</span></div>`; }).join('') || '<p class="small muted">Your albums appear here.</p>'}</div>`)
   + card(`<h3>Era goals</h3>${P.filter(p => s.goals[p.id] || G.stageOf(p, s.abs) !== 'none').map(p => `<div class="logrow"><b>${h(p.title)}</b>${p.goals.map((g, i) => `<div class="small">${s.goals[p.id] ? (s.goals[p.id][i] ? '✅' : '❌') : '⏳'} ${h(g.l)}</div>`).join('')}</div>`).join('') || '<p class="small muted">Goals appear as each era begins.</p>'}`)
+  + card(`<h3>Photo booth</h3><p class="small muted">Pose your performer in any era look you have reached, then save the picture.</p>
+      <div class="chips">${G.allProjects().filter(p => p.type !== 'demos' && G.pj(p.id).released).map(p => `<button class="chip ${UI.sel.booth === p.id ? 'on' : ''}" data-act="booth" data-v="${p.id}">${h(p.short || p.title)}</button>`).join('') || '<span class="small muted">Release an album first.</span>'}</div>
+      ${UI.sel.booth ? `<div class="chips">${[['stadium','Stadium'],['awards','Awards'],['press','Red carpet'],['studio','Studio'],['home','Home']].map(([k, l]) => `<button class="chip ${UI.sel.boothSet === k ? 'on' : ''}" data-act="boothset" data-v="${k}">${l}</button>`).join('')}</div>
+        <div class="chips">${[['sing','Singing'],['wave','Waving'],['bow','Bowing'],['dance','Dancing']].map(([k, l]) => `<button class="chip ${UI.sel.boothPose === k ? 'on' : ''}" data-act="boothpose" data-v="${k}">${l}</button>`).join('')}</div>
+        <div class="stage3d" id="t3booth"></div><button class="btn sm" data-act="snap">Save photo</button>` : ''}`)
   + card(`<h3>Achievements</h3><div class="chips">${Object.keys(G.ACH).map(k => `<span class="chip ${s.ach[k] ? 'on' : ''}">${s.ach[k] ? '★' : '☆'} ${h(G.ACH[k])}</span>`).join('')}</div>`)
   + (G.canRetire() || s.flags.retired ? card(`<h3>Retirement</h3>${s.flags.retired ? `<p class="small">Retired in ${ER.yw(s.flags.retired).y}.</p><div class="row"><button class="btn ghost sm" data-act="showend">See your career</button><button class="btn ghost sm" data-act="unretire">Come out of retirement</button></div>`
       : `<p class="small muted">End your career with a farewell tour, or retire straight away. You can always come back.</p><div class="row"><button class="btn ghost sm" data-act="tofarewell" ${s.flags.farewell ? 'disabled' : ''}>${s.flags.farewell ? 'Farewell tour planned' : 'Plan a farewell tour'}</button><button class="btn ghost sm" data-act="retireask">Retire</button></div>`}`) : '')
@@ -647,6 +661,10 @@ function awardNight(id) {
   mount3D('#t3award', { set:st.step === 'carpet' ? 'press' : 'awards', color:(era || {}).color || '#e8c66a', figs:[{ look, anim, mic:st.step === 'perform', s:ageScale() }] }, 'award');
 }
 function moodOf(e) { if (!e) return 'country'; const th = e.theme; return ER.ERA_MOOD[e.id] || (th ? ({ country:'country', folk:'quiet', acoustic:'quiet', darkpop:'dark', jazz:'romantic', orchestral:'romantic' })[th] || 'pop' : 'pop'); }
+function boothDraw() {
+  const p = G.proj(UI.sel.booth); if (!p) return; const pose = UI.sel.boothPose || 'sing', set = UI.sel.boothSet || 'stadium';
+  mount3D('#t3booth', { set, color:p.color, figs:[{ look:lookFor(set === 'studio' ? 'studio' : set === 'home' ? '' : 'tour', p), anim:pose, mic:pose === 'sing' }] }, 'booth');
+}
 function after(r) { if (r && r.err) toast(r.err); else if (r && r.msg) toast(r.msg); render(); }
 const ACT = {
   tab:d => { UI.tab = d.v; if (d.v !== 'week') G.guideTick('tab'); render(); window.scrollTo(0, 0); },
@@ -657,6 +675,10 @@ const ACT = {
     if (r && r.msg) toast(r.msg);
     if (t && t.kind === 'shows' && r && r.ok) { const p = G.proj(t.p); if (p.tour.kind !== 'opening' && !/travel week/.test(r.msg || '')) { render(); UI.show = { sh:G.showSetup(p), step:'opener', picks:[] }; return showNight(); } }
     const sc = t && r && r.ok ? G.pickScene(t) : null; if (sc) { render(); return showScene(sc); } render(); },
+  booth:d => { UI.sel.booth = d.v; UI.sel.boothSet = UI.sel.boothSet || 'stadium'; UI.sel.boothPose = UI.sel.boothPose || 'sing'; render(); boothDraw(); },
+  boothset:d => { UI.sel.boothSet = d.v; render(); boothDraw(); }, boothpose:d => { UI.sel.boothPose = d.v; render(); boothDraw(); },
+  snap:() => { const url = T3.snapshot('booth'); if (!url) return toast('The photo could not be saved on this device.'); const a = document.createElement('a'); a.href = url; a.download = `eras-life-${UI.sel.booth}.png`; document.body.appendChild(a); a.click(); a.remove(); toast('Photo saved.'); },
+  bracelet:() => { const w = ($('#br-word') || {}).value || ''; const e = G.currentEra() || {}; const b = G.makeBracelet(w, [e.color || '#f6d38a', e.accent || '#ffffff', '#e88fb4', '#6fa8d6']); if (!b) return toast('Type a word first.'); toast(`Made a bracelet: ${b.word}`); render(); },
   shop:d => { UI.show.opener = d.v; UI.show.step = UI.show.sh.surprise ? 'surprise' : 'moment'; if (window.SND) SND.crowd(2.5); showNight(); },
   shsong:d => { const a = UI.show.picks, i = a.indexOf(d.v); if (i >= 0) a.splice(i, 1); else { a.push(d.v); if (a.length > 2) a.shift(); } showNight(); },
   shnext:() => { UI.show.step = 'moment'; if (window.SND) SND.crowd(2); showNight(); },
@@ -731,7 +753,11 @@ const ACT = {
     window.scrollTo(0, 0); render(); },
   force:() => { closeModals(); G.advance(true); window.scrollTo(0, 0); render(); },
   closem:() => { closeModals(); },
-  ff:() => { const n = G.fastForward(52); toast(n ? `Skipped ${n} quiet week${n > 1 ? 's' : ''}.` : 'This week needs you.'); render(); },
+  ff:() => { const r = G.fastForwardSummary(52); if (!r.n) { toast('This week needs you.'); return render(); } render();
+    if (r.n < 3) return toast(`Skipped ${r.n} quiet week${r.n > 1 ? 's' : ''}.`);
+    modal(`<span class="eyebrow">While you were away</span><h2>${r.n} quiet weeks</h2><p class="small muted">${h(G.fmtDate(r.from))} to ${h(G.fmtDate(G.S().abs))}</p>
+      <div class="grid3"><div><b class="${r.fans >= 0 ? 'pos' : 'neg'}">${r.fans >= 0 ? '+' : ''}${G.fmtN(r.fans)}</b><div class="small muted">Fans</div></div><div><b class="${r.money >= 0 ? 'pos' : 'neg'}">${G.fmtM(r.money)}</b><div class="small muted">Money</div></div><div><b>${r.awards}</b><div class="small muted">Awards</div></div></div>
+      ${r.singles.length ? `<p class="small">New singles: ${r.singles.map(h).join(', ')}</p>` : ''}<p class="small muted">Fast-forward stopped because something needs you this week.</p><button class="btn big" data-act="closem">Continue</button>`); },
   saveroutine:() => { const n = G.saveRoutine(); toast(n ? `Routine saved: ${n} tasks.` : 'Do some optional tasks first, then save them as a routine.'); render(); },
   applyroutine:() => { const n = G.applyRoutine(); toast(`Applied ${n} routine task${n === 1 ? '' : 's'}.`); render(); },
   answer:d => { const r = G.answer(d.id, +d.i); const sh = document.querySelector('.modal .sheet'); const s = G.S(); const yr = ER.yw(s.abs).y;

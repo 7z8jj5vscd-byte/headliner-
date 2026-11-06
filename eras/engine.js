@@ -388,6 +388,12 @@ G.doTask = function (id, arg) {
   return { ok:true, msg };
 };
 
+/* ---------- Friendship bracelets ---------- */
+G.makeBracelet = function (word, colors) {
+  word = String(word || '').toUpperCase().replace(/[^A-Z0-9 ]/g, '').slice(0, 12).trim(); if (!word) return null;
+  S.bracelets = S.bracelets || []; S.bracelets.unshift({ word, colors:(colors || []).slice(0, 4), abs:S.abs, traded:0 }); if (S.bracelets.length > 40) S.bracelets.length = 40;
+  applyFx({ fans:.3 }); G.journalAdd('A new bracelet', `You made one that says ${word}.`); return S.bracelets[0];
+};
 /* ---------- Show nights ---------- */
 // The night itself, after the week's shows are played: city, opener, surprise songs and a crowd moment.
 G.showSetup = function (p) {
@@ -404,6 +410,7 @@ G.showNight = function (sh, openerId, picks, mi) {
   let score = 2.6 + (S.stats.energy > 50 ? .5 : -.3) + (S.stats.team > 60 ? .3 : 0) + rnd(-.4, .6);
   const pj = G.pj(sh.pid); if (pj.underRehearsed) score -= .7; if (pj.tp && pj.tp.rehearse) score += .3;
   (picks || []).forEach(t => { const first = !S.surprisePlayed[t]; S.surprisePlayed[t] = (S.surprisePlayed[t] || 0) + 1; if (first) { score += .35; applyFx({ fans:.4 }); } });
+  const br = (S.bracelets || []).find(b => b.traded < 3); if (br) { br.traded++; score += .15; applyFx({ fans:.3 }); }
   const stars = clamp(Math.round(score), 1, 5);
   applyFx({ rep:(stars - 3) * .8, fans:(stars - 3) * .4 });
   const line = ER.REVIEW_LINES[stars];
@@ -844,6 +851,12 @@ function achievements() {
 G.returnToPublic = function () { if (!S.flags.hidden) return; S.flags.hidden = false; S.flags.hiddenDone = true; applyFx({ heat:15, hype:10 }); inbox('publicist', 'You are back', 'You stepped back into public view early. The press noticed.'); };
 /* ---------- Fast-forward ---------- */
 G.quietWeek = () => !S.week.pending.length && !G.requiredLeft().length && !S.modal.length;
+G.fastForwardSummary = function (max) {
+  const f0 = S.stats.fans, m0 = S.stats.money, a0 = S.abs, j0 = (S.journal || []).length, aw0 = S.awards.length;
+  const n = G.fastForward(max);
+  return { n, from:a0, fans:S.stats.fans - f0, money:S.stats.money - m0, awards:S.awards.length - aw0, units:(S.history || []).slice(-n).length ? null : null,
+    singles:S.charts.singles.filter(c => c.abs >= a0).map(c => c.t), moments:(S.journal || []).length - j0 };
+};
 G.fastForward = function (max) {
   let n = 0; const st0 = JSON.stringify(G.active().map(x => x.p.id + x.st));
   while (n < (max || 52) && G.quietWeek()) { endWeek(); n++; if (JSON.stringify(G.active().map(x => x.p.id + x.st)) !== st0) break; }

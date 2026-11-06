@@ -201,6 +201,8 @@ function buildSet(scene, kind, color) {
 
 /* ---------- Views ---------- */
 // spec: { set, color, figs:[{look, x, z, anim, mood, ry}] }
+// Render a slot once more and return it as an image (for the photo booth).
+T3.snapshot = function (slot) { const s = T3.slots[slot]; if (!s || !s.scene) return null; s.r.render(s.scene, s.cam); try { return s.r.domElement.toDataURL('image/png'); } catch (e) { return null; } };
 T3.view = function (el, spec, slot) {
   if (!el || !ok()) return false;
   slot = slot || 'main';
