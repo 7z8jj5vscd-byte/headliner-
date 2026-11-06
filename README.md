@@ -126,7 +126,19 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/dreamacademy/
 
 **After the debut.** Live stages with chants, music show nominations and first wins with an encore, fansigns, dorm life (movie nights, birthdays, homesick nights), line distribution bars on every release, a Real story tab that sets each beat of the real group's first years beside your run, and 21 trophies.
 
-**Saves.** Autosave on the device, plus export and import of a save code.
+**Saves.** Three save slots with autosave on the device, rewind one month, undo a choice (not on Hard), and export and import of a save code.
+
+**Difficulty and settings.** Easy, Normal and Hard. Settings for graphics (high, low or no 3D), volume and background music, text size, reduced motion, stats-only mini-games and tutorial tips. A glossary explains every stat, the ⏩ button skips quiet months, and the game works offline once loaded.
+
+**Training and show depth.** Skill tiers unlock harder lessons with bigger gains, coaches build favor and offer private lessons, overtraining can cause injuries, a rival trainee turns into a friend, judges react when you repeat or vary eval picks, and during the show a vote meter tracks every trainee while the show's edit of your trainee (hero to villain) moves her votes. Interviews can be clipped, fan campaigns and benefit votes change the race, and a chart tracks her eval rank over time.
+
+**Career.** Comeback planning (title track from three demos, B-side, teaser rollout), rival groups with their own comebacks and a storyline, the music show race, variety shows, a sub-unit and a solo debut, features with invented artists, a world tour planner with venues, regions, prices and home crowds, merch, endorsements that fit or clash with the concept, award campaigns, and money.
+
+**Replay.** Personal three-chapter arcs for the six members, anniversaries with a five-year concert and a final concert, epilogue scenes, eight endings, New Game+, challenge runs (No Breaks, Bottom Three Start, Underdog, One-Member Focus), what-if starts at any chapter, a daily challenge with streaks, a photocard binder, past runs and personal records, seasonal events on the real calendar, and an optional invented 21st trainee you design yourself.
+
+**Studio.** An outfit designer, a stage designer, a choreography builder for a signature routine (with keyframed dance moves), a group logo, photo mode in eleven 3D locations, music video playback for every release, a replay of your best stage, an animated weekly chart, and a documentary mode that replays your run chapter by chapter.
+
+Leaderboards and cloud sync would need a server, so records stay on the device, and the 14 contestants who did not debut are still listed by first name only.
 
 ## Updates go live automatically
 

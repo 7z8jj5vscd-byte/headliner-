@@ -55,7 +55,7 @@ function av(id, size, cls) {
   return '<span class="av ' + (cls || '') + '" style="width:' + size + 'px;height:' + size + 'px">' + svg + '</span>';
 }
 UI.av = av;
-function fig3(id, i) { const L = G.p(id).look, o = outfit(id); return { id, look:L, outfit:o, pants:i % 2 === 0, accent:o === '#3a3f4a' ? '#e5484d' : null }; }
+function fig3(id, i) { const L = G.p(id).look, o = outfit(id); const f = { id, look:L, outfit:o, pants:i % 2 === 0, accent:o === '#3a3f4a' ? '#e5484d' : null }; return UI.figHook ? UI.figHook(f, id) : f; }
 function cast3(ids) { return ids.map(fig3); }
 function stageCast() { const s = S(); return G.debuted() ? G.activeMembers() : [s.focus].concat(G.trainees().filter(x => x !== s.focus).slice(0, 4)).filter(G.inPlay); }
 function mgOpts(v, kind) {
@@ -68,16 +68,18 @@ function mgOpts(v, kind) {
   return o;
 }
 function pickOf(a) { return a[Math.floor(Math.random() * a.length)]; }
-function outfitTint() { const s = S(), r = s.group.releases[s.group.releases.length - 1]; return r ? (ERA_COL[r.concept] || '#e5484d') : '#e5484d'; }
+function outfitTint() { const s = S(), r = s.group.releases[s.group.releases.length - 1]; if (s.studio && s.studio.tint) return s.studio.tint; return r ? (ERA_COL[r.concept] || '#e5484d') : '#e5484d'; }
 async function runGame(kind, o) {
   if (!window.MG) return null;
   const acc = await MG.run(kind, o);
   G.noteGame(kind, acc);
+  if (UI.onGame) UI.onGame(kind, o, acc);
   if (kind === 'write' && acc != null && MG.last.hook) G.setHook(MG.last.hook);
   G.save();
   return acc;
 }
 UI.runGame = runGame;
+UI.fig3 = (id, i) => fig3(id, i); UI.cast3 = ids => cast3(ids); UI.outfitTint = () => outfitTint();
 
 /* ---------- Helpers ---------- */
 function bar(v, cls) { return '<span class="bar ' + (cls || '') + '"><i style="width:' + Math.max(0, Math.min(100, v)) + '%"></i></span>'; }
@@ -161,8 +163,15 @@ function setupScreen() {
     (G.profile().ngp ? '<label class="toggle"><input type="checkbox" data-ngp' + (setup.ngp ? ' checked' : '') + '><span>New Game+: focus starts +5 in every skill, 3 practice sessions a month, trophies carry over</span></label>' : '') +
     '<h2>Who do the cameras follow?</h2><p class="muted small">Your focus member. You can switch to any trainee and plan her month at any time.</p>' +
     '<div class="pickgrid">' + c.map(x => '<button class="pick ' + (setup.focus === x.id ? 'on' : '') + '" data-f="' + x.id + '">' + av(x.id, 56) + '<b>' + esc(x.first) + '</b><span>' + esc(x.from) + '</span></button>').join('') + '</div>' +
+    '<h2>A 21st trainee</h2><label class="toggle"><input type="checkbox" data-cust' + (setup.custom ? ' checked' : '') + '><span>Add yourself as an invented 21st trainee (open result lets her debut)</span></label>' +
+    (setup.custom ? '<div class="custrow"><label class="field"><span>Name</span><input data-cname value="' + esc(setup.custom.name) + '" maxlength="14"></label><label class="field"><span>From</span><input data-cfrom value="' + esc(setup.custom.from) + '" maxlength="20"></label></div>' +
+      '<div class="sw">' + D.skinTones.map(c => '<button class="swatch ' + (setup.custom.look.skin === c ? 'on' : '') + '" style="background:' + c + '" data-cskin="' + c + '" aria-label="Skin tone"></button>').join('') + '</div>' +
+      '<div class="sw">' + D.hairColors.map(c => '<button class="swatch ' + (setup.custom.look.hair === c ? 'on' : '') + '" style="background:' + c + '" data-chair="' + c + '" aria-label="Hair colour"></button>').join('') + '</div>' +
+      '<div class="chips">' + D.hairStyles.map(([k, l]) => '<button class="chip ' + (setup.custom.look.style === k ? 'on' : '') + '" data-cstyle="' + k + '">' + l + '</button>').join('') +
+      '<button class="chip ' + (setup.focus === 'me' ? 'on' : '') + '" data-f="me">Make her the focus</button></div>' : '') +
     '<button class="btn big" data-a="go">Start: Month ' + pad3(setup.start || 1) + '</button>' +
     '</section>';
+  app().oninput = e => { if (e.target.matches('[data-cname]')) setup.custom.name = e.target.value.trim() || 'You'; if (e.target.matches('[data-cfrom]')) setup.custom.from = e.target.value.trim() || 'Somewhere'; };
   app().onclick = e => {
     const m = e.target.closest('[data-mode]'), f = e.target.closest('[data-f]'), a = e.target.closest('[data-a]'), dd = e.target.closest('[data-diff]');
     if (dd) { setup.diff = dd.dataset.diff; setupScreen(); return; }
@@ -171,6 +180,10 @@ function setupScreen() {
     const ng = e.target.closest('[data-ngp]'); if (ng) { setup.ngp = ng.checked; return; }
     if (m) { setup.mode = m.dataset.mode; setupScreen(); }
     else if (f) { setup.focus = f.dataset.f; setupScreen(); }
+    else if (e.target.closest('[data-cust]')) { setup.custom = e.target.checked ? { name:'You', from:'Somewhere', look:{ skin:'#d8ad88', hair:'#2a1a12', style:'long' } } : null; if (!setup.custom && setup.focus === 'me') setup.focus = 'sophia'; setupScreen(); }
+    else if (e.target.closest('[data-cskin]')) { setup.custom.look.skin = e.target.dataset.cskin; setupScreen(); }
+    else if (e.target.closest('[data-chair]')) { setup.custom.look.hair = e.target.dataset.chair; setupScreen(); }
+    else if (e.target.closest('[data-cstyle]')) { setup.custom.look.style = e.target.dataset.cstyle; setupScreen(); }
     else if (a && a.dataset.a === 'back') title(G.hasSave() && G.load());
     else if (a && a.dataset.a === 'go') { G.newGame(setup); if ((setup.start || 1) > 1) { app().innerHTML = '<section class="title"><h2>Fast-forwarding to month ' + pad3(setup.start) + '…</h2></section>'; G.fastForward(setup.start); } try { localStorage.removeItem('dreamacademy-save-v1' + (G.slot() === 1 ? '' : '-s' + G.slot()) + '-prev'); } catch (x) {} G.save(); tab = 'plan'; game(); }
   };
@@ -212,6 +225,7 @@ function render() {
   app().onchange = onChange;
   const el = $('#p3d');
   if (el && window.S3) { const ids = G.working().slice(0, 7); const sc = S3.attach(el, 'room', { set:'practice', cast:cast3(ids) }); if (sc) sc.dance(false); }
+  if (UI.afterRender) UI.afterRender();
   G.takeTrophies().forEach((id, k) => { const t = D.trophies.find(x => x[0] === id); if (t) setTimeout(() => toast('Trophy: ' + t[1]), 400 + k * 2600); });
 }
 UI.render = render;
@@ -412,7 +426,7 @@ function tourSheet() {
 function chartsTab() {
   const s = S(), r = s.group.releases.slice().reverse();
   return '<section class="card"><div class="between"><h3>Releases</h3><span class="mono small">BEST No. ' + (s.rec.best > 100 ? '—' : s.rec.best) + '</span></div>' +
-    (r.length ? r.map(x => '<div class="rel"><div class="tl"><b>"' + esc(x.title) + '"</b><div class="small muted">' + x.kind + ' · ' + esc(x.concept) + (x.kind === 'EP' ? ' · ' + esc(x.era) : '') + ' · M' + pad3(x.month) + (x.viral ? ' · <span class="spot">viral</span>' : '') + (x.divisive ? ' · divisive' : '') + (x.mv ? ' · MV ' + x.mv : '') + '</div>' + (x.lines ? linesBar(x.lines) : '') + '</div>' +
+    (r.length ? r.map(x => '<div class="rel"><div class="tl"><b>"' + esc(x.title) + '"</b><div class="small muted">' + x.kind + ' · ' + esc(x.concept) + (x.kind === 'EP' ? ' · ' + esc(x.era) : '') + ' · M' + pad3(x.month) + (x.viral ? ' · <span class="spot">viral</span>' : '') + (x.divisive ? ' · divisive' : '') + (x.mv ? ' · MV ' + x.mv : '') + ' · <button class="linkbtn" data-mv="' + x.id + '">▶ Watch</button></div>' + (x.lines ? linesBar(x.lines) : '') + '</div>' +
       spark(x.chart) + '<div class="peak"><b class="mono">' + (x.peak > 100 ? '—' : '#' + x.peak) + '</b><span class="small faint">' + (x.album ? 'EP #' + x.album : 'peak') + '</span></div></div>').join('') : '<p class="small muted">Nothing out yet.</p>') +
     '<p class="small faint">Chart lines run month by month; the dotted line is the top 10. The charts are fictional.</p></section>' +
     '<section class="card"><h3>Awards</h3><p class="small">' + s.rec.wins + ' win' + (s.rec.wins === 1 ? '' : 's') + ' from ' + s.rec.noms + ' nominations · ' + s.rec.no1 + ' No. 1' + (s.rec.no1 === 1 ? '' : 's') + ' · ' + s.rec.viral + ' viral moment' + (s.rec.viral === 1 ? '' : 's') + '</p>' +
@@ -484,6 +498,7 @@ function sheet(html, opts) {
   return m;
 }
 function closeSheet() { document.querySelectorAll('.modal').forEach(x => x.remove()); }
+UI.sheet = (h, o) => sheet(h, o); UI.closeSheet = () => closeSheet(); UI.toast = t => toast(t); UI.esc = esc; UI.ERA_COL = ERA_COL;
 
 /* ---------- Scene player: 3D cutscene with dialogue ---------- */
 function npcSpec(k) { const x = D.npcs[k]; return { id:k, look:x.look, outfit:x.outfit, pants:true }; }
@@ -601,6 +616,7 @@ function menu() {
   sheet('<span class="eyebrow">Menu</span><h2>' + esc(s.group.formed ? s.group.name : 'Dream Academy') + '</h2>' +
     '<label class="toggle"><input type="checkbox" data-set="askAll"' + (s.settings.askAll ? ' checked' : '') + '><span>Ask me about every tension, even between autoplayed members</span></label>' +
     '<div class="stack tight">' +
+    '<button class="choice" data-a="studio"><b>Studio</b><span>Outfits, stage, choreography, logo, photo mode, documentary, records</span></button>' +
     '<button class="choice" data-a="settings"><b>Settings</b><span>Graphics, sound, text size, motion, mini-games, tips</span></button>' +
     (G.canRewind() ? '<button class="choice" data-a="rewind"><b>Rewind one month</b><span>Go back to the start of last month</span></button>' : '') +
     '<button class="choice" data-a="glossary"><b>Glossary</b><span>What every stat and system means</span></button>' +
