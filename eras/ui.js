@@ -5,7 +5,7 @@ const $ = s => document.querySelector(s);
 const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const S = () => G.S();
 const UI = window.UI = { tab:'week', sel:{}, toast:null, newg:null };
-const TABS = [['week','Your Week'],['town','Town'],['life','Life'],['songbook','Songbook'],['studio','Studio'],['rollout','Rollout'],['cover','Cover Studio'],['tour','Tour Desk'],['inbox','Team Inbox'],['eggs','Easter Eggs'],['fandom','Fandom'],['press','Press and People'],['charts','Charts and Awards'],['legacy','Legacy']];
+const TABS = [['week','Your Week'],['town','Town'],['life','Life'],['songbook','Songbook'],['studio','Studio'],['rollout','Rollout'],['cover','Cover Studio'],['tour','Tour Desk'],['inbox','Phone'],['eggs','Easter Eggs'],['fandom','Fandom'],['press','Press and People'],['charts','Charts and Awards'],['legacy','Legacy']];
 const TABNAME = Object.fromEntries(TABS);
 const GROUPS = [['home', 'Home', ['week','inbox','town']], ['music', 'Music', ['songbook','studio','rollout','cover']], ['stage', 'Stage', ['tour','fandom','eggs']], ['career', 'Career', ['press','charts','legacy']], ['life', 'Life', ['life']]];
 const SVG = d => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -19,12 +19,12 @@ const ICON = {
   fans:SVG('<circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.6.7 2.6 2.2 3 4.7"/>'),
   rep:SVG('<path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>'),
   heat:SVG('<path d="M12 21a6 6 0 0 0 6-6c0-4-3-6-4-10-2 2-3 4-3 6-1-1-1.5-2-1.5-3C7 9.5 6 12 6 15a6 6 0 0 0 6 6z"/>'),
-  energy:SVG('<path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12z"/>'),
+  energy:SVG('<rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 10.5v3"/><path d="M6.5 10v4M10 10v4M13.5 10v4"/>'),
   money:SVG('<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5v5M17.5 9.5v5"/>'),
   canon:SVG('<path d="M5 4.5h11a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="m9 8.5 1.6 1.6L14 6.8"/>')
 };
 UI.ICON = ICON;
-const STAT = [['fans','Fans'],['rep','Public Reputation'],['heat','Press Heat'],['write','Songwriting'],['clout','Industry Clout'],['own','Ownership'],['energy','Energy'],['team','Team mood']];
+const STAT = [['fans','Fans'],['rep','Public Reputation'],['heat','Press Heat'],['write','Songwriting'],['clout','Industry Clout'],['own','Ownership'],['energy','Stamina'],['team','Team mood']];
 const LOOKS = {
   hair:[['Honey','#c8954f'],['Platinum','#efe0b9'],['Auburn','#8a3b1f'],['Dark brown','#3a2417'],['Black','#141414'],['Copper','#b5562b']],
   style:[['Long waves','long'],['Curls','curly'],['Bob','bob'],['Ponytail','ponytail'],['Bun','bun'],['Short','short']],
@@ -228,9 +228,9 @@ function render() {
   const yw = G.yw(), x = primary(), e = G.currentEra();
   const blocks = G.blocks(), used = s.week.used;
   const unread = s.inbox.filter(m => !m.read).length, left = Math.max(0, blocks - used);
-  const stats = [['fans', G.fmtN(s.stats.fans), G.fanName ? G.fanName() : G.art().fanName, ICON.fans], ['rep', Math.round(s.stats.rep), 'Rep', ICON.rep], ['heat', Math.round(s.stats.heat), 'Heat', ICON.heat], ['energy', Math.round(s.stats.energy), 'Energy', ICON.energy], ['money', G.fmtM(s.stats.money), 'Money', ICON.money], ['canon', G.canon(), 'Canon', ICON.canon]];
+  const stats = [['fans', G.fmtN(s.stats.fans), G.fanName ? G.fanName() : G.art().fanName, ICON.fans], ['rep', Math.round(s.stats.rep), 'Rep', ICON.rep], ['heat', Math.round(s.stats.heat), 'Heat', ICON.heat], ['energy', Math.round(s.stats.energy), 'Stamina', ICON.energy], ['money', G.fmtM(s.stats.money), 'Money', ICON.money], ['canon', G.canon(), 'Canon', ICON.canon]];
   const top = `<header class="top"><div class="topbar"><div class="when"><div class="date">${h(G.fmtDate(s.abs))}</div><div class="sub">Week ${yw.w} · Age ${G.age()}${e ? ` · <span class="erachip"><i style="background:${h(e.color || 'var(--era)')}"></i>${h(e.short || e.title)}</span>` : ''}</div></div>
-    <div class="blk" title="Time Blocks this week"><div class="blocks">${Array.from({ length:blocks }, (_, i) => `<i class="${i < used ? 'used' : ''}"></i>`).join('')}${used > blocks ? `<b class="over">+${used - blocks}</b>` : ''}</div><span>${left} left</span></div>
+    <div class="blk" title="Energy this week"><div class="eminibar"><i style="width:${Math.max(0, Math.min(100, (G.energyLeft ? G.energyLeft() / G.energyMax() : left / blocks) * 100))}%"></i></div><span>⚡ ${G.energyLeft ? G.energyLeft() : left * 20} left</span></div>
     <button class="icon" data-act="menu" aria-label="Menu">${ICON.menu}</button></div>
     <div class="statline">${stats.map(([k, v, l, ic]) => `<div class="st st-${k}">${ic}<b>${v}</b><span>${h(l)}</span></div>`).join('')}</div></header>`;
   const grp = GROUPS.find(g => g[2].includes(UI.tab)) || GROUPS[0];
@@ -243,7 +243,7 @@ function render() {
   const rail = `<aside class="rail" aria-label="Your numbers"><h3>Your numbers</h3>${STAT.map(([k, l]) => `<div class="rs"><span>${h(k === 'fans' ? (G.fanName ? G.fanName() : l) : l)}</span>${k === 'fans' ? `<b>${G.fmtN(s.stats.fans)}</b>` : `${bar(s.stats[k])}<b>${Math.round(s.stats[k])}</b>`}</div>`).join('')}
     <div class="rs"><span>Money</span><b>${G.fmtM(s.stats.money)}</b></div><div class="rs"><span>Canon Score</span><b>${G.canon()}</b></div>
     ${cal.length ? `<h3>Coming up</h3>${cal.map(c => `<div class="rc"><span>${h(c.l)}</span><small>${c.abs === s.abs ? 'This week' : h(G.fmtDate(c.abs))}</small></div>`).join('')}` : ''}</aside>`;
-  $('#app').innerHTML = `<div class="shell tab-${h(UI.tab)}">${side}<div class="mainwrap">${top}${subtabs}<main id="main">${(VIEWS[UI.tab] || VIEWS.week)()}</main></div>${rail}</div>${bottom}<div id="toast" class="toast" role="status"></div>`;
+  $('#app').innerHTML = `<div class="shell tab-${h(UI.tab)}">${side}<div class="mainwrap">${top}${subtabs}<main id="main">${(VIEWS[UI.tab] || VIEWS.week)()}</main></div>${rail}</div>${bottom}`;
   if (UI.tab === 'week') mount3D('#t3stage', stageSpec(), 'main');
   if (!document.querySelector('.modal') && s.abs - (s.lastBackup != null ? s.lastBackup : (s.lastBackup = s.abs)) > 104 && (!UI.backupSnooze || s.abs - UI.backupSnooze > 52) && s.slot !== 'daily') {
     UI.backupSnooze = s.abs;

@@ -227,3 +227,13 @@ The game also works offline after the first visit, and saves can move between de
 - **Business:** a merch designer, and Loop, an invented streaming and short-video app (from 2012) with trends, playlist pitches and its own chart.
 - **Your own artist:** a fully invented career from the first open mic, with your own name, hometown, sound and look.
 - **Goals:** a year-in-review every January that you can save as an image, a legacy score with an ending written when you retire, a Hall of Fame across saves, scenarios with best times, and invented rival stars who become friends or rivals depending on how you treat them.
+
+### Olivia Rodrigo, and Music City systems from Nashville and Headliner
+
+- **Olivia Rodrigo** is playable: Disney Channel, "All I Want", SOUR, GUTS and both world tours, with her own era looks. Her albums chart against the other three stories.
+- **Energy:** like Nashville, every card costs its own ⚡ from a weekly budget of about 100 (a post ⚡5, writing ⚡30, a show ⚡35), and resting gives some back. Your health stat is now called Stamina.
+- **This week in town:** five fresh activities every week (radio drop-ins, signings, weddings, session work, masterclasses, jams, suppers), some locked until you meet their requirement.
+- **Your phone:** the inbox is now a phone, with message threads by sender and texts from your team and fans that you can reply to.
+- **Posts:** the Headliner-style post composer: pick what you post and the caption's tone.
+- **Your own artist only:** invented record labels to win over and negotiate with (advance, royalty, albums owed, creative control, the label's cut), and Make It or Fake It: shortcuts that become secrets, an invented gossip site that digs for them, and honest moves that rebuild your authenticity. Real artists never fake anything.
+- **Setlist flow:** tour setlists are rated on the opener, a ballad in the middle, closing with a hit, the mix of fast and slow songs, and room for an encore.

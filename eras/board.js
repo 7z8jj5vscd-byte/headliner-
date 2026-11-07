@@ -16,14 +16,15 @@ const CAT = {
   fans:{ n:'Fans', icon:'💖', kinds:['social','fanevent','livestream','readfans','egg','single','pre','rel'] },
   biz:{ n:'Business', icon:'💼', kinds:['interview','network','duty','campaign','charity','school','mentor'] },
   you:{ n:'You', icon:'🌙', kinds:['rest','private','freetime','timeoff'] },
-  big:{ n:'Career', icon:'🌟', kinds:['farewellplan','retireask','newera','unretire'] } };
+  big:{ n:'Career', icon:'🌟', kinds:['farewellplan','retireask','newera','unretire'] },
+  town:{ n:'Town', icon:'🏙️', kinds:['town'] }, fake:{ n:'Make it or fake it', icon:'🎭', kinds:['fake','real'] } };
 const catOf = t => Object.keys(CAT).find(k => CAT[k].kinds.includes(t.kind)) || 'biz';
 const ICON = { write:'✍️', notebook:'📓', record:'🎙️', practice:'🎼', secretsession:'🤫', ghostwrite:'👻', early:'🌱', duet:'🎶', shows:'🎤', recover:'🛌', surprise:'✨', gig:'🎸', booking:'🏟️',
   social:'📱', fanevent:'💌', livestream:'📡', readfans:'👀', egg:'🥚', single:'📻', interview:'📰', network:'🤝', duty:'📋', campaign:'🏆', charity:'💝', school:'🏫', mentor:'🧑‍🏫',
   rest:'💤', private:'🫶', freetime:'🌊', newera:'🌟', farewellplan:'👋', retireask:'🌅', unretire:'🔥' };
 const ITEM = { video:'🎬', press:'📸', announce:'📣', single:'📻', tv:'📺', radio:'📻', signing:'✒️', posts:'💬', route:'🗺️', setlist:'📝', cast:'💃', costume:'👗', rehearse:'🥁',
   sequence:'🔢', master:'🎚️', cover:'🎨', edition:'💿', deliver:'📦' };
-const iconOf = t => (t.item && ITEM[t.item]) || ICON[t.kind] || '⭐';
+const iconOf = t => t.icon || (t.item && ITEM[t.item]) || ICON[t.kind] || '⭐';
 UI.cardIcon = iconOf; UI.cardCat = catOf;
 
 /* ---------- Combos ---------- */
@@ -41,8 +42,9 @@ function comboState(c) { const ks = kindsPlayed().slice(), s = S();
   if (c.cats) { const n = new Set((s.week.log || []).map(x => x.cat)).size; return n >= c.cats ? 'ready' : n === c.cats - 1 ? 'near' : 'off'; }
   let got = 0; c.need.forEach(alt => { const opts = alt.split('|'), i = ks.findIndex(k => opts.includes(k)); if (i >= 0) { got++; ks.splice(i, 1); } });
   return got === c.need.length ? 'ready' : got === c.need.length - 1 && got > 0 ? 'near' : 'off'; }
+G.hooks.week.push(() => { UI.flashQ = []; });
 G.hooks.task.push(t => { const s = S(); if (!s || !s.week || t.kind === 'school') return;
-  s.week.log = s.week.log || []; s.week.log.push({ id:t.id, kind:t.kind, item:t.item || '', cost:t.cost, cat:catOf(t), team:s.week.used < 0 });
+  s.week.log = s.week.log || []; s.week.log.push({ id:t.id, kind:t.kind, item:t.item || '', cost:t.cost, cat:catOf(t), team:s.week.used < 0, icon:t.icon || '' });
   s.week.combos = s.week.combos || [];
   COMBOS.forEach(c => { if (comboState(c) === 'ready') { s.week.combos.push(c.id); G.applyFx(c.fx); (UI.flashQ = UI.flashQ || []).push(c); G.guideTick('combo'); } }); });
 
@@ -70,7 +72,7 @@ document.addEventListener('click', e => { const el = e.target.closest('[data-act
 document.addEventListener('click', () => { const sn = snap; snap = null; if (!sn) return; setTimeout(() => {
   if (!S()) return; floaters(sn.st, sn.x, sn.y);
   if (sn.card && !reduce()) { const slots = document.querySelectorAll('.wslot.filled'), tgt = slots[slots.length - 1]; if (tgt) flyTo(sn.card, tgt.getBoundingClientRect(), sn.icon); }
-  if (UI.flashQ && UI.flashQ.length) { const c = UI.flashQ.shift(); UI.flashQ = []; banner(`Combo! ${c.n}`, G.fxText(c.fx)); confetti(70); if (window.SND) SND.fanfare(); }
+  if (UI.flashQ && UI.flashQ.length) { const cs = UI.flashQ.splice(0); banner(`Combo! ${cs.map(c => c.n).join(' + ')}`, cs.map(c => G.fxText(c.fx)).join(', ')); confetti(70); if (window.SND) SND.fanfare(); }
   if (sn.abs !== S().abs) weekReel(sn); }, 40); });
 function flyTo(from, to, icon) { const g = document.createElement('div'); g.className = 'ghostcard'; g.textContent = icon || '⭐';
   Object.assign(g.style, { left:from.left + 'px', top:from.top + 'px', width:from.width + 'px', height:from.height + 'px' }); document.body.appendChild(g);
@@ -85,22 +87,20 @@ G.hooks.week.push(() => { const s = S(), last = s.released[s.released.length - 1
 /* ---------- The board ---------- */
 function ring(v, max, label, col) { const p = Math.max(0, Math.min(1, v / (max || 100))), C = 2 * Math.PI * 16;
   return `<div class="ring" title="${h(label)}"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" class="rt"/><circle cx="20" cy="20" r="16" class="rv" style="stroke:${col};stroke-dasharray:${C};stroke-dashoffset:${C * (1 - p)}"/></svg><b>${Math.round(v)}</b><span>${h(label)}</span></div>`; }
-function cardHTML(t) { const done = G.taskDone(t.id), cat = catOf(t), can = G.canSpend(t.cost), icon = iconOf(t);
+function cardHTML(t) { const done = G.taskDone(t.id), cat = catOf(t), can = G.canSpend(t.cost), icon = iconOf(t); if (t.locked) t.l = t.l;
   const team = !done && !t.fixed && G.canDelegate && G.canDelegate(t);
   return `<div class="pcard task cat-${cat} ${t.req ? 'req' : ''} ${done ? 'done' : ''}" data-icon="${h(icon)}">
-    <button class="pplay" data-act="do" data-id="${h(t.id)}" ${done || t.fixed || !can ? 'disabled' : ''} aria-label="${h(t.l)}${t.req ? ', due now' : ''}${done ? ', played' : ''}">
-      <span class="ptop"><span class="pcost">${t.cost ? '●'.repeat(t.cost) : '<i>free</i>'}</span><span class="pcat">${h(CAT[cat].n)}</span></span>
+    <button class="pplay" data-act="do" data-id="${h(t.id)}" ${done || t.fixed || !can || t.locked ? 'disabled' : ''} aria-label="${h(t.l)}${t.req ? ', due now' : ''}${done ? ', played' : ''}${t.locked ? ', locked' : ''}">
+      <span class="ptop"><span class="pcost">${t.ecost != null ? (t.ecost ? `⚡${t.ecost}` : '<i>free</i>') : t.cost ? '●'.repeat(Math.ceil(t.cost)) : '<i>free</i>'}</span><span class="pcat">${h(CAT[cat].n)}</span></span>
       <span class="picon">${icon}</span><b class="ptitle">${h(t.l)}</b>${t.desc ? `<span class="pdesc">${h(t.desc)}</span>` : ''}
-      ${t.req && !done ? '<span class="pdue">Due</span>' : ''}${done ? '<span class="pdone">Played</span>' : ''}</button>
+      ${t.req && !done ? '<span class="pdue">Due</span>' : ''}${done ? '<span class="pdone">Played</span>' : ''}${t.locked ? '<span class="plock">🔒</span>' : ''}</button>
     ${team ? `<button class="pteam" data-act="delegate" data-id="${h(t.id)}" title="Your team plays it for ${h(G.fmtM(G.delegateCost(t)))}">Team · ${h(G.fmtM(G.delegateCost(t)))}</button>` : ''}
     ${t.tab && t.tab !== 'week' && !done ? `<button class="popen" data-act="tab" data-v="${t.tab}" aria-label="Open ${h(t.tab)}">↗</button>` : ''}</div>`; }
-function slotsHTML() { const s = S(), b = G.blocks(), log = (s.week.log || []).filter(x => x.kind !== 'school'), cells = []; let used = 0;
-  if ((s.week.done || {}).school) { cells.push(`<div class="wslot filled cat-biz" title="School">🏫</div>`); used++; }
-  log.forEach(x => { const n = x.team ? 0 : Math.max(1, x.cost || 0); const ic = (x.item && ITEM[x.item]) || ICON[x.kind] || '⭐';
-    if (!n) { cells.push(`<div class="wslot filled team cat-${x.cat}" title="Your team">${ic}</div>`); return; }
-    for (let i = 0; i < n; i++) { cells.push(`<div class="wslot filled cat-${x.cat} ${used >= b ? 'over' : ''} ${i ? 'cont' : ''}">${i ? '' : ic}</div>`); used++; } });
-  for (let i = used; i < b; i++) cells.push('<div class="wslot"></div>');
-  return cells.join(''); }
+function slotsHTML() { const s = S(), max = G.energyMax ? G.energyMax() : G.blocks() * 20, left = G.energyLeft ? G.energyLeft() : (G.blocks() - s.week.used) * 20, pct = Math.max(0, Math.min(100, left / max * 100));
+  const log = (s.week.log || []).filter(x => x.kind !== 'school'), chips = [];
+  if ((s.week.done || {}).school) chips.push('<div class="wslot filled cat-biz" title="School">🏫</div>');
+  log.forEach(x => { const ic = x.icon || (x.item && ITEM[x.item]) || ICON[x.kind] || '⭐'; chips.push(`<div class="wslot filled cat-${x.cat} ${x.team ? 'team' : ''}" title="${h(x.kind)}">${ic}</div>`); });
+  return `<div class="ebar ${pct < 25 ? 'low' : ''}" role="meter" aria-label="Energy this week" aria-valuenow="${left}" aria-valuemax="${max}"><i style="width:${pct}%"></i><span>⚡ ${left} of ${max} energy left</span></div><div class="played">${chips.join('') || '<span class="small faint">Cards you play this week land here.</span>'}</div>`; }
 function combosHTML() { return COMBOS.map(c => { const st = comboState(c); return `<span class="cmb ${st}" title="${h(c.d)} ${h(G.fxText(c.fx))}">${st === 'done' ? '✦ ' : ''}${h(c.n)}</span>`; }).join(''); }
 VIEWS.week = function () {
   const s = S(), x = UI.primary(), tasks = G.tasks(), req = tasks.filter(t => t.req), opt = tasks.filter(t => !t.req && t.kind !== 'freetime');
@@ -123,12 +123,12 @@ VIEWS.week = function () {
   const r = s.recap;
   return `${notes.length ? `<div class="notes">${notes.map(([i, t]) => `<div class="note"><span>${i}</span><div class="small">${t}</div></div>`).join('')}</div>` : ''}
   <div class="stagewrap hero"><div class="stage3d" id="t3stage"></div>
-    <div class="rings">${ring(s.stats.energy, 100, 'Energy', '#5fd39a')}${e ? ring(hype, 100, 'Hype', '#e88fb4') : ''}${ring(left, G.blocks(), 'Blocks left', 'var(--era)')}</div>
+    <div class="rings">${ring(s.stats.energy, 100, 'Stamina', '#5fd39a')}${e ? ring(hype, 100, 'Hype', '#e88fb4') : ''}${ring(G.energyLeft ? G.energyLeft() : left * 20, G.energyMax ? G.energyMax() : G.blocks() * 20, '⚡ Left', 'var(--era)')}</div>
     <div class="caption">${x ? `<span class="eyebrow">${h(stageName(x.st))}</span><b>${h(x.p.title)}</b><div class="small">${h(ER.STAGES[x.st].need)}</div>` : '<b>Between eras</b><div class="small">Your move.</div>'}</div></div>
   ${guide}
   <section class="board" aria-label="This week">
-    <div class="between"><div><span class="eyebrow">Week ${G.yw().w} · ${h(G.fmtDate(s.abs))}</span><h2>Your week</h2></div><span class="small muted">${s.week.used}/${G.blocks()} blocks</span></div>
-    <div class="wslots" aria-label="Time Blocks this week">${slotsHTML()}</div>
+    <div class="between"><div><span class="eyebrow">Week ${G.yw().w} · ${h(G.fmtDate(s.abs))}</span><h2>Your week</h2></div><span class="small muted">⚡ ${Math.round(s.week.used * 20)} used</span></div>
+    ${slotsHTML()}
     <div class="cmbs" aria-label="Combos">${combosHTML()}</div>
     ${req.length ? `<h3>${reqLeft ? `Due this week · ${reqLeft}` : 'Due this week · all played ✓'}</h3><div class="hand must">${req.map(cardHTML).join('')}</div>` : '<p class="small muted free-week">Nothing is due. Play whatever you like.</p>'}
     <div class="between hand-head"><h3>Your hand</h3><div class="chips sm">${['all'].concat(Object.keys(CAT).filter(k => counts[k])).map(k => `<button class="chip sm ${cat === k ? 'on' : ''}" data-act="handcat" data-v="${k}">${k === 'all' ? 'All' : CAT[k].icon + ' ' + CAT[k].n}${k !== 'all' ? ` <i>${counts[k]}</i>` : ''}</button>`).join('')}</div></div>
