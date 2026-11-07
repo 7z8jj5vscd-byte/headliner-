@@ -115,3 +115,15 @@ Approximate or needs a source:
 - Glastonbury 2025 Pyramid Stage headline slot (June 28, 2025).
 - Peaks: "traitor" No. 9 and "bad idea right?" No. 7.
 - Fan curve values are game estimates.
+
+### Olivia Rodrigo: you seem pretty sad for a girl so in love (added 2026-11-07, from a live web check)
+
+Checked against the official store, NME, Billboard and The Hollywood Reporter:
+- Released June 12, 2026; 13 tracks in two halves; "what's wrong with me" features Robert Smith.
+- Title painted on a wall on April 2, 2026, before it was confirmed.
+- "drop dead" released April 17, 2026 and debuted at No. 1 on the Hot 100 (her fourth No. 1).
+- Debuted at No. 1 on the Billboard 200 with about 485,000 units.
+- The Unraveled Tour announced April 30, 2026 (65 arena dates, expanded to 86), starting September 25, 2026 in Hartford.
+- First holiday single, "take me home (4 christmas)", November 6, 2026 (Universal Music Canada).
+
+Approximate or needs a source: "the cure" peak (No. 5, from a fan wiki only); "begged" as a single; producers and co-writers (set to Dan Nigro, unconfirmed); writing and recording windows; the tour's end date (set to June 2027) and gross (game estimate $250M).

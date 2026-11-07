@@ -18,7 +18,14 @@ const P = [
    extras:['obsessed','girl i\'ve always been','scared of my guitar','stranger','so american'],
    tour:{ name:'GUTS World Tour', kind:'headline', est:200e6, ts:'2024-02-23', te:'2025-07-12', openers:['Chappell Roan','The Breeders','PinkPantheress'], target:null, tier:'arena' },
    units:302000, cowriters:['Dan Nigro','Solo'], producers:['Dan Nigro'],
-   goals:[{k:'units',v:250000,l:'Debut at No. 1 again'}] }
+   goals:[{k:'units',v:250000,l:'Debut at No. 1 again'}] },
+ { id:'o_ysps', title:'you seem pretty sad for a girl so in love', short:'pretty sad', type:'album', color:'#e8458c', ink:'#ffffff', accent:'#f2a3c7', genre:58,
+   ws:'2024-11-04', rs:'2025-03-03', fs:'2025-12-01', ps:'2026-04-01', rel:'2026-06-12',
+   tracks:['drop dead','stupid song','honeybee','maggots for brains','u + me = <3','my way','purple','the cure','begged','what\'s wrong with me','less','expectations','cigarette smoke'],
+   extras:[], tour:{ name:'The Unraveled Tour', kind:'headline', est:250e6, ts:'2026-09-25', te:'2027-06-26', openers:[], target:null, tier:'arena',
+     note:'Announced with 65 arena dates, then expanded to 86 across North America, Europe and the UK.' },
+   units:485000, cowriters:['Dan Nigro','Solo'], producers:['Dan Nigro'],
+   goals:[{k:'units',v:400000,l:'The biggest debut of your career'}] }
 ];
 P.forEach(p => { ['ws','rs','fs','ps','rel'].forEach(k => { if (p[k]) p[k] = W(p[k]); }); if (p.tour) { p.tour.ts = W(p.tour.ts); p.tour.te = W(p.tour.te); } });
 
@@ -95,6 +102,21 @@ const E = [
  { d:'2024-10-29', id:'o_gutsfilm', t:'A tour film', x:'A concert film of the GUTS World Tour is coming to Netflix.',
    ch:[{l:'Film a full show',fx:{fans:8},c:1,r:'Millions watch it.'},{l:'Keep the tour off camera',fx:{energy:4},r:'Only the people there saw it.'}],
    truth:'Olivia Rodrigo: GUTS World Tour premiered on Netflix in October 2024.' },
+ { d:'2026-04-02', id:'o_wall', t:'A title on a wall', x:'Fans spot a long sentence painted on a wall. It turns out to be the name of her third album.',
+   ch:[{l:'Let fans find it before you say a word',fx:{hype:15,heat:4},c:1,r:'The internet works it out in hours.'},{l:'Announce it the usual way',fx:{hype:8},r:'A clean announcement.'}],
+   truth:'The album title appeared painted on a wall on April 2, 2026, before she confirmed it.' },
+ { d:'2026-04-17', id:'o_dropdead', t:'"drop dead"', x:'The first single from the third album.',
+   ch:[{l:'Release it',fx:{fans:12,hype:15},c:1,r:'Straight to No. 1, again.'},{l:'Hold it for album week',fx:{hype:5},r:'Fans wait.'}],
+   truth:'"drop dead" came out on April 17, 2026 and debuted at No. 1 on the Hot 100, her third album lead single in a row to do that.' },
+ { d:'2026-04-30', id:'o_unraveled', t:'The Unraveled Tour', x:'Time to announce the next tour. How big?',
+   ch:[{l:'Arenas across North America, Europe and the UK',fx:{fans:8,clout:6},c:1,r:'Dates sell out, so more get added.'},{l:'A short run of theatres',fx:{rep:3},r:'Small rooms, big demand.'}],
+   truth:'The Unraveled Tour was announced on April 30, 2026 with 65 arena dates, later expanded to 86.' },
+ { d:'2026-06-12', id:'o_yspsout', t:'Album three is out', x:'you seem pretty sad for a girl so in love is out. Two halves: the love songs, and the sad ones.',
+   ch:[{l:'Talk openly about the album\'s two halves',fx:{fans:10,rep:3},c:1,r:'Critics call it your sharpest writing yet.'},{l:'Let the songs speak',fx:{fans:6},r:'Fans do the decoding.'}],
+   truth:'The album came out on June 12, 2026 and debuted at No. 1 on the Billboard 200 with about 485,000 units.' },
+ { d:'2026-11-06', id:'o_xmas', t:'A holiday single', x:'A first Christmas song?',
+   ch:[{l:'Release one',fx:{fans:4},c:1,r:'A new one for the holiday playlists.'},{l:'Not this year',fx:{energy:4},r:'Maybe next year.'}],
+   truth:'She released her first holiday single, "take me home (4 christmas)", on November 6, 2026.' },
  { d:'2025-06-28', id:'o_glasto', t:'Glastonbury', x:'She is asked to headline the Pyramid Stage.',
    ch:[{l:'Headline it',fx:{fans:12,clout:10,energy:-10},c:1,r:'A field full of people singing every word.'},{l:'Play a smaller stage',fx:{fans:4},r:'An intimate set.'}],
    truth:'She headlined the Pyramid Stage at Glastonbury in June 2025.' }
@@ -129,9 +151,9 @@ ER.artists.olivia = {
 };
 ER.FAN_CURVE.olivia = [['2014-01-06', 40], ['2015-08-01', 3000], ['2016-12-31', 300000], ['2018-12-31', 1.5e6], ['2019-12-31', 4e6], ['2020-12-31', 8e6],
  ['2021-06-30', 60e6], ['2021-12-31', 75e6], ['2022-12-31', 80e6], ['2023-12-31', 100e6], ['2024-12-31', 120e6], ['2025-12-31', 125e6], ['2026-12-31', 130e6]].map(([d, v]) => [W(d), v]);
-ER.PEAKS_BY.olivia = { 'drivers license':1, 'deja vu':3, 'good 4 u':1, 'traitor':9, 'vampire':1, 'bad idea right?':7 };
-ER.SINGLE_DEBUT_BY.olivia = { 'drivers license':1, 'good 4 u':1, 'vampire':1 };
-Object.assign(ER.REAL_SINGLES, { o_sour:['drivers license','deja vu','good 4 u','traitor'], o_guts:['vampire','bad idea right?','get him back!'] });
+ER.PEAKS_BY.olivia = { 'drivers license':1, 'deja vu':3, 'good 4 u':1, 'traitor':9, 'vampire':1, 'bad idea right?':7, 'drop dead':1, 'the cure':5 };
+ER.SINGLE_DEBUT_BY.olivia = { 'drivers license':1, 'good 4 u':1, 'vampire':1, 'drop dead':1 };
+Object.assign(ER.REAL_SINGLES, { o_sour:['drivers license','deja vu','good 4 u','traitor'], o_guts:['vampire','bad idea right?','get him back!'], o_ysps:['drop dead','the cure','begged'] });
 ER.ALBUM_RUNS = ER.ALBUM_RUNS || {}; Object.assign(ER.ALBUM_RUNS, { o_sour:{ no1:5 }, o_guts:{ no1:1 } });
 
 // Looks: long dark hair; purples, plaid skirts and stickers for SOUR; deeper purple and red lips for GUTS.
@@ -140,11 +162,12 @@ const O2 = o => Object.assign({}, OL, o);
 ER.LOOKS.olivia_eras = {
  early:{ base:O2({ style:'straight', hairLen:.6 }), stage:{ top:'tee', outfit:'#7d4cc2', accent:'#ffffff', pants:'#3c5a8a', mic:1 }, casual:{ top:'tee', outfit:'#f2a3c7', accent:'#ffffff', pants:'#3c5a8a' } },
  o_sour:{ base:O2({ style:'straight', hairLen:.8, lips:'#b84a6a' }), stage:{ top:'crop', outfit:'#7d4cc2', accent:'#111111', pants:'#5a2a7a', boots:'tall', bootColor:'#111', mic:1 }, casual:{ top:'cardigan', outfit:'#b9a3e0', accent:'#ffffff', pants:'#2a2a2a' } },
- o_guts:{ base:O2({ style:'waves', hairLen:.85, lips:'#b3123a', liner:1 }), stage:{ top:'crop', outfit:'#5a1f8a', accent:'#e8182e', sparkle:1, pants:'#111', boots:'tall', bootColor:'#111', mic:1, guitar:0 }, casual:{ top:'jacket', outfit:'#111111', accent:'#5a1f8a', pants:'#2a2a2a' } }
+ o_guts:{ base:O2({ style:'waves', hairLen:.85, lips:'#b3123a', liner:1 }), stage:{ top:'crop', outfit:'#5a1f8a', accent:'#e8182e', sparkle:1, pants:'#111', boots:'tall', bootColor:'#111', mic:1, guitar:0 }, casual:{ top:'jacket', outfit:'#111111', accent:'#5a1f8a', pants:'#2a2a2a' } },
+ o_ysps:{ base:O2({ style:'waves', hairLen:.85, lips:'#d6457a', liner:1 }), stage:{ top:'crop', outfit:'#e8458c', accent:'#f2a3c7', sparkle:1, pants:'#2a1a24', boots:'tall', bootColor:'#f2a3c7', mic:1 }, casual:{ top:'cardigan', outfit:'#f2a3c7', accent:'#ffffff', pants:'#3c5a8a' } }
 };
 ER.FREE_LOOK = ER.FREE_LOOK || {}; ER.FREE_LOOK.olivia = { skin:'#e8c0a0', hairs:['#241712','#3a2417','#1a1210'], eyes:'#3a2416', brow:'#241712' };
-ER.ERA_MOOD = ER.ERA_MOOD || {}; Object.assign(ER.ERA_MOOD, { o_sour:'quiet', o_guts:'dark' });
+ER.ERA_MOOD = ER.ERA_MOOD || {}; Object.assign(ER.ERA_MOOD, { o_sour:'quiet', o_guts:'dark', o_ysps:'romantic' });
 // Crossover: her albums chart against the others on their real dates, and theirs against hers.
-ER.rivals.push({ who:'olivia', title:'SOUR', abs:W('2021-05-21'), units:295000 }, { who:'olivia', title:'GUTS', abs:W('2023-09-08'), units:302000 });
+ER.rivals.push({ who:'olivia', title:'SOUR', abs:W('2021-05-21'), units:295000 }, { who:'olivia', title:'GUTS', abs:W('2023-09-08'), units:302000 }, { who:'olivia', title:'you seem pretty sad for a girl so in love', abs:W('2026-06-12'), units:485000 });
 ER.PLAYABLE = ['taylor','beyonce','gaga','olivia'];
 })();
