@@ -101,3 +101,17 @@ Approximate: the lockdown and reopening periods that change gameplay (March 2020
 1. Start with the "Needs a source" lists above.
 2. Check each figure against a primary or well-established source (Billboard, Pollstar, the RIAA, official announcements).
 3. Fix the values in `data-taylor.js`, `data-beyonce.js`, `data-gaga.js`, `data-looks.js` (single peaks and weeks at No. 1) and `data-events-world.js`.
+
+## Olivia Rodrigo (added 2026-11-07)
+
+Solid: born February 20, 2003; Bizaardvark (2016) and High School Musical: The Musical: The Series (2019); "All I Want"; "drivers license" (January 8, 2021, debuted No. 1, eight weeks at No. 1); "good 4 u" and "vampire" debuted at No. 1; SOUR (May 21, 2021) and GUTS (September 8, 2023) debuted at No. 1; three Grammys in 2022 (Best New Artist, Best Pop Vocal Album, Best Pop Solo Performance); White House visit (July 2021); Can't Catch Me Now (2023); Netflix GUTS tour film (October 2024).
+
+Approximate or needs a source:
+- First-week units: SOUR about 295,000, GUTS about 302,000.
+- Weeks at No. 1: SOUR 5 (non-consecutive); GUTS set to 1.
+- Writing and recording windows for SOUR (2020) and GUTS (2022 to 2023) are estimates.
+- SOUR Tour gross (game estimate $25M) and GUTS World Tour gross (game estimate $200M); the GUTS tour's end date is approximate (set to July 2025).
+- Geffen signing date (set to June 2020), the date she began working with Dan Nigro (set to July 2020), and the Fund 4 Good launch date (set to March 2024).
+- Glastonbury 2025 Pyramid Stage headline slot (June 28, 2025).
+- Peaks: "traitor" No. 9 and "bad idea right?" No. 7.
+- Fan curve values are game estimates.
