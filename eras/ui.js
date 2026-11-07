@@ -168,8 +168,8 @@ function dailyHist() { let best = {}; try { best = JSON.parse(localStorage.getIt
   return `<div id="daily-hist" class="dhist" aria-label="Daily challenges won in the last 14 days: ${days.filter(Boolean).length}">${days.map(w => `<i class="${w ? 'won' : ''}" title="${w ? 'Won' : 'Not won'}"></i>`).join('')}</div>`; }
 function title() {
   const slots = [1, 2, 3].map(n => { const i = G.slotInfo(n); return `<div class="slot"><div><b>Slot ${n}</b><div class="small muted">${i ? `${h(ER.artists[i.artist].name)} · ${i.mode === 'story' ? 'Story' : 'Era Start'} · ${i.y}, week ${i.w}${i.retired ? ' · Retired' : ''}` : 'Empty'}</div></div><div class="row">${i ? `<button class="btn" data-act="load" data-n="${n}">Continue</button><button class="btn ghost sm" data-act="delslot" data-n="${n}" aria-label="Delete slot ${n}">Delete</button>` : `<button class="btn" data-act="newgame" data-n="${n}">New game</button>`}</div></div>`; }).join('');
-  const span = { taylor:'From 2001 (age 11)', beyonce:'From 1990 (age 8)', gaga:'From 2000 (age 13)' };
-  const artists = ['taylor','beyonce','gaga'].map(id => { const a = ER.artists[id]; return `<div class="artist"><div class="sw" style="background:${a.color || '#d6a93a'}"></div><div><b>${h(a.name)}</b><div class="small muted">Playable · ${span[id]} to 2026, then free play</div></div><button class="btn ghost sm" data-act="preview" data-id="${id}">Story</button></div>`; }).join('');
+  const span = { taylor:'From 2001 (age 11)', beyonce:'From 1990 (age 8)', gaga:'From 2000 (age 13)', olivia:'From 2014 (age 10)' };
+  const artists = (ER.PLAYABLE || ['taylor','beyonce','gaga']).map(id => { const a = ER.artists[id]; return `<div class="artist"><div class="sw" style="background:${a.color || '#d6a93a'}"></div><div><b>${h(a.name)}</b><div class="small muted">Playable · ${span[id]} to 2026, then free play</div></div><button class="btn ghost sm" data-act="preview" data-id="${id}">Story</button></div>`; }).join('');
   const last = [1, 2, 3].map(n => ({ n, i:G.slotInfo(n) })).filter(x => x.i).sort((a, b) => (b.i.saved || 0) - (a.i.saved || 0))[0];
   const daily = (() => { const c = G.challengeToday(), A = ER.artists[c.artist]; return `<p><b>${h(c.n)}</b> as ${h(A.name)}, ${h(c.title)} era.</p><p class="small muted">${h(c.d)} Everyone gets the same challenge today. Streak: ${G.challengeStreak()} day${G.challengeStreak() === 1 ? '' : 's'}.</p>`; })();
   $('#app').innerHTML = `<div class="title">
@@ -190,7 +190,7 @@ function newGameFlow() {
   const AR = ER.artists[n.artist], eras = G.unlockedEras(n.artist); const P = AR.projects.filter(p => p.type !== 'demos' && p.type !== 'edition');
   $('#app').innerHTML = `<div class="title">
     <div class="between"><h1>New game</h1><button class="btn ghost sm" data-act="title">Back</button></div>
-    ${card(`<h2>Artist</h2><div class="chips">${['taylor','beyonce','gaga'].map(id => `<button class="chip ${n.artist === id ? 'on' : ''}" data-act="nartist" data-v="${id}"><i class="dot" style="background:${ER.artists[id].color}"></i>${h(ER.artists[id].name)}</button>`).join('')}</div>`)}
+    ${card(`<h2>Artist</h2><div class="chips">${(ER.PLAYABLE || ['taylor','beyonce','gaga']).map(id => `<button class="chip ${n.artist === id ? 'on' : ''}" data-act="nartist" data-v="${id}"><i class="dot" style="background:${ER.artists[id].color}"></i>${h(ER.artists[id].name)}</button>`).join('')}</div>`)}
     ${card(`<h2>Mode</h2><div class="chips">
       <button class="chip ${n.mode === 'story' ? 'on' : ''}" data-act="nmode" data-v="story">Story Mode</button>
       <button class="chip ${n.mode === 'era' ? 'on' : ''}" data-act="nmode" data-v="era">Era Start</button></div>

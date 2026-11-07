@@ -4,7 +4,7 @@
 // It needs only Node.js (no browser). It exits with an error code if a check fails.
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const D = path.join(__dirname, '..') + path.sep;
-const FILES = ['data-taylor.js','data-world.js','data-looks.js','data-events-world.js','data-forever.js','data-beyonce.js','data-gaga.js','data-scenes.js','data-shows.js','data-callbacks.js','data-goals.js','data-more.js','data-freedom.js','engine.js','extras.js','town.js','freedom.js','freedom2.js','freedom3.js','play.js','goals.js'];
+const FILES = ['data-taylor.js','data-world.js','data-looks.js','data-events-world.js','data-forever.js','data-beyonce.js','data-gaga.js','data-olivia.js','data-scenes.js','data-shows.js','data-callbacks.js','data-goals.js','data-more.js','data-freedom.js','engine.js','extras.js','town.js','freedom.js','freedom2.js','freedom3.js','play.js','goals.js'];
 let failed = 0; const fail = m => { failed++; console.log('  FAIL: ' + m); };
 
 function play(artist, style) {
@@ -30,7 +30,7 @@ function play(artist, style) {
   })()`, ctx);
 }
 
-for (const [artist, style] of [['taylor', 'canon'], ['beyonce', 'canon'], ['gaga', 'canon'], ['taylor', 'sandbox']]) {
+for (const [artist, style] of [['taylor', 'canon'], ['beyonce', 'canon'], ['gaga', 'canon'], ['olivia', 'canon'], ['taylor', 'sandbox']]) {
   const r = play(artist, style), a = r.at2027;
   console.log(`${artist} (${style}): Canon ${a.canon} · ${a.awards} awards · ${Math.round(a.fans / 1e6)}M fans in 2027 · ${r.free.eras} invented eras by 2037, ${Math.round(r.free.fans / 1e6)}M fans, money ${Math.round(r.free.m0 / 1e6)}M → ${Math.round(r.free.money / 1e6)}M`);
   if (r.errs.length) fail('errors: ' + r.errs.join('; '));

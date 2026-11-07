@@ -1050,7 +1050,7 @@ G.releaseVault = function (titles) {
 /* ---------- Daily challenge ---------- */
 G.challengeToday = function () {
   const d = new Date(), key = `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`, r = ER.seeded('eras-daily-' + key);
-  const artists = ['taylor','beyonce','gaga'], a = artists[Math.floor(r() * 3)];
+  const artists = ER.PLAYABLE || ['taylor','beyonce','gaga'], a = artists[Math.floor(r() * artists.length)];
   const eras = ER.artists[a].projects.filter(p => p.type === 'album' && p.units);
   const p = eras[Math.floor(r() * eras.length)], c = ER.CHALLENGES[Math.floor(r() * ER.CHALLENGES.length)];
   return { key, artist:a, era:p.id, title:p.title, goal:c.goal, n:c.n, d:c.d };
