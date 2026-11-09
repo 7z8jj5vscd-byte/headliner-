@@ -1,4 +1,4 @@
-/* Liner Notes: core simulation. Pure game logic with no DOM, so it can run in Node tests. */
+/* Platinum Rush: core simulation. Pure game logic with no DOM, so it can run in Node tests. */
 (function (root) {
 const D = root.LND;
 const LN = root.LN = root.LN || {};
@@ -311,7 +311,7 @@ LN.newGame = function (o) {
   }
   if (st.labelOffer) LN.labelOffer(S, D.LABELS.find(l => l.id === 'northbound'), true);
   LN.timeline(S, `${S.artist.name} started a music career in ${city.name}.`, 'start');
-  LN.news(S, 'Welcome to Liner Notes. Real artists appear in made-up storylines.', 'game');
+  LN.news(S, 'Welcome to Platinum Rush. Real artists appear in made-up storylines.', 'game');
   S.energy = LN.maxEnergy(S);
   LN.feedPost(S, 'P', `Day one. Let's make some music. 🎶`, ri(3, 30));
   return S;

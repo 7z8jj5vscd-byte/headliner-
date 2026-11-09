@@ -1,4 +1,4 @@
-/* Liner Notes: game data. Real artists appear by name only; every storyline, song title,
+/* Platinum Rush: game data. Real artists appear by name only; every storyline, song title,
    chart run and award result involving them is made up by the game. Labels, apps, outlets,
    award shows, festivals, brands, producers and studios are fictional. */
 (function (root) {

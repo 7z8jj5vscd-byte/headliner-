@@ -6,13 +6,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Liner Notes">
-<meta name="theme-color" content="#16111f">
+<meta name="apple-mobile-web-app-title" content="Platinum Rush">
+<meta name="theme-color" content="#1f0f2e">
 <meta name="description" content="A music career simulator: write songs, chase the charts, tour the world and become a legend.">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="manifest" href="manifest.json">
-<title>Liner Notes</title>
+<title>Platinum Rush</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
@@ -265,7 +265,9 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
 /* title & creator */
 .title { display: flex; flex-direction: column; gap: 16px; }
 .logo { text-align: center; padding: 18px 0 6px; } .logo h1 { font-size: clamp(2.4rem, 11vw, 3.6rem); letter-spacing: -.02em; margin: 10px 0 4px; } .logo p { color: var(--muted); max-width: 32ch; margin: 0 auto; }
-.disc { display: inline-block; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle, var(--accent) 0 14%, #111 15% 17%, #1b1b1b 18% 30%, #232323 31% 33%, #1b1b1b 34% 52%, #262626 53% 55%, #1b1b1b 56% 100%); box-shadow: 0 10px 30px rgba(255, 122, 69, .25); }
+.disc { display: inline-block; width: 104px; height: 104px; border-radius: 50%; position: relative; background: conic-gradient(from 30deg, #dfe6ee, #9aa6b4, #f5f8fb, #8e99a8, #e9eef3, #a5b0bd, #dfe6ee); box-shadow: 0 0 0 6px rgba(255,255,255,.06), 0 12px 34px rgba(255, 90, 140, .35); }
+.disc::before { content: ""; position: absolute; inset: 34%; border-radius: 50%; background: radial-gradient(circle, #1f0f2e 0 18%, var(--accent) 19%); }
+.disc::after { content: "★"; position: absolute; right: -10px; top: -12px; font-size: 34px; color: var(--gold); text-shadow: 0 2px 8px rgba(0,0,0,.4); }
 .disc.spin { animation: spin 1.6s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .disc.spin { animation: none; } }
 .titlebtns { display: flex; flex-direction: column; gap: 10px; }
@@ -282,7 +284,7 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
 <main id="main"><div class="loading"><span class="disc spin"></span><p>Loading…</p></div></main>
 <nav id="nav" aria-label="Main"></nav>
 <div id="toasts" aria-live="polite"></div>
-<noscript><p style="padding:20px">Liner Notes needs JavaScript to run.</p></noscript>
+<noscript><p style="padding:20px">Platinum Rush needs JavaScript to run.</p></noscript>
 <script src="data.js"></script>
 <script src="engine.js"></script>
 <script src="systems.js"></script>

@@ -1,4 +1,4 @@
-/* Liner Notes: interface core, Home, Studio and Charts. */
+/* Platinum Rush: interface core, Home, Studio and Charts. */
 (function () {
 const D = window.LND, LN = window.LN;
 const UI = window.UI = { tab: 'home', sub: { studio: 'vault', charts: 's', social: 'feed', career: 'live' }, region: null, S: null, lastReport: null, A: {} };

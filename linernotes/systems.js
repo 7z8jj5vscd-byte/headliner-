@@ -1,4 +1,4 @@
-/* Liner Notes: careers, offers, events, live shows, media, industry, life and awards. */
+/* Platinum Rush: careers, offers, events, live shows, media, industry, life and awards. */
 (function (root) {
 const D = root.LND, LN = root.LN;
 const { rnd, ri, pick, clamp, chance, uid, sum, gauss } = LN;

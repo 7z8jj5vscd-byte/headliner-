@@ -1,4 +1,4 @@
-/* Liner Notes: 3D characters, stages and video sets (three.js r128). Only the player's artist is
+/* Platinum Rush: 3D characters, stages and video sets (three.js r128). Only the player's artist is
    drawn in 3D. Figures are stylised toy-like characters built from simple shapes. */
 (function () {
 const L3 = window.L3 = { ok: null, active: null, portraitCache: {} };

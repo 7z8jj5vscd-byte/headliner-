@@ -1,4 +1,4 @@
-/* Liner Notes: Social, Career, inbox, shows, creator, title screen. */
+/* Platinum Rush: Social, Career, inbox, shows, creator, title screen. */
 (function () {
 const D = window.LND, LN = window.LN, UI = window.UI, A = UI.A;
 const $ = UI.$, esc = UI.esc, fmt = LN.fmt, money = LN.money, card = UI.card, empty = UI.empty;
@@ -406,7 +406,7 @@ UI.titleScreen = function () {
   let last = 0; try { last = +localStorage.getItem('ln-last') || 0; } catch (e) { }
   const cont = slots.find(([n, s]) => n === last && s && !s.broken && !s.retired);
   $('#hud').innerHTML = ''; $('#nav').innerHTML = '';
-  $('#main').innerHTML = `<div class="title"><div class="logo"><span class="disc"></span><h1>Liner Notes</h1><p>A music career simulator. Write the songs, chase the charts, become a legend.</p></div>
+  $('#main').innerHTML = `<div class="title"><div class="logo"><span class="disc"></span><h1>Platinum Rush</h1><p>A music career simulator. Write the songs, chase the charts, become a legend.</p></div>
     <div class="titlebtns">${cont ? `<button class="btn big" data-a="loadSlot" data-n="${cont[0]}">Continue: ${esc(cont[1].name)}</button>` : ''}<button class="btn big ${cont ? 'ghost' : ''}" data-a="newGame">New career</button></div>
     <section class="card"><h2>Save slots</h2>${slots.map(([n, s]) => `<div class="row"><div><b>Slot ${n}</b><small>${s ? (s.broken ? 'Unreadable save' : `${esc(s.name)} · ${s.retired ? 'retired' : 'week ' + ((s.week % 52) + 1) + ', ' + (2026 + Math.floor(s.week / 52))} · ${fmt(s.fans)} fans`) : 'Empty'}</small></div><div class="btns">${s && !s.broken ? `<button class="btn sm" data-a="loadSlot" data-n="${n}">Load</button>` : ''}${s ? `<button class="btn sm ghost" data-a="delSlot" data-n="${n}">Delete</button>` : ''}</div></div>`).join('')}</section>
     <p class="muted small center">Real artists appear in made-up storylines. Labels, apps, awards and festivals are fictional. Your saves stay on this device.</p>
