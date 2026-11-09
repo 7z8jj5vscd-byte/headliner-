@@ -6,6 +6,12 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/
 
 To install on iPhone: open the link in Safari, tap Share, then Add to Home Screen.
 
+## Liner Notes
+
+A week-by-week music career sim in `linernotes/`. Pick one of ten starting stories, build a 3D artist, and go from open mics to stadiums. Write songs (alone, with co-writers or at writing camps), record them with producers and featured artists, and put out singles, EPs, albums, deluxe editions, live albums, joint albums, remixes and re-recordings, each with a cover you design and a first-week projection. Twelve weekly charts (Singles, Albums and Streaming in four regions) with year-end lists, critic reviews, a news feed, plaques from gold to diamond, editorial playlists, Buzzr posts and Loopr trends, fans and moods by region, a named fandom, rivals and diss tracks, music videos and movie roles shot on 3D sets, talk shows, scandals, label offers you can negotiate (advance, royalty, albums owed and masters), your own label, a four-person team, tours with setlists and 3D show nights, festivals, TV and award-show performances, merch, three award shows a year, 49 achievements, a career timeline, Hall of Fame, taxes, homes, cars, investments, charity, a wardrobe with looks for each album era, three save slots, three difficulty levels and a tutorial. Real artists appear by name on the charts and as rivals and collaborators in made-up storylines; labels, apps, outlets, awards, festivals and brands are fictional.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/linernotes/
+
 ## One-Hit Wonder
 
 A second game in this repo, and the reverse of Headliner: you start with a huge viral hit that came out of nowhere. Your relevance drains every month. Labels, managers and hangers-on all want something different from you. Try to avoid becoming a pub-quiz answer and prove you're not a one-hit wonder. Every run gives you a new random hit song, and there are four endings to find.
