@@ -12,6 +12,22 @@ Platinum Rush is a week-by-week music career sim in `linernotes/`. Pick one of t
 
 Play it at https://7z8jj5vscd-byte.github.io/headliner-/linernotes/
 
+## Final Cut
+
+Final Cut is a week-by-week Hollywood career sim in `finalcut/`. Build a 3D actor (face, hair, build, height and outfits), pick one of ten starting stories, two personality traits and a dream goal, then go from commercials and background work to franchise leads.
+
+- **Casting:** a board of commercials, extra work, TV guest spots, series, Broadway runs, voice roles, indie films, studio films and franchise roles. Each audition plays out beat by beat (pick how to play each moment), with chemistry reads against real co-stars and costume screen tests for franchise parts. You compete with real actors for every role.
+- **Franchises:** the MCU, the DCU, DC Elseworlds, Spider-Verse, Star Wars, James Bond, the Harry Potter series, Dune, The Hunger Games, Fast & Furious, John Wick and Jurassic World. Each has a fan mood and fatigue level. Every established character belongs to its actor until their contract runs out or they're recast. Until then you can only play a variant, a younger version or a legacy successor. You can also play new characters the game invents, or comic characters who have never been adapted. Your characters gain popularity, return in sequels and team-ups, get solo films and spin-off series, and can be killed off or recast.
+- **Contracts:** negotiate upfront pay, backend points, number of films, billing and perks with your agent's read on how far you can push. Walking away from a contracted sequel costs money and the role.
+- **Production and release:** prep, shooting and post-production, with on-set decisions. Each film gets a premiere on a 3D red carpet, critic and audience scores, a CinemaScore-style grade, critic quotes, a weekly box office chart, and a final verdict from flop to cult classic to blockbuster.
+- **Awards and festivals:** Sundance, Cannes, Venice and TIFF premieres; the Golden Globes, Critics Choice, BAFTA, SAG, Oscars, Emmys, Tonys and Razzies, with For Your Consideration campaigns and a 3D ceremony.
+- **Life and money:** CAA, WME, UTA, Gersh and a boutique agency; a manager, publicist, stylist, trainer and lawyer; talk shows (including hosting SNL), magazine covers, brand deals, Comic-Con, the Met Gala, scandals, relationships, homes, cars, investments, charity and taxes.
+- **Long game:** your own production company (write scripts, direct, produce), 56 achievements, a filmography, a timeline, a Walk of Fame star, aging, seven endings and a Hall of Fame. Also three save slots, three difficulty levels and a tutorial.
+
+Real actors, directors, studios, franchises, agencies and award shows appear by name. Every casting decision, feud, box office number and storyline is invented.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/finalcut/
+
 ## One-Hit Wonder
 
 A second game in this repo, and the reverse of Headliner: you start with a huge viral hit that came out of nowhere. Your relevance drains every month. Labels, managers and hangers-on all want something different from you. Try to avoid becoming a pub-quiz answer and prove you're not a one-hit wonder. Every run gives you a new random hit song, and there are four endings to find.
