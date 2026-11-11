@@ -373,6 +373,60 @@ D.ACHIEVEMENTS = [
   ['decade', 'Ten-year career', 'Work for 10 years.'], ['married', 'Married', 'Get married.'], ['charity', 'Philanthropist', 'Give $1M to charity.'], ['followers', '100 million followers', 'Reach 100M followers.'],
 ];
 
+
+// ------------------------------------------------------------------ live TV: SNL and talk shows
+D.SNL_MONO = [
+  { id: 'song', name: 'Musical monologue', skill: 'voice', d: 'Sing your way through it with the house band.' },
+  { id: 'standup', name: 'Stand-up', skill: 'comedy', d: 'Jokes about your career, your family and the movie.' },
+  { id: 'story', name: 'Heartfelt story', skill: 'charisma', d: 'Something true and a little embarrassing.' },
+  { id: 'qa', name: 'Audience Q&A', skill: 'charisma', d: 'Cast members planted in the crowd ask questions.' },
+];
+D.SNL_SKETCHES = [
+  { t: 'A game show where every contestant is a disgraced magician', skill: 'comedy' }, { t: 'A soap opera parody where everyone is your evil twin', skill: 'drama' },
+  { t: 'A pre-taped music video about loving brunch too much', skill: 'voice' }, { t: 'A family dinner where you play a very intense dad', skill: 'comedy' },
+  { t: 'A fake trailer for a superhero movie about a sandwich', skill: 'action' }, { t: 'A cooking show where the host is clearly a vampire', skill: 'comedy' },
+  { t: 'A courtroom sketch where you defend a goose', skill: 'charisma' }, { t: 'A tense airport security check with a celebrity cameo', skill: 'drama' },
+  { t: 'A nature documentary narrated by an unhinged British man', skill: 'accents' }, { t: 'A recurring character: the office party DJ who will not stop', skill: 'comedy' },
+  { t: 'A boy band reunion that goes terribly wrong', skill: 'voice' }, { t: 'A stunt-heavy action parody in a grocery store', skill: 'action' },
+];
+D.SNL_COMMIT = [['commit', 'Commit fully'], ['straight', 'Play it straight'], ['break', 'Let yourself break']];
+D.MUSIC_GUESTS = ['Sabrina Carpenter', 'Chappell Roan', 'Olivia Rodrigo', 'Bad Bunny', 'Kendrick Lamar', 'Billie Eilish', 'Doechii', 'Charli XCX', 'Tyler, the Creator', 'Benson Boone', 'Gracie Abrams', 'Lady Gaga'];
+D.SNL_CAST = ['Bowen Yang', 'Ego Nwodim', 'Sarah Sherman', 'Mikey Day', 'Heidi Gardner', 'James Austin Johnson', 'Marcello Hernández', 'Chloe Fineman', 'Kenan Thompson'];
+D.TALK_Q = [
+  { q: 'So what was it like on set? I heard it got wild.', opts: [['A story about a prank war with the crew', 'comedy', 'funny'], ['Praise the crew and the director', 'charisma', 'humble'], ['Tease a secret from the film', 'charisma', 'promo']] },
+  { q: 'Your fans are obsessed with you. Do you read the comments?', opts: [['Read a mean comment out loud', 'comedy', 'funny'], ['Say you protect your peace', 'charisma', 'humble'], ['Thank them, then plug the movie', 'charisma', 'promo']] },
+  { q: 'Tell us about your childhood. Were you always a performer?', opts: [['The time you got cut from the school play', 'comedy', 'funny'], ['A sincere story about your parents', 'drama', 'humble'], ['Do an impression of your first teacher', 'accents', 'funny']] },
+  { q: 'Is it true you did your own stunts?', opts: [['Demonstrate a fall on the couch', 'action', 'funny'], ['Credit your stunt double', 'charisma', 'humble'], ['Describe the biggest stunt in the film', 'action', 'promo']] },
+  { q: 'People say you two have amazing chemistry. Anything going on?', opts: [['Make a joke and change the subject', 'comedy', 'funny'], ['Say you are good friends', 'charisma', 'humble'], ['Wink at the camera', 'charisma', 'promo']] },
+  { q: 'What is next for you after this?', opts: [['Pitch a ridiculous fake movie', 'comedy', 'funny'], ['Talk about a passion project', 'drama', 'humble'], ['Hint at a franchise return', 'charisma', 'promo']] },
+];
+D.TALK_GAMES = {
+  fallon: ['a lip-sync battle', 'the box of mystery objects', 'charades against the host'], kimmel: ['reading mean tweets', 'a hidden-camera prank', 'a fake movie trailer'],
+  meyers: ['a desk interview with no games, just jokes', 'a day-drinking segment', 'a game of who said it'], norton: ['the red chair stories', 'a couch full of other stars', 'a dance-off'],
+  hotones: ['ten wings, each hotter than the last', 'the last dab', 'a question about your weirdest fan encounter'],
+};
+
+// ------------------------------------------------------------------ stage nights
+D.STAGE_OPENING = [['ritual', 'Do your pre-show ritual'], ['cast', 'Give the cast a speech'], ['alone', 'Sit alone in the dark']];
+D.STAGE_EVENTS = [
+  { t: 'Your scene partner drops a line in the middle of the second act.', c: [['Improvise in character', { perf: 3, req: 'comedy' }], ['Feed them the line', { perf: 1 }], ['Freeze and wait', { perf: -3 }]] },
+  { t: 'A phone rings in the front row during your big monologue.', c: [['Stop and stare until it stops', { fame: 2, rep: -1 }], ['Work it into the scene', { perf: 2, fame: 1 }], ['Push through', {}]] },
+  { t: 'You have a cold and your voice is going.', c: [['Perform anyway', { perf: -2, health: -6, rep: 2 }], ['Let the understudy go on', { energy: 20, happy: -2 }], ['Steam, tea and a lower key', { perf: 1, req: 'voice' }]] },
+  { t: 'A prop gun fails to fire during the climax.', c: [['Shout "bang"', { perf: -2, fame: 2 }], ['Change the kill to a strangling', { perf: 2, req: 'action' }], ['Walk off and come back', { perf: -1 }]] },
+  { t: 'A famous director is in the audience tonight.', c: [['Play it exactly the same', { perf: 1 }], ['Go bigger', { perf: 2, contacts: 1 }], ['Meet them at the stage door', { contacts: 1, energy: -6 }]] },
+  { t: 'The stage door crowd is three blocks long.', c: [['Sign everything', { fame: 2, energy: -8, rep: 2 }], ['Sign for twenty minutes', { fame: 1 }], ['Slip out the back', { rep: -1 }]] },
+  { t: 'The set piece jams and the curtain stays half up.', c: [['Talk to the audience until it is fixed', { fame: 2, req: 'charisma' }], ['Stay in character', { perf: 1 }]] },
+  { t: 'Tonight the whole house rose to its feet at curtain call.', c: [['Take an extra bow', { fame: 1, happy: 3 }], ['Bring the crew out on stage', { rep: 3 }]] },
+];
+
+// ------------------------------------------------------------------ TV seasons
+D.TV_MIDSEASON = [
+  { t: 'Episode {ep} ends on a twist nobody saw coming. Fans are losing it.', c: [['Live-post reactions with the fans', { fame: 1, followers: 1 }], ['Do a fan Q&A', { rep: 2, energy: -6 }], ['Stay mysterious', { fame: 0.5 }]] },
+  { t: 'A scene from episode {ep} is the most-clipped moment on Clapper this week.', c: [['Recreate it on Clapper', { fame: 2, followers: 1 }], ['Thank the writers publicly', { rep: 2 }], ['Ignore it', {}]] },
+  { t: 'Critics say episode {ep} is the best hour of TV this year.', c: [['Do a press round', { fame: 1.5, energy: -8 }], ['Let it speak for itself', { rep: 1 }]] },
+];
+D.TV_FINALE = [['cliff', 'Push for a cliffhanger ending'], ['close', 'Push for a satisfying ending'], ['trust', 'Trust the showrunner']];
+
 D.HELP = [
   ['Weeks and energy', 'Each turn is one week. Classes, auditions, parties and posts cost energy. Shooting a project uses most of your week. Ending weeks with no energy hurts your health, and if health hits zero you burn out.'],
   ['Auditions', 'Roles appear on the Casting board. Each one lists what the director wants. Your skills decide most of the score, and you choose how to play each beat of the scene. Bigger roles add a chemistry read and a screen test. You compete with real actors for the part.'],

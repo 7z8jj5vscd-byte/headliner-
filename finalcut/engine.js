@@ -411,6 +411,7 @@ FC.release = function (S, j) {
   let base = j.budget ? j.budget / 1e6 : 10; // $M
   let open = base * 0.27 * g.audience * (0.6 + r.critics / 220 + r.aud / 260) * rnd(0.75, 1.3);
   if (j.size === 'lead') open *= 0.85 + sp / 150;
+  open *= 1 + Math.min(0.3, j.promo || 0);
   if (F) { open *= F.pull * 0.8 * (1 - st.fatigue * 0.35) * (1 - S.heroFatigue * 0.3) * (0.7 + st.mood / 200); if (j.teamup) open *= 1.6; const mc = S.myChars.find(m => m.id === j.charId); if (mc && j.size === 'lead') open *= 0.8 + mc.pop / 160; }
   if (j.prestige && !j.wide) open = base * rnd(0.05, 0.35) * (r.critics / 60);
   if (j.kind === 'extra') open = base * rnd(0.2, 0.6);
@@ -433,7 +434,7 @@ function releaseTV(S, j) {
   gainFame(S, (j.guest ? 0.15 : SIZES[j.size].f) * (rating > 70 ? 1.6 : 0.8)); S.followers += Math.round(j.viewers * 0.01);
   addNews(S, `${j.title}${j.season > 1 ? ' season ' + j.season : ''} premieres. ${FC.num(j.viewers)} viewers, critics ${j.critics}%.`, 'you');
   j.dom = 0; j.ww = 0; S.credits.push(j); S.jobs = S.jobs.filter(x => x !== j);
-  if (!j.guest) { j.renewWeek = S.week + 8; }
+  if (!j.guest) { j.airing = { ep: 0, total: clamp(Math.round(j.weeks.shoot * 0.7), 6, 10), base: j.viewers, eps: [] }; }
   if (!j.weekly && j.terms.salary && !j.paid2 && j.weeks.shoot > 1) { j.paid2 = true; earn(S, j.terms.salary * 0.5, `for ${j.title}`); }
   S.pending.push({ type: 'release', id: j.id });
   if (j.fid && j.charId) { const mc = S.myChars.find(m => m.id === j.charId); if (mc) { mc.pop = clamp(mc.pop + (rating - 55) / 3, 0, 100); mc.done++; mc.owed = Math.max(0, mc.owed - 1); } }
@@ -504,6 +505,7 @@ FC.endWeek = function (S) {
       j.left--; S.energy = Math.max(0, S.energy - 6);
       const gk = Object.keys((D.GENRES.find(x => x.id === j.genre) || D.GENRES[0]).skills)[0]; S.skills[gk] = clamp(S.skills[gk] + 0.35, 0, 100);
       if (j.weekly && j.terms.salary) earn(S, j.terms.salary, `week of ${j.title}`);
+      if (j.theater) { stageNight(S, j); if (j.left <= 0) wrap(S, j); continue; }
       if (j.weeks.shoot > 1 && R() < 0.45 && j.events < 3 && j.kind !== 'commercial') { j.events++; S.pending.push({ type: 'set', jobId: j.id, ev: D.SET_EVENTS.indexOf(pick(D.SET_EVENTS.filter(e => !e.c.every(c => c[1].req && !reqOk(S, c[1].req))))) }); }
       if (j.left <= 0) wrap(S, j);
       continue;
@@ -526,6 +528,7 @@ FC.endWeek = function (S) {
   refreshBoard(S);
   inboxTick(S);
   loveTick(S);
+  airTV(S);
   // TV renewals
   for (const c of S.credits) if (c.renewWeek === S.week) renewal(S, c);
   S.week++;
@@ -543,11 +546,19 @@ FC.endWeek = function (S) {
   if (FC.age(S) >= 80 && !S.ended) FC.retire(S, 'age');
   return { lines: S.log.slice() };
 };
+function stageNight(S, j) {
+  j.nights = (j.nights || 0) + 8;
+  const draw = clamp(45 + S.fame * 0.5 + (j.perf - 50) * 0.4 + (j.buzz || 0) + rnd(-8, 8), 25, 102); j.house = Math.round(draw); j.houses = (j.houses || []).concat(j.house);
+  S.skills.drama = clamp(S.skills.drama + 0.5, 0, 100); if (j.genre === 'musical') S.skills.voice = clamp(S.skills.voice + 0.5, 0, 100);
+  if (j.nights === 8) S.pending.push({ type: 'opening', jobId: j.id });
+  else if (j.left > 0 && R() < 0.55) S.pending.push({ type: 'stage', jobId: j.id, ev: irnd(0, D.STAGE_EVENTS.length - 1) });
+  S.log.push(`${j.title}: ${Math.min(100, j.house)}% houses this week.`);
+}
 function reqOk(S, req) { if (req === 'method') return has(S, 'method'); return (S.skills[req] || 0) >= 35; }
 function wrap(S, j) {
   if (j.kind === 'commercial') { if (!j.paid1) earn(S, j.terms.salary, `for the ${j.title.toLowerCase()}`); j.stage = 'done'; j.released = S.week; j.verdict = 'Aired'; S.credits.push(j); S.jobs = S.jobs.filter(x => x !== j); gainFame(S, 0.08); return; }
   if (j.terms.salary && !j.paid2 && !j.weekly && j.weeks.shoot > 1) { j.paid2 = true; if (!j.tv) earn(S, j.terms.salary * 0.5, `on wrap for ${j.title}`); }
-  if (j.weekly) { j.stage = 'done'; j.released = S.week - j.weeks.shoot; ach(S, 'stage'); Object.assign(j, reviews(S, j)); j.verdict = j.critics >= 75 ? 'Rave reviews' : j.critics >= 50 ? 'Solid run' : 'Mixed reviews'; S.credits.push(j); S.jobs = S.jobs.filter(x => x !== j); gainFame(S, 1.5); S.skills.drama = clamp(S.skills.drama + 2, 0, 100); addNews(S, `${S.me.name}'s run in ${j.title} closes. ${j.verdict}.`, 'you'); return; }
+  if (j.weekly) { if (j.theater) S.pending.push({ type: 'closing', id: j.id }); j.stage = 'done'; j.released = S.week - j.weeks.shoot; ach(S, 'stage'); Object.assign(j, reviews(S, j)); j.verdict = j.critics >= 75 ? 'Rave reviews' : j.critics >= 50 ? 'Solid run' : 'Mixed reviews'; S.credits.push(j); S.jobs = S.jobs.filter(x => x !== j); gainFame(S, 1.5); S.skills.drama = clamp(S.skills.drama + 2, 0, 100); addNews(S, `${S.me.name}'s run in ${j.title} closes. ${j.verdict}.`, 'you'); return; }
   j.stage = 'post'; j.left = j.weeks.post + (j.wide ? irnd(0, 8) : 0);
   if (j.left <= 0) FC.release(S, j);
   S.log.push(`That's a wrap on ${j.title}.`);
@@ -582,11 +593,35 @@ function refreshBoard(S) {
   // direct offers for established stars
   if (FC.starPower(S) > 55 && R() < 0.12) { const p = R() < 0.5 ? genFranchiseProject(S, null, { size: 'lead' }) : genProject(S, 'film'); if (p) { p.direct = true; p.won = true; p.perf0 = clamp(Math.round(FC.skillFit(S, p) + rnd(-5, 10)), 10, 99); S.offers.push(p); S.inbox.push({ id: uid(), kind: 'note', from: FC.agency(S).name, t: 'A direct offer', d: `${p.director.name} wants you for ${p.title}. No audition. Check your offers.` }); } }
 }
+function airTV(S) {
+  for (const c of S.credits) {
+    const a = c.airing; if (!a || a.ep >= a.total || c.released === S.week) continue;
+    a.ep++;
+    const trend = a.eps.length ? a.eps[a.eps.length - 1] : a.base;
+    let v = trend * rnd(0.86, 1.08) * (1 + ((c.rating || 50) - 60) / 400) * (a.boost || 1); a.boost = 1;
+    if (a.ep === a.total) v *= c.finale === 'cliff' ? 1.35 : c.finale === 'close' ? 1.25 : 1.15;
+    a.eps.push(Math.round(v));
+    S.log.push(`${c.title} episode ${a.ep}: ${FC.num(v)} viewers.`);
+    if (a.ep === Math.ceil(a.total / 2)) S.pending.push({ type: 'midseason', id: c.id, ep: a.ep, ev: irnd(0, D.TV_MIDSEASON.length - 1) });
+    if (a.ep === a.total - 1) S.pending.push({ type: 'finale', id: c.id });
+    if (a.ep === a.total) {
+      c.viewers = Math.round(a.eps.reduce((x, y) => x + y, 0) / a.eps.length);
+      const growth = a.eps[a.eps.length - 1] / a.eps[0]; c.rating = clamp(Math.round(c.rating + (growth - 1) * 20 + (c.finale === 'close' ? 3 : 0)), 5, 99);
+      gainFame(S, SIZES[c.size].f * (growth > 1 ? 0.8 : 0.3)); c.renewWeek = S.week + 2;
+      S.pending.push({ type: 'seasonEnd', id: c.id });
+    }
+  }
+}
+FC.tvFinale = function (S, cid, choice) { const c = S.credits.find(x => x.id === cid); if (!c) return ''; c.finale = choice;
+  if (choice === 'cliff') return 'The writers leave everyone hanging. Great for buzz, risky if you get cancelled.';
+  if (choice === 'close') { c.critics = Math.min(100, (c.critics || 50) + 3); return 'An ending that pays off the whole season. Critics will like it.'; }
+  return 'You trust the showrunner. They seem relieved.'; };
+FC.tvMoment = function (S, cid, ev, i) { const c = S.credits.find(x => x.id === cid); const e = D.TV_MIDSEASON[ev]; const ch = e.c[i] || e.c[0]; if (c && c.airing && (ch[1].fame || 0) >= 1) c.airing.boost = 1.08; return FC.applyEffects(S, ch[1]); };
 function renewal(S, c) {
   if (c.guest || !c.tv) return;
-  const ok = (c.rating || 50) > 55 && R() < 0.5 + (c.rating - 55) / 60;
+  const ok = (c.rating || 50) > 55 && R() < 0.5 + (c.rating - 55) / 60 + (c.finale === 'cliff' ? 0.1 : 0);
   if (ok) { ach(S, 'renewed'); addNews(S, `${c.title} renewed for season ${(c.season || 1) + 1}.`, 'you');
-    const p = Object.assign({}, c, { id: uid(), season: (c.season || 1) + 1, stage: null, won: true, contracted: c.charId || 'tv', expires: S.week + 8, posted: S.week, pay: Math.round(c.terms.salary * 1.2), perf0: c.perf, script: clamp(c.script + rnd(-10, 8), 20, 99), released: null, renewWeek: null, paid1: false, paid2: false, deal: null, events: 0, dom: 0, ww: 0 });
+    const p = Object.assign({}, c, { id: uid(), season: (c.season || 1) + 1, stage: null, airing: null, finale: null, won: true, contracted: c.charId || 'tv', expires: S.week + 8, posted: S.week, pay: Math.round(c.terms.salary * 1.2), perf0: c.perf, script: clamp(c.script + rnd(-10, 8), 20, 99), released: null, renewWeek: null, paid1: false, paid2: false, deal: null, events: 0, dom: 0, ww: 0 });
     delete p.boxId; S.offers = S.offers || []; S.offers.push(p);
     S.inbox.push({ id: uid(), kind: 'note', from: c.studio, t: `${c.title} is renewed`, d: `Season ${p.season} is go. Your offer is waiting.` });
     if (c.season === 1 && c.fid) ach(S, 'spinoff');
@@ -749,6 +784,53 @@ FC.loveAnswer = function (S, yes) { if (!S.love) return; if (yes) { S.love.stage
 FC.loveDate = function (S) { if (!S.love) return; if (S.energy < 10) return 'Not enough energy.'; S.energy -= 10; S.money -= 300; S.love.bond = clamp(S.love.bond + 8, 0, 100); S.happy = clamp(S.happy + 3, 0, 100); return `A good night with ${S.love.name}.`; };
 FC.breakUp = function (S) { if (!S.love) return; timeline(S, `Broke up with ${S.love.name}.`); S.happy -= 8; S.love = null; };
 
+// ------------------------------------------------------------------ live TV: talk shows and SNL
+FC.liveStart = function (S, mid) {
+  const m = S.inbox.find(x => x.id === mid); if (!m) return { ok: false, t: 'That invite is gone.' };
+  const snl = m.show === 'snl'; const cost = snl ? 35 : 15;
+  if (S.energy < cost) return { ok: false, t: `You need ${cost} energy for this.` };
+  S.inbox = S.inbox.filter(x => x !== m); S.energy -= cost;
+  const t = D.TALK.find(x => x.id === m.show) || D.TALK[0];
+  const L = { kind: snl ? 'snl' : 'talk', show: t.id, name: t.name, film: m.film || null, meter: 50, step: 0, log: [], viral: false };
+  if (snl) { L.guest = pick(D.MUSIC_GUESTS); L.cast = D.SNL_CAST.slice().sort(() => R() - 0.5).slice(0, 3); L.sketches = D.SNL_SKETCHES.slice().sort(() => R() - 0.5).slice(0, 3); L.steps = ['cold', 'mono', 'sk', 'sk', 'sk', 'night']; }
+  else { L.qs = D.TALK_Q.slice().sort(() => R() - 0.5).slice(0, 2); L.game = pick(D.TALK_GAMES[t.id] || D.TALK_GAMES.fallon); L.steps = ['intro', 'q', 'q', 'game', 'night']; }
+  S.live = L; return { ok: true, live: L };
+};
+function liveRoll(S, skill, diff) { return S.skills[skill] + (has(S, 'charming') ? 5 : 0) + rnd(-18, 18) - diff; }
+FC.liveChoose = function (S, i) {
+  const L = S.live; if (!L) return null; const kind = L.steps[L.step]; let d = 0, text = '';
+  if (kind === 'mono') { const m = D.SNL_MONO[i] || D.SNL_MONO[0]; const r = liveRoll(S, m.skill, 40);
+    d = r > 10 ? 16 : r > 0 ? 8 : -10; text = r > 10 ? pick(['The monologue kills. The band can barely play the outro for laughing.', 'You own the room from the first line.']) : r > 0 ? 'A solid monologue. A few big laughs.' : pick(['Some jokes land in silence. You push through.', 'The cue cards and you are not on speaking terms.']); }
+  else if (kind === 'sk') { const n = L.log.filter(x => x.kind === 'sk').length; const sk = L.sketches[n]; const c = (D.SNL_COMMIT[i] || D.SNL_COMMIT[0])[0]; const r = liveRoll(S, sk.skill, 42);
+    if (c === 'commit') { d = r > 0 ? 14 : -8; text = r > 0 ? 'You go all the way, and the audience goes with you.' : 'You commit hard to a bit that is not working. Long silence.'; }
+    if (c === 'straight') { const r2 = liveRoll(S, 'drama', 35); d = r2 > 0 ? 9 : 2; text = r2 > 0 ? 'Playing it dead serious makes it funnier. Nice.' : 'Safe. Fine. Forgettable.'; }
+    if (c === 'break') { if (R() < 0.4 + S.skills.charisma / 300) { d = 12; L.viral = true; text = `You break. ${pick(L.cast)} breaks. The whole cast loses it. This clip is going to be everywhere.`; } else { d = -10; text = 'You crack up, but the audience does not. It looks unprofessional.'; } }
+    L.log.push({ kind: 'sk', t: sk.t, d }); }
+  else if (kind === 'q') { const n = L.log.filter(x => x.kind === 'q').length; const q = L.qs[n]; const o = q.opts[i] || q.opts[0]; const r = liveRoll(S, o[1], 35);
+    d = o[2] === 'promo' ? (r > 0 ? 6 : 0) : r > 0 ? 13 : -7; if (o[2] === 'promo' && L.film) L.promo = (L.promo || 0) + 0.04;
+    text = o[2] === 'funny' ? (r > 0 ? 'The host doubles over. The audience is howling.' : 'The joke does not land. The host rescues you.') : o[2] === 'humble' ? (r > 0 ? 'Warm, genuine, and very likeable.' : 'A bit flat. Nice, but flat.') : (r > 0 ? 'A smooth plug. The studio is happy.' : 'That plug was a bit obvious.');
+    if (o[2] === 'funny' && r > 18 && R() < 0.4) L.viral = true; L.log.push({ kind: 'q', d }); }
+  else if (kind === 'game') { const r = liveRoll(S, i === 0 ? 'comedy' : 'charisma', i === 0 ? 40 : 25); d = i === 0 ? (r > 0 ? 16 : -6) : (r > 0 ? 7 : 1);
+    if (i === 0 && r > 12 && R() < 0.5) L.viral = true; text = i === 0 ? (r > 0 ? `You go all in on ${L.game}. It is the best segment the show has had in weeks.` : `${L.game[0].toUpperCase() + L.game.slice(1)} gets the better of you. Still, good sport.`) : 'You play it safe. Polite applause.'; }
+  L.meter = clamp(L.meter + d, 0, 100); L.step++;
+  return { text, d, meter: L.meter, viral: L.viral };
+};
+FC.liveNext = S => { if (S.live) S.live.step++; };
+FC.liveFinish = function (S) {
+  const L = S.live; if (!L) return null; S.live = null; const snl = L.kind === 'snl';
+  const g = L.meter >= 80 ? 'A' : L.meter >= 65 ? 'B' : L.meter >= 45 ? 'C' : 'D';
+  gainFame(S, (L.meter / 50) * (snl ? 2.4 : 1) + (L.viral ? 1.5 : 0)); S.followers += Math.round((L.meter * 1500 + (L.viral ? 400000 : 0)) * (snl ? 3 : 1) * (1 + S.fame / 25));
+  S.rep = clamp(S.rep + (L.meter - 50) / 20, 0, 100);
+  if (L.film) { const j = S.jobs.find(x => x.id === L.film); if (j) j.promo = (j.promo || 0) + 0.03 + (L.promo || 0) + (L.viral ? 0.05 : 0); }
+  ach(S, 'talk'); if (snl) { ach(S, 'snl'); S.skills.comedy = clamp(S.skills.comedy + (L.meter > 60 ? 3 : 1.5), 0, 100); timeline(S, `Hosted Saturday Night Live${g === 'A' ? ' to rave reviews' : ''}.`); }
+  const good = L.meter >= 60;
+  const quotes = [0, 1].map(() => ({ o: pick(D.OUTLETS), good, t: snl ? (good ? pick([`${S.me.name} is a natural. Invite them back.`, 'One of the best hosts of the season.', 'The sketches lived and died on their commitment, and they committed.']) : pick(['A host who seemed to be counting the minutes.', 'Forgettable, with one good sketch.', 'The cast carried this one.'])) : (good ? pick(['A great guest.', 'The interview of the week.']) : pick(['Pleasant, but nothing to remember.', 'A little stiff on the couch.'])) }));
+  if (L.viral) addNews(S, `${S.me.name}'s ${snl ? 'SNL sketch' : 'appearance on ' + L.name} is going viral.`, 'you');
+  else if (snl) addNews(S, `${S.me.name} hosts Saturday Night Live with musical guest ${L.guest}.`, 'you');
+  addFeed(S, snl ? 'nbcsnl' : L.name, `${S.me.name} tonight! ${L.viral ? '🔥🔥🔥' : good ? '🔥' : ''}`);
+  return { grade: g, meter: L.meter, viral: L.viral, quotes, snl, name: L.name };
+};
+
 // ------------------------------------------------------------------ inbox actions
 FC.answerInbox = function (S, mid, choice) {
   const m = S.inbox.find(x => x.id === mid); if (!m) return 'That message is gone.';
@@ -813,6 +895,12 @@ FC.applyEffects = function (S, fx, ctx = {}, job) {
 };
 FC.resolve = function (S, pend, i) {
   if (pend.type === 'set') { const ev = D.SET_EVENTS[pend.ev]; const job = S.jobs.find(j => j.id === pend.jobId); const c = ev.c[i] || ev.c[0]; if (c[1].req && !reqOk(S, c[1].req)) return 'You tried, but it did not land.'; return FC.applyEffects(S, c[1], {}, job); }
+  if (pend.type === 'stage') { const ev = D.STAGE_EVENTS[pend.ev]; const job = S.jobs.find(j => j.id === pend.jobId); const c = ev.c[i] || ev.c[0]; if (c[1].req && !reqOk(S, c[1].req)) { if (job) job.perf = clamp(job.perf - 1, 0, 100); return 'You tried. It did not quite land.'; } return FC.applyEffects(S, c[1], {}, job) || 'The show goes on.'; }
+  if (pend.type === 'opening') { const job = S.jobs.find(j => j.id === pend.jobId); if (!job) return '';
+    const pick_ = D.STAGE_OPENING[i] || D.STAGE_OPENING[0]; if (pick_[0] === 'ritual') job.perf = clamp(job.perf + 2, 0, 100); if (pick_[0] === 'cast') { job.costarRel = clamp(job.costarRel + 10, 0, 100); job.perf = clamp(job.perf + 1, 0, 100); } if (pick_[0] === 'alone') job.perf = clamp(job.perf + (has(S, 'method') ? 4 : 1), 0, 100);
+    const r = reviews(S, job); job.openingCritics = r.critics; job.buzz = (r.critics - 60) / 4; gainFame(S, 1);
+    addNews(S, `${S.me.name} opens in ${job.title} on ${job.studio}. ${r.critics >= 75 ? 'Raves.' : r.critics >= 50 ? 'Respectful reviews.' : 'The critics are not kind.'}`, 'you');
+    return { text: r.critics >= 75 ? 'Curtain call. The reviews come in overnight, and they are raves.' : r.critics >= 50 ? 'A solid opening. The reviews are respectful.' : 'A rough night. The first reviews are not kind.', quotes: r.quotes, critics: r.critics }; }
   if (pend.type === 'event') { const ev = D.RANDOM_EVENTS.find(e => e.id === pend.id); const c = ev.c[i] || ev.c[0]; if (c[1].req && !reqOk(S, c[1].req)) { S.rep -= 1; return 'It came out wrong.'; } if (ev.scandal) addNews(S, FC.fill(ev.t, pend.ctx).replace(/^You|your/g, m => m === 'You' ? S.me.name : 'their'), 'scandal'); return FC.applyEffects(S, c[1], pend.ctx); }
   return '';
 };
@@ -895,5 +983,6 @@ FC.del = slot => { try { localStorage.removeItem(KEY(slot)); } catch (e) { } };
 FC.hof = () => { try { return JSON.parse(localStorage.getItem('fc-hof') || '[]'); } catch (e) { return []; } };
 
 // auto-play helper used by tests: resolve everything with the first choice
-FC.autoResolve = S => { while (S.pending.length) { const p = S.pending.shift(); if (p.type === 'set' || p.type === 'event') FC.resolve(S, p, Math.floor(Math.random() * 2)); if (p.type === 'love') FC.loveAnswer(S, true); } };
+FC.autoResolve = S => { while (S.pending.length) { const p = S.pending.shift(); if (p.type === 'set' || p.type === 'event') FC.resolve(S, p, Math.floor(Math.random() * 2)); if (p.type === 'love') FC.loveAnswer(S, true); if (p.type === 'stage' || p.type === 'opening') FC.resolve(S, p, 0); if (p.type === 'finale') FC.tvFinale(S, p.id, 'trust'); if (p.type === 'midseason') FC.tvMoment(S, p.id, p.ev, 0); }
+  for (const m of S.inbox.slice()) if (m.kind === 'talk' && FC.liveStart(S, m.id).ok) { while (S.live && S.live.step < S.live.steps.length - 1) { const k = S.live.steps[S.live.step]; if (['cold', 'intro'].includes(k)) FC.liveNext(S); else FC.liveChoose(S, 0); } FC.liveFinish(S); } };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -217,7 +217,7 @@ L3.portrait = function (look, size = 240, bg = '#2a2350') {
 L3.scene = function (el, look, opts = {}) {
   if (!L3.available()) return null;
   const mode = opts.mode || 'carpet';
-  const scene = new THREE.Scene(); const bg = mode === 'set' ? '#1a1d24' : mode === 'awards' ? '#120d08' : '#0d0f14';
+  const scene = new THREE.Scene(); const bg = mode === 'set' ? '#1a1d24' : mode === 'awards' ? '#120d08' : mode === 'theater' ? '#0a0607' : mode === 'studio' ? '#0b0d16' : '#0d0f14';
   scene.background = new THREE.Color(bg); scene.fog = new THREE.Fog(bg, 9, 30);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x222233, 0.65)); const key = new THREE.DirectionalLight(0xffffff, 0.75); key.position.set(2, 5, 4); scene.add(key);
   const cam = new THREE.PerspectiveCamera(36, 1, 0.1, 80);
@@ -244,6 +244,28 @@ L3.scene = function (el, look, opts = {}) {
     const sl = new THREE.PointLight(0xfff1d6, 0.8, 10); sl.position.set(0, 3, 3); scene.add(sl);
     // tracking markers
     for (let i = 0; i < 12; i++) scene.add(mesh(geo('BoxGeometry', 0.08, 0.08, 0.01), mat('#ffffff', { basic: true }), rnd(-4, 4), rnd(0.5, 5), rnd(-3.5, -2.5)));
+  } else if (mode === 'theater') {
+    const floor = mesh(geo('PlaneGeometry', 60, 60), mat('#120a0a')); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+    const stage = mesh(geo('BoxGeometry', 9, 0.6, 4.5), mat('#3a2616'), 0, 0.3, -0.6); scene.add(stage); fig.position.y = 0.6;
+    const gold = mat('#a07a2a'); const red = mat('#7a1020');
+    scene.add(mesh(geo('BoxGeometry', 0.6, 5.5, 0.6), gold, -4.6, 3, 1.5)); scene.add(mesh(geo('BoxGeometry', 0.6, 5.5, 0.6), gold, 4.6, 3, 1.5)); scene.add(mesh(geo('BoxGeometry', 9.8, 0.7, 0.6), gold, 0, 5.6, 1.5));
+    for (const sx of [-1, 1]) { const cur = mesh(geo('BoxGeometry', 1.8, 5, 0.15), red, sx * 3.5, 3.1, 1.3); scene.add(cur); for (let i = 0; i < 5; i++) scene.add(mesh(geo('CylinderGeometry', 0.09, 0.09, 5, 6), mat('#5e0c18'), sx * (2.75 + i * 0.36), 3.1, 1.38)); }
+    scene.add(mesh(geo('BoxGeometry', 9, 0.9, 0.2), red, 0, 4.9, 1.35));
+    const back = mesh(geo('PlaneGeometry', 9, 5), mat('#1c1418'), 0, 3, -2.8); scene.add(back);
+    for (let i = 0; i < 12; i++) { const f = mesh(geo('SphereGeometry', 0.06, 8, 6), mat('#ffe8b0', { basic: true }), -4 + i * 0.73, 0.65, 1.55); scene.add(f); }
+    const seat = mat('#5a0f1a'); for (let r = 0; r < 5; r++) for (let c = 0; c < 14; c++) { scene.add(mesh(geo('BoxGeometry', 0.45, 0.5, 0.45), seat, -4.2 + c * 0.65, 0.25 + r * 0.25, 3.2 + r * 0.8)); if ((r * 14 + c) % 3) scene.add(mesh(geo('SphereGeometry', 0.13, 8, 6), mat(DD().SKINS[(r + c) % DD().SKINS.length]), -4.2 + c * 0.65, 0.75 + r * 0.25, 3.3 + r * 0.8)); }
+    const spot = new THREE.SpotLight(0xfff1d6, 1.6, 22, 0.28, 0.5); spot.position.set(0, 9, 6); spot.target = fig; scene.add(spot);
+  } else if (mode === 'studio') {
+    const floor = mesh(geo('PlaneGeometry', 60, 60), mat('#14161f')); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+    const sky = document.createElement('canvas'); sky.width = 512; sky.height = 256; const g2 = sky.getContext('2d');
+    const grd = g2.createLinearGradient(0, 0, 0, 256); grd.addColorStop(0, opts.snl ? '#1a0f2e' : '#0e1a3a'); grd.addColorStop(1, opts.snl ? '#3a1530' : '#2a3a6a'); g2.fillStyle = grd; g2.fillRect(0, 0, 512, 256);
+    for (let i = 0; i < 40; i++) { const w = 8 + Math.random() * 20, h = 40 + Math.random() * 150, x = Math.random() * 512; g2.fillStyle = '#0b0f1c'; g2.fillRect(x, 256 - h, w, h); g2.fillStyle = '#ffd98a'; for (let k = 0; k < 6; k++) g2.fillRect(x + 2 + Math.random() * (w - 4), 256 - h + Math.random() * h, 2, 2); }
+    if (opts.snl) { g2.fillStyle = '#ffffff'; g2.font = 'bold 28px sans-serif'; g2.textAlign = 'center'; g2.fillText('LIVE FROM NEW YORK', 256, 50); }
+    scene.add(mesh(geo('PlaneGeometry', 12, 6), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sky) }), 0, 3, -3));
+    if (opts.snl) { const st = mesh(geo('CylinderGeometry', 2.4, 2.6, 0.25, 32), mat('#6b5a8a'), 0, 0.12, 0); scene.add(st); fig.position.y = 0.25;
+      for (let i = 0; i < 16; i++) { const b = mesh(geo('SphereGeometry', 0.08, 8, 6), mat(i % 2 ? '#ffd23f' : '#ff4f79', { basic: true }), Math.cos(i / 16 * Math.PI) * 3.2, 0.3 + Math.sin(i / 16 * Math.PI) * 4, -2.9); scene.add(b); things.push({ o: b, kind: 'twinkle', ph: i }); } }
+    else { const desk = mesh(geo('BoxGeometry', 1.6, 0.9, 0.8), mat('#5b3a22'), 1.6, 0.45, -0.4); scene.add(desk); const couch = mesh(geo('BoxGeometry', 2, 0.45, 0.8), mat('#3c4a7a'), -0.7, 0.25, -0.6); scene.add(couch); scene.add(mesh(geo('BoxGeometry', 2, 0.6, 0.2), mat('#33406b'), -0.7, 0.6, -0.95)); scene.add(mesh(geo('CylinderGeometry', 0.05, 0.05, 0.25, 8), mat('#eeeeee'), 1.3, 1.02, -0.4)); fig.position.set(-0.3, 0, 0.2); }
+    const hl = new THREE.PointLight(0xffffff, 0.7, 12); hl.position.set(0, 4, 4); scene.add(hl);
   } else {
     const floor = mesh(geo('PlaneGeometry', 60, 60), mat('#1a120c')); floor.rotation.x = -Math.PI / 2; scene.add(floor);
     const stage = mesh(geo('CylinderGeometry', 3, 3.2, 0.4, 40), mat('#2b1e12'), 0, 0.2, 0); scene.add(stage); fig.position.y = 0.4;
@@ -254,14 +276,15 @@ L3.scene = function (el, look, opts = {}) {
     if (opts.win) { const t = new THREE.Group(); t.add(mesh(geo('CylinderGeometry', 0.03, 0.04, 0.24, 8), mat('#d4a92a', { emissive: new THREE.Color('#4a3400') }), 0, 0.12)); t.add(mesh(geo('SphereGeometry', 0.035, 8, 8), mat('#d4a92a'), 0, 0.27)); t.position.set(0, -0.35, 0.05); fig.userData.arms[1].el.add(t); }
     const spot = new THREE.SpotLight(0xfff1d6, 1.4, 20, 0.35, 0.5); spot.position.set(0, 9, 4); spot.target = fig; scene.add(spot);
   }
-  const shots = mode === 'carpet' ? [[0, 1.5, 4.4, 0, 1.2, 0], [1.8, 1.4, 2.6, 0, 1.4, 0], [-2, 1, 3.2, 0, 1.2, 0]] : mode === 'set' ? [[0, 1.5, 4.2, 0, 1.1, 0], [1.6, 1.5, 2.8, 0, 1.4, 0], [-1.4, 2.4, 3.4, 0, 1.2, 0]] : [[0, 1.6, 5.5, 0, 1.4, 0], [0.6, 2, 2.6, 0, 1.8, 0], [-3, 1.4, 5, 0, 1.3, 0]];
+  const shots = mode === 'theater' ? [[0, 2.2, 9, 0, 1.8, 0], [1.2, 1.6, 4, 0, 1.6, 0], [-3, 3, 7, 0, 1.6, 0]] : mode === 'studio' ? [[0, 1.6, 5, 0, 1.2, 0], [2.2, 1.5, 3.4, 0, 1.3, 0], [-1.6, 1.4, 3.2, 0, 1.3, 0]] : mode === 'carpet' ? [[0, 1.5, 4.4, 0, 1.2, 0], [1.8, 1.4, 2.6, 0, 1.4, 0], [-2, 1, 3.2, 0, 1.2, 0]] : mode === 'set' ? [[0, 1.5, 4.2, 0, 1.1, 0], [1.6, 1.5, 2.8, 0, 1.4, 0], [-1.4, 2.4, 3.4, 0, 1.2, 0]] : [[0, 1.6, 5.5, 0, 1.4, 0], [0.6, 2, 2.6, 0, 1.8, 0], [-3, 1.4, 5, 0, 1.3, 0]];
   let cut = 0, cutT = 0; const setShot = i => { const s = shots[i % shots.length]; cam.position.set(s[0], s[1], s[2]); cam.lookAt(s[3], s[4], s[5]); }; setShot(0);
   const ctl = mount(el, scene, cam, (dt, t) => {
-    animate(fig, t, 1, opts.win || mode === 'carpet' ? 'pose' : 'idle');
+    animate(fig, t, 1, opts.win || mode === 'carpet' || mode === 'theater' ? 'pose' : 'idle');
     if (fig.userData.cape) fig.userData.cape.rotation.x = 0.12 + Math.sin(t * 2) * 0.05;
     cutT += dt; if (cutT > 3.6) { cutT = 0; cut++; setShot(cut); }
     for (const th of things) {
       if (th.kind === 'flash') { const v = Math.sin(t * 3 + th.ph); th.o.material.opacity = v > 0.96 ? 1 : 0; th.o.scale.setScalar(v > 0.96 ? 3 : 1); }
+      if (th.kind === 'twinkle') th.o.visible = Math.sin(t * 4 + th.ph) > -0.3;
       if (th.kind === 'pan') th.o.rotation.y = 0.5 + Math.sin(t * 0.4) * 0.15;
     }
   });
