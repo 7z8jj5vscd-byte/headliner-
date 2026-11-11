@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -27,7 +27,8 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; -webkit-text-size-adjust: 100%; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+* { touch-action: manipulation; }
 body { min-height: 100vh; background: radial-gradient(110% 50% at 50% -10%, #1c2130 0%, var(--bg) 60%) fixed, var(--bg); }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
@@ -135,7 +136,7 @@ body.titlemode #main { padding-top: calc(env(safe-area-inset-top, 0px) + 24px); 
 .field { display: grid; gap: 4px; margin: 10px 0; }
 .field label { font-size: .8rem; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
 .field label b { color: var(--ink); font-family: var(--mono); font-weight: 500; }
-input, select, textarea { background: var(--bg2); border: 1px solid var(--line); border-radius: 9px; padding: 9px 10px; color: var(--ink); width: 100%; min-width: 0; }
+input, select, textarea { font-size: 16px; background: var(--bg2); border: 1px solid var(--line); border-radius: 9px; padding: 9px 10px; color: var(--ink); width: 100%; min-width: 0; }
 input[type=range] { padding: 0; accent-color: var(--gold); background: none; border: 0; }
 input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--gold); }
 .check { display: flex; gap: 8px; align-items: center; padding: 5px 0; font-size: .9rem; }

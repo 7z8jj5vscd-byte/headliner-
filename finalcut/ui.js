@@ -51,6 +51,10 @@ UI.portrait = (look, size = 224) => {
 
 // ------------------------------------------------------------------ boot and title
 UI.boot = function () {
+  // no zooming: block pinch gestures and double-tap zoom (iOS ignores user-scalable=no)
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+  document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  let lastTouch = 0; document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 300 && !e.target.closest('input, select, textarea')) { e.preventDefault(); if (e.target.closest('[data-a]')) e.target.closest('[data-a]').click(); } lastTouch = now; }, { passive: false });
   document.addEventListener('click', onClick);
   document.addEventListener('input', onInput);
   document.addEventListener('change', onInput);
