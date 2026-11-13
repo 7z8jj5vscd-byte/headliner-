@@ -437,6 +437,15 @@ D.TV_MIDSEASON = [
 ];
 D.TV_FINALE = [['cliff', 'Push for a cliffhanger ending'], ['close', 'Push for a satisfying ending'], ['trust', 'Trust the showrunner']];
 
+// newest first. Bump FC_BUILD in index.html and version.json together with a new entry here.
+D.CHANGELOG = [
+  { build: 5, date: 'Nov 13, 2026', notes: ['The game now tells you when an update is live, with a button to load it.', 'Version number and this list of changes on the title screen.'] },
+  { build: 4, date: 'Nov 13, 2026', notes: ['Eight new down-to-earth starting stories, like Aspiring actor, College theater major and Career changer.', 'The story picker is split into Down to earth and A head start.'] },
+  { build: 3, date: 'Nov 11, 2026', notes: ['Host Saturday Night Live: monologue, three sketches and reviews.', 'Talk show interviews with questions and a game segment.', 'Broadway opening nights, stage events and closing nights.', 'TV seasons air episode by episode, with a say in the finale.'] },
+  { build: 2, date: 'Nov 11, 2026', notes: ['Pinch and double-tap zoom are turned off.'] },
+  { build: 1, date: 'Nov 11, 2026', notes: ['Final Cut launches.'] },
+];
+
 D.HELP = [
   ['Weeks and energy', 'Each turn is one week. Classes, auditions, parties and posts cost energy. Shooting a project uses most of your week. Ending weeks with no energy hurts your health, and if health hits zero you burn out.'],
   ['Auditions', 'Roles appear on the Casting board. Each one lists what the director wants. Your skills decide most of the score, and you choose how to play each beat of the scene. Bigger roles add a chemistry read and a screen test. You compete with real actors for the part.'],

@@ -59,7 +59,27 @@ UI.boot = function () {
   document.addEventListener('input', onInput);
   document.addEventListener('change', onInput);
   UI.title();
+  UI.announceUpdate(); UI.checkUpdate();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') UI.checkUpdate(); });
+  setInterval(UI.checkUpdate, 10 * 60 * 1000);
 };
+// ------------------------------------------------------------------ update check
+// The page asks for version.json without the cache. If the live build is newer than this copy, show a banner.
+UI.checkUpdate = function () {
+  if (!window.fetch || location.protocol === 'file:') return;
+  fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(v => {
+    if (!v || !(v.build > (window.FC_BUILD || 0)) || document.getElementById('update')) return;
+    const b = document.createElement('button'); b.id = 'update'; b.dataset.a = 'applyUpdate'; b.dataset.v = v.build;
+    b.innerHTML = '<span>A new update is live<small>Tap to load it. Your saves are kept.</small></span><span>Update</span>';
+    document.body.appendChild(b);
+  }).catch(() => { });
+};
+UI.announceUpdate = function () {
+  let seen = 0; try { seen = +localStorage.getItem('fc-build') || 0; localStorage.setItem('fc-build', window.FC_BUILD || 1); } catch (e) { return; }
+  if (seen && seen < (window.FC_BUILD || 1)) UI.whatsNew(seen);
+};
+UI.whatsNew = (since = 0) => UI.modal(`<div class="eyebrow">Version ${window.FC_BUILD || 1}</div><h2>${since ? 'Updated!' : "What's new"}</h2>${D.CHANGELOG.filter(c => !since || c.build > since).map(c => `<h3>Version ${c.build} · ${esc(c.date)}</h3><ul class="small">${c.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>`).join('')}<button class="btn" data-a="closeModal">Close</button>`);
+
 UI.title = function () {
   UI.S = null; document.body.classList.add('titlemode'); if (window.L3) L3.stop();
   const slots = FC.slots();
@@ -69,6 +89,7 @@ UI.title = function () {
     <div class="card">${slots.map(s => s.empty ? `<div class="row slot"><div class="ph"></div><div class="grow"><b>Empty slot ${s.slot}</b><small>Start a new career</small></div><button class="btn sm" data-a="newGame" data-slot="${s.slot}">New career</button></div>`
       : `<div class="row slot">${slotImg(s.look)}<div class="grow"><b>${esc(s.name)}</b><small>${esc(s.date)} · Fame ${s.fame}${s.ended ? ' · Retired' : ''}</small></div><div class="btns"><button class="btn sm" data-a="continue" data-slot="${s.slot}">${s.ended ? 'View' : 'Continue'}</button><button class="btn sm ghost" data-a="delSlot" data-slot="${s.slot}" aria-label="Delete">✕</button></div></div>`).join('')}</div>
     <div class="btns" style="justify-content:center"><button class="btn dark" data-a="hof">Hall of Fame</button><button class="btn dark" data-a="help">How to play</button></div>
+    <button class="version" data-a="whatsNew">Version ${window.FC_BUILD || 1} · ${esc((D.CHANGELOG[0] || {}).date || '')} · What's new</button>
     <p class="tiny muted">Real actors, directors and franchises appear by name. Every casting decision, feud, box office number and storyline in the game is made up.</p>
   </div>`;
 };
@@ -427,7 +448,7 @@ function lifeView() {
   if (sub === 'love') body = s.love ? `<div class="card"><h2>${esc(s.love.name)}</h2><p class="small muted">${esc(s.love.job[0].toUpperCase() + s.love.job.slice(1))} · ${s.love.stage === 'dating' ? 'Dating' : s.love.stage === 'engaged' ? 'Engaged' : 'Married'} since ${FC.year(s, s.love.since)}</p>${bar('Bond', s.love.bond, 'hap')}<p class="small muted">Long shoots strain the relationship. Make time.</p><div class="btns"><button class="btn sm" data-a="loveDate" ${s.energy < 10 ? 'disabled' : ''}>Date night (−10⚡)</button><button class="btn sm ghost" data-a="breakUp">Break up</button></div></div>`
     : `<div class="card"><h2>Love life</h2><p class="small muted">Single. Choose Go on a date on the Home tab to meet someone.</p></div>`;
   if (sub === 'look') body = `<div class="card"><h2>Wardrobe</h2><p class="small muted">Your look appears in your portrait, on red carpets and at award shows.</p>${UI.lookEditor(s.look, UI.ltab || 'outfit', 'me')}</div>`;
-  if (sub === 'settings') body = `<div class="card"><h2>Settings</h2><div class="btns"><button class="btn dark" data-a="help">How to play</button><button class="btn dark" data-a="toggle3d">3D: ${window.L3 && L3.available() ? 'On' : 'Off'}</button><button class="btn dark" data-a="saveQuit">Save and quit</button></div>
+  if (sub === 'settings') body = `<div class="card"><h2>Settings</h2><div class="btns"><button class="btn dark" data-a="help">How to play</button><button class="btn dark" data-a="toggle3d">3D: ${window.L3 && L3.available() ? 'On' : 'Off'}</button><button class="btn dark" data-a="saveQuit">Save and quit</button></div><p style="margin-top:10px"><button class="version" data-a="whatsNew">Version ${window.FC_BUILD || 1} · What's new</button> <button class="version" data-a="checkNow">Check for updates</button></p>
     <h3>Retire</h3><p class="small muted">End your career and see how you'll be remembered.</p><button class="btn red" data-a="retireAsk">Retire</button></div>`;
   return `<div class="tabs">${tabs.map(t => `<button class="${sub === t[0] ? 'on' : ''}" data-a="sub" data-g="life" data-s="${t[0]}">${t[1]}</button>`).join('')}</div>${body}`;
 }
@@ -512,6 +533,9 @@ const A = {
   newGame: d => UI.newGame(+d.slot),
   continue: d => { const s = FC.load(+d.slot); if (!s) return; UI.S = s; UI.tab = 'home'; s.ended ? UI.renderEnding() : (UI.render(), s.live ? UI.renderLive() : UI.nextPending()); },
   delSlot: d => { if (UI.delArm === d.slot) { FC.del(+d.slot); UI.delArm = null; UI.title(); } else { UI.delArm = d.slot; UI.toast('Tap ✕ again to delete this save.'); } },
+  whatsNew: () => UI.whatsNew(),
+  checkNow: () => { UI.checkUpdate(); setTimeout(() => { if (!document.getElementById('update')) UI.toast(`You're on the latest version (${window.FC_BUILD || 1}).`); }, 1500); },
+  applyUpdate: d => { try { if (UI.S) FC.save(UI.S); } catch (e) { } location.replace(location.pathname + '?v=' + d.v + '&t=' + Date.now()); },
   hof: () => UI.hof(), help: () => UI.help(), closeModal: () => UI.closeModal(), toTitle: () => UI.title(),
   crBack: () => { if (UI.cr.step === 0) return UI.title(); UI.cr.step--; UI.renderCreator(); },
   crNext: () => { const c = UI.cr; if (c.step === 0 && !c.name.trim()) { UI.toast('Enter a name.'); return; }

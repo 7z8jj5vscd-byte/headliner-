@@ -203,6 +203,9 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--gold); }
 #toasts { position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + var(--hud-h) + 10px); z-index: 80; display: flex; flex-direction: column; gap: 6px; width: min(92vw, 520px); pointer-events: none; }
 .toast { background: #222838; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; font-size: .88rem; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); animation: up .2s ease-out; }
 .toast.ach { border-color: var(--gold); color: var(--gold); }
+#update { position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 10px); z-index: 90; width: min(92vw, 520px); background: var(--gold); color: var(--gold-ink); border: 0; border-radius: 12px; padding: 12px 14px; font-weight: 700; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); text-align: left; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+#update small { display: block; font-weight: 500; }
+.version { font-family: var(--mono); font-size: .72rem; color: var(--muted); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; }
 .loading { text-align: center; padding: 60px 0; color: var(--muted); }
 </style>
 </head>
@@ -213,10 +216,11 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--gold); }
 <nav id="nav" aria-label="Main"></nav>
 <div id="toasts" aria-live="polite"></div>
 <noscript><p style="padding:20px">Final Cut needs JavaScript to run.</p></noscript>
-<script src="data.js"></script>
-<script src="engine.js"></script>
-<script src="three3d.js"></script>
-<script src="ui.js"></script>
+<script>window.FC_BUILD = 5;</script>
+<script src="data.js?v=5"></script>
+<script src="engine.js?v=5"></script>
+<script src="three3d.js?v=5"></script>
+<script src="ui.js?v=5"></script>
 <script>
 (function () {
   // three.js is optional: the game runs with 2D portraits if it can't load
