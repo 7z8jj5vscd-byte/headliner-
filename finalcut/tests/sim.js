@@ -34,7 +34,7 @@ for (let r = 0; r < runs; r++) {
     if (!S.company && S.fame >= 40 && S.money > 5e6) FC.startCompany(S);
     if (S.company && S.scripts.length && S.money > 3e6 && Math.random() < 0.05) FC.develop(S, { script: S.scripts[0].id, budget: 'indie', star: true, direct: Math.random() < 0.5 });
     if (S.company && S.weekActs < 5 && S.energy > 30 && Math.random() < 0.2) FC.doActivity(S, 'write');
-    FC.endWeek(S); FC.autoResolve(S);
+    FC.autoWork(S, 'all'); FC.endWeek(S); FC.autoResolve(S);
     const y = Math.round(S.week / 52 * 10) / 10; M.lead = M.lead || (S.credits.some(c => c.size === 'lead') && y); M.fr = M.fr || (S.myChars.length && y); M.f50 = M.f50 || (S.fame >= 50 && y); M.mil = M.mil || (S.money >= 1e6 && y); M.osc = M.osc || (S.awards.some(a => a.show === 'oscars') && y);
     if (!isFinite(S.money) || isNaN(S.fame)) throw new Error('NaN state at week ' + S.week);
   }

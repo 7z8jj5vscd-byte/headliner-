@@ -206,6 +206,17 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--gold); }
 #update { position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 10px); z-index: 90; width: min(92vw, 520px); background: var(--gold); color: var(--gold-ink); border: 0; border-radius: 12px; padding: 12px 14px; font-weight: 700; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); text-align: left; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
 #update small { display: block; font-weight: 500; }
 .version { font-family: var(--mono); font-size: .72rem; color: var(--muted); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; }
+.marquee-brand { font-family: var(--display); font-weight: 900; letter-spacing: .28em; font-size: .95rem; color: var(--ember); margin-bottom: 6px; }
+.mq-score { flex: none; display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--line); font-family: var(--mono); font-weight: 500; font-size: .95rem; }
+.mq-score.big { width: 74px; height: 74px; font-size: 1.5rem; border-width: 3px; }
+.mq-score.hi { border-color: var(--teal); color: var(--teal); } .mq-score.lo { border-color: var(--red); color: var(--red); }
+.mq-head { display: flex; gap: 14px; align-items: center; margin: 6px 0 4px; }
+.rev-row { width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; color: inherit; }
+.cast-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); } .cast-row .grow { min-width: 0; flex: 1; } .cast-row small { display: block; color: var(--muted); }
+.cast-row.me b { color: var(--gold); }
+.linkish { background: none; border: 0; padding: 0; color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-align: left; }
+.effbars { display: flex; gap: 3px; align-items: flex-end; height: 34px; margin-top: 4px; } .effbars span { flex: 1; max-width: 22px; background: var(--gold); border-radius: 3px 3px 0 0; }
+#nav button { font-size: .66rem; }
 .loading { text-align: center; padding: 60px 0; color: var(--muted); }
 </style>
 </head>
@@ -216,11 +227,11 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--gold); }
 <nav id="nav" aria-label="Main"></nav>
 <div id="toasts" aria-live="polite"></div>
 <noscript><p style="padding:20px">Final Cut needs JavaScript to run.</p></noscript>
-<script>window.FC_BUILD = 5;</script>
-<script src="data.js?v=5"></script>
-<script src="engine.js?v=5"></script>
-<script src="three3d.js?v=5"></script>
-<script src="ui.js?v=5"></script>
+<script>window.FC_BUILD = 6;</script>
+<script src="data.js?v=6"></script>
+<script src="engine.js?v=6"></script>
+<script src="three3d.js?v=6"></script>
+<script src="ui.js?v=6"></script>
 <script>
 (function () {
   // three.js is optional: the game runs with 2D portraits if it can't load

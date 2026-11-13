@@ -11,6 +11,7 @@ const S = () => UI.S;
 // ------------------------------------------------------------------ icons and logo
 const ICONS = {
   home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
+  work: '<path d="M4 9h16v11H4z"/><path d="M4 9l2-5 4 1-2 4M10 5l4 1-2 3M14 6l4 1-1 2"/>',
   cast: '<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 6l2-3M13 6l2-3"/>',
   career: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   world: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
@@ -28,7 +29,7 @@ UI.LOGO = `<svg class="logo" viewBox="0 0 520 220" role="img" aria-label="Final 
   <text x="260" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="3" fill="#c9d1e0">A HOLLYWOOD CAREER SIM</text></svg>`;
 
 // ------------------------------------------------------------------ toasts, modal, save
-UI.toast = (t, cls = '') => { if (!t) return; const el = document.createElement('div'); el.className = 'toast ' + cls; el.textContent = t; $('#toasts').appendChild(el); setTimeout(() => el.remove(), cls === 'ach' ? 4200 : 3000); };
+UI.toast = (t, cls = '') => { if (!t) return; const box = $('#toasts'); while (box.children.length >= 3) box.firstChild.remove(); const el = document.createElement('div'); el.className = 'toast ' + cls; el.textContent = t; $('#toasts').appendChild(el); setTimeout(() => el.remove(), cls === 'ach' ? 4200 : 3000); };
 UI.modal = (html, opts = {}) => {
   UI.closeModal(true);
   const w = document.createElement('div'); w.className = 'modal-wrap'; w.id = 'modal';
@@ -162,7 +163,7 @@ UI.render = function () {
   const tab = UI.tab;
   const main = $('#main');
   if (window.L3) L3.stop(); UI.prevCtl = null;
-  main.innerHTML = tab === 'home' ? homeView() : tab === 'cast' ? castView() : tab === 'career' ? careerView() : tab === 'world' ? worldView() : lifeView();
+  main.innerHTML = tab === 'home' ? homeView() : tab === 'cast' ? castView() : tab === 'work' ? workView() : tab === 'career' ? careerView() : tab === 'world' ? worldView() : lifeView();
   $('#endbar').innerHTML = `<button class="btn" data-a="endWeek">End week ${ic('next')}</button>`;
   if (tab === 'life' && UI.sub.life === 'look') UI.mountPreview(s.look);
   flushAch();
@@ -174,7 +175,8 @@ function hud() {
 }
 function nav() {
   const s = S(); const offers = (s.offers || []).length; const inbox = s.inbox.filter(m => m.kind !== 'note' || !m.read).length;
-  const tabs = [['home', 'Home', 'home', inbox], ['cast', 'Casting', 'cast', offers], ['career', 'Career', 'career', 0], ['world', 'Hollywood', 'world', 0], ['life', 'Life', 'life', 0]];
+  const work = FC.needsEffort(s).length + FC.pressOpen(s).length + s.jobs.filter(j => j.stage === 'prep' && FC.busyRole(j) && (j.prepScore || 0) < 30).length;
+  const tabs = [['home', 'Home', 'home', inbox], ['cast', 'Casting', 'cast', offers], ['work', 'Work', 'work', work], ['career', 'Career', 'career', 0], ['world', 'Hollywood', 'world', 0], ['life', 'Life', 'life', 0]];
   $('#nav').innerHTML = tabs.map(t => `<button class="${UI.tab === t[0] ? 'on' : ''}" data-a="go" data-tab="${t[0]}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[t[2]]}</svg>${t[1]}${t[3] ? `<em class="badge">${t[3]}</em>` : ''}</button>`).join('');
 }
 const bar = (label, v, cls = '') => `<div class="bar ${cls} ${v < 25 ? 'low' : ''}"><span>${label}</span><i><span style="width:${Math.max(0, Math.min(100, v))}%"></span></i><em>${Math.round(v)}</em></div>`;
@@ -210,7 +212,7 @@ function jobsCard() {
     const idx = ['prep', 'shoot', 'post'].indexOf(j.stage);
     return `<div class="row"><div class="grow"><b>${esc(j.title)}</b><small>${esc(roleLabel(j))} · ${esc(j.studio)}${j.directedByMe ? ' · You direct' : ''}</small>
       <div class="stage-steps">${['Prep', 'Shoot', 'Post'].map((n, i) => `<span class="${i < idx ? 'done' : i === idx ? 'on' : ''}" title="${n}"></span>`).join('')}</div></div>
-      <span class="pill ${j.stage === 'shoot' ? 'gold' : ''}">${stageName(j)} · ${j.left} wk</span></div>`; }).join('')}</div>`;
+      <span class="pill ${j.stage === 'shoot' ? 'gold' : ''}">${stageName(j)} · ${j.left} wk</span></div>`; }).join('')}<button class="btn sm" data-a="go" data-tab="work" style="margin-top:6px">Open the Work tab</button></div>`;
 }
 function inboxCard() {
   const s = S(); if (!s.inbox.length) return '';
@@ -321,6 +323,47 @@ UI.renderNegotiation = function () {
 };
 function negRead() { const s = S(), n = UI.neg; const p = (s.offers || []).find(x => x.id === n.pid); const el = $('#ng-read'); if (el && p) el.textContent = FC.agentRead(s, p.deal, n.ask); }
 
+// ------------------------------------------------------------------ work: prep, shooting, press
+const avg = a => a && a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+function workView() {
+  const s = S(); const jobs = s.jobs;
+  if (!jobs.length) return `<h2>Work</h2><div class="card"><p class="empty">No projects right now. Book a part in Casting, then prep, shoot and promote it here.</p></div>`;
+  const need = FC.needsEffort(s);
+  return `<h2>Work</h2>${need.length ? `<div class="card alert"><b>Choose your effort on set this week</b><div class="small muted">${need.map(j => esc(j.title)).join(', ')}</div></div>` : ''}
+    ${jobs.map(workCard).join('')}`;
+}
+function workCard(j) {
+  const s = S(); const F = j.fid ? D.FRANCHISES.find(f => f.id === j.fid) : null; const real = FC.busyRole(j);
+  let body = '';
+  if (j.stage === 'prep') {
+    const acts = FC.prepActs(s, j); const prep = j.prepScore || 0;
+    body = `<p class="small muted">${j.left > (j.weeks.prep || 0) ? `Queued behind your other work. ` : ''}Shooting starts in ${j.left} week${j.left === 1 ? '' : 's'}. Prep now: it counts for about a fifth of your acting score.</p>
+      ${bar('Prep', prep)}
+      ${real ? `<div class="acts" style="margin-top:10px">${acts.map(a => { const reps = (j.prepLog || {})[a.id] || 0; return `<button class="act" data-a="doPrep" data-j="${j.id}" data-id="${a.id}" ${s.energy < a.cost || prep >= 100 || (a.price && s.money < a.price) ? 'disabled' : ''} title="${esc(a.d)}"><b>${a.id === 'chem' ? 'Rehearse with ' + esc((j.costars[0] || '').split(' ')[0]) : a.name}</b><small>−${a.cost}⚡${a.price ? ' · ' + M(a.price) : ''}${reps ? ' · done ' + reps + '×' : ''}</small></button>`; }).join('')}</div>` : '<p class="small muted">No prep needed for this one.</p>'}`;
+  } else if (j.stage === 'shoot') {
+    const wk = j.wk; const eff = j.effort || [];
+    body = real ? `<p class="small muted">${j.theater ? 'Performing' : 'Shooting'}: ${j.left} week${j.left === 1 ? '' : 's'} left. Your effort on set counts for about a third of your acting score.</p>
+      <div class="lbl">${j.theater ? 'Energy on stage this week' : 'Effort on set this week'}</div>
+      <div class="tone" style="margin-top:6px">${D.EFFORT.map(e => `<button class="${wk && wk.level === e[0] ? 'on' : ''}" data-a="effort" data-j="${j.id}" data-v="${e[0]}" ${(!wk || wk.level !== e[0]) && s.energy + (wk ? D.EFFORT.find(x => x[0] === wk.level)[2] : 0) < e[2] ? 'disabled' : ''}>${e[1]}<br><small class="mono">−${e[2]}⚡</small></button>`).join('')}</div>
+      <div class="opts" style="margin-top:10px">${D.SHOOT_EXTRAS.map(x => `<button class="${wk && wk.extras.includes(x.id) ? 'on' : ''}" data-a="extra" data-j="${j.id}" data-id="${x.id}" ${!wk || wk.extras.includes(x.id) || s.energy < x.cost ? 'disabled' : ''} title="${esc(x.d)}">${x.name} · −${x.cost}⚡</button>`).join('')}</div>
+      ${eff.length ? `<div class="lbl" style="margin-top:8px">Effort so far</div><div class="effbars">${eff.map(v => `<span style="height:${Math.max(8, v)}%" title="${v}"></span>`).join('')}</div>` : ''}
+      <p class="small" style="margin-top:8px">Your acting so far: <b class="gold mono">${(FC.calcPerf(j) / 10).toFixed(1)}</b><span class="muted"> / 10 · prep ${j.prepScore || 0} · effort ${Math.round(avg(eff)) || '–'}</span></p>`
+      : `<p class="small muted">One quick day of work.</p>`;
+  } else if (j.stage === 'post') body = `<p class="small muted">${j.tv ? 'Editing. Premieres' : 'In post-production. Releases'} in ${j.left} week${j.left === 1 ? '' : 's'}. Your acting score: <b class="gold mono">${(j.perf / 10).toFixed(1)}</b>.</p>`;
+  const press = j.press && j.press.length ? `<div class="lbl" style="margin-top:12px">Press · ${j.press.filter(p => p.done).length} of ${j.press.length} done · ${{ fr: 'franchise tour', big: 'studio push', indie: 'light indie press', tv: 'series launch', stage: 'opening press' }[j.pressTier] || ''}</div>
+    ${j.press.map(p => { const P = D.PRESS.find(x => x.id === p.type); const open = p.from <= s.week && s.week < p.due; return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px"><b>${P.name}</b>${p.done ? '<span class="pill good">Done</span>' : open ? `<span class="pill gold">Due in ${p.due - s.week} wk</span>` : `<span class="pill">Opens in ${p.from - s.week} wk</span>`}</div><small class="muted">${P.d} −${P.cost}⚡</small>
+      ${!p.done && open ? `<div class="btns" style="margin-top:6px">${P.live ? `<button class="btn sm" data-a="pressDo" data-j="${j.id}" data-id="${p.id}" ${s.energy < P.cost ? 'disabled' : ''}>Go on the show</button>` : D.PRESS_STYLE.map(st => `<button class="btn sm ${st[0] === 'charm' ? '' : 'dark'}" data-a="pressDo" data-j="${j.id}" data-id="${p.id}" data-v="${st[0]}" ${s.energy < P.cost ? 'disabled' : ''}>${st[1]}</button>`).join('')}</div>` : ''}</div>`; }).join('')}` : '';
+  return `<div class="card role">${F ? `<span class="stripe" style="background:${F.color}"></span>` : ''}<div class="eyebrow">${esc(j.studio)}${j.director ? ' · Dir. ' + esc(j.director.name) : ''}</div><div class="role-title">${esc(j.title)}</div>
+    <div class="role-meta"><span class="pill">${esc(roleLabel(j))}</span><span class="pill ${j.stage === 'shoot' ? 'gold' : ''}">${stageName(j)}</span></div>${body}${press}</div>`;
+}
+UI.review = function (id) {
+  const s = S(); const c = s.credits.find(x => x.id === id) || s.jobs.find(x => x.id === id); if (!c || !c.review) return; const r = c.review;
+  UI.modal(`<div class="marquee-brand">MARQUEE</div><div class="mq-head"><span class="mq-score big ${r.score >= 8 ? 'hi' : r.score >= 5.5 ? '' : 'lo'}">${r.score.toFixed(1)}</span><div style="min-width:0"><h2 style="margin:0">${esc(c.title)}</h2><div class="small muted">${esc(c.studio)}${c.director ? ' · Dir. ' + esc(c.director.name) : ''} · ${FC.year(s, c.released != null ? c.released : s.week)}</div>${r.bnm ? '<span class="pill gold">Best New Movie</span>' : ''}</div></div>
+    <p class="tiny muted">By ${esc(r.by)}</p>${r.text.map(t => `<p>${esc(t)}</p>`).join('')}
+    <h3>Cast</h3>${r.cast.map(m => `<div class="cast-row ${m.me ? 'me' : ''}"><div class="grow"><b>${esc(m.name)}</b><small>${esc(m.role)} · ${esc(m.note)}</small></div><span class="mq-score ${m.score >= 8 ? 'hi' : m.score >= 5.5 ? '' : 'lo'}">${m.score.toFixed(1)}</span></div>`).join('')}
+    ${r.bp ? '<p class="gold small">Best Performance pick</p>' : ''}<p class="tiny muted">Your prep ${r.prep}/100 · Effort on set ${r.effort}/100</p><button class="btn" data-a="closeModal">Close</button>`);
+};
+
 // ------------------------------------------------------------------ career
 function careerView() {
   const s = S(); const sub = UI.sub.career;
@@ -336,7 +379,7 @@ function careerView() {
     const cr = s.credits.slice().reverse();
     body = `<div class="card"><h2>Filmography</h2><p class="small muted">${s.credits.length} credits · ${M(s.lifetimeBO)} lifetime box office · ${M(s.lifetimeEarn)} career earnings</p>
       <div class="scroll-x"><table class="tbl"><thead><tr><th>Year</th><th>Title</th><th>Role</th><th class="n">Critics</th><th class="n">Gross</th></tr></thead><tbody>
-      ${cr.map(c => `<tr><td class="mono">${FC.year(s, c.released || c.signed)}</td><td><b>${esc(c.title)}</b>${c.season > 1 ? ' S' + c.season : ''}<br><span class="tiny muted">${esc(c.studio)}${c.verdict ? ' · ' + esc(c.verdict) : ''}${c.directedByMe ? ' · Directed' : ''}</span></td><td class="small">${esc(roleLabel(c))}</td><td class="n">${c.critics != null ? c.critics + '%' : '–'}</td><td class="n">${c.ww ? M(c.ww) : c.viewers ? FC.num(c.viewers) + ' views' : '–'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">No credits yet.</td></tr>'}
+      ${cr.map(c => `<tr><td class="mono">${FC.year(s, c.released || c.signed)}</td><td>${c.review ? `<button class="linkish" data-a="review" data-id="${c.id}">${esc(c.title)}</button>` : `<b>${esc(c.title)}</b>`}${c.season > 1 ? ' S' + c.season : ''}${c.review ? ` <span class="pill">You ${c.review.mine.toFixed(1)}</span>` : ''}<br><span class="tiny muted">${esc(c.studio)}${c.verdict ? ' · ' + esc(c.verdict) : ''}${c.directedByMe ? ' · Directed' : ''}</span></td><td class="small">${esc(roleLabel(c))}</td><td class="n">${c.critics != null ? c.critics + '%' : '–'}</td><td class="n">${c.ww ? M(c.ww) : c.viewers ? FC.num(c.viewers) + ' views' : '–'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">No credits yet.</td></tr>'}
       </tbody></table></div></div>`;
   }
   if (sub === 'chars') body = s.myChars.length ? s.myChars.map(m => { const F = D.FRANCHISES.find(f => f.id === m.fid); return `<div class="card role"><span class="stripe" style="background:${F.color}"></span><div class="eyebrow">${esc(F.name)}</div><div class="role-title">${esc(m.name)}</div>
@@ -403,7 +446,7 @@ UI.liveDone = function (r) {
 // ------------------------------------------------------------------ hollywood (world)
 function worldView() {
   const s = S(); const sub = UI.sub.world;
-  const tabs = [['box', 'Box office'], ['fr', 'Franchises'], ['news', 'News'], ['feed', 'Clapper']];
+  const tabs = [['box', 'Box office'], ['marquee', 'Marquee'], ['fr', 'Franchises'], ['news', 'News'], ['feed', 'Clapper']];
   let body = '';
   if (sub === 'box') body = `<div class="card"><h2>Weekend box office</h2><p class="small muted">Domestic, ${FC.dateLabel(s)}</p><div class="scroll-x"><table class="tbl"><thead><tr><th>#</th><th>Film</th><th class="n">Weekend</th><th class="n">Total</th><th class="n">Wks</th></tr></thead><tbody>
     ${(s.chart || []).map(r => `<tr class="${r.mine ? 'mine' : ''}"><td class="mono">${r.rank}</td><td><b>${esc(r.title)}</b><br><span class="tiny muted">${esc(r.studio)}${r.mine ? ' · You' : r.star ? ' · ' + esc(r.star) : ''}</span></td><td class="n">${M(r.wk)}</td><td class="n">${M(r.total)}</td><td class="n">${r.weeks}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">The chart updates when you end the week.</td></tr>'}</tbody></table></div>
@@ -417,6 +460,9 @@ function worldView() {
       ${F.legacy.length ? `<h3>Legacy mantles</h3><p class="small muted">${F.legacy.map(l => `${esc(l[0])} (${esc(l[1])})`).join(' · ')}</p>` : ''}
       <h3>Coming up</h3><p class="small muted">${F.titles.filter(t => !st.used.includes(t)).slice(0, 5).map(esc).join(' · ') || 'Nothing announced.'}</p></div>`;
   }
+  if (sub === 'marquee') { const revs = s.credits.filter(c => c.review).slice().reverse();
+    body = `<div class="card"><div class="marquee-brand">MARQUEE</div><p class="small muted">Reviews of everything you've been in, with a score for every cast member.</p>
+      ${revs.length ? revs.map(c => `<button class="row rev-row" data-a="review" data-id="${c.id}"><span class="mq-score ${c.review.score >= 8 ? 'hi' : c.review.score >= 5.5 ? '' : 'lo'}">${c.review.score.toFixed(1)}</span><div class="grow"><b>${esc(c.title)}</b><small>${esc(c.studio)} · ${FC.year(s, c.released)}${c.review.bnm ? ' · <span class="gold">Best New Movie</span>' : ''}</small><small>You: ${c.review.mine.toFixed(1)}${c.review.bp ? ' · <span class="gold">Best Performance</span>' : ''}</small></div><span class="muted">›</span></button>`).join('') : '<p class="empty">Reviews show up here when your projects come out.</p>'}</div>`; }
   if (sub === 'news') body = `<div class="card"><h2>Trades</h2><div class="news">${s.news.slice(0, 60).map(n => `<div class="${n.tag === 'you' ? 'you' : ''}"><small>${FC.dateLabel(s, n.w)} · ${esc(pickOutlet(n))}</small>${esc(n.t)}</div>`).join('')}</div></div>`;
   if (sub === 'feed') body = `<div class="card"><h2>Clapper</h2><button class="btn sm" data-a="act" data-id="post" ${s.energy < 8 ? 'disabled' : ''}>Post (−8⚡)</button><div style="margin-top:8px">${s.feed.length ? s.feed.slice(0, 40).map(f => `<div class="post"><b>@${esc(f.who.replace(/\s+/g, '').toLowerCase())}</b> <small>${FC.dateLabel(s, f.w).split(' · ')[0]}</small><div>${esc(f.t)}</div><small>♥ ${FC.num(f.likes)}</small></div>`).join('') : '<p class="empty">Nothing yet. Post something.</p>'}</div></div>`;
   return `<div class="tabs">${tabs.map(t => `<button class="${sub === t[0] ? 'on' : ''}" data-a="sub" data-g="world" data-s="${t[0]}">${t[1]}</button>`).join('')}</div>${body}`;
@@ -454,8 +500,11 @@ function lifeView() {
 }
 
 // ------------------------------------------------------------------ end of week & pending events
-UI.endWeek = function () {
-  const s = S(); if (UI.busy) return; UI.busy = true;
+UI.endWeek = function (force) {
+  const s = S(); if (UI.busy) return;
+  const need = FC.needsEffort(s);
+  if (need.length && !force) { UI.modal(`<div class="eyebrow">Before you end the week</div><h2>How hard are you working on set?</h2>${need.map(j => `<div class="row" style="display:block"><b>${esc(j.title)}</b><div class="tone" style="margin-top:6px">${D.EFFORT.map(e => `<button data-a="effortEnd" data-j="${j.id}" data-v="${e[0]}" ${s.energy < e[2] ? 'disabled' : ''}>${e[1]}<br><small class="mono">−${e[2]}⚡</small></button>`).join('')}</div></div>`).join('')}<p class="small muted">If you don't choose, you coast.</p><div class="btns"><button class="btn ghost" data-a="endWeekForce">Just end the week</button><button class="btn dark" data-a="goWork">Go to the Work tab</button></div>`, { noClose: true }); return; }
+  UI.busy = true;
   const r = FC.endWeek(s); save();
   UI.render(); UI.busy = false;
   const lines = r.lines.filter(l => !l.startsWith('🏆'));
@@ -474,10 +523,10 @@ UI.nextPending = function () {
   if (p.type === 'event') { const ev = D.RANDOM_EVENTS.find(e => e.id === p.id);
     UI.modal(`<div class="eyebrow">This week</div><h2>${esc(FC.fill(ev.t, p.ctx))}</h2><div class="choices">${ev.c.map((c, i) => `<button class="choice" data-a="resolve" data-i="${i}">${esc(c[0])}</button>`).join('')}</div>`, { noClose: true }); UI.cur = p; return; }
   if (p.type === 'release') { const j = job(p.id); if (!j) return UI.nextPending();
-    if (j.tv) { UI.modal(`<div class="eyebrow">Premiere</div><h2>${esc(j.title)}${j.season > 1 ? ' · Season ' + j.season : ''}</h2><div class="bigstat"><div><b>${j.critics}%</b><span>Critics</span></div><div><b>${FC.num(j.viewers)}</b><span>Viewers</span></div><div><b>${j.rating}</b><span>Rating</span></div></div>${j.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}<button class="btn" data-a="closeModal">Continue</button>`); return; }
+    if (j.tv) { UI.modal(`<div class="eyebrow">Premiere</div><h2>${esc(j.title)}${j.season > 1 ? ' · Season ' + j.season : ''}</h2><div class="bigstat"><div><b>${j.critics}%</b><span>Critics</span></div><div><b>${FC.num(j.viewers)}</b><span>Viewers</span></div><div><b>${j.rating}</b><span>Rating</span></div></div>${j.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}${j.review ? `<button class="btn dark" data-a="review" data-id="${j.id}">Read the Marquee review · ${j.review.score.toFixed(1)}</button> ` : ''}<button class="btn" data-a="closeModal">Continue</button>`); return; }
     UI.modal(`<div class="eyebrow">Opening weekend</div><h2>${esc(j.title)}</h2><div class="scene3d" id="rel3d"></div>
       <div class="bigstat"><div><b>${M(s.theaters.find(f => f.id === j.id) ? s.theaters.find(f => f.id === j.id).open : j.dom)}</b><span>Opening</span></div><div><b>${j.critics}%</b><span>Critics</span></div><div><b>${j.grade}</b><span>CinemaScore</span></div></div>
-      <p class="small muted">Audience score ${j.aud}%. ${j.festival ? 'Premiered at ' + esc(j.festival) + '.' : ''}</p>${j.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}<button class="btn" data-a="closeModal">Continue</button>`);
+      <p class="small muted">Audience score ${j.aud}%. ${j.festival ? 'Premiered at ' + esc(j.festival) + '.' : ''}</p>${j.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}<div class="btns">${j.review ? `<button class="btn dark" data-a="review" data-id="${j.id}">Read the Marquee review · ${j.review.score.toFixed(1)}</button>` : ''}<button class="btn" data-a="closeModal">Continue</button></div>`);
     const el = $('#rel3d'); if (el && window.L3 && L3.available()) L3.scene(el, Object.assign({}, s.look, s.look.top === 'tee' || s.look.top === 'hoodie' ? { top: S().me.cat === 's' ? 'gown' : 'tux', topColor: '#15151b' } : {}), { mode: 'carpet', title: j.title }); else if (el) el.remove(); return; }
   if (p.type === 'closed') { const j = job(p.id); if (!j) return UI.nextPending(); UI.modal(`<div class="eyebrow">Final box office</div><h2>${esc(j.title)}</h2><div class="bigstat"><div><b>${M(j.dom)}</b><span>Domestic</span></div><div><b>${M(j.ww)}</b><span>Worldwide</span></div><div><b class="${/Flop/.test(j.verdict) ? 'bad' : 'gold'}" style="font-size:1.05rem">${esc(j.verdict)}</b><span>Verdict</span></div></div><p class="small muted">Budget ${M(j.budget || 0)}.${j.terms && j.terms.points ? ` Your ${j.terms.points} backend points paid out.` : ''}</p><button class="btn" data-a="closeModal">Continue</button>`); return; }
   if (p.type === 'noms') { const show = D.AWARDS.find(a => a.id === p.show); const n = s.awardNoms[p.show]; if (!n) return UI.nextPending();
@@ -573,6 +622,14 @@ const A = {
   negTake: () => { const s = S(), n = UI.neg; const p = (s.offers || []).find(x => x.id === n.pid); const res = FC.sign(s, n.pid, p.deal.base); UI.closeModal(true); UI.neg = null; UI.toast(res.ok ? `Signed. ${res.t}` : res.t); flushAch(); save(); UI.render(); },
   decline: d => { const t = FC.declineOffer(S(), d.id); UI.closeModal(true); UI.neg = null; UI.toast(t); save(); UI.render(); },
   endWeek: () => UI.endWeek(),
+  goWork: () => { UI.closeModal(true); UI.tab = 'work'; UI.render(); },
+  endWeekForce: () => { UI.closeModal(true); UI.endWeek(true); },
+  effortEnd: d => { const r = FC.setEffort(S(), d.j, d.v); if (!r.ok) return UI.toast(r.t); save(); if (FC.needsEffort(S()).length) { UI.endWeek(); } else { UI.closeModal(true); UI.endWeek(true); } },
+  doPrep: d => after(FC.doPrep(S(), d.j, d.id)),
+  effort: d => after(FC.setEffort(S(), d.j, d.v)),
+  extra: d => after(FC.shootExtra(S(), d.j, d.id)),
+  pressDo: d => { const r = FC.doPress(S(), d.j, d.id, d.v); if (r.live) { const l = FC.livePress(S(), d.j, d.id); if (!l.ok) return UI.toast(l.t); save(); UI.render(); UI.renderLive(); return; } after(r); },
+  review: d => UI.review(d.id),
   resolve: d => { const s = S(); const out = FC.resolve(s, UI.cur, +d.i); UI.cur = null; save();
     if (out && typeof out === 'object') UI.modal(`<div class="eyebrow">Opening night reviews</div><h2>${esc(out.text)}</h2><div class="bigstat"><div><b>${out.critics}%</b><span>Critics</span></div></div>${out.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}<button class="btn" data-a="closeModal">Continue</button>`);
     else UI.modal(`<p>${esc(out || 'Noted.')}</p><button class="btn" data-a="closeModal">Continue</button>`);

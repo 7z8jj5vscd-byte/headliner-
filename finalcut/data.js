@@ -439,6 +439,7 @@ D.TV_FINALE = [['cliff', 'Push for a cliffhanger ending'], ['close', 'Push for a
 
 // newest first. Bump FC_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
+  { build: 6, date: 'Nov 13, 2026', notes: ['New Work tab: prep for each role, choose your effort every shooting week, and do your press.', 'Your acting score now comes from your audition, your prep and your effort on set.', 'Every film, series and stage show has a press schedule from the director. Franchise press tours are big, indie press is light.', 'Marquee, the critics app: a score out of 10 for every project and every cast member, plus a full review.'] },
   { build: 5, date: 'Nov 13, 2026', notes: ['The game now tells you when an update is live, with a button to load it.', 'Version number and this list of changes on the title screen.'] },
   { build: 4, date: 'Nov 13, 2026', notes: ['Eight new down-to-earth starting stories, like Aspiring actor, College theater major and Career changer.', 'The story picker is split into Down to earth and A head start.'] },
   { build: 3, date: 'Nov 11, 2026', notes: ['Host Saturday Night Live: monologue, three sketches and reviews.', 'Talk show interviews with questions and a game segment.', 'Broadway opening nights, stage events and closing nights.', 'TV seasons air episode by episode, with a say in the finale.'] },
@@ -446,12 +447,53 @@ D.CHANGELOG = [
   { build: 1, date: 'Nov 11, 2026', notes: ['Final Cut launches.'] },
 ];
 
+// ------------------------------------------------------------------ prep, shooting effort and press
+// prep sessions: skill that makes them count, energy cost, base gain, which genres they suit ('all' = any)
+D.PREP_ACTS = [
+  { id: 'read', name: 'Script breakdown', skill: 'drama', cost: 12, gain: 10, for: 'all', d: 'Go through every scene and every beat.' },
+  { id: 'research', name: 'Character research', skill: 'drama', cost: 16, gain: 13, for: 'all', d: 'Interviews, books, a backstory journal.' },
+  { id: 'coach', name: 'Private acting coach', skill: 'drama', cost: 18, gain: 15, price: 1500, for: 'all', d: 'Work the hardest scenes one on one.' },
+  { id: 'chem', name: 'Rehearse with your co-star', skill: 'charisma', cost: 15, gain: 12, for: 'all', costar: true, d: 'Build the relationship before cameras roll.' },
+  { id: 'dialect', name: 'Dialect work', skill: 'accents', cost: 14, gain: 12, for: 'period biopic fantasy scifi drama thriller', d: 'Get the accent right.' },
+  { id: 'stunts', name: 'Fight rehearsal', skill: 'action', cost: 22, gain: 14, for: 'action superhero scifi fantasy thriller', d: 'Learn the choreography until it is muscle memory.' },
+  { id: 'body', name: 'Body transformation', skill: 'fitness', cost: 25, gain: 14, for: 'superhero action', d: 'Trainer, diet, two sessions a day.' },
+  { id: 'vocal', name: 'Vocal rehearsal', skill: 'voice', cost: 15, gain: 13, for: 'musical animation', d: 'Songs and voice work.' },
+  { id: 'jokes', name: 'Comedy table work', skill: 'comedy', cost: 14, gain: 13, for: 'comedy animation romance', d: 'Find the timing on every joke.' },
+];
+// effort on set each shooting week: [id, label, energy, effort value]
+D.EFFORT = [['coast', 'Coast', 5, 25, 'Hit your marks and go home.'], ['steady', 'Steady', 18, 60, 'Professional and prepared.'], ['all', 'Give everything', 32, 90, 'Every take like it is the last one.']];
+D.SHOOT_EXTRAS = [
+  { id: 'takes', name: 'Ask for extra takes', cost: 10, effort: 8, d: 'One more. One more.' },
+  { id: 'lines', name: 'Run lines at night', cost: 8, effort: 6, d: 'Know tomorrow cold.' },
+  { id: 'help', name: 'Help a co-star with a scene', cost: 8, effort: 3, costar: 8, d: 'Good scenes take two people.' },
+];
+// press: size tiers that get it ('fr' franchise, 'big' studio wide release, 'indie', 'tv', 'stage'), energy cost, promo value
+D.PRESS = [
+  { id: 'tour', name: 'Global press tour', d: 'London, Seoul, Mexico City and Sydney in nine days.', cost: 40, promo: 0.12, tiers: 'fr' },
+  { id: 'panel', name: 'Comic-Con fan panel', d: 'Hall H, exclusive footage and 6,500 screaming fans.', cost: 22, promo: 0.09, tiers: 'fr' },
+  { id: 'fanevent', name: 'Fan event and screening', d: 'Sign autographs for three hours.', cost: 20, promo: 0.06, tiers: 'fr' },
+  { id: 'junket', name: 'Press junket', d: 'Two days of four-minute interviews in a hotel suite.', cost: 25, promo: 0.07, tiers: 'fr big' },
+  { id: 'premiere', name: 'Red-carpet premiere', d: 'Photos, interviews on the carpet, the after-party.', cost: 15, promo: 0.06, tiers: 'fr big indie' },
+  { id: 'talk', name: 'Late-night talk show', d: 'Sit on the couch and sell it.', cost: 15, promo: 0.06, tiers: 'fr big tv', live: true },
+  { id: 'mag', name: 'Magazine cover story', d: 'A photo shoot and a long profile.', cost: 12, promo: 0.05, tiers: 'fr big tv' },
+  { id: 'social', name: 'Social media takeover', d: 'Post behind-the-scenes clips all day.', cost: 8, promo: 0.04, tiers: 'fr big indie tv stage' },
+  { id: 'podcast', name: 'Podcast interview', d: 'An hour on a popular film podcast.', cost: 10, promo: 0.04, tiers: 'indie tv stage' },
+  { id: 'qa', name: 'Screening Q&A', d: 'Answer questions after a screening.', cost: 12, promo: 0.05, tiers: 'indie' },
+  { id: 'tvpanel', name: 'TV critics panel', d: 'Present the show to the critics who will review it.', cost: 12, promo: 0.05, tiers: 'tv' },
+  { id: 'gma', name: 'Morning show performance', d: 'Perform a number live on morning TV.', cost: 14, promo: 0.06, tiers: 'stage' },
+];
+D.PRESS_STYLE = [['charm', 'Be charming'], ['serious', 'Talk about the craft'], ['tease', 'Tease secrets']];
+D.CRITIC_APP = 'Marquee';
+D.REVIEWERS = ['Dana Okafor', 'Felix Haverford', 'Maya Lindqvist', 'Theo Castellanos', 'Priya Raman', 'Jonah Whitfield', 'Sade Adeyemi', 'Lucas Brandt'];
+
 D.HELP = [
   ['Weeks and energy', 'Each turn is one week. Classes, auditions, parties and posts cost energy. Shooting a project uses most of your week. Ending weeks with no energy hurts your health, and if health hits zero you burn out.'],
   ['Auditions', 'Roles appear on the Casting board. Each one lists what the director wants. Your skills decide most of the score, and you choose how to play each beat of the scene. Bigger roles add a chemistry read and a screen test. You compete with real actors for the part.'],
   ['Franchises', 'Each franchise has a slate of films, a cast and a fan mood. Established characters belong to their actors until they leave, get recast, or the story needs a variant, a younger version or a successor. Original characters the game creates are yours alone.'],
   ['Contracts', 'When you are offered a part, negotiate upfront pay, backend points, number of films, billing and perks. Your Star Power and your agent decide how far you can push. Push too far and the studio walks.'],
-  ['Making movies', 'Projects go through prep, shooting and post-production. Each shooting week can bring an on-set decision. Your performance score comes from your skills, prep and choices.'],
+  ['Making movies', 'Projects go through prep, shooting and post-production. Use the Work tab: during prep, spend energy on prep sessions. Each shooting week, choose how hard to work on set. Your acting score comes from your audition, your prep and your effort while shooting, and it shapes the reviews.'],
+  ['Press', 'Every film, series and stage show has a press schedule from the director. It opens a few weeks before release. Franchise films need a lot of press, indies need a little. Press raises the opening. Skipping it hurts your reputation.'],
+  ['Marquee', 'Marquee is the critics app. Each project gets a score out of 10, a written review and a score for every cast member, including you.'],
   ['Box office and reviews', 'Films open on a release week and earn money every weekend. Critics and audiences score them. Hits raise your fee and Star Power. Flops lower them.'],
   ['Awards', 'The Golden Globes, Critics Choice, BAFTA, SAG, Oscars, Emmys and Tonys all happen on the calendar. Prestige roles and strong performances get nominated. Spend on a For Your Consideration campaign to improve your chances.'],
   ['Star Power', 'Your leverage. It comes from fame, recent box office and awards. It decides your pay and how hard you can negotiate.'],
