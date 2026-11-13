@@ -279,7 +279,8 @@ D.AWARDS = [
   { id: 'sag', name: 'Actor Awards (SAG)', week: 8, noms: 2, kind: 'film', short: 'SAG', weight: 0.9 },
   { id: 'bafta', name: 'BAFTA Film Awards', week: 7, noms: 3, kind: 'film', short: 'BAFTA', weight: 0.85 },
   { id: 'oscars', name: 'Academy Awards', week: 10, noms: 4, kind: 'film', short: 'Oscar', weight: 1 },
-  { id: 'tonys', name: 'Tony Awards', week: 23, noms: 18, kind: 'theater', short: 'Tony', weight: 0.8 },
+  { id: 'tonys', name: 'Tony Awards', week: 23, noms: 18, kind: 'theater', region: 'broadway', short: 'Tony', weight: 0.8 },
+  { id: 'olivier', name: 'Olivier Awards', week: 15, noms: 10, kind: 'theater', region: 'westend', short: 'Olivier', weight: 0.75 },
   { id: 'emmys', name: 'Primetime Emmys', week: 37, noms: 29, kind: 'tv', short: 'Emmy', weight: 0.9 },
   { id: 'razzies', name: 'Golden Raspberry Awards', week: 9, noms: 4, kind: 'razzie', short: 'Razzie', weight: 0 },
 ];
@@ -374,7 +375,7 @@ D.ACHIEVEMENTS = [
   ['festival', 'Festival circuit', 'Premiere a film at a festival.'], ['ovation', 'Standing ovation', 'Get a 10-minute standing ovation at Cannes or Venice.'],
   ['nom', 'Nominated', 'Get nominated for a major award.'], ['globe', 'Golden Globe winner', 'Win a Golden Globe.'], ['bafta', 'BAFTA winner', 'Win a BAFTA.'],
   ['sag', 'Actor Award winner', 'Win a SAG Actor Award.'], ['oscar_nom', 'Oscar nominee', 'Get an Oscar nomination.'], ['oscar', 'Academy Award winner', 'Win an Oscar.'],
-  ['emmy', 'Emmy winner', 'Win an Emmy.'], ['tony', 'Tony winner', 'Win a Tony.'], ['egot', 'EGOT watch', 'Win an Emmy, a Tony and an Oscar.'], ['razzie', 'Razzie', 'Win a Golden Raspberry.'],
+  ['emmy', 'Emmy winner', 'Win an Emmy.'], ['tony', 'Tony winner', 'Win a Tony.'], ['olivier', 'Olivier winner', 'Win an Olivier Award.'], ['broadway_lead', 'Above the title', 'Lead a Broadway or West End show.'], ['westend', 'Mind the gap', 'Perform in the West End.'], ['egot', 'EGOT watch', 'Win an Emmy, a Tony and an Oscar.'], ['razzie', 'Razzie', 'Win a Golden Raspberry.'],
   ['talk', 'Couch time', 'Appear on a talk show.'], ['snl', 'Live from New York', 'Host Saturday Night Live.'], ['cover', 'Cover star', 'Land a magazine cover.'],
   ['metgala', 'The first Monday in May', 'Attend the Met Gala.'], ['comiccon', 'Hall H', 'Appear on a Comic-Con panel.'], ['brand', 'Ambassador', 'Sign a brand deal.'],
   ['agent_caa', 'Top agency', 'Sign with CAA.'], ['million', 'Millionaire', 'Have $1M in the bank.'], ['tenmil', 'Eight figures', 'Get paid $10M+ upfront for one film.'],
@@ -426,6 +427,7 @@ D.STAGE_EVENTS = [
   { t: 'A famous director is in the audience tonight.', c: [['Play it exactly the same', { perf: 1 }], ['Go bigger', { perf: 2, contacts: 1 }], ['Meet them at the stage door', { contacts: 1, energy: -6 }]] },
   { t: 'The stage door crowd is three blocks long.', c: [['Sign everything', { fame: 2, energy: -8, rep: 2 }], ['Sign for twenty minutes', { fame: 1 }], ['Slip out the back', { rep: -1 }]] },
   { t: 'The set piece jams and the curtain stays half up.', c: [['Talk to the audience until it is fixed', { fame: 2, req: 'charisma' }], ['Stay in character', { perf: 1 }]] },
+  { t: 'The lead is out sick tonight. You are going on in their place.', understudy: true, c: [['Go on and own it', { perf: 4, fame: 3, energy: -10 }], ['Play it exactly as rehearsed', { perf: 2, fame: 1 }]] },
   { t: 'Tonight the whole house rose to its feet at curtain call.', c: [['Take an extra bow', { fame: 1, happy: 3 }], ['Bring the crew out on stage', { rep: 3 }]] },
 ];
 
@@ -439,6 +441,7 @@ D.TV_FINALE = [['cliff', 'Push for a cliffhanger ending'], ['close', 'Push for a
 
 // newest first. Bump FC_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
+  { build: 7, date: 'Nov 13, 2026', notes: ['New Theatre tab: audition for Broadway and West End musicals and plays, from ensemble and understudy parts to leads in Wicked, Hamilton, Sweeney Todd, Hamlet and new musicals.', 'Stage auditions have a song or monologue, the scenes, then a dance call or a director callback.', 'Understudies can get called on when the lead is out. Shows that don\'t sell can close early.', 'The Tony Awards now have musical and play categories, and the Olivier Awards cover the West End.'] },
   { build: 6, date: 'Nov 13, 2026', notes: ['New Work tab: prep for each role, choose your effort every shooting week, and do your press.', 'Your acting score now comes from your audition, your prep and your effort on set.', 'Every film, series and stage show has a press schedule from the director. Franchise press tours are big, indie press is light.', 'Marquee, the critics app: a score out of 10 for every project and every cast member, plus a full review.'] },
   { build: 5, date: 'Nov 13, 2026', notes: ['The game now tells you when an update is live, with a button to load it.', 'Version number and this list of changes on the title screen.'] },
   { build: 4, date: 'Nov 13, 2026', notes: ['Eight new down-to-earth starting stories, like Aspiring actor, College theater major and Career changer.', 'The story picker is split into Down to earth and A head start.'] },
@@ -458,6 +461,7 @@ D.PREP_ACTS = [
   { id: 'stunts', name: 'Fight rehearsal', skill: 'action', cost: 22, gain: 14, for: 'action superhero scifi fantasy thriller', d: 'Learn the choreography until it is muscle memory.' },
   { id: 'body', name: 'Body transformation', skill: 'fitness', cost: 25, gain: 14, for: 'superhero action', d: 'Trainer, diet, two sessions a day.' },
   { id: 'vocal', name: 'Vocal rehearsal', skill: 'voice', cost: 15, gain: 13, for: 'musical animation', d: 'Songs and voice work.' },
+  { id: 'dance', name: 'Dance rehearsal', skill: 'fitness', cost: 20, gain: 13, for: 'musical', d: 'Learn the choreography until you can do it in your sleep.' },
   { id: 'jokes', name: 'Comedy table work', skill: 'comedy', cost: 14, gain: 13, for: 'comedy animation romance', d: 'Find the timing on every joke.' },
 ];
 // effort on set each shooting week: [id, label, energy, effort value]
@@ -485,6 +489,56 @@ D.PRESS = [
 D.PRESS_STYLE = [['charm', 'Be charming'], ['serious', 'Talk about the craft'], ['tease', 'Tease secrets']];
 D.CRITIC_APP = 'Marquee';
 D.REVIEWERS = ['Dana Okafor', 'Felix Haverford', 'Maya Lindqvist', 'Theo Castellanos', 'Priya Raman', 'Jonah Whitfield', 'Sade Adeyemi', 'Lucas Brandt'];
+
+// ------------------------------------------------------------------ live theatre
+// [title, 'musical'|'play', production type, roles [name, size]]
+// production types: long = long-running (replacement casting), revival = limited star revival, classic = limited play run
+D.STAGE_SHOWS = [
+  ['Wicked', 'musical', 'long', [['Elphaba', 'lead'], ['Glinda', 'lead'], ['Fiyero', 'supporting'], ['Madame Morrible', 'supporting']]],
+  ['Hamilton', 'musical', 'long', [['Alexander Hamilton', 'lead'], ['Aaron Burr', 'lead'], ['Eliza Hamilton', 'lead'], ['Angelica Schuyler', 'supporting'], ['King George III', 'supporting']]],
+  ['Les Misérables', 'musical', 'long', [['Jean Valjean', 'lead'], ['Javert', 'lead'], ['Fantine', 'supporting'], ['Éponine', 'supporting'], ['Enjolras', 'supporting']]],
+  ['The Phantom of the Opera', 'musical', 'long', [['The Phantom', 'lead'], ['Christine Daaé', 'lead'], ['Raoul', 'supporting']]],
+  ['Hadestown', 'musical', 'long', [['Orpheus', 'lead'], ['Eurydice', 'lead'], ['Hermes', 'supporting'], ['Persephone', 'supporting']]],
+  ['Six', 'musical', 'long', [['Anne Boleyn', 'lead'], ['Catherine Parr', 'lead'], ['Jane Seymour', 'supporting']]],
+  ['Moulin Rouge! The Musical', 'musical', 'long', [['Satine', 'lead'], ['Christian', 'lead'], ['Harold Zidler', 'supporting']]],
+  ['Chicago', 'musical', 'long', [['Roxie Hart', 'lead'], ['Velma Kelly', 'lead'], ['Billy Flynn', 'supporting']]],
+  ['The Book of Mormon', 'musical', 'long', [['Elder Price', 'lead'], ['Elder Cunningham', 'lead'], ['Nabulungi', 'supporting']]],
+  ['Mamma Mia!', 'musical', 'long', [['Donna Sheridan', 'lead'], ['Sophie Sheridan', 'lead'], ['Sky', 'supporting']]],
+  ['The Lion King', 'musical', 'long', [['Simba', 'lead'], ['Nala', 'supporting'], ['Scar', 'supporting']]],
+  ['Sweeney Todd', 'musical', 'revival', [['Sweeney Todd', 'lead'], ['Mrs. Lovett', 'lead'], ['Johanna', 'supporting'], ['Anthony', 'supporting']]],
+  ['Cabaret', 'musical', 'revival', [['Sally Bowles', 'lead'], ['The Emcee', 'lead'], ['Cliff Bradshaw', 'supporting']]],
+  ['Sunset Boulevard', 'musical', 'revival', [['Norma Desmond', 'lead'], ['Joe Gillis', 'lead'], ['Betty Schaefer', 'supporting']]],
+  ['Into the Woods', 'musical', 'revival', [['The Witch', 'lead'], ['The Baker', 'lead'], ["The Baker's Wife", 'supporting'], ['Cinderella', 'supporting']]],
+  ['Gypsy', 'musical', 'revival', [['Rose', 'lead'], ['Louise', 'supporting']]],
+  ['Company', 'musical', 'revival', [['Bobbie', 'lead'], ['Joanne', 'supporting']]],
+  ['Merrily We Roll Along', 'musical', 'revival', [['Franklin Shepard', 'lead'], ['Charley Kringas', 'lead'], ['Mary Flynn', 'lead']]],
+  ['Hamlet', 'play', 'classic', [['Hamlet', 'lead'], ['Ophelia', 'supporting'], ['Gertrude', 'supporting'], ['Horatio', 'supporting']]],
+  ['Macbeth', 'play', 'classic', [['Macbeth', 'lead'], ['Lady Macbeth', 'lead'], ['Banquo', 'supporting']]],
+  ['Romeo and Juliet', 'play', 'classic', [['Romeo', 'lead'], ['Juliet', 'lead'], ['Mercutio', 'supporting'], ['The Nurse', 'supporting']]],
+  ['A Streetcar Named Desire', 'play', 'classic', [['Blanche DuBois', 'lead'], ['Stanley Kowalski', 'lead'], ['Stella Kowalski', 'supporting']]],
+  ['Death of a Salesman', 'play', 'classic', [['Willy Loman', 'lead'], ['Biff Loman', 'supporting'], ['Linda Loman', 'supporting']]],
+  ["Who's Afraid of Virginia Woolf?", 'play', 'classic', [['Martha', 'lead'], ['George', 'lead'], ['Honey', 'supporting'], ['Nick', 'supporting']]],
+  ['Angels in America', 'play', 'classic', [['Prior Walter', 'lead'], ['Roy Cohn', 'lead'], ['Harper Pitt', 'supporting']]],
+  ['The Crucible', 'play', 'classic', [['John Proctor', 'lead'], ['Abigail Williams', 'lead'], ['Elizabeth Proctor', 'supporting']]],
+  ['Hedda Gabler', 'play', 'classic', [['Hedda Gabler', 'lead'], ['Judge Brack', 'supporting']]],
+  ['Glengarry Glen Ross', 'play', 'classic', [['Ricky Roma', 'lead'], ['Shelley Levene', 'lead'], ['Dave Moss', 'supporting']]],
+  ['Waiting for Godot', 'play', 'classic', [['Vladimir', 'lead'], ['Estragon', 'lead'], ['Lucky', 'supporting']]],
+  ['The Importance of Being Earnest', 'play', 'classic', [['Jack Worthing', 'lead'], ['Lady Bracknell', 'lead'], ['Gwendolen', 'supporting']]],
+  ['Long Day\'s Journey into Night', 'play', 'classic', [['Mary Tyrone', 'lead'], ['James Tyrone', 'lead'], ['Edmund Tyrone', 'supporting']]],
+];
+D.NEW_MUSICALS = ['Laurel Canyon', 'The Lighthouse Keeper', 'Gilded', 'Northern Lights', 'Paper Planes', 'The Last Dance Hall', 'Velvet Underground Railroad', 'Small Town Saints', 'Kingfisher', 'Rust Belt', 'Midnight at the Majestic', 'The Understudy'];
+D.NEW_PLAYS = ['The Inheritance Tax', 'Salt', 'A Quiet Kind of War', 'Second Act', 'The Glass Hour', 'Fathers and Sons', 'Low Ceiling', 'The Interview'];
+D.VENUES = {
+  broadway: ['Gershwin Theatre', 'Richard Rodgers Theatre', 'Majestic Theatre', 'Walter Kerr Theatre', 'Imperial Theatre', 'Shubert Theatre', 'St. James Theatre', 'Booth Theatre', 'Hudson Theatre', 'Lyceum Theatre', 'Ethel Barrymore Theatre', 'Al Hirschfeld Theatre'],
+  westend: ['Apollo Victoria Theatre', 'Victoria Palace Theatre', 'Sondheim Theatre', 'His Majesty\'s Theatre', 'Lyric Theatre', 'Theatre Royal Drury Lane', 'Harold Pinter Theatre', 'Wyndham\'s Theatre', 'Gielgud Theatre', 'Noël Coward Theatre', 'National Theatre (Olivier)', 'Old Vic'],
+};
+D.STAGE_FEMALE = ['Elphaba', 'Glinda', 'Madame Morrible', 'Eliza Hamilton', 'Angelica Schuyler', 'Fantine', 'Éponine', 'Christine Daaé', 'Eurydice', 'Persephone', 'Anne Boleyn', 'Catherine Parr', 'Jane Seymour', 'Satine', 'Roxie Hart', 'Velma Kelly', 'Nabulungi', 'Donna Sheridan', 'Sophie Sheridan', 'Nala', 'Mrs. Lovett', 'Johanna', 'Sally Bowles', 'Norma Desmond', 'Betty Schaefer', 'The Witch', "The Baker's Wife", 'Cinderella', 'Rose', 'Louise', 'Bobbie', 'Joanne', 'Mary Flynn', 'Ophelia', 'Gertrude', 'Lady Macbeth', 'Juliet', 'The Nurse', 'Blanche DuBois', 'Stella Kowalski', 'Linda Loman', 'Martha', 'Honey', 'Harper Pitt', 'Abigail Williams', 'Elizabeth Proctor', 'Hedda Gabler', 'Lady Bracknell', 'Gwendolen', 'Mary Tyrone'];
+D.STAGE_ANY = ['the lead', "the lead's best friend", 'the villain', 'The Emcee'];
+D.STAGE_SMALL = ['Ensemble', 'Swing', 'Understudy'];
+D.SONG_TYPES = [['ballad', 'A soaring ballad'], ['uptempo', 'An up-tempo belt'], ['character', 'A funny character song']];
+D.MONO_TYPES = [['classical', 'A classical monologue'], ['contemporary', 'A contemporary monologue'], ['comic', 'A comic monologue']];
+D.DANCE_CALL = [['nail', 'Nail every count', 'fitness'], ['sell', 'Sell it, even if a step goes', 'charisma'], ['mark', 'Mark it and stay safe', null]];
+D.PLAY_CALLBACK = [['note', 'Take the director\'s note fully', 'drama'], ['defend', 'Defend your choice', 'charisma'], ['wild', 'Try something wild', 'comedy']];
 
 D.HELP = [
   ['Weeks and energy', 'Each turn is one week. Classes, auditions, parties and posts cost energy. Shooting a project uses most of your week. Ending weeks with no energy hurts your health, and if health hits zero you burn out.'],

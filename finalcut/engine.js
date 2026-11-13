@@ -50,6 +50,7 @@ FC.newGame = function (o) {
   initFranchises(S);
   seedTheaters(S);
   for (let i = 0; i < 6; i++) S.board.push(genProject(S));
+  S.stageBoard = []; refreshStage(S);
   addNews(S, `${S.me.name} arrives in Los Angeles hoping for a break.`, 'you');
   timeline(S, `Moved to Los Angeles as a ${st.name.toLowerCase()}.`);
   S.inbox.push({ id: uid(), kind: 'note', from: 'Final Cut', t: 'Welcome to Hollywood', d: 'The Casting board lists roles you can audition for. Spend your week on classes and auditions, then press End week. Land small parts, build your name, and work your way up to franchise leads.' });
@@ -132,7 +133,6 @@ function genProject(S, force) {
   w.push(['guest', fame < 40 ? 3 : 1]); w.push(['indie', 3]);
   if (tier >= 1 || fame >= 8) { w.push(['film', 3]); w.push(['tv', 2]); }
   if (tier >= 2 || fame >= 15) { w.push(['franchise', 2 + tier * 0.6]); w.push(['voice', 1]); }
-  if (S.skills.drama >= 35 || S.skills.voice >= 40) w.push(['theater', 1]);
   if (fame >= 35) w.push(['franchise', 3]);
   let kind = force; if (!kind) { const tot = w.reduce((a, x) => a + x[1], 0); let r = R() * tot; for (const [k, v] of w) { r -= v; if (r <= 0) { kind = k; break; } } kind = kind || 'indie'; }
   const p = { id: uid(), kind, expires: S.week + irnd(3, 6), posted: S.week, script: irnd(35, 92) };
@@ -143,7 +143,8 @@ function genProject(S, force) {
   else if (kind === 'guest') { const t = pick(D.TV_TITLES); Object.assign(p, { title: t, genre: pick(['drama', 'comedy', 'thriller']), studio: pick(['HBO', 'Netflix', 'Apple', 'FX', 'NBC', 'ABC', 'Hulu']), size: 'small', tv: true, guest: true, pay: payFor(S, 'small', 0, 'guest'), weeks: { prep: 0, shoot: 2, post: 6 }, director: director('drama', 1, 3) }); }
   else if (kind === 'tv') { const t = pick(D.TV_TITLES); const g = pick(['drama', 'comedy', 'thriller', 'horror', 'period']); const sz = sizeFor() === 'lead' ? 'lead' : pick(['supporting', 'ensemble']);
     Object.assign(p, { title: t, genre: g, studio: pick(['HBO', 'Netflix', 'Apple TV', 'FX', 'Prime Video', 'Hulu', 'Max', 'Peacock']), size: sz, tv: true, season: 1, pay: payFor(S, sz, 0, 'tv'), weeks: { prep: 2, shoot: 10, post: 8 }, director: director(g, 2, 5) }); }
-  else if (kind === 'theater') { const t = pick(D.THEATER); Object.assign(p, { title: t, genre: /Todd|Cabaret|Sunset/.test(t) ? 'musical' : 'drama', studio: pick(['Broadway', 'the West End']), size: big > 30 ? 'lead' : 'supporting', theater: true, pay: payFor(S, 'lead', 0, 'theater'), weeks: { prep: 3, shoot: 14, post: 0 }, director: director('drama', 3, 5), weekly: true }); }
+  else if (kind === 'theater') return genStageProject(S);
+  else if (kind === 'theater_old') { const t = pick(D.THEATER); Object.assign(p, { title: t, genre: /Todd|Cabaret|Sunset/.test(t) ? 'musical' : 'drama', studio: pick(['Broadway', 'the West End']), size: big > 30 ? 'lead' : 'supporting', theater: true, pay: payFor(S, 'lead', 0, 'theater'), weeks: { prep: 3, shoot: 14, post: 0 }, director: director('drama', 3, 5), weekly: true }); }
   else if (kind === 'voice') { const g = 'animation'; Object.assign(p, { title: filmTitle(), genre: g, studio: pick(['Pixar', 'Disney Animation', 'DreamWorks', 'Illumination', 'Sony Pictures Animation']), size: 'voice', pay: payFor(S, 'voice', 120e6), weeks: { prep: 0, shoot: 3, post: 30 }, budget: irnd(80, 200) * 1e6, director: director('comedy', 1, 4), wide: true }); }
   else if (kind === 'indie') { const g = pick(['drama', 'drama', 'thriller', 'horror', 'romance', 'comedy', 'period', 'biopic']); const st = pick(D.STUDIOS.filter(s => s.prestige)); const sz = big > 20 ? pick(['supporting', 'lead', 'lead']) : pick(['small', 'supporting', 'lead']);
     Object.assign(p, { title: filmTitle(), genre: g, studio: st.name, size: sz, prestige: true, pay: Math.round(payFor(S, sz, 8e6) * 0.6), weeks: { prep: 2, shoot: 5, post: 14 }, budget: irnd(2, 18) * 1e6, director: director(g, 2, 5), script: irnd(50, 96) }); }
@@ -165,6 +166,64 @@ function needFor(S, p) {
   if (S.diff === 'easy') n -= 6; if (S.diff === 'hard') n += 6;
   return n;
 }
+
+// ------------------------------------------------------------------ live theatre
+const STAGE_DIRS = [['Rachel Chavkin', 4], ['Jamie Lloyd', 4], ['Marianne Elliott', 5], ['Thomas Kail', 4], ['Michael Arden', 4], ['Sam Gold', 4], ['Ivo van Hove', 5], ['Rebecca Frecknall', 4], ['Stephen Daldry', 5], ['Diane Paulus', 4], ['Bartlett Sher', 4], ['Lyndsey Turner', 4], ['Dominic Cooke', 4], ['Danny Sapani', 3]];
+function genStageProject(S, region) {
+  region = region || (R() < 0.55 ? 'broadway' : 'westend');
+  const big = FC.starPower(S) + FC.tier(S) * 4 + (S.skills.voice + S.skills.drama) / 8;
+  let title, type, prod, roles;
+  if (R() < 0.18) { type = R() < 0.65 ? 'musical' : 'play'; title = pick(type === 'musical' ? D.NEW_MUSICALS : D.NEW_PLAYS); prod = 'new'; roles = [['the lead', 'lead'], ['the lead\'s best friend', 'supporting'], ['the villain', 'supporting']]; }
+  else { const sh = pick(D.STAGE_SHOWS); title = sh[0]; type = sh[1]; prod = sh[2]; roles = sh[3]; }
+  if (S.me.pronoun !== 'they') { const fem = S.me.cat === 's'; const ok = roles.filter(r => D.STAGE_ANY.includes(r[0]) || D.STAGE_FEMALE.includes(r[0]) === fem); if (ok.length) roles = ok; }
+  let size = big > 45 ? pick(['lead', 'lead', 'supporting']) : big > 25 ? pick(['supporting', 'supporting', 'lead', 'small']) : pick(['small', 'small', 'supporting']);
+  let role;
+  if (size === 'small') role = pick(D.STAGE_SMALL) + (R() < 0.5 ? '' : ` (covers ${pick(roles)[0]})`);
+  else { const opts = roles.filter(r => r[1] === size); const r = pick(opts.length ? opts : roles); role = r[0]; size = r[1]; }
+  if (role.startsWith('Understudy') && !role.includes('covers')) { const ld = roles.filter(r => r[1] === 'lead'); role += ` (covers ${pick(ld.length ? ld : roles)[0]})`; }
+  const venue = pick(D.VENUES[region]); const d = pick(STAGE_DIRS);
+  const base = payFor(S, 'lead', 0, 'theater') * (region === 'westend' ? 0.8 : 1);
+  const p = { id: uid(), kind: 'theater', theater: true, weekly: true, stageType: type, prod, region, title, stageRole: role, size,
+    genre: type === 'musical' ? 'musical' : 'drama', studio: `${venue}, ${region === 'broadway' ? 'Broadway' : 'West End'}`, director: { name: d[0], p: d[1] },
+    pay: Math.round(base * (size === 'small' ? 0.32 : size === 'supporting' ? 0.6 : 1) / 100) * 100,
+    weeks: { prep: prod === 'new' ? 5 : 3, shoot: prod === 'long' ? 26 : prod === 'new' ? 20 : prod === 'revival' ? 16 : 14, post: 0 },
+    script: prod === 'long' ? irnd(70, 95) : prod === 'new' ? irnd(35, 92) : irnd(65, 95), expires: S.week + irnd(4, 6), posted: S.week, costars: costars(size === 'lead' ? 2 : 1) };
+  p.rival = actorFor(S.me.cat, size === 'lead' ? 3 : 1)[0];
+  p.need = { small: 26, supporting: 44, lead: 60 }[size] + (prod === 'revival' && size === 'lead' && S.fame < 45 ? 8 : 0) + (prod === 'new' ? -3 : 0) + (S.diff === 'easy' ? -6 : S.diff === 'hard' ? 6 : 0);
+  return p;
+}
+FC.genStageProject = genStageProject;
+FC.stageFit = (S, p) => p.stageType === 'musical' ? S.skills.voice * 0.5 + S.skills.fitness * 0.15 + S.skills.charisma * 0.2 + S.skills.drama * 0.15 : S.skills.drama * 0.55 + S.skills.voice * 0.2 + S.skills.accents * 0.15 + S.skills.charisma * 0.1;
+FC.stageSetup = function (S, pid) {
+  const p = S.stageBoard.find(x => x.id === pid); if (!p) return null; const mus = p.stageType === 'musical';
+  const want = mus ? pick(D.SONG_TYPES)[0] : (/Hamlet|Macbeth|Romeo|Earnest/.test(p.title) ? 'classical' : pick(D.MONO_TYPES)[0]);
+  const wantName = (mus ? D.SONG_TYPES : D.MONO_TYPES).find(x => x[0] === want)[1].toLowerCase();
+  const hints = D.BEAT_HINTS[mus ? 'musical' : 'drama']; const beats = hints.slice(0, 2).map(h => ({ text: h[1], ans: h[0] }));
+  return { mus, want, note: `Casting note: "${mus ? 'Bring 16 bars' : 'Prepare two minutes'}. We'd love to hear ${wantName}."`, beats, third: mus ? 'dance' : 'callback' };
+};
+FC.stageAudition = function (S, pid, o) {
+  const p = S.stageBoard.find(x => x.id === pid); if (!p) return { ok: false, t: 'That listing is gone.' };
+  if (S.energy < 20) return { ok: false, t: 'Not enough energy for this audition.' };
+  S.energy -= 20; S.stats.auditions++;
+  const st = o.setup; const fit = FC.stageFit(S, p);
+  let pts = o.piece === st.want ? 6 : 1; const pieceSk = st.mus ? (o.piece === 'character' ? 'comedy' : 'voice') : (o.piece === 'comic' ? 'comedy' : 'drama'); pts += (S.skills[pieceSk] - 35) / 10;
+  (o.tones || []).forEach((t, i) => { if (st.beats[i] && t === st.beats[i].ans) pts += 3; else pts -= 1; });
+  const list = st.mus ? D.DANCE_CALL : D.PLAY_CALLBACK; const c = list.find(x => x[0] === o.third) || list[list.length - 1];
+  pts += c[2] ? (S.skills[c[2]] - 35) / 6 + rnd(-3, 3) : 1;
+  const prep = (S.prepped[pid] || 0) * 3; const name = Math.min(10, FC.starPower(S) * 0.15);
+  const score = fit * 0.72 + pts + prep + name + (has(S, 'charming') ? 2 : 0) + rnd(-6, 6) + (S.diff === 'easy' ? 4 : 0);
+  const need = p.need + ((D.ACTORS.find(a => a[0] === p.rival) || [0, 0, 2])[2] - 2) * 2;
+  const cast = score >= need; S.stageBoard = S.stageBoard.filter(x => x.id !== pid); delete S.prepped[pid];
+  const perf = clamp(Math.round(fit * 0.9 + pts + prep + rnd(-5, 8)), 5, 99);
+  if (cast) { S.stats.booked++; p.won = true; p.perf0 = perf; S.offers.push(p); }
+  return { ok: true, cast, score: Math.round(score), need: Math.round(need), rival: p.rival, p, verdict: cast ? 'cast' : score >= need - 5 ? 'shortlist' : 'lost' };
+};
+FC.stagePrep = function (S, pid) { const p = S.stageBoard.find(x => x.id === pid); if (!p) return { ok: false, t: 'That listing is gone.' }; if (S.energy < 20) return { ok: false, t: 'Not enough energy.' }; if ((S.prepped[pid] || 0) >= 2) return { ok: false, t: 'You are ready.' }; S.energy -= 20; S.prepped[pid] = (S.prepped[pid] || 0) + 1; return { ok: true, t: 'You worked on your song and sides with a coach.' }; };
+function refreshStage(S) {
+  S.stageBoard = (S.stageBoard || []).filter(p => p.expires > S.week);
+  let g = 0; while (S.stageBoard.length < 5 && g++ < 10) S.stageBoard.push(genStageProject(S, S.stageBoard.filter(p => p.region === 'broadway').length < 3 ? 'broadway' : 'westend'));
+}
+FC.refreshStage = refreshStage;
 
 // franchise role generator. kind: original | deep | recast | variant | young | legacy | contracted
 function genFranchiseProject(S, fid, opts = {}) {
@@ -376,6 +435,7 @@ FC.sign = function (S, pid, terms) {
   } else if (p.size !== 'extra' && p.kind !== 'commercial') addNews(S, `${S.me.name} joins ${p.costars[0] ? p.costars[0] + ' in ' : ''}${p.studio}'s ${p.title}.`, 'you');
   if (terms.salary >= 1e7) ach(S, 'tenmil'); if (terms.points >= 5) ach(S, 'points');
   ach(S, 'first_role'); if (p.size !== 'extra' && p.kind !== 'commercial') ach(S, 'first_line'); if (p.size === 'lead') ach(S, 'first_lead');
+  if (p.theater && p.size === 'lead') ach(S, 'broadway_lead'); if (p.region === 'westend') ach(S, 'westend');
   if (p.kind === 'commercial') ach(S, 'commercial'); if (p.size === 'voice') ach(S, 'voice'); if (p.theater) ach(S, 'stage'); if (p.tv && !p.guest) ach(S, 'tv');
   S.typecast[p.genre] = (S.typecast[p.genre] || 0) + 1; for (const g of Object.keys(S.typecast)) if (g !== p.genre) S.typecast[g] = Math.max(0, S.typecast[g] - 0.5);
   return { ok: true, t: `Signed for ${p.title}.`, job };
@@ -529,7 +589,7 @@ FC.endWeek = function (S) {
   weeklyCosts(S);
   // world
   tickBoxOffice(S);
-  refreshBoard(S);
+  refreshBoard(S); refreshStage(S);
   inboxTick(S);
   loveTick(S);
   airTV(S);
@@ -554,8 +614,11 @@ function stageNight(S, j) {
   j.nights = (j.nights || 0) + 8; j.perf = FC.calcPerf(j);
   const draw = clamp(45 + S.fame * 0.5 + (j.perf - 50) * 0.4 + (j.buzz || 0) + rnd(-8, 8), 25, 102); j.house = Math.round(draw); j.houses = (j.houses || []).concat(j.house);
   S.skills.drama = clamp(S.skills.drama + 0.5, 0, 100); if (j.genre === 'musical') S.skills.voice = clamp(S.skills.voice + 0.5, 0, 100);
+  if (j.prod === 'long') { j.house = Math.min(102, j.house + 15); j.houses[j.houses.length - 1] = j.house; }
   if (j.nights === 8) S.pending.push({ type: 'opening', jobId: j.id });
-  else if (j.left > 0 && R() < 0.55) S.pending.push({ type: 'stage', jobId: j.id, ev: irnd(0, D.STAGE_EVENTS.length - 1) });
+  else if (j.left > 0 && R() < 0.5) { const us = (j.stageRole || '').includes('covers'); const pool = D.STAGE_EVENTS.map((e, i) => i).filter(i => !!D.STAGE_EVENTS[i].understudy === (us && R() < 0.5)); if (pool.length) S.pending.push({ type: 'stage', jobId: j.id, ev: pick(pool) }); }
+  const avgH = j.houses.reduce((a, b) => a + b, 0) / j.houses.length;
+  if (j.prod !== 'long' && j.nights >= 32 && avgH < 55 && !j.closingNotice && j.left > 2) { j.closingNotice = true; j.left = 2; S.pending.push({ type: 'note', title: `Closing notice: ${j.title}`, text: `Ticket sales have not picked up, so the producers are closing ${j.title} early. Two more weeks of performances.` }); addNews(S, `${j.title} posts its closing notice.`, 'you'); }
   S.log.push(`${j.title}: ${Math.min(100, j.house)}% houses this week.`);
 }
 function reqOk(S, req) { if (req === 'method') return has(S, 'method'); return (S.skills[req] || 0) >= 35; }
@@ -690,7 +753,7 @@ FC.awardCats = (S, w) => {
 function eligible(S, show, y) {
   if (show.kind === 'film') return S.credits.filter(c => !c.tv && !c.weekly && c.kind !== 'commercial' && c.size !== 'extra' && c.size !== 'voice' && c.released != null && FC.year(S, c.released) === y && c.critics != null);
   if (show.kind === 'tv') return S.credits.filter(c => c.tv && !c.guest && c.released != null && S.week - c.released < 52 && S.week - c.released > 4);
-  if (show.kind === 'theater') return S.credits.filter(c => c.weekly && c.released != null && S.week - c.released < 52);
+  if (show.kind === 'theater') return S.credits.filter(c => c.weekly && c.released != null && S.week - c.released < 52 && (c.region || 'broadway') === show.region && c.size !== 'small');
   if (show.kind === 'razzie') return S.credits.filter(c => !c.tv && c.released != null && FC.year(S, c.released) === y && c.critics != null && c.critics < 25);
   return [];
 }
@@ -709,10 +772,10 @@ function awardsTick(S, woy) {
     const eligYear = cy - 1;
     if (woy === show.noms) {
       const works = eligible(S, show, eligYear); const noms = [];
-      const thr = { oscars: 83, bafta: 80, sag: 78, critics: 76, globes: 73, emmys: 72, tonys: 68, razzies: 0 }[show.id];
+      const thr = { oscars: 83, bafta: 80, sag: 78, critics: 76, globes: 73, emmys: 72, tonys: 68, olivier: 66, razzies: 0 }[show.id];
       for (const c of works) {
         const sc = show.id === 'razzies' ? 100 - c.critics - c.perf / 2 + rnd(-10, 10) : awardScore(S, show, c, cy);
-        if (show.id === 'razzies' ? sc > 60 : sc >= thr) noms.push({ cat: show.id === 'razzies' ? (S.me.cat === 's' ? 'Worst Actress' : 'Worst Actor') : show.kind === 'tv' ? (S.me.cat === 's' ? 'Outstanding Lead Actress' : 'Outstanding Lead Actor') : show.kind === 'theater' ? (S.me.cat === 's' ? 'Best Actress in a Play' : 'Best Actor in a Play') : FC.awardCats(S, c), film: c.title, id: c.id, score: sc, thr, others: D.ACTORS.filter(a => a[1] === S.me.cat).sort(() => R() - 0.5).slice(0, 4).map(a => a[0] + ' (' + filmTitle() + ')') });
+        if (show.id === 'razzies' ? sc > 60 : sc >= thr) noms.push({ cat: show.id === 'razzies' ? (S.me.cat === 's' ? 'Worst Actress' : 'Worst Actor') : show.kind === 'tv' ? (S.me.cat === 's' ? 'Outstanding Lead Actress' : 'Outstanding Lead Actor') : show.kind === 'theater' ? `Best ${c.size === 'lead' ? 'Leading' : 'Featured'} ${S.me.cat === 's' ? 'Actress' : 'Actor'} in a ${c.stageType === 'musical' ? 'Musical' : 'Play'}` : FC.awardCats(S, c), film: c.title, id: c.id, score: sc, thr, others: D.ACTORS.filter(a => a[1] === S.me.cat).sort(() => R() - 0.5).slice(0, 4).map(a => a[0] + ' (' + filmTitle() + ')') });
         if (c.directedByMe && show.kind === 'film' && sc + 4 >= thr) noms.push({ cat: 'Best Director', film: c.title, id: c.id, score: sc - 4, thr, others: D.DIRECTORS.slice().sort(() => R() - 0.5).slice(0, 4).map(d => d[0]) });
       }
       const best = {}; for (const n of noms) if (!best[n.cat] || best[n.cat].score < n.score) best[n.cat] = n; noms.length = 0; noms.push(...Object.values(best));
@@ -734,7 +797,7 @@ function awardsTick(S, woy) {
 function awardWon(S, show, r) {
   if (show.id === 'razzies') { ach(S, 'razzie'); S.rep = clamp(S.rep - 2, 0, 100); addNews(S, `${S.me.name} "wins" the Razzie for ${r.cat}.`, 'awards'); return; }
   gainFame(S, show.weight * 5); S.rep = clamp(S.rep + show.weight * 6, 0, 100);
-  const map = { globes: 'globe', bafta: 'bafta', sag: 'sag', oscars: 'oscar', emmys: 'emmy', tonys: 'tony' }; if (map[show.id]) ach(S, map[show.id]);
+  const map = { globes: 'globe', bafta: 'bafta', sag: 'sag', oscars: 'oscar', emmys: 'emmy', tonys: 'tony', olivier: 'olivier' }; if (map[show.id]) ach(S, map[show.id]);
   if (['oscar', 'emmy', 'tony'].every(k => S.achievements[k])) ach(S, 'egot');
   timeline(S, `Won the ${show.name.replace(/s$/, '')} ${show.id === 'oscars' ? 'Academy Award' : ''} for ${r.cat}, ${r.film}.`.replace('Academy Award Academy Award', 'Academy Award'));
   addNews(S, `${S.me.name} wins ${r.cat} at the ${show.name} for ${r.film}.`, 'awards');
@@ -1098,7 +1161,7 @@ FC.retire = function (S, why = 'choice') {
 // ------------------------------------------------------------------ save / load
 const KEY = s => 'fc-slot-' + s;
 FC.save = S => { try { localStorage.setItem(KEY(S.slot), JSON.stringify(S)); return true; } catch (e) { return false; } };
-FC.load = slot => { try { const s = localStorage.getItem(KEY(slot)); if (!s) return null; const S = JSON.parse(s); S.offers = S.offers || []; return S; } catch (e) { return null; } };
+FC.load = slot => { try { const s = localStorage.getItem(KEY(slot)); if (!s) return null; const S = JSON.parse(s); S.offers = S.offers || []; if (!S.stageBoard) { S.stageBoard = []; refreshStage(S); } return S; } catch (e) { return null; } };
 FC.slots = () => [1, 2, 3].map(i => { const S = FC.load(i); return S ? { slot: i, name: S.me.name, date: FC.dateLabel(S), fame: Math.round(S.fame), look: S.look, ended: !!S.ended } : { slot: i, empty: true }; });
 FC.del = slot => { try { localStorage.removeItem(KEY(slot)); } catch (e) { } };
 FC.hof = () => { try { return JSON.parse(localStorage.getItem('fc-hof') || '[]'); } catch (e) { return []; } };

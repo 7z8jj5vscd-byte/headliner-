@@ -11,6 +11,7 @@ const S = () => UI.S;
 // ------------------------------------------------------------------ icons and logo
 const ICONS = {
   home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
+  stage: '<path d="M3 4h18"/><path d="M5 4c0 6 1 11 3 16M19 4c0 6-1 11-3 16"/><path d="M9 4c0 3 1.5 5 3 5s3-2 3-5"/>',
   work: '<path d="M4 9h16v11H4z"/><path d="M4 9l2-5 4 1-2 4M10 5l4 1-2 3M14 6l4 1-1 2"/>',
   cast: '<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 6l2-3M13 6l2-3"/>',
   career: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
@@ -163,7 +164,7 @@ UI.render = function () {
   const tab = UI.tab;
   const main = $('#main');
   if (window.L3) L3.stop(); UI.prevCtl = null;
-  main.innerHTML = tab === 'home' ? homeView() : tab === 'cast' ? castView() : tab === 'work' ? workView() : tab === 'career' ? careerView() : tab === 'world' ? worldView() : lifeView();
+  main.innerHTML = tab === 'home' ? homeView() : tab === 'cast' ? castView() : tab === 'stage' ? stageView() : tab === 'work' ? workView() : tab === 'career' ? careerView() : tab === 'world' ? worldView() : lifeView();
   $('#endbar').innerHTML = `<button class="btn" data-a="endWeek">End week ${ic('next')}</button>`;
   if (tab === 'life' && UI.sub.life === 'look') UI.mountPreview(s.look);
   flushAch();
@@ -174,14 +175,14 @@ function hud() {
     <div class="hud-stats"><span class="en">⚡<b>${Math.round(s.energy)}</b></span><span>💵<b class="${s.money < 0 ? 'bad' : ''}">${M(s.money)}</b></span><span>★<b>${Math.round(s.fame)}</b></span><span title="Star Power">SP<b>${FC.starPower(s)}</b></span></div>`;
 }
 function nav() {
-  const s = S(); const offers = (s.offers || []).length; const inbox = s.inbox.filter(m => m.kind !== 'note' || !m.read).length;
+  const s = S(); const offers = (s.offers || []).filter(o => !o.theater).length; const stageOffers = (s.offers || []).filter(o => o.theater).length; const inbox = s.inbox.filter(m => m.kind !== 'note' || !m.read).length;
   const work = FC.needsEffort(s).length + FC.pressOpen(s).length + s.jobs.filter(j => j.stage === 'prep' && FC.busyRole(j) && (j.prepScore || 0) < 30).length;
-  const tabs = [['home', 'Home', 'home', inbox], ['cast', 'Casting', 'cast', offers], ['work', 'Work', 'work', work], ['career', 'Career', 'career', 0], ['world', 'Hollywood', 'world', 0], ['life', 'Life', 'life', 0]];
+  const tabs = [['home', 'Home', 'home', inbox], ['cast', 'Casting', 'cast', offers], ['stage', 'Theatre', 'stage', stageOffers], ['work', 'Work', 'work', work], ['career', 'Career', 'career', 0], ['world', 'Hollywood', 'world', 0], ['life', 'Life', 'life', 0]];
   $('#nav').innerHTML = tabs.map(t => `<button class="${UI.tab === t[0] ? 'on' : ''}" data-a="go" data-tab="${t[0]}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[t[2]]}</svg>${t[1]}${t[3] ? `<em class="badge">${t[3]}</em>` : ''}</button>`).join('');
 }
 const bar = (label, v, cls = '') => `<div class="bar ${cls} ${v < 25 ? 'low' : ''}"><span>${label}</span><i><span style="width:${Math.max(0, Math.min(100, v))}%"></span></i><em>${Math.round(v)}</em></div>`;
 const stageName = j => j.stage === 'prep' ? 'Prep' : j.stage === 'shoot' ? (j.theater ? 'On stage' : 'Shooting') : j.stage === 'post' ? (j.tv ? 'Editing' : 'Post-production') : j.stage;
-const roleLabel = p => p.char ? p.char.name : p.kind === 'commercial' ? 'Commercial' : FC.SIZES[p.size].n;
+const roleLabel = p => p.stageRole ? p.stageRole : p.char ? p.char.name : p.kind === 'commercial' ? 'Commercial' : FC.SIZES[p.size].n;
 
 // ------------------------------------------------------------------ home
 function homeView() {
@@ -251,12 +252,12 @@ function roleCard(p, offer) {
       : `<button class="btn" data-a="audition" data-id="${p.id}" ${s.energy < 10 || !can.ok ? 'disabled' : ''}>Audition</button><button class="btn dark" data-a="prep" data-id="${p.id}" ${s.energy < 20 || (s.prepped[p.id] || 0) >= 2 ? 'disabled' : ''}>Prepare${s.prepped[p.id] ? ' (' + s.prepped[p.id] + '/2)' : ''} · 20⚡</button>`}</div></div>`;
 }
 function castView() {
-  const s = S(); const offers = s.offers || [];
+  const s = S(); const offers = (s.offers || []).filter(o => !o.theater);
   const filt = UI.castFilter || 'all';
-  const board = s.board.filter(p => filt === 'all' || (filt === 'film' && ['film', 'indie', 'extra', 'voice'].includes(p.kind)) || (filt === 'tv' && (p.tv || p.kind === 'theater')) || (filt === 'fr' && p.fid) || (filt === 'small' && ['commercial', 'guest', 'extra'].includes(p.kind)));
+  const board = s.board.filter(p => filt === 'all' || (filt === 'film' && ['film', 'indie', 'extra', 'voice'].includes(p.kind)) || (filt === 'tv' && p.tv) || (filt === 'fr' && p.fid) || (filt === 'small' && ['commercial', 'guest', 'extra'].includes(p.kind)));
   return `${offers.length ? `<h2>Offers</h2>${offers.map(p => roleCard(p, true)).join('')}` : ''}
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 style="margin:0">Casting board</h2><span class="small muted">${FC.agency(s).name}</span></div>
-    <div class="tabs">${[['all', 'All'], ['fr', 'Franchises'], ['film', 'Film'], ['tv', 'TV and stage'], ['small', 'Day jobs']].map(t => `<button class="${filt === t[0] ? 'on' : ''}" data-a="castFilter" data-f="${t[0]}">${t[1]}</button>`).join('')}</div>
+    <div class="tabs">${[['all', 'All'], ['fr', 'Franchises'], ['film', 'Film'], ['tv', 'TV'], ['small', 'Day jobs']].map(t => `<button class="${filt === t[0] ? 'on' : ''}" data-a="castFilter" data-f="${t[0]}">${t[1]}</button>`).join('')}</div>
     ${board.length ? board.map(p => roleCard(p, false)).join('') : '<p class="empty">No roles here this week. Network, sign with a bigger agency, or check back next week.</p>'}`;
 }
 
@@ -322,6 +323,59 @@ UI.renderNegotiation = function () {
   UI.modal(html);
 };
 function negRead() { const s = S(), n = UI.neg; const p = (s.offers || []).find(x => x.id === n.pid); const el = $('#ng-read'); if (el && p) el.textContent = FC.agentRead(s, p.deal, n.ask); }
+
+// ------------------------------------------------------------------ live theatre
+const PROD = { long: 'Long-running hit', revival: 'Star revival', classic: 'Limited run', new: 'New production' };
+const stageOdds = (s, p) => { const est = FC.stageFit(s, p) * 0.72 + 12 + Math.min(10, FC.starPower(s) * 0.15) + (s.prepped[p.id] || 0) * 3 - p.need; return est > 10 ? ['Strong', 'good'] : est > 2 ? ['Good chance', 'good'] : est > -6 ? ['Even odds', 'gold'] : ['Long shot', 'bad']; };
+function stageCard(p, offer) {
+  const s = S(); const o = stageOdds(s, p); const can = FC.canSign(s, p);
+  return `<div class="card role"><span class="stripe" style="background:${p.region === 'broadway' ? '#e3b54a' : '#7a1020'}"></span>
+    <div class="role-head"><div style="min-width:0"><div class="eyebrow">${p.region === 'broadway' ? 'Broadway' : 'West End'} · ${esc(p.studio.split(',')[0])}</div><div class="role-title">${esc(p.title)}</div><div class="small">as <b>${esc(p.stageRole)}</b></div></div>
+      ${offer ? '<span class="pill gold">Offer</span>' : `<span class="pill ${o[1]} odds">${o[0]}</span>`}</div>
+    <div class="role-meta"><span class="pill">${p.stageType === 'musical' ? 'Musical' : 'Play'}</span><span class="pill ${p.prod === 'new' ? 'blue' : p.prod === 'revival' ? 'gold' : ''}">${PROD[p.prod]}</span><span class="pill">${p.size === 'small' ? 'Ensemble' : p.size === 'supporting' ? 'Featured' : 'Lead'}</span><span class="pill">${M(p.pay)}/wk</span><span class="pill">${p.weeks.shoot} wk run</span></div>
+    <div class="small muted">Dir. ${esc(p.director.name)}${p.costars.length ? ' · With ' + esc(p.costars.join(', ')) : ''} · ${p.weeks.prep} wk rehearsal</div>
+    ${offer ? '' : `<div class="tiny muted" style="margin-top:3px">Also auditioning: ${esc(p.rival)} · Closes ${FC.dateLabel(s, p.expires).split(' · ')[0]}</div>`}
+    ${!can.ok ? `<p class="small bad">${esc(can.t)}</p>` : can.t ? `<p class="small muted">${esc(can.t)}</p>` : ''}
+    <div class="btns" style="margin-top:10px">${offer ? `<button class="btn" data-a="negotiate" data-id="${p.id}" ${!can.ok ? 'disabled' : ''}>Negotiate contract</button><button class="btn ghost" data-a="decline" data-id="${p.id}">Decline</button>`
+      : `<button class="btn" data-a="stageAud" data-id="${p.id}" ${s.energy < 20 || !can.ok ? 'disabled' : ''}>Audition · 20⚡</button><button class="btn dark" data-a="stagePrep" data-id="${p.id}" ${s.energy < 20 || (s.prepped[p.id] || 0) >= 2 ? 'disabled' : ''}>Coach${s.prepped[p.id] ? ' (' + s.prepped[p.id] + '/2)' : ''} · 20⚡</button>`}</div></div>`;
+}
+function stageView() {
+  const s = S(); if (!s.stageBoard) { s.stageBoard = []; FC.refreshStage(s); }
+  const reg = UI.stageReg || 'all', typ = UI.stageType || 'all';
+  const offers = (s.offers || []).filter(o => o.theater);
+  const now = s.jobs.filter(j => j.theater);
+  const creds = s.credits.filter(c => c.theater || c.weekly);
+  const wins = s.awards.filter(a => (a.show === 'tonys' || a.show === 'olivier') && a.won).length, noms = s.awards.filter(a => a.show === 'tonys' || a.show === 'olivier').length;
+  const list = s.stageBoard.filter(p => (reg === 'all' || p.region === reg) && (typ === 'all' || p.stageType === typ));
+  return `<div class="card"><div class="eyebrow">Live theatre</div><h2 style="margin-bottom:2px">Broadway and the West End</h2><p class="small muted">Musicals lean on voice, dance (fitness) and charisma. Plays lean on drama, vocal projection and accents. Runs pay weekly and count toward the Tonys (Broadway) and the Oliviers (West End).</p>
+    <div class="stats3"><div class="stat"><b>${creds.length}</b><span>Stage credits</span></div><div class="stat"><b>${noms}</b><span>Tony/Olivier noms</span></div><div class="stat"><b>${wins}</b><span>Wins</span></div></div></div>
+    ${now.length ? `<div class="card hl"><h3 style="margin-top:0">Now playing</h3>${now.map(j => `<div class="row"><div class="grow"><b>${esc(j.title)}</b><small>${esc(j.stageRole || roleLabel(j))} · ${esc(j.studio)}</small></div><span class="pill ${j.stage === 'shoot' ? 'gold' : ''}">${j.stage === 'prep' ? 'Rehearsals' : 'On stage'} · ${j.left} wk</span></div>`).join('')}<button class="btn sm" data-a="go" data-tab="work" style="margin-top:6px">Open the Work tab</button></div>` : ''}
+    ${offers.length ? `<h2>Offers</h2>${offers.map(p => stageCard(p, true)).join('')}` : ''}
+    <h2 style="margin:4px 0 0">Casting calls</h2>
+    <div class="tabs">${[['all', 'Everywhere'], ['broadway', 'Broadway'], ['westend', 'West End']].map(t => `<button class="${reg === t[0] ? 'on' : ''}" data-a="stageReg" data-v="${t[0]}">${t[1]}</button>`).join('')}${[['all', 'All shows'], ['musical', 'Musicals'], ['play', 'Plays']].map(t => `<button class="${typ === t[0] ? 'on' : ''}" data-a="stageType" data-v="${t[0]}">${t[1]}</button>`).join('')}</div>
+    ${list.length ? list.map(p => stageCard(p, false)).join('') : '<p class="empty">No calls here this week. New listings post every week.</p>'}`;
+}
+UI.startStageAud = function (pid) { const s = S(); const st = FC.stageSetup(s, pid); if (!st) return; UI.saud = { pid, setup: st, step: 0, tones: [], piece: null, third: null }; UI.renderStageAud(); };
+UI.renderStageAud = function () {
+  const s = S(), a = UI.saud, p = s.stageBoard.find(x => x.id === a.pid); if (!p) return UI.closeModal();
+  const st = a.setup; let html = '';
+  if (a.step === 0) html = `<div class="eyebrow">${p.region === 'broadway' ? 'Broadway' : 'West End'} audition · ${esc(p.studio.split(',')[0])}</div><h2>${esc(p.title)}</h2><p class="small">You're in for <b>${esc(p.stageRole)}</b>. ${st.mus ? 'A musical' : 'A play'}, directed by ${esc(p.director.name)}.</p><div class="scene3d" id="saud3d"></div>
+    <div class="scene-card">${esc(st.note)}</div><p class="small muted">${st.mus ? 'Your song, two scenes, then the dance call.' : 'Your monologue, two scenes, then a callback with the director.'}</p><button class="btn" data-a="saudNext">Walk on stage ${ic('next')}</button>`;
+  else if (a.step === 1) html = `<div class="eyebrow">${st.mus ? 'Your song' : 'Your monologue'}</div><h2>What did you bring?</h2><div class="choices">${(st.mus ? D.SONG_TYPES : D.MONO_TYPES).map(x => `<button class="choice" data-a="saudPiece" data-v="${x[0]}"><b>${x[1]}</b></button>`).join('')}</div>`;
+  else if (a.step <= 1 + st.beats.length) { const b = st.beats[a.step - 2]; html = `<div class="eyebrow">Scene ${a.step - 1} of ${st.beats.length}</div><h2>${esc(b.text[0].toUpperCase() + b.text.slice(1))}</h2><div class="scene-card">${esc(p.stageRole.split(' (')[0].toUpperCase())}: ${esc(pick(['I won\'t be the one who leaves this time.', 'Look at me. Really look at me.', 'There is nothing left to be afraid of.', 'Tomorrow, then. Always tomorrow.']))}</div><div class="tone">${D.TONES.map(t => `<button data-a="saudTone" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>`; }
+  else if (!a.third) html = st.mus ? `<div class="eyebrow">Dance call</div><h2>The choreographer teaches a 32-count combination once.</h2><div class="choices">${D.DANCE_CALL.map(x => `<button class="choice" data-a="saudThird" data-v="${x[0]}"><b>${x[1]}</b></button>`).join('')}</div>`
+    : `<div class="eyebrow">Callback</div><h2>${esc(p.director.name)} gives you a note and asks you to go again.</h2><div class="choices">${D.PLAY_CALLBACK.map(x => `<button class="choice" data-a="saudThird" data-v="${x[0]}"><b>${x[1]}</b></button>`).join('')}</div>`;
+  else { const r = FC.stageAudition(s, a.pid, { setup: st, piece: a.piece, tones: a.tones, third: a.third }); UI.saud = null;
+    if (!r.ok) { UI.closeModal(); return UI.toast(r.t); }
+    const w = Math.min(100, r.score / Math.max(r.need, 1) * 70);
+    html = `<div class="eyebrow">The casting call</div><h2 class="${r.cast ? 'gold' : ''}">${r.cast ? `You got ${esc(p.stageRole.split(' (')[0])}!` : r.verdict === 'shortlist' ? 'Down to the final two.' : 'Thank you, next.'}</h2>
+      <div class="meter"><span style="width:${w}%"></span><i style="left:70%"></i></div><p class="tiny muted mono">Your audition ${r.score} · What they needed ${r.need}</p>
+      <p>${r.cast ? 'Your agent is negotiating the contract. Find it under Offers in the Theatre tab.' : `The part went to ${esc(r.rival)}. ${st.mus ? 'Voice lessons and gym sessions help with musicals.' : 'Acting classes and a dialect coach help with plays.'}`}</p>
+      <div class="btns">${r.cast ? `<button class="btn" data-a="negotiate" data-id="${p.id}">Negotiate now</button>` : ''}<button class="btn ${r.cast ? 'ghost' : ''}" data-a="closeModal">Close</button></div>`;
+    if (r.cast) UI.toast('Cast: ' + p.title); save(); UI.render(); }
+  UI.modal(html);
+  if (a && a.step === 0) { const el = $('#saud3d'); if (el && window.L3 && L3.available()) L3.scene(el, s.look, { mode: 'theater' }); else if (el) el.remove(); }
+};
 
 // ------------------------------------------------------------------ work: prep, shooting, press
 const avg = a => a && a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
@@ -622,6 +676,13 @@ const A = {
   negTake: () => { const s = S(), n = UI.neg; const p = (s.offers || []).find(x => x.id === n.pid); const res = FC.sign(s, n.pid, p.deal.base); UI.closeModal(true); UI.neg = null; UI.toast(res.ok ? `Signed. ${res.t}` : res.t); flushAch(); save(); UI.render(); },
   decline: d => { const t = FC.declineOffer(S(), d.id); UI.closeModal(true); UI.neg = null; UI.toast(t); save(); UI.render(); },
   endWeek: () => UI.endWeek(),
+  stageAud: d => UI.startStageAud(d.id),
+  stagePrep: d => after(FC.stagePrep(S(), d.id)),
+  stageReg: d => { UI.stageReg = d.v; UI.render(); }, stageType: d => { UI.stageType = d.v; UI.render(); },
+  saudNext: () => { if (window.L3) L3.stop(); UI.saud.step++; UI.renderStageAud(); },
+  saudPiece: d => { UI.saud.piece = d.v; UI.saud.step++; UI.renderStageAud(); },
+  saudTone: d => { UI.saud.tones.push(d.v || d.t); UI.saud.step++; UI.renderStageAud(); },
+  saudThird: d => { UI.saud.third = d.v; UI.renderStageAud(); },
   goWork: () => { UI.closeModal(true); UI.tab = 'work'; UI.render(); },
   endWeekForce: () => { UI.closeModal(true); UI.endWeek(true); },
   effortEnd: d => { const r = FC.setEffort(S(), d.j, d.v); if (!r.ok) return UI.toast(r.t); save(); if (FC.needsEffort(S()).length) { UI.endWeek(); } else { UI.closeModal(true); UI.endWeek(true); } },

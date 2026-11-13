@@ -97,6 +97,14 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
     console.log('stage shot', shotStage, 'tv finale shot', shotTv);
     await click('[data-a="go"][data-tab="career"]'); await click('[data-a="sub"][data-s="films"]'); await shot('24-films');
   });
+  await step('theatre', async () => {
+    await page.evaluate(() => { UI.S.energy = 100; UI.S.jobs = []; UI.tab = 'stage'; UI.render(); document.getElementById('toasts').innerHTML = ''; }); await shot('30-theatre');
+    await click('[data-a="stageReg"][data-v="westend"]'); await click('[data-a="stageReg"][data-v="all"]'); await click('[data-a="stageType"][data-v="musical"]'); await click('[data-a="stageType"][data-v="all"]');
+    await click('[data-a="stageAud"]'); await page.waitForTimeout(400); await shot('31-stage-aud'); await click('[data-a="saudNext"]'); await click('[data-a="saudPiece"]');
+    for (let i = 0; i < 2; i++) await click('[data-a="saudTone"]'); await click('[data-a="saudThird"]'); await shot('32-stage-result'); await click('#modal [data-a="closeModal"]');
+    await page.evaluate(() => { const s = UI.S; const p = s.stageBoard[0]; s.stageBoard.shift(); p.won = true; p.perf0 = 70; s.offers.push(p); UI.render(); });
+    await click('[data-a="negotiate"]'); await click('[data-a="negTake"]'); await shot('33-theatre-now');
+  });
   await step('ceremony', async () => {
     await page.evaluate(() => { const s = UI.S; const c = s.credits.find(x => x.critics != null) || { title: 'Test', id: 'x' }; s.pending.push({ type: 'ceremony', show: 'oscars', res: [{ cat: 'Best Actress', film: c.title, won: true, winner: s.me.name, others: ['Zendaya (A)', 'Emma Stone (B)', 'Florence Pugh (C)', 'Viola Davis (D)'] }] }); UI.nextPending(); });
     await click('[data-a="cerOpen"]'); await page.waitForTimeout(600); await shot('16-oscar'); await click('[data-a="speech"]');
