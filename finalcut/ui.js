@@ -77,7 +77,7 @@ function slotImg(look) { const u = window.L3 && L3.available() ? L3.portrait(loo
 // ------------------------------------------------------------------ character creator
 const POINTS = 16;
 UI.newGame = function (slot) {
-  UI.cr = { step: 0, slot, name: '', pronoun: 'she', cat: 's', age: 22, city: 'Los Angeles', diff: 'normal', story: 'drama', look: FC.defaultLook(), alloc: {}, traits: [], goal: 'oscar', ltab: 'face' };
+  UI.cr = { step: 0, slot, name: '', pronoun: 'she', cat: 's', age: 22, city: 'Los Angeles', diff: 'normal', story: 'hopeful', look: FC.defaultLook(), alloc: {}, traits: [], goal: 'oscar', ltab: 'face' };
   UI.cr.look.hair = 'long'; UI.cr.look.top = 'jacket'; UI.cr.look.topColor = D.CLOTH_COLORS[1];
   UI.renderCreator();
 };
@@ -91,7 +91,9 @@ UI.renderCreator = function () {
     <div class="grid2"><div class="field"><label for="cr-age">Age <b>${c.age}</b></label><input id="cr-age" type="range" min="18" max="35" value="${c.age}"></div>
     <div class="field"><label for="cr-city">Hometown</label><select id="cr-city">${D.CITIES.map(x => `<option ${c.city === x ? 'selected' : ''}>${x}</option>`).join('')}</select></div></div>
     <div class="field"><label for="cr-diff">Difficulty</label><select id="cr-diff"><option value="easy" ${c.diff === 'easy' ? 'selected' : ''}>Easy: more money, easier auditions</option><option value="normal" ${c.diff === 'normal' ? 'selected' : ''}>Normal</option><option value="hard" ${c.diff === 'hard' ? 'selected' : ''}>Hard: tougher rooms, higher costs</option></select></div>`;
-  if (c.step === 1) body = `<div class="choices">${D.STORIES.map(s => `<button class="choice ${c.story === s.id ? 'on' : ''}" data-a="crStory" data-id="${s.id}"><b>${s.name}</b><small>${s.d}</small><br><small class="mono">${M(s.money)} · ${Object.entries(s.skills).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => D.SKILLS.find(x => x[0] === k)[1] + ' ' + v).join(' · ')}</small></button>`).join('')}</div>`;
+  if (c.step === 1) { const card = s => `<button class="choice ${c.story === s.id ? 'on' : ''}" data-a="crStory" data-id="${s.id}"><b>${s.name}</b><small>${s.d}</small><br><small class="mono">${M(s.money)} · ${Object.entries(s.skills).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => D.SKILLS.find(x => x[0] === k)[1] + ' ' + v).join(' · ')}</small></button>`;
+    body = `<div class="lbl">Down to earth</div><p class="small muted" style="margin-top:2px">Ordinary beginnings. Start from scratch.</p><div class="choices">${D.STORIES.filter(s => s.grounded).map(card).join('')}</div>
+      <div class="lbl" style="margin-top:16px">A head start</div><p class="small muted" style="margin-top:2px">Unusual backstories with more money, fame or baggage.</p><div class="choices">${D.STORIES.filter(s => !s.grounded).map(card).join('')}</div>`; }
   if (c.step === 2) body = UI.lookEditor(c.look, c.ltab, 'cr');
   if (c.step === 3) {
     const st = D.STORIES.find(x => x.id === c.story); const used = Object.values(c.alloc).reduce((a, v) => a + v, 0);

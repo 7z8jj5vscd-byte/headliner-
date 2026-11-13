@@ -14,7 +14,7 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/linernotes/
 
 ## Final Cut
 
-Final Cut is a week-by-week Hollywood career sim in `finalcut/`. Build a 3D actor (face, hair, build, height and outfits), pick one of ten starting stories, two personality traits and a dream goal, then go from commercials and background work to franchise leads.
+Final Cut is a week-by-week Hollywood career sim in `finalcut/`. Build a 3D actor (face, hair, build, height and outfits), pick one of 18 starting stories (ten down-to-earth ones and eight bigger head starts), two personality traits and a dream goal, then go from commercials and background work to franchise leads.
 
 - **Casting:** a board of commercials, extra work, TV guest spots, series, Broadway runs, voice roles, indie films, studio films and franchise roles. Each audition plays out beat by beat (pick how to play each moment), with chemistry reads against real co-stars and costume screen tests for franchise parts. You compete with real actors for every role.
 - **Franchises:** the MCU, the DCU, DC Elseworlds, Spider-Verse, Star Wars, James Bond, the Harry Potter series, Dune, The Hunger Games, Fast & Furious, John Wick and Jurassic World. Each has a fan mood and fatigue level. Every established character belongs to its actor until their contract runs out or they're recast. Until then you can only play a variant, a younger version or a legacy successor. You can also play new characters the game invents, or comic characters who have never been adapted. Your characters gain popularity, return in sequels and team-ups, get solo films and spin-off series, and can be killed off or recast.
