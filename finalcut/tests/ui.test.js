@@ -15,7 +15,7 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
   const shot = n => page.screenshot({ path: `${shots}/${mode}-${n}.png` });
   const click = async sel => { await page.locator(sel).first().click(); await page.waitForTimeout(120); };
   const step = async (name, fn) => { const b = errors.length; console.log('step', name); try { await fn(); } catch (e) { errors.push(`step ${name}: ${e.message.split('\n')[0]}`); } if (errors.length > b) console.log('ERR', errors.slice(b)); };
-  const drain = async (n = 12) => { for (let i = 0; i < n; i++) { const m = page.locator('#modal'); if (!(await m.count())) return; const btn = m.locator('[data-a="endWeekForce"], [data-a="evPick"], [data-a="trSkip"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="closeModal"]').first(); if (await btn.count()) await btn.click(); else break; await page.waitForTimeout(120); } };
+  const drain = async (n = 12) => { for (let i = 0; i < n; i++) { const m = page.locator('#modal'); if (!(await m.count())) return; const btn = m.locator('[data-a="endWeekForce"], [data-a="fitWear"], [data-a="evPick"], [data-a="trSkip"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="closeModal"]').first(); if (await btn.count()) await btn.click(); else break; await page.waitForTimeout(120); } };
 
   await page.goto(`http://localhost:${port}/index.html`);
   await page.waitForSelector('.title', { timeout: 15000 }); await shot('01-title');
@@ -53,7 +53,7 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
     await page.evaluate(() => { const s = UI.S; s.fame = 45; s.skills.action = 60; s.skills.fitness = 60; s.agency = 'wme'; const p = FC.genFranchiseProject(s, 'mcu', { kind: 'original', size: 'lead' }); s.board.unshift(p); UI.tab = 'cast'; UI.render(); });
     await shot('11-franchise-role');
     await page.evaluate(() => { const s = UI.S; const p = s.board[0]; s.board.shift(); p.won = true; p.perf0 = 75; s.offers.push(p); UI.render(); });
-    await click('[data-a="negotiate"]'); await click('[data-a="negTake"]');
+    await click('[data-a="negotiate"]'); await click('[data-a="negTake"]'); await drain();
   });
   await step('work', async () => {
     await page.evaluate(() => { UI.S.energy = 100; UI.tab = 'work'; UI.render(); }); await shot('25-work-prep');
@@ -92,7 +92,7 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
       for (let k = 0; k < 8; k++) { const m = page.locator('#modal'); if (!(await m.count())) break;
         if (!shotStage && await page.locator('#modal .tc-big', { hasText: /Opening night|Tonight/i }).count()) { await page.waitForTimeout(500); await shot('22-stage'); shotStage = true; }
         if (!shotTv && await page.locator('#modal .tc-big', { hasText: /finale/i }).count()) { await shot('23-tv-finale'); shotTv = true; }
-        const b = m.locator('[data-a="endWeekForce"], [data-a="evPick"], [data-a="trSkip"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="closeModal"]').first(); if (!(await b.count())) break; await b.click(); await page.waitForTimeout(80); }
+        const b = m.locator('[data-a="endWeekForce"], [data-a="fitWear"], [data-a="evPick"], [data-a="trSkip"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="closeModal"]').first(); if (!(await b.count())) break; await b.click(); await page.waitForTimeout(80); }
     }
     console.log('stage shot', shotStage, 'tv finale shot', shotTv);
     await click('[data-a="go"][data-tab="career"]'); await click('[data-a="sub"][data-s="films"]'); await shot('24-films');
@@ -103,7 +103,19 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
     await click('[data-a="stageAud"]'); await page.waitForTimeout(400); await shot('31-stage-aud'); await click('[data-a="saudNext"]'); await click('[data-a="saudPiece"]');
     for (let i = 0; i < 2; i++) await click('[data-a="saudTone"]'); await click('[data-a="saudThird"]'); await shot('32-stage-result'); await click('#modal [data-a="closeModal"]');
     await page.evaluate(() => { const s = UI.S; const p = s.stageBoard[0]; s.stageBoard.shift(); p.won = true; p.perf0 = 70; s.offers.push(p); UI.render(); });
-    await click('[data-a="negotiate"]'); await click('[data-a="negTake"]'); await shot('33-theatre-now');
+    await click('[data-a="negotiate"]'); await click('[data-a="negTake"]'); await drain(); await shot('33-theatre-now');
+  });
+  await step('phone', async () => {
+    await page.evaluate(() => { UI.closeModal(true); const s = UI.S; s.energy = 100; FC.takeSelfie(s, 'street', 'wave'); FC.addPhoto(s, { kind: 'bts', set: 'city', look: Object.assign({}, s.look, { top: 'hero', topColor: '#8f1d2c' }), cast: ['Zendaya'], anim: 'hero', cam: 'wide' }); UI.render(); });
+    await click('[data-a="phone"]'); await page.waitForTimeout(300); await shot('34-phone');
+    await click('[data-a="phone"][data-v="camera"]'); await page.waitForTimeout(2500); await shot('35-roll');
+    await click('[data-a="snap"]'); await page.waitForTimeout(1200); await shot('36-compose'); await click('[data-a="lensPost"]'); await page.waitForTimeout(1200); await shot('37-lens-post');
+    await click('.ph-back'); await click('[data-a="lensTab"][data-v="feed"]'); await page.waitForTimeout(3500); await shot('38-lens-feed');
+    await click('.ph-back'); await click('[data-a="phone"][data-v="clapper"]'); await click('[data-a="clapPost"][data-v="joke"]'); await shot('39-clapper'); await click('#modal [data-a="closeModal"]');
+  });
+  await step('fitting', async () => {
+    await page.evaluate(() => { const s = UI.S; s.jobs = []; const a = FC.genFranchiseProject(s, 'mcu', { kind: 'original', size: 'lead' }); a.won = true; a.perf0 = 70; s.offers.push(a); FC.sign(s, a.id); s.pending = s.pending.filter(p => p.type === 'fitting'); UI.render(); UI.nextPending(); });
+    await page.waitForTimeout(800); await click('[data-a="fitPick"][data-i="1"]'); await click('[data-a="fitColor"]'); await page.waitForTimeout(500); await shot('40-fitting'); await click('[data-a="fitWear"]');
   });
   await step('ceremony', async () => {
     await page.evaluate(() => { const s = UI.S; const c = s.credits.find(x => x.critics != null) || { title: 'Test', id: 'x' }; s.pending.push({ type: 'ceremony', show: 'oscars', res: [{ cat: 'Best Actress', film: c.title, won: true, winner: s.me.name, others: ['Zendaya (A)', 'Emma Stone (B)', 'Florence Pugh (C)', 'Viola Davis (D)'] }] }); UI.nextPending(); });

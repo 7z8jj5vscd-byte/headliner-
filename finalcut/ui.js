@@ -172,7 +172,7 @@ UI.render = function () {
 function hud() {
   const s = S();
   $('#hud').innerHTML = `<button class="hud-who" data-a="go" data-tab="home"><span class="hud-name">${esc(s.me.name)}</span><span class="hud-date">${FC.dateLabel(s)}</span></button>
-    <div class="hud-stats"><span class="en">⚡<b>${Math.round(s.energy)}</b></span><span>💵<b class="${s.money < 0 ? 'bad' : ''}">${M(s.money)}</b></span><span>★<b>${Math.round(s.fame)}</b></span><span title="Star Power">SP<b>${FC.starPower(s)}</b></span></div>`;
+    <div class="hud-stats"><span class="en">⚡<b>${Math.round(s.energy)}</b></span><span>💵<b class="${s.money < 0 ? 'bad' : ''}">${M(s.money)}</b></span><span>★<b>${Math.round(s.fame)}</b></span><span title="Star Power">SP<b>${FC.starPower(s)}</b></span><button class="phone-btn" data-a="phone" aria-label="Open your phone">📱${s.rollNew ? `<em class="badge">${s.rollNew}</em>` : ''}</button></div>`;
 }
 function nav() {
   const s = S(); const offers = (s.offers || []).filter(o => !o.theater).length; const stageOffers = (s.offers || []).filter(o => o.theater).length; const inbox = s.inbox.filter(m => m.kind !== 'note' || !m.read).length;
@@ -359,8 +359,7 @@ UI.startStageAud = function (pid) { const s = S(); const st = FC.stageSetup(s, p
 UI.renderStageAud = function () {
   const s = S(), a = UI.saud, p = s.stageBoard.find(x => x.id === a.pid); if (!p) return UI.closeModal();
   const st = a.setup; let html = '';
-  if (a.step === 0) html = `<div class="eyebrow">${p.region === 'broadway' ? 'Broadway' : 'West End'} audition · ${esc(p.studio.split(',')[0])}</div><h2>${esc(p.title)}</h2><p class="small">You're in for <b>${esc(p.stageRole)}</b>. ${st.mus ? 'A musical' : 'A play'}, directed by ${esc(p.director.name)}.</p><div class="scene3d" id="saud3d"></div>
-    <div class="scene-card">${esc(st.note)}</div><p class="small muted">${st.mus ? 'Your song, two scenes, then the dance call.' : 'Your monologue, two scenes, then a callback with the director.'}</p><button class="btn" data-a="saudNext">Walk on stage ${ic('next')}</button>`;
+  if (a.step === 0) html = `<div class="eyebrow">${p.region === 'broadway' ? 'Broadway' : 'West End'} audition · ${esc(p.studio.split(',')[0])}</div><h2>${esc(p.title)}</h2><p class="small">You're in for <b>${esc(p.stageRole)}</b>. ${st.mus ? 'A musical' : 'A play'}, directed by ${esc(p.director.name)}.</p><div class="scene-card">${esc(st.note)}</div><p class="small muted">${st.mus ? 'Your song, two scenes, then the dance call.' : 'Your monologue, two scenes, then a callback with the director.'}</p><button class="btn" data-a="saudNext">Walk on stage ${ic('next')}</button>`;
   else if (a.step === 1) html = `<div class="eyebrow">${st.mus ? 'Your song' : 'Your monologue'}</div><h2>What did you bring?</h2><div class="choices">${(st.mus ? D.SONG_TYPES : D.MONO_TYPES).map(x => `<button class="choice" data-a="saudPiece" data-v="${x[0]}"><b>${x[1]}</b></button>`).join('')}</div>`;
   else if (a.step <= 1 + st.beats.length) { const b = st.beats[a.step - 2]; html = `<div class="eyebrow">Scene ${a.step - 1} of ${st.beats.length}</div><h2>${esc(b.text[0].toUpperCase() + b.text.slice(1))}</h2><div class="scene-card">${esc(p.stageRole.split(' (')[0].toUpperCase())}: ${esc(pick(['I won\'t be the one who leaves this time.', 'Look at me. Really look at me.', 'There is nothing left to be afraid of.', 'Tomorrow, then. Always tomorrow.']))}</div><div class="tone">${D.TONES.map(t => `<button data-a="saudTone" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>`; }
   else if (!a.third) html = st.mus ? `<div class="eyebrow">Dance call</div><h2>The choreographer teaches a 32-count combination once.</h2><div class="choices">${D.DANCE_CALL.map(x => `<button class="choice" data-a="saudThird" data-v="${x[0]}"><b>${x[1]}</b></button>`).join('')}</div>`
@@ -373,8 +372,11 @@ UI.renderStageAud = function () {
       <p>${r.cast ? 'Your agent is negotiating the contract. Find it under Offers in the Theatre tab.' : `The part went to ${esc(r.rival)}. ${st.mus ? 'Voice lessons and gym sessions help with musicals.' : 'Acting classes and a dialect coach help with plays.'}`}</p>
       <div class="btns">${r.cast ? `<button class="btn" data-a="negotiate" data-id="${p.id}">Negotiate now</button>` : ''}<button class="btn ${r.cast ? 'ghost' : ''}" data-a="closeModal">Close</button></div>`;
     if (r.cast) UI.toast('Cast: ' + p.title); save(); UI.render(); }
-  UI.modal(html);
-  if (a && a.step === 0) { const el = $('#saud3d'); if (el && window.L3 && L3.available()) L3.scene(el, s.look, { mode: 'theater' }); else if (el) el.remove(); }
+  const body = document.querySelector('#modal #saud-body');
+  if (body && a && a.step > 0) { body.innerHTML = html; return; }
+  if (body && !a) { body.innerHTML = html; return; }
+  UI.modal(`<div class="scene3d tall" id="saud3d"><div class="titlecard"><div class="tc-small">${esc(p.region === 'broadway' ? 'Broadway' : 'West End')} · ${esc(p.studio.split(',')[0])}</div><div class="tc-big">Audition</div></div></div><div id="saud-body">${html}</div>`);
+  const el = $('#saud3d'); if (el && window.L3 && L3.available()) L3.scene(el, s.look, { mode: 'theater', anim: 'talk' }); else if (el) el.classList.add('noscene');
 };
 
 // ------------------------------------------------------------------ work: prep, shooting, press
@@ -391,7 +393,7 @@ function workCard(j) {
   let body = '';
   if (j.stage === 'prep') {
     const acts = FC.prepActs(s, j); const prep = j.prepScore || 0;
-    body = `<p class="small muted">${j.left > (j.weeks.prep || 0) ? `Queued behind your other work. ` : ''}Shooting starts in ${j.left} week${j.left === 1 ? '' : 's'}. Prep now: it counts for about a fifth of your acting score.</p>
+    body = `${real && j.size !== 'voice' ? `<p class="small">Costume: <b>${esc(j.costume ? j.costume.name : 'not chosen yet')}</b> <button class="btn sm dark" data-a="refit" data-id="${j.id}">${j.costume ? 'Refit' : 'Go to fitting'}</button></p>` : ''}<p class="small muted">${j.left > (j.weeks.prep || 0) ? `Queued behind your other work. ` : ''}Shooting starts in ${j.left} week${j.left === 1 ? '' : 's'}. Prep now: it counts for about a fifth of your acting score.</p>
       ${bar('Prep', prep)}
       ${real ? `<div class="acts" style="margin-top:10px">${acts.map(a => { const reps = (j.prepLog || {})[a.id] || 0; return `<button class="act" data-a="doPrep" data-j="${j.id}" data-id="${a.id}" ${s.energy < a.cost || prep >= 100 || (a.price && s.money < a.price) ? 'disabled' : ''} title="${esc(a.d)}"><b>${a.id === 'chem' ? 'Rehearse with ' + esc((j.costars[0] || '').split(' ')[0]) : a.name}</b><small>−${a.cost}⚡${a.price ? ' · ' + M(a.price) : ''}${reps ? ' · done ' + reps + '×' : ''}</small></button>`; }).join('')}</div>` : '<p class="small muted">No prep needed for this one.</p>'}`;
   } else if (j.stage === 'shoot') {
@@ -608,12 +610,18 @@ UI.nextPending = function () {
   if (p.type === 'opening' || p.type === 'stage') { const j = s.jobs.find(x => x.id === p.jobId); if (!j) return UI.nextPending();
     const ev = p.type === 'stage' ? D.STAGE_EVENTS[p.ev] : null; UI.cur = p;
     UI.eventCard({ big: p.type === 'opening' ? 'Opening night' : 'Tonight', small: `${j.title} · ${j.studio.split(',')[0]}`, kicker: `${j.stageRole || roleLabel(j)} · ${Math.min(100, j.house || 0)}% sold · ${j.nights || 0} shows`,
-      title: p.type === 'opening' ? 'Places in five minutes. The critics are in the house.' : ev.t, look: Object.assign({}, s.look, j.genre === 'musical' ? { top: 'sequin' } : {}),
-      scene: { mode: 'theater', cast: UI.castLooks(j.costars), anim: 'pose' },
+      title: p.type === 'opening' ? 'Places in five minutes. The critics are in the house.' : ev.t, look: UI.costume(j, 'stage'),
+      scene: ev && ev.sc && ev.sc.set ? { set: ev.sc.set, cast: UI.castLooks(j.costars, ev.sc.castSuits), anim: ev.sc.anim, castAnim: ev.sc.castAnim, fx: ev.sc.fx } : { mode: 'theater', cast: UI.castLooks(j.costars), anim: (ev && ev.sc && ev.sc.anim) || 'pose', castAnim: 'pose' },
       choices: (p.type === 'opening' ? D.STAGE_OPENING.map(c => c[1]) : ev.c.map(c => c[0])),
       pick: i => { const out = FC.resolve(s, p, i); if (out && typeof out === 'object') return { good: out.critics >= 55, headline: out.text, html: `<div class="bigstat"><div><b>${out.critics}%</b><span>Critics</span></div></div>${out.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}` }; return { text: out }; } }); return; }
-  if (p.type === 'closing') { const j = job(p.id); if (!j) return UI.nextPending(); const avg = j.houses && j.houses.length ? Math.round(j.houses.reduce((a, b) => a + b, 0) / j.houses.length) : 0;
-    UI.modal(`<div class="eyebrow">Closing night</div><h2>${esc(j.title)}</h2><div class="bigstat"><div><b>${j.nights || 0}</b><span>Performances</span></div><div><b>${Math.min(100, avg)}%</b><span>Avg houses</span></div><div><b>${j.openingCritics != null ? j.openingCritics : j.critics}%</b><span>Critics</span></div></div><p>The cast takes one last bow. ${avg > 90 ? 'The run sold out almost every night.' : avg > 70 ? 'A healthy run.' : 'Some empty seats by the end, but you grew as an actor.'} Tony nominations are announced in the spring.</p><button class="btn" data-a="closeModal">Continue</button>`); return; }
+  if (p.type === 'closing') { const j = job(p.id); if (!j) return UI.nextPending(); const avgH = j.houses && j.houses.length ? Math.round(j.houses.reduce((a, b) => a + b, 0) / j.houses.length) : 0;
+    UI.eventCard({ big: 'Final curtain', small: `${j.title} · ${(j.studio || '').split(',')[0]}`, kicker: `${j.nights || 0} performances · ${Math.min(100, avgH)}% average houses`, title: 'The last bow. The house is on its feet.', look: UI.costume(j, 'stage'),
+      scene: { mode: 'theater', cast: UI.castLooks(j.costars), anim: 'cheer', castAnim: 'cheer' }, choices: D.CLOSING.map(c => c[1]),
+      pick: i => ({ good: true, headline: FC.closingChoice(s, j.id, i), html: `<div class="bigstat"><div><b>${j.nights || 0}</b><span>Performances</span></div><div><b>${Math.min(100, avgH)}%</b><span>Avg houses</span></div><div><b>${j.openingCritics != null ? j.openingCritics : j.critics}%</b><span>Critics</span></div></div><p class="small muted">${avgH > 90 ? 'The run sold out almost every night.' : avgH > 70 ? 'A healthy run.' : 'Some empty seats by the end, but you grew as an actor.'} ${j.region === 'westend' ? 'Olivier' : 'Tony'} nominations come out in the spring.</p>` }) }); return; }
+  if (p.type === 'rehearsal') { const j = s.jobs.find(x => x.id === p.jobId); if (!j) return UI.nextPending(); const ev = D.REHEARSAL_EVENTS[p.ev]; UI.cur = p;
+    UI.eventCard({ big: `Rehearsal · week ${p.wk || 1}`, small: `${j.title} · ${(j.studio || '').split(',')[0]}`, kicker: `${j.stageRole || roleLabel(j)} · Dir. ${j.director.name}`, title: ev.t, look: s.look,
+      scene: { set: 'rehearsal', cast: UI.castLooks(j.costars), anim: pick(['talk', 'dance', 'point']), castAnim: pick(['talk', 'dance']) }, choices: ev.c.map(c => c[0]), pick: i => ({ text: FC.resolve(s, p, i) }) }); return; }
+  if (p.type === 'fitting') { const j = s.jobs.find(x => x.id === p.jobId); if (!j) return UI.nextPending(); UI.fitting(j, true); return; }
   if (p.type === 'midseason') { const c = job(p.id); if (!c) return UI.nextPending(); const ev = D.TV_MIDSEASON[p.ev];
     UI.eventCard({ big: `Episode ${p.ep}`, small: c.title, kicker: 'Airing now', title: FC.fill(ev.t, { ep: p.ep }), sub: epBars(c), look: s.look, scene: { set: 'home', anim: 'phone' },
       choices: ev.c.map(x => x[0]), pick: i => ({ text: FC.tvMoment(s, p.id, p.ev, i) }) }); return; }
@@ -644,6 +652,7 @@ const L3set = j => window.L3 && L3.setFor ? L3.setFor(j) : 'home';
 UI.castLooks = (names, suits) => (names || []).filter(Boolean).slice(0, 2).map(n => { const a = D.ACTORS.find(x => x[0] === n); if (!window.L3 || !L3.lookFor) return null; return L3.lookFor(n, Object.assign({ fem: a ? a[1] === 's' : undefined }, suits ? { top: 'suit' } : {})); }).filter(Boolean);
 UI.costume = (j, set) => {
   const s = S(); const lk = Object.assign({}, s.look); if (!j) return lk; const fem = s.me.cat === 's';
+  if (j.costume) return Object.assign(lk, j.costume.look);
   const F = j.fid ? D.FRANCHISES.find(f => f.id === j.fid) : null;
   if (F && (F.kind === 'superhero' || F.kind === 'animation')) return Object.assign(lk, { top: 'hero', topColor: F.color, accColor: '#d8b04a' });
   if (set === 'period' || set === 'castle') return Object.assign(lk, fem ? { top: 'gown', topColor: set === 'castle' ? '#2f5d50' : '#5a1d24' } : { top: 'suit', topColor: '#2a221a', accColor: '#8f1d2c' });
@@ -669,6 +678,80 @@ UI.evPick = function (i) {
   const chips = parts.filter(isFx), prose = parts.filter(x => !isFx(x));
   $('#ev-body').innerHTML = `<div class="ev-result ${good ? 'good' : 'bad'}"><b>${esc(r.headline || o.choices[i])}</b>${prose.length ? `<p class="small">${esc(prose.join('. '))}.</p>` : ''}${chips.length ? `<div class="btns" style="margin-top:6px">${chips.map(c => `<span class="pill ${/-\d|annoyed|cools/.test(c) ? 'bad' : 'good'}">${esc(c)}</span>`).join('')}</div>` : ''}${r.html || ''}</div><button class="btn" data-a="closeModal" style="margin-top:12px">Continue</button>`;
   UI.afterModal = () => UI.nextPending(); flushAch();
+};
+
+// ------------------------------------------------------------------ costume fittings
+UI.fitting = function (j, fresh) {
+  const s = S(); const opts = FC.costumeOptions(s, j); const cur = j.costume ? { i: j.costume.i, color: j.costume.color } : { i: 0, color: opts[0].colors[0] };
+  UI.fit = { jid: j.id, i: cur.i, color: cur.color || opts[cur.i].colors[0], fresh };
+  UI.modal(`<div class="eyebrow">Costume fitting · ${esc(j.title)}</div><h2>Try it on</h2><div class="fit-wrap"><div class="prev3d" id="fit3d"><div class="hint">Drag to spin</div></div><div id="fit-opts"></div></div>`, { noClose: true });
+  UI.renderFit();
+  const el = $('#fit3d'); if (el && window.L3 && L3.available()) UI.fitCtl = L3.preview(el, UI.fitLook(), {});
+};
+UI.fitLook = () => { const s = S(); const j = s.jobs.find(x => x.id === UI.fit.jid); const o = FC.costumeOptions(s, j)[UI.fit.i]; const lk = Object.assign({}, s.look, o.look, { topColor: UI.fit.color }); if (lk.top === 'hero') { lk.accColor = '#d8b04a'; lk.bottomColor = UI.fit.color; } return lk; };
+UI.renderFit = function () {
+  const s = S(); const f = UI.fit; const j = s.jobs.find(x => x.id === f.jid); const opts = FC.costumeOptions(s, j); const o = opts[f.i];
+  const fxp = x => [x.perf ? `<span class="pill good">Acting +${x.perf}</span>` : '', x.buzz ? `<span class="pill gold">Buzz +${x.buzz}</span>` : '', x.comfort ? `<span class="pill blue">Easier days on set</span>` : ''].join(' ');
+  $('#fit-opts').innerHTML = `<div class="choices">${opts.map((c, i) => `<button class="choice ${i === f.i ? 'on' : ''}" data-a="fitPick" data-i="${i}"><b>${esc(c.name)}</b><small>${esc(c.d)}</small><div style="margin-top:4px">${fxp(c.fx)}</div></button>`).join('')}</div>
+    <div class="lbl" style="margin-top:10px">Color</div><div class="opts">${o.colors.map(c => `<button class="sw ${c === f.color ? 'on' : ''}" style="background:${c}" data-a="fitColor" data-v="${c}" aria-label="Color ${c}"></button>`).join('')}</div>
+    <div class="btns" style="margin-top:10px"><button class="btn" data-a="fitWear">Wear this on set</button></div>`;
+};
+
+// ------------------------------------------------------------------ phone: Clapper, Lens, camera roll
+UI.photoSpec = p => ({ id: p.id, set: p.set, look: FC.photoLook(S(), p), cast: UI.castLooks(p.cast || []), anim: p.anim, cam: p.cam, title: p.title, castAnim: p.anim === 'talk' ? 'talk' : 'pose' });
+UI.photoImg = (p, size = 300, cls = '') => `<img class="ph ${cls}" data-ph="${p.id}" data-size="${size}" alt="${esc(p.kind || 'photo')}">`;
+UI.fillPhotos = function () {
+  // render pending photo thumbnails one per frame so the phone stays responsive
+  const imgs = [...document.querySelectorAll('img.ph:not([src])')]; if (!imgs.length) return;
+  const s = S(); const all = (s.roll || []).concat((s.lens || []).map(x => x.photo)).concat(UI.npcPosts ? UI.npcPosts.map(x => x.photo) : []);
+  const step = () => { const im = imgs.shift(); if (!im) return; if (im.isConnected) { const p = all.find(x => x.id === im.dataset.ph); const url = p && window.L3 && L3.available() ? L3.still(p.npc ? p.spec : UI.photoSpec(p), +im.dataset.size) : null; if (url) im.src = url; else im.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#232a3a"/></svg>'); } requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+};
+UI.npcPostsFor = s => {
+  if (UI.npcWeek === s.week && UI.npcPosts) return UI.npcPosts; UI.npcWeek = s.week;
+  const sets = ['street', 'home', 'city', 'carpet', 'desert', 'diner', 'forest', 'period', 'gym']; const caps = ['Day off 🌞', 'New project, who dis', 'Last night ✨', 'Grateful.', 'Back on set.', 'Wardrobe test 👀', 'Press day.', 'Little break.'];
+  UI.npcPosts = [0, 1, 2, 3, 4, 5].map(i => { const a = D.ACTORS[(s.week * 7 + i * 13) % D.ACTORS.length]; const id = 'npc' + s.week + '_' + i; const cam = ['close', 'wide', 'selfie'][i % 3];
+    return { npc: true, who: a[0], likes: Math.round((a[2] * a[2] * 400000) * (0.6 + ((s.week + i) % 5) / 5)), caption: caps[(s.week + i) % caps.length], photo: { id, npc: true, spec: { id, set: sets[(s.week + i * 3) % sets.length], look: window.L3 ? L3.lookFor(a[0], { fem: a[1] === 's' }) : null, anim: ['pose', 'wave', 'cheer', 'hero'][i % 4], cam } } }; });
+  return UI.npcPosts;
+};
+const handle = n => '@' + String(n).replace(/[^A-Za-z0-9]/g, '').toLowerCase();
+UI.phone = function (app = 'home', arg) {
+  const s = S(); UI.phoneApp = app; let body = '', title = '';
+  if (app === 'home') { title = FC.dateLabel(s).split(' · ')[0];
+    body = `<div class="ph-grid">${[['clapper', 'Clapper', '#1d9bf0', 'C'], ['lens', 'Lens', 'linear-gradient(45deg,#f9b234,#e1306c,#833ab4)', '◉'], ['camera', 'Camera roll', '#2a2f3a', '▣'], ['marquee', 'Marquee', '#e0603c', 'M'], ['news', 'Trades', '#3a3f4c', 'N'], ['inbox', 'Messages', '#3ec28f', '✉']].map(a => `<button class="ph-app" data-a="phone" data-v="${a[0]}"><span class="ph-ico" style="background:${a[2]}">${a[3]}</span>${a[1]}${a[0] === 'camera' && s.rollNew ? `<em class="badge">${s.rollNew}</em>` : ''}</button>`).join('')}</div>
+      <p class="tiny muted center" style="margin-top:14px">${FC.num(s.followers)} followers across your accounts</p>`; }
+  if (app === 'camera') { title = 'Camera roll'; s.rollNew = 0; save();
+    const sel = UI.selfie || (UI.selfie = { spot: 'home', pose: 'selfie' });
+    body = `<div class="card" style="padding:10px"><b>Take a photo</b> <span class="tiny muted">−3⚡</span><div class="opts" style="margin-top:6px">${FC.SELFIE_SPOTS.map(x => `<button class="${sel.spot === x[0] ? 'on' : ''}" data-a="selfieSpot" data-v="${x[0]}">${x[1]}</button>`).join('')}</div><div class="opts">${FC.SELFIE_POSES.map(x => `<button class="${sel.pose === x[0] ? 'on' : ''}" data-a="selfiePose" data-v="${x[0]}">${x[1]}</button>`).join('')}</div><button class="btn sm" data-a="snap" ${s.energy < 3 ? 'disabled' : ''}>Snap</button></div>
+      ${(s.roll || []).length ? `<p class="tiny muted">Photos from sets, premieres, stage nights and promo shoots land here. Tap one to post it on Lens.</p><div class="ph-roll">${s.roll.map(p => `<button class="ph-cell" data-a="phone" data-v="lensCompose" data-id="${p.id}">${UI.photoImg(p, 240)}<span class="ph-tag">${{ bts: 'Set', promo: 'Promo', carpet: 'Premiere', stage: 'Stage', awards: 'Awards', selfie: 'Selfie', tv: 'TV' }[p.kind] || ''}</span></button>`).join('')}</div>` : '<p class="empty">No photos yet. Work on a project or take one above.</p>'}`; }
+  if (app === 'lens') { title = 'Lens'; const posts = s.lens || [];
+    const tab = UI.lensTab || 'me';
+    body = `<div class="tabs" style="margin-bottom:8px"><button class="${tab === 'me' ? 'on' : ''}" data-a="lensTab" data-v="me">Your profile</button><button class="${tab === 'feed' ? 'on' : ''}" data-a="lensTab" data-v="feed">Feed</button></div>`;
+    if (tab === 'me') body += `<div class="lens-head">${UI.portrait(s.look, 160)}<div><b>${esc(handle(s.me.name))}</b><div class="lens-stats"><span><b>${posts.length}</b> posts</span><span><b>${FC.num(s.followers)}</b> followers</span><span><b>${200 + s.contacts * 12}</b> following</span></div><button class="btn sm" data-a="phone" data-v="camera">+ New post</button></div></div>
+      ${posts.length ? `<div class="ph-roll lens-grid">${posts.map(x => `<button class="ph-cell" data-a="phone" data-v="lensView" data-id="${x.id}">${UI.photoImg(x.photo, 240)}</button>`).join('')}</div>` : '<p class="empty">No posts yet. Open your camera roll and share something.</p>'}`;
+    else { const npc = UI.npcPostsFor(s); const mine = posts.slice(0, 3).map(x => ({ mine: true, who: s.me.name, likes: x.likes, caption: x.caption, photo: x.photo }));
+      const feed = mine.concat(npc).sort((a, b) => (b.mine ? 1 : 0) - (a.mine ? 1 : 0));
+      body += feed.map(x => `<div class="lens-post"><div class="lp-head"><b>${esc(handle(x.who))}</b>${x.mine ? '' : ' <span class="tiny muted">✓</span>'}</div>${UI.photoImg(x.photo, 360, 'big')}<div class="lp-foot">♥ ${FC.num(x.likes)} · <b>${esc(handle(x.who))}</b> ${esc(x.caption)}</div></div>`).join(''); } }
+  if (app === 'lensCompose') { title = 'New post'; const p = (s.roll || []).find(x => x.id === arg); if (!p) return UI.phone('camera');
+    const caps = FC.captions(s, p); const j = p.jobId ? (s.jobs.find(x => x.id === p.jobId)) : null;
+    body = `${UI.photoImg(p, 360, 'big')}<div class="lbl" style="margin-top:8px">Caption</div><div class="choices">${caps.slice(0, 3).map((c, i) => `<button class="choice" data-a="lensPost" data-id="${p.id}" data-i="${i}">${esc(c)}</button>`).join('')}</div>
+      <div class="field"><label for="lens-cap">Or write your own</label><input id="lens-cap" maxlength="140" placeholder="Write a caption"></div><button class="btn" data-a="lensPost" data-id="${p.id}" data-i="custom" ${s.energy < 8 ? 'disabled' : ''}>Share · −8⚡</button>
+      ${p.kind === 'bts' && j && FC.brand(j.studio) >= 0.5 ? `<p class="small bad" style="margin-top:8px">Careful: this is a set photo from ${esc(j.title)}, which hasn't come out yet. ${esc(j.studio)} may call it a leak.</p>` : p.kind === 'promo' ? '<p class="small good" style="margin-top:8px">Studio-approved promo still. Posting it helps the buzz.</p>' : ''}`;
+    UI.lensCaps = caps; }
+  if (app === 'lensView') { title = 'Post'; const x = (s.lens || []).find(y => y.id === arg); if (!x) return UI.phone('lens');
+    body = `<div class="lens-post"><div class="lp-head"><b>${esc(handle(s.me.name))}</b> <span class="tiny muted">${FC.dateLabel(s, x.w).split(' · ')[0]}</span></div>${UI.photoImg(x.photo, 360, 'big')}<div class="lp-foot">♥ ${FC.num(x.likes)} · <b>${esc(handle(s.me.name))}</b> ${esc(x.caption)}</div>
+      ${x.leak ? '<p class="small bad">This post caused a leak scandal.</p>' : ''}${x.comments.map(c => `<div class="small"><b>${esc(handle(c[0]))}</b> ${esc(c[1])}</div>`).join('')}</div>`; }
+  if (app === 'clapper') { title = 'Clapper';
+    body = `<div class="card" style="padding:10px"><b>New post</b> <span class="tiny muted">−5⚡</span><div class="choices" style="margin-top:6px">${D.CLAPPER_KINDS.map(k => `<button class="choice" data-a="clapPost" data-v="${k.id}" ${s.energy < 5 ? 'disabled' : ''}><b>${esc(k.name)}</b></button>`).join('')}</div>
+      <div class="field"><label for="clap-text">Or write your own</label><input id="clap-text" maxlength="200" placeholder="What's happening?"></div><button class="btn sm" data-a="clapPost" data-v="custom" ${s.energy < 5 ? 'disabled' : ''}>Post</button></div>
+      <div class="lbl" style="margin-top:8px">Trending</div><div class="opts">${['#' + ((s.jobs[0] || {}).title || 'Oscars').replace(/[^A-Za-z0-9]/g, ''), '#BoxOffice', '#' + pick(D.ACTORS)[0].split(' ')[0], '#SuperheroFatigue', '#Tonys'].map(t => `<span class="pill">${esc(t)}</span>`).join('')}</div>
+      <div style="margin-top:8px">${(s.feed || []).slice(0, 30).map(f => `<div class="post"><b>${esc(f.who)}</b> <small>${esc(handle(f.who))} · ${FC.dateLabel(s, f.w).split(' · ')[0]}</small><div>${esc(f.t)}</div><small>♥ ${FC.num(f.likes)}</small>${(f.replies || []).map(r => `<div class="tiny muted" style="margin-left:10px">↳ <b>${esc(handle(r[0]))}</b> ${esc(r[1])}</div>`).join('')}</div>`).join('') || '<p class="empty">Nothing yet.</p>'}</div>`; }
+  if (app === 'marquee') { UI.closeModal(true); UI.sub.world = 'marquee'; UI.tab = 'world'; UI.render(); return; }
+  if (app === 'news') { UI.closeModal(true); UI.sub.world = 'news'; UI.tab = 'world'; UI.render(); return; }
+  if (app === 'inbox') { UI.closeModal(true); UI.tab = 'home'; UI.render(); return; }
+  const back = app === 'home' ? '' : `<button class="ph-back" data-a="phone" data-v="${app === 'lensCompose' ? 'camera' : app === 'lensView' ? 'lens' : 'home'}" aria-label="Back">‹</button>`;
+  UI.modal(`<div class="phone"><div class="ph-bar">${back}<b>${esc(title)}</b><span class="mono tiny">⚡${Math.round(s.energy)}</span></div><div class="ph-body">${body}</div></div>`);
+  UI.fillPhotos();
 };
 
 // ------------------------------------------------------------------ trailers
@@ -745,17 +828,17 @@ const A = {
   audScreen: d => { UI.aud.screen = d.c; if (window.L3) L3.stop(); UI.renderAudition(); },
   negotiate: d => UI.startNegotiation(d.id),
   negSend: () => { const s = S(), n = UI.neg; const r = FC.negotiate(s, n.pid, n.ask);
-    if (r.result === 'accept') { const res = FC.sign(s, n.pid, r.terms); UI.closeModal(true); UI.neg = null; UI.toast(res.ok ? `Deal! ${res.t}` : res.t); flushAch(); save(); UI.render(); return; }
+    if (r.result === 'accept') { const res = FC.sign(s, n.pid, r.terms); UI.closeModal(true); UI.neg = null; UI.toast(res.ok ? `Deal! ${res.t}` : res.t); flushAch(); save(); UI.render(); UI.nextPending(); return; }
     if (r.result === 'walk') { UI.closeModal(true); UI.neg = null; UI.toast('They walked away from the table.'); save(); UI.render(); return; }
     n.counter = r.counter; n.msg = 'They came back with a counteroffer.'; n.msgCls = 'gold'; UI.renderNegotiation(); },
-  negAcceptCounter: () => { const s = S(), n = UI.neg; const res = FC.sign(s, n.pid, n.counter); UI.closeModal(true); UI.neg = null; UI.toast(res.ok ? `Deal! ${res.t}` : res.t); flushAch(); save(); UI.render(); },
-  negTake: () => { const s = S(), n = UI.neg; const p = (s.offers || []).find(x => x.id === n.pid); const res = FC.sign(s, n.pid, p.deal.base); UI.closeModal(true); UI.neg = null; UI.toast(res.ok ? `Signed. ${res.t}` : res.t); flushAch(); save(); UI.render(); },
+  negAcceptCounter: () => { const s = S(), n = UI.neg; const res = FC.sign(s, n.pid, n.counter); UI.closeModal(true); UI.neg = null; UI.toast(res.ok ? `Deal! ${res.t}` : res.t); flushAch(); save(); UI.render(); UI.nextPending(); },
+  negTake: () => { const s = S(), n = UI.neg; const p = (s.offers || []).find(x => x.id === n.pid); const res = FC.sign(s, n.pid, p.deal.base); UI.closeModal(true); UI.neg = null; UI.toast(res.ok ? `Signed. ${res.t}` : res.t); flushAch(); save(); UI.render(); UI.nextPending(); },
   decline: d => { const t = FC.declineOffer(S(), d.id); UI.closeModal(true); UI.neg = null; UI.toast(t); save(); UI.render(); },
   endWeek: () => UI.endWeek(),
   stageAud: d => UI.startStageAud(d.id),
   stagePrep: d => after(FC.stagePrep(S(), d.id)),
   stageReg: d => { UI.stageReg = d.v; UI.render(); }, stageType: d => { UI.stageType = d.v; UI.render(); },
-  saudNext: () => { if (window.L3) L3.stop(); UI.saud.step++; UI.renderStageAud(); },
+  saudNext: () => { UI.saud.step++; UI.renderStageAud(); },
   saudPiece: d => { UI.saud.piece = d.v; UI.saud.step++; UI.renderStageAud(); },
   saudTone: d => { UI.saud.tones.push(d.v || d.t); UI.saud.step++; UI.renderStageAud(); },
   saudThird: d => { UI.saud.third = d.v; UI.renderStageAud(); },
@@ -772,6 +855,16 @@ const A = {
     else UI.modal(`<p>${esc(out || 'Noted.')}</p><button class="btn" data-a="closeModal">Continue</button>`);
     UI.afterModal = () => UI.nextPending(); },
   evPick: d => UI.evPick(+d.i),
+  phone: d => UI.phone(d.v || 'home', d.id),
+  lensTab: d => { UI.lensTab = d.v; UI.phone('lens'); },
+  selfieSpot: d => { UI.selfie.spot = d.v; UI.phone('camera'); }, selfiePose: d => { UI.selfie.pose = d.v; UI.phone('camera'); },
+  snap: () => { const r = FC.takeSelfie(S(), UI.selfie.spot, UI.selfie.pose); if (!r.ok) return UI.toast(r.t); save(); UI.phone('lensCompose', r.photo.id); },
+  lensPost: d => { const s = S(); const cap = d.i === 'custom' ? (($('#lens-cap') || {}).value || UI.lensCaps[0]) : UI.lensCaps[+d.i]; const r = FC.postLens(s, d.id, cap); if (!r.ok) return UI.toast(r.t); UI.toast(r.t); flushAch(); save(); UI.render(); UI.lensTab = 'me'; UI.phone('lensView', r.post.id); },
+  clapPost: d => { const s = S(); const txt = d.v === 'custom' ? ($('#clap-text') || {}).value : ''; if (d.v === 'custom' && !(txt || '').trim()) return UI.toast('Write something first.'); const r = FC.postClapper(s, d.v === 'custom' ? 'thanks' : d.v, txt); UI.toast(r.t); save(); UI.render(); UI.phone('clapper'); },
+  fitPick: d => { const s = S(); const j = s.jobs.find(x => x.id === UI.fit.jid); UI.fit.i = +d.i; UI.fit.color = FC.costumeOptions(s, j)[UI.fit.i].colors[0]; UI.renderFit(); if (UI.fitCtl) UI.fitCtl.update(UI.fitLook()); },
+  fitColor: d => { UI.fit.color = d.v; UI.renderFit(); if (UI.fitCtl) UI.fitCtl.update(UI.fitLook()); },
+  fitWear: () => { const s = S(); const r = FC.chooseCostume(s, UI.fit.jid, UI.fit.i, UI.fit.color); save(); UI.toast(r.t); const fresh = UI.fit.fresh; UI.fitCtl = null; UI.closeModal(true); UI.render(); if (fresh) UI.nextPending(); },
+  refit: d => { const j = S().jobs.find(x => x.id === d.id); if (j) UI.fitting(j, false); },
   trSkip: () => { if (UI.trCtl && UI.trCtl.skip) UI.trCtl.skip(); },
   trAgain: d => { const s = S(); const j = s.jobs.find(x => x.id === d.id) || s.credits.find(x => x.id === d.id); if (j) { const f = UI.afterModal; UI.afterModal = null; UI.playTrailer(j, false); UI.afterModal = f; } },
   watchTrailer: d => { const s = S(); const j = s.jobs.find(x => x.id === d.id) || s.credits.find(x => x.id === d.id); if (j) UI.playTrailer(j, false); },

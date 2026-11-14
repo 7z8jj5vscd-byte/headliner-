@@ -395,13 +395,7 @@ L3.portrait = function (look, size = 240, bg = '#1d2230') {
 
 // ------------------------------------------------------------------ sets
 // genre (and franchise) to a themed set
-L3.setFor = function (job) {
-  if (!job) return 'green';
-  const fr = { starwars: 'desert', dune: 'desert', hp: 'castle', jurassic: 'forest', wick: 'street', fast: 'street', bond: 'period', hunger: 'forest', spiderverse: 'booth', elseworlds: 'city' }[job.fid];
-  if (fr) return fr;
-  if (job.theater) return 'stage';
-  return { superhero: pick(['city', 'green']), scifi: 'space', period: 'period', biopic: 'period', fantasy: 'castle', action: pick(['street', 'desert']), horror: 'horror', drama: 'home', comedy: pick(['diner', 'home']), romance: pick(['street', 'home']), thriller: pick(['office', 'street']), musical: 'stage', animation: 'booth' }[job.genre] || 'home';
-};
+L3.setFor = job => window.FC && FC.setFor ? FC.setFor(job) : 'green';
 function canvasTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); return t; }
 function skyline(color1, color2, text) {
   return canvasTex(1024, 512, (g, w, h) => {
@@ -475,6 +469,35 @@ function buildSet(scene, id, things, o = {}) {
     case 'stage': { fog('#0a0607'); addFloor(scene, '#120a0a'); const stage = mesh(geo('BoxGeometry', 9, 0.6, 4.5), mat('#3a2616'), 0, -0.3, -0.6); scene.add(stage);
       for (const sx of [-1, 1]) { scene.add(mesh(geo('BoxGeometry', 1.8, 5, 0.15), mat('#7a1020', { rough: 0.9 }), sx * 3.5, 2.5, 1.3)); }
       scene.add(mesh(geo('BoxGeometry', 9, 0.9, 0.2), mat('#7a1020'), 0, 4.3, 1.35)); const sp = new THREE.SpotLight(0xfff1d6, 1.4, 20, 0.3, 0.5); sp.position.set(0, 8, 5); scene.add(sp); scene.add(sp.target); break; }
+    case 'carpet': { scene.background = new THREE.Color('#0d0f14'); addFloor(scene, '#16141a');
+      const carpet = mesh(geo('PlaneGeometry', 2.2, 30), mat('#8f1d2c', { rough: 0.95 })); carpet.rotation.x = -Math.PI / 2; carpet.position.set(0, 0.01, -4); scene.add(carpet);
+      const wall = canvasTex(1024, 384, (g, w, h) => { g.fillStyle = '#ece6da'; g.fillRect(0, 0, w, h); for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) { g.fillStyle = (r + c) % 2 ? '#8f1d2c' : '#1d1d24'; g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.fillText((r + c) % 2 ? (o.title || 'PREMIERE').toUpperCase().slice(0, 18) : 'FINAL CUT', 100 + c * 205, 44 + r * 76); } });
+      scene.add(mesh(geo('PlaneGeometry', 9.6, 3.6), new THREE.MeshBasicMaterial({ map: wall }), 0, 1.9, -2.2));
+      for (const sx of [-1.4, 1.4]) for (let i = 0; i < 6; i++) scene.add(mesh(geo('CylinderGeometry', 0.04, 0.05, 0.9, 8), mat('#d8b04a', { metal: 0.8, rough: 0.3 }), sx, 0.45, -1 - i * 1.6));
+      break; }
+    case 'rehearsal': { fog('#22201f'); addFloor(scene, '#8a6a4f', 60, { rough: 0.5 });
+      for (let i = 0; i < 6; i++) { const m = mesh(geo('PlaneGeometry', 1.4, 2.2), mat('#b8c4cc', { rough: 0.05, metal: 0.9 }), -3.5 + i * 1.42, 1.3, -3); scene.add(m); }
+      scene.add(mesh(geo('PlaneGeometry', 12, 6), mat('#e9e4d8'), 0, 3, -3.05)); scene.add(mesh(geo('CylinderGeometry', 0.025, 0.025, 8.5, 8), mat('#d8cdb4', { metal: 0.3 }), 0, 1.05, -2.85)).rotation.z = Math.PI / 2;
+      const piano = grp(-2.6, 0, -1.6); scene.add(piano); piano.add(mesh(geo('BoxGeometry', 1.4, 1.1, 0.6), mat('#111114', { rough: 0.2 }), 0, 0.55, 0)); piano.add(mesh(geo('BoxGeometry', 1.3, 0.04, 0.2), mat('#f2f2f4'), 0, 0.78, 0.35));
+      for (let i = 0; i < 8; i++) { const t = mesh(geo('PlaneGeometry', 0.5, 0.04), mat(pick(['#ffd23f', '#5cc8b0', '#ff4f79']), { basic: true }), rnd(-2, 2), 0.006, rnd(-1.5, 1.5)); t.rotation.x = -Math.PI / 2; t.rotation.z = rnd(0, 3); scene.add(t); }
+      for (let i = 0; i < 4; i++) { const ch = grp(1.2 + i * 0.6, 0, -2); scene.add(ch); ch.add(mesh(geo('BoxGeometry', 0.42, 0.04, 0.42), mat('#2a2a30'), 0, 0.45, 0)); ch.add(mesh(geo('BoxGeometry', 0.42, 0.4, 0.04), mat('#2a2a30'), 0, 0.66, -0.2)); }
+      break; }
+    case 'backstage': { fog('#1a1214'); addFloor(scene, '#3a2c28', 60, { rough: 0.8 });
+      scene.add(mesh(geo('PlaneGeometry', 12, 6), mat('#4a3438'), 0, 3, -2.6));
+      const mir = grp(0, 0, -2.5); scene.add(mir); mir.add(mesh(geo('PlaneGeometry', 2.6, 1.3), mat('#9fb0c0', { rough: 0.05, metal: 0.9 }), 0, 1.75, 0.01));
+      for (let i = 0; i < 7; i++) for (const y of [1.06, 2.44]) mir.add(mesh(geo('SphereGeometry', 0.05, 8, 6), mat('#fff1c0', { basic: true }), -1.35 + i * 0.45, y, 0.03));
+      for (let i = 0; i < 3; i++) for (const x of [-1.38, 1.38]) mir.add(mesh(geo('SphereGeometry', 0.05, 8, 6), mat('#fff1c0', { basic: true }), x, 1.4 + i * 0.35, 0.03));
+      mir.add(mesh(geo('BoxGeometry', 3, 0.06, 0.6), mat('#2a2018'), 0, 0.85, 0.3)); const pl = new THREE.PointLight(0xffe0a0, 1.1, 6); pl.position.set(0, 1.8, -1.6); scene.add(pl);
+      const rack = grp(2.4, 0, -1.4); scene.add(rack); rack.add(mesh(geo('CylinderGeometry', 0.015, 0.015, 1.4, 6), mat('#999', { metal: 0.8 }), 0, 1.6, 0)).rotation.x = Math.PI / 2; for (let i = 0; i < 6; i++) rack.add(mesh(geo('BoxGeometry', 0.4, 0.8, 0.05), mat(pick(['#8f1d2c', '#c9a227', '#2e8bff', '#1d1d24', '#e9e4d8'])), 0, 1.15, -0.55 + i * 0.22)).rotation.y = Math.PI / 2;
+      break; }
+    case 'awards': { scene.background = new THREE.Color('#120d08'); addFloor(scene, '#1a120c');
+      scene.add(mesh(geo('CylinderGeometry', 3, 3.2, 0.4, 40), mat('#2b1e12'), 0, 0.2, 0));
+      const statue = grp(-2.2, 0.4, -1.4); scene.add(statue); statue.add(mesh(geo('CylinderGeometry', 0.35, 0.4, 0.4, 16), mat('#111'), 0, 0.2)); statue.add(mesh(geo('CylinderGeometry', 0.15, 0.2, 2.2, 12), mat('#c9a227', { metal: 0.85, rough: 0.25 }), 0, 1.5)); statue.add(mesh(geo('SphereGeometry', 0.17, 14, 10), mat('#c9a227', { metal: 0.85, rough: 0.25 }), 0, 2.75));
+      for (let i = 0; i < 9; i++) scene.add(mesh(geo('TorusGeometry', 4 + i * 0.4, 0.03, 6, 40, Math.PI), mat('#c9a227', { basic: true, opacity: 0.5 - i * 0.04 }), 0, 0.3, -3 - i * 0.3));
+      break; }
+    case 'gym': { fog('#1c1f26'); addFloor(scene, '#2a2d34', 60, { rough: 0.9 }); scene.add(mesh(geo('PlaneGeometry', 12, 6), mat('#3a3f4c'), 0, 3, -3));
+      for (let i = 0; i < 3; i++) { const r = grp(-2 + i * 2, 0, -2.4); scene.add(r); r.add(mesh(geo('CylinderGeometry', 0.02, 0.02, 1.6, 6), mat('#aaa', { metal: 0.8 }), 0, 1.0, 0)).rotation.z = Math.PI / 2; for (const x of [-0.7, 0.7]) r.add(mesh(geo('CylinderGeometry', 0.22, 0.22, 0.08, 16), mat('#111'), x, 1.0, 0)).rotation.z = Math.PI / 2; }
+      break; }
     default: { // green screen
       scene.background = new THREE.Color('#1a1d24'); addFloor(scene, '#2fbf4a', 30, { rough: 0.9 }); const g = mesh(geo('CylinderGeometry', 6, 6, 6, 32, 1, true, Math.PI * 0.6, Math.PI * 0.8), mat('#2fbf4a', { side: THREE.BackSide, rough: 0.9 }), 0, 3, 1.5); scene.add(g);
       for (let i = 0; i < 14; i++) scene.add(mesh(geo('BoxGeometry', 0.08, 0.08, 0.01), mat('#ffffff', { basic: true }), rnd(-4, 4), rnd(0.5, 5), rnd(-3.5, -2.5)));
@@ -541,18 +564,11 @@ L3.scene = function (el, look, opts = {}) {
   let crowd = null;
   if (mode === 'set' || mode === 'event') { buildSet(scene, opts.set || 'green', things, opts); if (opts.crew) addCrew(scene, things, opts); }
   else if (mode === 'carpet') {
-    scene.background = new THREE.Color('#0d0f14'); addFloor(scene, '#16141a');
-    const carpet = mesh(geo('PlaneGeometry', 2.2, 30), mat('#8f1d2c', { rough: 0.95 })); carpet.rotation.x = -Math.PI / 2; carpet.position.set(0, 0.01, -4); scene.add(carpet);
-    const wall = canvasTex(1024, 384, (g, w, h) => { g.fillStyle = '#ece6da'; g.fillRect(0, 0, w, h); for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) { g.fillStyle = (r + c) % 2 ? '#8f1d2c' : '#1d1d24'; g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.fillText((r + c) % 2 ? (opts.title || 'PREMIERE').toUpperCase().slice(0, 18) : 'FINAL CUT', 100 + c * 205, 44 + r * 76); } });
-    scene.add(mesh(geo('PlaneGeometry', 9.6, 3.6), new THREE.MeshBasicMaterial({ map: wall }), 0, 1.9, -2.2));
-    for (const sx of [-1.4, 1.4]) for (let i = 0; i < 6; i++) scene.add(mesh(geo('CylinderGeometry', 0.04, 0.05, 0.9, 8), mat('#d8b04a', { metal: 0.8, rough: 0.3 }), sx, 0.45, -1 - i * 1.6));
+    buildSet(scene, 'carpet', things, opts);
     fx(scene, 'flashes', things); crowd = addCrowd(scene, 24, 0, { sides: true }); me.position.z = 0.3;
   } else if (mode === 'awards') {
-    scene.background = new THREE.Color('#120d08'); addFloor(scene, '#1a120c');
-    scene.add(mesh(geo('CylinderGeometry', 3, 3.2, 0.4, 40), mat('#2b1e12'), 0, 0.2, 0)); me.position.y = 0.4;
+    buildSet(scene, 'awards', things, opts); me.position.y = 0.4;
     scene.add(mesh(geo('BoxGeometry', 0.6, 1.1, 0.4), mat('#6b4f1d', { metal: 0.4, rough: 0.4 }), 1.1, 0.95, 0.4));
-    const statue = grp(-2.2, 0.4, -1.4); scene.add(statue); statue.add(mesh(geo('CylinderGeometry', 0.35, 0.4, 0.4, 16), mat('#111'), 0, 0.2)); statue.add(mesh(geo('CylinderGeometry', 0.15, 0.2, 2.2, 12), mat('#c9a227', { metal: 0.85, rough: 0.25 }), 0, 1.5)); statue.add(mesh(geo('SphereGeometry', 0.17, 14, 10), mat('#c9a227', { metal: 0.85, rough: 0.25 }), 0, 2.75));
-    for (let i = 0; i < 9; i++) scene.add(mesh(geo('TorusGeometry', 4 + i * 0.4, 0.03, 6, 40, Math.PI), mat('#c9a227', { basic: true, opacity: 0.5 - i * 0.04 }), 0, 0.3, -3 - i * 0.3));
     if (opts.win) { const tr = grp(0, -0.06, 0.05); tr.add(mesh(geo('CylinderGeometry', 0.025, 0.035, 0.22, 10), mat('#d8b04a', { metal: 0.9, rough: 0.2 }), 0, 0.11)); tr.add(mesh(geo('SphereGeometry', 0.03, 10, 8), mat('#d8b04a', { metal: 0.9, rough: 0.2 }), 0, 0.25)); me.userData.arms[1].hand.add(tr); }
     const spot = new THREE.SpotLight(0xfff1d6, 1.5, 20, 0.35, 0.5); spot.position.set(0, 9, 4); spot.target = me; scene.add(spot);
     crowd = addCrowd(scene, 60, 4.2);
@@ -582,6 +598,37 @@ L3.scene = function (el, look, opts = {}) {
   ctl.setAnim = a => { curAnim = a; };
   ctl.react = good => { curAnim = good ? 'cheer' : 'sad'; for (const th of things) if (th.kind === 'fig') th.mode = good ? 'cheer' : 'idle'; };
   return ctl;
+};
+
+// ------------------------------------------------------------------ stills (photos for the phone)
+// spec: { id, set, look, cast: [looks], anim, castAnim, cam: wide|close|selfie|group, title, t, fx }
+L3.stillCache = {};
+let sr = null;
+L3.still = function (spec, size = 320) {
+  if (!L3.available()) return null;
+  const key = spec.id + ':' + size; if (L3.stillCache[key]) return L3.stillCache[key];
+  try {
+    if (!sr) sr = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    sr.setPixelRatio(1); sr.setSize(size, size);
+    const scene = new THREE.Scene(); const things = []; lights(scene, spec.set === 'horror' ? { amb: 0.4 } : {});
+    buildSet(scene, spec.set || 'home', things, { title: spec.title });
+    (spec.fx || []).forEach(k => fx(scene, k, things));
+    const me = L3.figure(spec.look); scene.add(me);
+    const t = spec.t != null ? spec.t : (hash(spec.id) % 100) / 10;
+    (spec.cast || []).slice(0, 2).forEach((lk, i) => { const f = L3.figure(lk); const side = i ? -1 : 1; f.position.set(side * (spec.cam === 'selfie' ? 0.42 : 0.75), 0, spec.cam === 'selfie' ? -0.15 : -0.1); f.rotation.y = -side * (spec.cam === 'selfie' ? 0.15 : 0.35); animate(f, t + i, spec.castAnim || 'pose'); scene.add(f); });
+    let anim = spec.anim || 'pose';
+    if (spec.cam === 'selfie') { anim = spec.anim && spec.anim !== 'pose' ? spec.anim : 'idle'; me.rotation.y = 0.12; }
+    animate(me, t, anim);
+    tickThings(things, t + 0.2, 0.016);
+    const cam = new THREE.PerspectiveCamera(spec.cam === 'selfie' ? 46 : 34, 1, 0.1, 90);
+    const off = (hash(spec.id) % 7 - 3) * 0.12;
+    if (spec.cam === 'close') { cam.position.set(0.25 + off * 0.3, 1.68, 1.25); cam.lookAt(0, 1.6, 0); }
+    else if (spec.cam === 'selfie') { cam.position.set(0.32, 1.9, 1.05); cam.lookAt(0, 1.55, 0); }
+    else if (spec.cam === 'group') { cam.position.set(off, 1.45, 3.1); cam.lookAt(0, 1.2, 0); }
+    else { cam.position.set(0.6 + off, 1.4, 3.6); cam.lookAt(0, 1.1, 0); }
+    sr.render(scene, cam); const url = sr.domElement.toDataURL('image/jpeg', 0.85);
+    L3.stillCache[key] = url; return url;
+  } catch (e) { return null; }
 };
 
 // ------------------------------------------------------------------ trailers

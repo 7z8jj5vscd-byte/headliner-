@@ -420,15 +420,15 @@ D.TALK_GAMES = {
 // ------------------------------------------------------------------ stage nights
 D.STAGE_OPENING = [['ritual', 'Do your pre-show ritual'], ['cast', 'Give the cast a speech'], ['alone', 'Sit alone in the dark']];
 D.STAGE_EVENTS = [
-  { t: 'Your scene partner drops a line in the middle of the second act.', c: [['Improvise in character', { perf: 3, req: 'comedy' }], ['Feed them the line', { perf: 1 }], ['Freeze and wait', { perf: -3 }]] },
-  { t: 'A phone rings in the front row during your big monologue.', c: [['Stop and stare until it stops', { fame: 2, rep: -1 }], ['Work it into the scene', { perf: 2, fame: 1 }], ['Push through', {}]] },
-  { t: 'You have a cold and your voice is going.', c: [['Perform anyway', { perf: -2, health: -6, rep: 2 }], ['Let the understudy go on', { energy: 20, happy: -2 }], ['Steam, tea and a lower key', { perf: 1, req: 'voice' }]] },
-  { t: 'A prop gun fails to fire during the climax.', c: [['Shout "bang"', { perf: -2, fame: 2 }], ['Change the kill to a strangling', { perf: 2, req: 'action' }], ['Walk off and come back', { perf: -1 }]] },
-  { t: 'A famous director is in the audience tonight.', c: [['Play it exactly the same', { perf: 1 }], ['Go bigger', { perf: 2, contacts: 1 }], ['Meet them at the stage door', { contacts: 1, energy: -6 }]] },
-  { t: 'The stage door crowd is three blocks long.', c: [['Sign everything', { fame: 2, energy: -8, rep: 2 }], ['Sign for twenty minutes', { fame: 1 }], ['Slip out the back', { rep: -1 }]] },
-  { t: 'The set piece jams and the curtain stays half up.', c: [['Talk to the audience until it is fixed', { fame: 2, req: 'charisma' }], ['Stay in character', { perf: 1 }]] },
-  { t: 'The lead is out sick tonight. You are going on in their place.', understudy: true, c: [['Go on and own it', { perf: 4, fame: 3, energy: -10 }], ['Play it exactly as rehearsed', { perf: 2, fame: 1 }]] },
-  { t: 'Tonight the whole house rose to its feet at curtain call.', c: [['Take an extra bow', { fame: 1, happy: 3 }], ['Bring the crew out on stage', { rep: 3 }]] },
+  { sc: { anim: 'talk' }, t: 'Your scene partner drops a line in the middle of the second act.', c: [['Improvise in character', { perf: 3, req: 'comedy' }], ['Feed them the line', { perf: 1 }], ['Freeze and wait', { perf: -3 }]] },
+  { sc: { anim: 'point' }, t: 'A phone rings in the front row during your big monologue.', c: [['Stop and stare until it stops', { fame: 2, rep: -1 }], ['Work it into the scene', { perf: 2, fame: 1 }], ['Push through', {}]] },
+  { sc: { set: 'backstage', anim: 'sad' }, t: 'You have a cold and your voice is going.', c: [['Perform anyway', { perf: -2, health: -6, rep: 2 }], ['Let the understudy go on', { energy: 20, happy: -2 }], ['Steam, tea and a lower key', { perf: 1, req: 'voice' }]] },
+  { sc: { anim: 'fight' }, t: 'A prop gun fails to fire during the climax.', c: [['Shout "bang"', { perf: -2, fame: 2 }], ['Change the kill to a strangling', { perf: 2, req: 'action' }], ['Walk off and come back', { perf: -1 }]] },
+  { sc: { set: 'backstage', castSuits: true, castAnim: 'talk', anim: 'talk' }, t: 'A famous director is in the audience tonight.', c: [['Play it exactly the same', { perf: 1 }], ['Go bigger', { perf: 2, contacts: 1 }], ['Meet them at the stage door', { contacts: 1, energy: -6 }]] },
+  { sc: { set: 'street', fx: ['flashes'], anim: 'wave' }, t: 'The stage door crowd is three blocks long.', c: [['Sign everything', { fame: 2, energy: -8, rep: 2 }], ['Sign for twenty minutes', { fame: 1 }], ['Slip out the back', { rep: -1 }]] },
+  { sc: { anim: 'talk' }, t: 'The set piece jams and the curtain stays half up.', c: [['Talk to the audience until it is fixed', { fame: 2, req: 'charisma' }], ['Stay in character', { perf: 1 }]] },
+  { sc: { anim: 'cheer' }, t: 'The lead is out sick tonight. You are going on in their place.', understudy: true, c: [['Go on and own it', { perf: 4, fame: 3, energy: -10 }], ['Play it exactly as rehearsed', { perf: 2, fame: 1 }]] },
+  { sc: { anim: 'cheer' }, t: 'Tonight the whole house rose to its feet at curtain call.', c: [['Take an extra bow', { fame: 1, happy: 3 }], ['Bring the crew out on stage', { rep: 3 }]] },
 ];
 
 // ------------------------------------------------------------------ TV seasons
@@ -441,6 +441,7 @@ D.TV_FINALE = [['cliff', 'Push for a cliffhanger ending'], ['close', 'Push for a
 
 // newest first. Bump FC_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
+  { build: 9, date: 'Nov 14, 2026', notes: ['Your phone (top right): Clapper for posts and Lens for photos.', 'A camera roll that fills up with 3D photos from your sets, premieres, stage nights and studio promo stills, plus selfies you take yourself. Post them with a caption. Careful: set photos from unreleased franchise films can leak.', 'Costume fittings: try on three costume designs in 3D for every role, pick a color, and wear it on set, in trailers and in photos. Each design helps your acting, your buzz or your energy.', 'Broadway in 3D: rehearsal room events, backstage moments, a 3D stage audition and a closing-night curtain call.'] },
   { build: 8, date: 'Nov 14, 2026', notes: ['Brand-new 3D characters: real faces with eyes, brows, lips and ears, fuller bodies, and 19 hair styles including waves, curtain bangs, locs, an afro and a top knot.', 'Events now play as cinematic 3D cards: a title card, you on a themed set (rooftop, spaceship, ballroom, castle, desert and more) with your co-stars and the crew, your choice, then a reaction.', 'Big studios now announce your casting, with a live fan reaction. Each studio remembers how you treat it, and studios that like you pay more and offer roles directly.', 'Every film and series gets a 3D trailer before release, with views and fan reaction. Rewatch trailers from your filmography.'] },
   { build: 7, date: 'Nov 13, 2026', notes: ['New Theatre tab: audition for Broadway and West End musicals and plays, from ensemble and understudy parts to leads in Wicked, Hamilton, Sweeney Todd, Hamlet and new musicals.', 'Stage auditions have a song or monologue, the scenes, then a dance call or a director callback.', 'Understudies can get called on when the lead is out. Shows that don\'t sell can close early.', 'The Tony Awards now have musical and play categories, and the Olivier Awards cover the West End.'] },
   { build: 6, date: 'Nov 13, 2026', notes: ['New Work tab: prep for each role, choose your effort every shooting week, and do your press.', 'Your acting score now comes from your audition, your prep and your effort on set.', 'Every film, series and stage show has a press schedule from the director. Franchise press tours are big, indie press is light.', 'Marquee, the critics app: a score out of 10 for every project and every cast member, plus a full review.'] },
@@ -544,6 +545,75 @@ D.PLAY_CALLBACK = [['note', 'Take the director\'s note fully', 'drama'], ['defen
 D.STUDIO_BLURB = { marvel: 'The biggest brand in movies. One announcement and the whole internet knows your name.', dc: 'A rebuilt universe with a lot to prove.', lucas: 'A galaxy far, far away, and the most protective fandom on earth.', wb: 'Prestige blockbusters and auteurs.', uni: 'Franchises, horror and event films.', disney: 'Family films and live-action remakes.', eon: 'Guardians of James Bond.', hbo: 'Prestige TV.', netflix: 'Everything, everywhere, all the time.', a24: 'Taste-making indies.', apple: 'Expensive prestige.', legend: 'Big sci-fi and monsters.' };
 D.FAN_POSTS = { good: ['PERFECT casting. I am screaming.', 'I literally called this months ago.', 'They were born to play this.', 'Take my money.', 'This is the best news of the year.', 'OK I am seated for this one.'], mixed: ['Interesting choice. Let\'s see.', 'Not who I pictured, but OK.', 'I will reserve judgment.', 'Could work?'], bad: ['Who??', 'This franchise is cooked.', 'Hard pass.', 'They have never done anything like this.', 'Petition to recast starts now.'] };
 D.TRAILER_LINES = { superhero: ['This summer', 'Every hero has a beginning', 'The world needs', 'More than a hero'], action: ['No rules', 'One last job', 'This time it\'s personal'], scifi: ['Beyond the stars', 'The future is not written', 'Humanity\'s last hope'], fantasy: ['An ancient power awakens', 'Legends never die'], horror: ['Don\'t look back', 'It knows your name', 'Some doors should stay closed'], thriller: ['Trust no one', 'Everyone has a secret'], drama: ['Based on a true story', 'Some moments change everything', 'A story of love and loss'], comedy: ['From the people who brought you nothing like this', 'What could go wrong?'], romance: ['Love finds a way', 'One summer. Two strangers.'], musical: ['Let them hear you', 'The stage is calling'], period: ['Based on true events', 'History remembers the brave'], biopic: ['Based on a true story', 'The untold story'], animation: ['This holiday season', 'Every adventure starts somewhere'] };
+
+// ------------------------------------------------------------------ costume fittings
+// designs by genre: look changes, color options, and what they do. fx: perf (fits the character), buzz (fans and press love it), comfort (less energy on set)
+D.COSTUMES = {
+  superhero: [
+    { name: 'Comics-accurate suit', d: 'Straight off the page. Fans will lose it.', look: { top: 'hero' }, colors: ['#c8102e', '#1f3a5f', '#5b3a6b', '#2f5d50'], fx: { buzz: 8 } },
+    { name: 'Tactical armor', d: 'Darker, grounded, practical. Critics like it.', look: { top: 'hero' }, colors: ['#1d1d24', '#3a3f4c', '#4a3424', '#2a2d34'], fx: { perf: 3 } },
+    { name: 'Civilian disguise', d: 'Jacket over the suit. Easy to move in.', look: { top: 'jacket', bottom: 'jeans', shoes: 'boots' }, colors: ['#1d1d24', '#8a6a4f', '#1f3a5f'], fx: { comfort: 6 } }],
+  period: [
+    { name: 'Ball gown or tailcoat', d: 'Corsetry, silk and three fittings a week.', look: { top: 'gown|suit' }, colors: ['#5a1d24', '#2f5d50', '#c9a227', '#e9e4d8'], fx: { perf: 3, buzz: 3 } },
+    { name: 'Everyday period wear', d: 'Wool and linen. Lived in.', look: { top: 'corset|jacket', bottom: 'skirt|slacks', shoes: 'boots' }, colors: ['#8a6a4f', '#5b4a3a', '#2a221a'], fx: { perf: 4 } },
+    { name: 'Mourning black', d: 'Severe and unforgettable.', look: { top: 'gown|tux' }, colors: ['#15151b', '#1d1d24'], fx: { buzz: 5 } }],
+  action: [
+    { name: 'Leather and denim', d: 'Classic action hero.', look: { top: 'jacket', bottom: 'leather', shoes: 'boots' }, colors: ['#1d1d24', '#4a3424', '#8f1d2c'], fx: { buzz: 4 } },
+    { name: 'Tactical gear', d: 'Vest, cargo, boots. Built for stunts.', look: { top: 'puffer', bottom: 'slacks', shoes: 'boots' }, colors: ['#2f3a2a', '#1d1d24', '#4a4a52'], fx: { comfort: 6, perf: 2 } },
+    { name: 'Sharp suit', d: 'Fights in a three-piece. Very Bond.', look: { top: 'suit', bottom: 'slacks', shoes: 'loafers' }, colors: ['#15151b', '#1f3a5f', '#3a3f4c'], fx: { buzz: 6 } }],
+  scifi: [
+    { name: 'Flight suit', d: 'Zippers, patches and a helmet you never wear.', look: { top: 'jacket', bottom: 'slacks', shoes: 'boots' }, colors: ['#c9a227', '#c0c4cc', '#2e8bff'], fx: { buzz: 4 } },
+    { name: 'Desert robes', d: 'Layered, weathered, iconic.', look: { top: 'hoodie', bottom: 'slacks', shoes: 'boots' }, colors: ['#8a6a4f', '#e8d9b8', '#5b4a3a'], fx: { perf: 3 } },
+    { name: 'Sleek uniform', d: 'Clean lines, high collar.', look: { top: 'tux', bottom: 'slacks', shoes: 'boots' }, colors: ['#e9e4d8', '#1d1d24', '#5b3a6b'], fx: { buzz: 3, comfort: 3 } }],
+  fantasy: [
+    { name: 'Royal court', d: 'Velvet, gold thread, a little crown.', look: { top: 'gown|suit', acc: 'chain' }, colors: ['#5b3a6b', '#8f1d2c', '#2f5d50'], fx: { buzz: 5 } },
+    { name: 'Wanderer\'s cloak', d: 'Mud, leather and a sword belt.', look: { top: 'hoodie', bottom: 'leather', shoes: 'boots' }, colors: ['#2f5d50', '#5b4a3a', '#3a3f4c'], fx: { perf: 3, comfort: 3 } },
+    { name: 'Mage robes', d: 'Flowing and impractical.', look: { top: 'gown|tux' }, colors: ['#1f3a5f', '#740001', '#e9e4d8'], fx: { buzz: 4 } }],
+  horror: [
+    { name: 'Blood-spattered pajamas', d: 'The final girl look.', look: { top: 'tee', bottom: 'shorts', shoes: 'sneakers' }, colors: ['#e9e4d8', '#c0c4cc'], fx: { buzz: 5 } },
+    { name: 'Everyday layers', d: 'Hoodie and jeans. Relatable terror.', look: { top: 'hoodie', bottom: 'jeans' }, colors: ['#3a3f4c', '#2f5d50', '#8f1d2c'], fx: { perf: 3 } },
+    { name: 'Victorian nightgown', d: 'Candle not included.', look: { top: 'gown|suit' }, colors: ['#e9e4d8'], fx: { buzz: 4, perf: 1 } }],
+  musical: [
+    { name: 'Sequins', d: 'Catches every light.', look: { top: 'sequin', bottom: 'skirt|slacks', shoes: 'heels|loafers' }, colors: ['#c9a227', '#d6334f', '#c0c4cc', '#5b3a6b'], fx: { buzz: 6 } },
+    { name: 'Rehearsal blacks', d: 'Stripped back and modern.', look: { top: 'tank', bottom: 'slacks', shoes: 'sneakers' }, colors: ['#1d1d24'], fx: { perf: 3, comfort: 5 } },
+    { name: 'Showstopper gown or tux', d: 'For the eleven o\'clock number.', look: { top: 'gown|tux' }, colors: ['#8f1d2c', '#15151b', '#2e8bff'], fx: { buzz: 4, perf: 1 } }],
+  default: [
+    { name: 'Character wardrobe', d: 'Thrifted and broken in. Feels like the person.', look: { top: 'jacket', bottom: 'jeans' }, colors: ['#8a6a4f', '#2f5d50', '#1f3a5f', '#5b3a6b'], fx: { perf: 4 } },
+    { name: 'Polished and camera-ready', d: 'Looks great in every shot.', look: { top: 'suit|suit', bottom: 'slacks', shoes: 'loafers' }, colors: ['#1d1d24', '#e9e4d8', '#8f1d2c'], fx: { buzz: 4 } },
+    { name: 'Comfortable basics', d: 'Tee and jeans. Long days are easier.', look: { top: 'tee', bottom: 'jeans', shoes: 'sneakers' }, colors: ['#f4f4f6', '#1d1d24', '#c9a227'], fx: { comfort: 6 } }],
+};
+D.COSTUME_GENRE = { superhero: 'superhero', animation: 'superhero', period: 'period', biopic: 'period', action: 'action', thriller: 'action', scifi: 'scifi', fantasy: 'fantasy', horror: 'horror', musical: 'musical' };
+
+// ------------------------------------------------------------------ rehearsals (stage)
+D.REHEARSAL_EVENTS = [
+  { t: 'First read-through. The whole company is watching you.', c: [['Go big from the first line', { perf: 2, costar: 3 }], ['Hold back and listen', { perf: 1, rel: 2 }], ['Make them laugh', { costar: 5, req: 'comedy' }]] },
+  { t: 'The choreographer adds a new number two weeks before previews.', c: [['Stay late every night to learn it', { perf: 3, energy: -12 }], ['Ask for simpler steps', { rel: -2, energy: 4 }], ['Learn it in one go', { perf: 4, req: 'fitness' }]] },
+  { t: 'The director wants to cut your favorite scene.', c: [['Fight for it', { rel: -3, perf: 2 }], ['Let it go gracefully', { rel: 4 }], ['Offer a shorter version', { rel: 2, perf: 1 }]] },
+  { t: 'Tech rehearsal runs fourteen hours. Everyone is exhausted.', c: [['Keep the mood light', { costar: 4, energy: -8, req: 'charisma' }], ['Nap in your dressing room between cues', { energy: 8 }], ['Run your lines in the wings', { perf: 2, energy: -6 }]] },
+  { t: 'You and your scene partner just can\'t find the rhythm.', c: [['Grab coffee and talk it out', { costar: 8 }], ['Ask the director to block it differently', { rel: 1, perf: 1 }], ['Push through it on your own', { perf: 1, costar: -3 }]] },
+  { t: 'First full run-through in costume. The producers are in the room.', c: [['Treat it like opening night', { perf: 3, energy: -8 }], ['Save your voice', { energy: 6, rel: -1 }]] },
+];
+D.CLOSING = [['speech', 'Give a curtain speech'], ['crew', 'Bring the crew on stage'], ['look', 'Take one last look at the house']];
+
+// ------------------------------------------------------------------ social
+D.LENS = 'Lens';
+D.CAPTIONS = {
+  bts: ['Day {day}. Can\'t say anything. 🤐', 'Another day at the office.', 'This crew is everything.', 'Shh. 🎬'],
+  promo: ['{title}. Coming soon.', 'Meet {role}.', 'The wait is almost over.', 'Mark your calendars.'],
+  carpet: ['Last night. 🖤', 'What a night for {title}.', 'Thank you for coming out!', 'Wearing my favorite designer.'],
+  stage: ['Curtain up. 🎭', '8 shows a week and I love every one.', 'Stage door tonight!', 'This company. ❤️'],
+  awards: ['Still shaking.', 'Grateful.', 'What a night.', 'For everyone who believed.'],
+  selfie: ['Sunday reset.', 'Just me.', 'New week, who dis.', 'Golden hour.', 'Unbothered.'],
+  tv: ['Live from the couch. 📺', 'That was so much fun!', 'Thanks for having me!'],
+};
+D.CLAPPER_KINDS = [
+  { id: 'hype', name: 'Tease your next project', t: ['Something big is coming. 👀', 'I can\'t wait for you to see what we\'ve been making.', 'Counting down.'] },
+  { id: 'thanks', name: 'Thank the fans', t: ['You all are the reason I get to do this. Thank you.', 'Reading every message. I love you guys.', 'Grateful for every single one of you.'] },
+  { id: 'take', name: 'Share a hot take', t: ['Unpopular opinion: movies should be shorter.', 'Theaters > streaming. Fight me.', 'The best movie of the year is the one nobody saw.'] },
+  { id: 'joke', name: 'Post something funny', t: ['My dialect coach just quit. I said "thank you" in the wrong accent.', 'Spent 4 hours in makeup to look like I slept 4 hours.', 'Method acting as someone who has their life together.'] },
+  { id: 'support', name: 'Hype a friend\'s project', t: ['Go see {friend}\'s new movie. That\'s it. That\'s the tweet.', '{friend} is the real deal.', 'So proud of {friend}.'] },
+];
+D.INFLUENCERS = ['popcornpapi', 'reelqueen', 'filmtok', 'castingwatch', 'boxofficebuzz', 'thefilmfeed', 'cinephile_dan', 'trailerwatch'];
 
 D.HELP = [
   ['Weeks and energy', 'Each turn is one week. Classes, auditions, parties and posts cost energy. Shooting a project uses most of your week. Ending weeks with no energy hurts your health, and if health hits zero you burn out.'],

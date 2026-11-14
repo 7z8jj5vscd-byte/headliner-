@@ -40,7 +40,7 @@ FC.newGame = function (o) {
     look: Object.assign(FC.defaultLook(), o.look || {}), skills: Object.assign({}, st.skills),
     energy: 100, health: 100, happy: 70, money: st.money, fame: st.fame, rep: st.rep, followers: st.followers || Math.round(300 + st.fame * 4000), contacts: st.contacts, buzz: st.critics || 0,
     agency: st.id === 'nepo' ? 'gersh' : st.id === 'disney' ? 'boutique' : 'none', team: { manager: 0, publicist: 0, stylist: 0, trainer: 0, lawyer: 0 }, teamNames: {},
-    board: [], offers: [], jobs: [], credits: [], studios: {}, theaters: [], myChars: [], fr: {}, heroFatigue: 0.15,
+    board: [], offers: [], jobs: [], credits: [], studios: {}, roll: [], lens: [], theaters: [], myChars: [], fr: {}, heroFatigue: 0.15,
     news: [], feed: [], inbox: [], pending: [], log: [], awards: [], awardNoms: {}, fyc: {}, festivalsDone: {},
     home: st.money > 200000 ? 'h1' : 'h0', homes: [], cars: [], invest: {}, charity: 0, brands: [], love: null, company: null, scripts: [],
     yearEarn: 0, yearEarnHist: [], taxable: 0, lifetimeEarn: 0, lifetimeBO: 0, achievements: {}, timeline: [], lowPoint: false, burnouts: 0, hiatus: 0,
@@ -112,6 +112,36 @@ function payFor(S, size, budget, kind) {
 }
 FC.payFor = payFor;
 
+// ------------------------------------------------------------------ which 3D set a project shoots on
+FC.setFor = function (job) {
+  if (!job) return 'green';
+  const fr = { starwars: 'desert', dune: 'desert', hp: 'castle', jurassic: 'forest', wick: 'street', fast: 'street', bond: 'period', hunger: 'forest', spiderverse: 'booth', elseworlds: 'city' }[job.fid];
+  if (fr) return fr; if (job.theater) return 'stage';
+  const h = [...String(job.id || job.title)].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const two = (a, b) => h % 2 ? a : b;
+  return { superhero: two('city', 'green'), scifi: 'space', period: 'period', biopic: 'period', fantasy: 'castle', action: two('street', 'desert'), horror: 'horror', drama: 'home', comedy: two('diner', 'home'), romance: two('street', 'home'), thriller: two('office', 'street'), musical: 'stage', animation: 'booth' }[job.genre] || 'home';
+};
+
+// ------------------------------------------------------------------ costume fittings
+FC.costumeOptions = function (S, j) {
+  if (j.costumeOpts) return j.costumeOpts;
+  const g = j.theater && j.stageType === 'musical' ? 'musical' : (D.COSTUME_GENRE[j.genre] || 'default');
+  const fem = S.me.cat === 's'; const pickG = v => typeof v === 'string' && v.includes('|') ? v.split('|')[fem ? 0 : 1] : v;
+  j.costumeOpts = D.COSTUMES[g].map(c => ({ name: c.name, d: c.d, colors: c.colors, fx: c.fx, look: Object.fromEntries(Object.entries(c.look).map(([k, v]) => [k, pickG(v)])) }));
+  return j.costumeOpts;
+};
+FC.chooseCostume = function (S, jid, i, color) {
+  const j = S.jobs.find(x => x.id === jid); if (!j) return { ok: false };
+  const o = FC.costumeOptions(S, j)[i]; if (!o) return { ok: false };
+  if (j.costume) { const f = j.costume.fx || {}; j.perfAdj = (j.perfAdj || 0) - (f.perf || 0); }
+  const look = Object.assign({}, o.look, { topColor: color || o.colors[0] }); if (look.top === 'hero') look.accColor = '#d8b04a';
+  if (look.bottom && !o.look.bottomColor) look.bottomColor = look.top === 'hero' ? look.topColor : shadeHex(color || o.colors[0]);
+  j.costume = { name: o.name, look, fx: o.fx, i, color };
+  j.perfAdj = (j.perfAdj || 0) + (o.fx.perf || 0); j.costumeBuzz = o.fx.buzz || 0; j.comfort = o.fx.comfort || 0;
+  return { ok: true, t: `${o.name}: locked in.` };
+};
+function shadeHex(h) { return ['#1d1d24', '#1f3a5f', '#3a3f4c', '#5b4a3a'][[...h].reduce((a, c) => a + c.charCodeAt(0), 0) % 4]; }
+
 // ------------------------------------------------------------------ studios (brands)
 FC.studioOf = name => D.STUDIOS.find(st => st.name === name || (name || '').startsWith(st.name)) || null;
 FC.brand = name => { const st = FC.studioOf(name); return st && st.brand != null ? st.brand : 0.25; };
@@ -119,7 +149,7 @@ FC.studioRel = (S, name) => (S.studios || {})[name] || 0;
 function studioShift(S, name, v, why) { if (!name || !FC.studioOf(name)) return; S.studios = S.studios || {}; S.studios[name] = clamp((S.studios[name] || 0) + v, -50, 50); if (why && Math.abs(v) >= 5) S.log.push(`${name} ${v > 0 ? 'loves' : 'is unhappy with'} ${why}.`); }
 FC.studioShift = studioShift;
 FC.buzz = (S, j) => { const tot = (j.press || []).length, done = (j.press || []).filter(p => p.done).length; const t = j.trailer ? Math.min(25, Math.log10(1 + j.trailer.views) * 3.2) : 0;
-  return Math.round(clamp(FC.brand(j.studio) * 38 + S.fame * 0.28 + (tot ? done / tot : 0.3) * 18 + t + (j.teamup ? 8 : 0) + (j.costars || []).reduce((a, n) => a + ((D.ACTORS.find(x => x[0] === n) || [0, 0, 2])[2] - 2), 0) * 2, 0, 100)); };
+  return Math.round(clamp((j.costumeBuzz || 0) + FC.brand(j.studio) * 38 + S.fame * 0.28 + (tot ? done / tot : 0.3) * 18 + t + (j.teamup ? 8 : 0) + (j.costars || []).reduce((a, n) => a + ((D.ACTORS.find(x => x[0] === n) || [0, 0, 2])[2] - 2), 0) * 2, 0, 100)); };
 
 // ------------------------------------------------------------------ project generation
 const SIZES = { extra: { n: 'Background', need: 0, pay: 1, f: 0.2 }, cameo: { n: 'Cameo', need: 30, pay: 4, f: 1 }, small: { n: 'Small part', need: 18, pay: 3, f: 0.6 },
@@ -427,6 +457,7 @@ FC.sign = function (S, pid, terms) {
   if (job.left <= 0) { job.stage = 'shoot'; job.left = p.weeks.shoot; startShoot(S, job); }
   S.jobs.push(job);
   if (p.theater) makePress(S, job, S.week + job.left + 1);
+  if (busyRole(job) && p.size !== 'voice') S.pending.unshift({ type: 'fitting', jobId: job.id });
   // franchise contracts
   if (p.fid) {
     const F = D.FRANCHISES.find(f => f.id === p.fid);
@@ -485,7 +516,8 @@ FC.announceRespond = function (S, jid, i) {
 // ------------------------------------------------------------------ trailers
 function trailerViews(S, j) { const b = FC.brand(j.studio); return Math.round((2e6 + Math.pow(S.fame, 2) * 4000 + b * b * 9e7 * (j.teamup ? 1.6 : 1)) * rnd(0.7, 1.4) * (j.tv ? 0.5 : 1)); }
 FC.dropTrailer = function (S, j) {
-  if (j.trailer) return; const views = trailerViews(S, j); const react = clamp(Math.round(45 + (j.perf - 50) * 0.5 + j.script * 0.2 + rnd(-12, 12) + (j.fanReact ? (j.fanReact - 50) * 0.3 : 0)), 10, 98);
+  if (j.trailer) return;
+  for (const cam of ['close', 'wide']) FC.addPhoto(S, { kind: 'promo', jobId: j.id, set: FC.setFor(j), look: Object.assign({}, S.look, (j.costume || {}).look || {}), cast: cam === 'wide' ? (j.costars || []).slice(0, 2) : [], anim: cam === 'close' ? 'pose' : 'hero', cam }); const views = trailerViews(S, j); const react = clamp(Math.round(45 + (j.perf - 50) * 0.5 + j.script * 0.2 + rnd(-12, 12) + (j.fanReact ? (j.fanReact - 50) * 0.3 : 0)), 10, 98);
   j.trailer = { views, react, week: S.week }; j.promo = (j.promo || 0) + Math.min(0.12, Math.log10(views) / 80) * (react / 70);
   S.followers += Math.round(views * 0.002); gainFame(S, Math.log10(views) / 8);
   addNews(S, `The ${j.title} trailer hits ${FC.num(views)} views in 24 hours.`, 'you');
@@ -523,6 +555,7 @@ FC.release = function (S, j) {
   const legs = clamp(0.38 + r.aud / 300 + (r.critics - 50) / 600 + (j.prestige ? 0.12 : 0), 0.3, 0.82);
   const intl = F ? rnd(1.5, 2.1) : j.genre === 'comedy' ? rnd(0.6, 1) : rnd(0.9, 1.5);
   j.review = marquee(S, j);
+  FC.addPhoto(S, { kind: 'carpet', jobId: j.id, set: 'carpet', title: j.title, look: Object.assign({}, S.look), cast: (j.costars || []).slice(0, 1), anim: 'pose', cam: pick(['wide', 'close']) });
   const film = { id: j.id, title: j.title, studio: j.studio, mine: true, open: open * 1e6, last: open * 1e6, dom: 0, intl, legs, weeks: 0, fid: j.fid };
   S.theaters.push(film); j.boxId = film.id; j.dom = 0; j.ww = 0;
   if (F) { st.films++; st.fatigue = clamp(st.fatigue + 0.12, 0, 1); if (F.kind === 'superhero') S.heroFatigue = clamp(S.heroFatigue + 0.04, 0, 1); }
@@ -608,12 +641,14 @@ FC.endWeek = function (S) {
   const wasShooting = S.jobs.some(j => j.stage === 'shoot');
   // progress jobs
   for (const j of S.jobs.slice()) {
+    if (j.stage === 'prep' && j.theater && j.left > 0 && R() < 0.6) S.pending.push({ type: 'rehearsal', jobId: j.id, ev: irnd(0, D.REHEARSAL_EVENTS.length - 1), wk: (j.weeks.prep || 0) - j.left + 1 });
     if (j.stage === 'prep') { j.left--; if (j.prepTrain !== false && (j.genre === 'superhero' || j.genre === 'action')) { S.skills.fitness = clamp(S.skills.fitness + 0.6 * (1 + (S.team.trainer || 0) * 0.2), 0, 100); S.skills.action = clamp(S.skills.action + 0.4, 0, 100); } if (j.left <= 0) { j.stage = 'shoot'; j.left = j.weeks.shoot; startShoot(S, j); } continue; }
     if (j.stage === 'shoot') {
       j.left--; logEffort(S, j);
       const gk = Object.keys((D.GENRES.find(x => x.id === j.genre) || D.GENRES[0]).skills)[0]; S.skills[gk] = clamp(S.skills[gk] + 0.35, 0, 100);
       if (j.weekly && j.terms.salary) earn(S, j.terms.salary, `week of ${j.title}`);
-      if (j.theater) { stageNight(S, j); if (j.left <= 0) wrap(S, j); continue; }
+      if (j.theater) { stageNight(S, j); if (R() < 0.35) FC.addPhoto(S, { kind: 'stage', jobId: j.id, set: R() < 0.5 ? 'stage' : 'backstage', costume: true, look: Object.assign({}, S.look, (j.costume || {}).look || {}), cast: (j.costars || []).slice(0, 1), anim: pick(['pose', 'cheer', 'talk']), cam: pick(['wide', 'close', 'group']) }); if (j.left <= 0) wrap(S, j); continue; }
+      if (busyRole(j) && R() < 0.45) FC.addPhoto(S, { kind: 'bts', jobId: j.id, day: (j.weeks.shoot - j.left) * 5, set: FC.setFor(j), look: Object.assign({}, S.look, (j.costume || {}).look || {}), cast: (j.costars || []).slice(0, pick([0, 1, 2])), anim: pick(['pose', 'talk', 'hero', 'wave']), cam: pick(['wide', 'close', 'selfie', 'group']) });
       if (j.weeks.shoot > 1 && R() < 0.45 && j.events < 3 && j.kind !== 'commercial') { j.events++; S.pending.push({ type: 'set', jobId: j.id, ev: D.SET_EVENTS.indexOf(pick(D.SET_EVENTS.filter(e => !e.c.every(c => c[1].req && !reqOk(S, c[1].req))))) }); }
       if (j.left <= 0) wrap(S, j);
       continue;
@@ -842,6 +877,7 @@ function awardsTick(S, woy) {
   }
 }
 function awardWon(S, show, r) {
+  if (show.id !== 'razzies') FC.addPhoto(S, { kind: 'awards', set: 'awards', look: Object.assign({}, S.look), anim: 'cheer', cam: 'close', title: show.short });
   if (show.id === 'razzies') { ach(S, 'razzie'); S.rep = clamp(S.rep - 2, 0, 100); addNews(S, `${S.me.name} "wins" the Razzie for ${r.cat}.`, 'awards'); return; }
   gainFame(S, show.weight * 5); S.rep = clamp(S.rep + show.weight * 6, 0, 100);
   const map = { globes: 'globe', bafta: 'bafta', sag: 'sag', oscars: 'oscar', emmys: 'emmy', tonys: 'tony', olivier: 'olivier' }; if (map[show.id]) ach(S, map[show.id]);
@@ -924,11 +960,12 @@ FC.doPrep = function (S, jid, aid) {
   if (aid === 'chem') j.costarRel = clamp((j.costarRel || 50) + 6, 0, 100);
   return { ok: true, t: `${a.name}: prep +${g} (now ${j.prepScore}/100).` };
 };
+FC.effortCost = (j, l) => Math.max(2, D.EFFORT.find(x => x[0] === l)[2] - Math.round((j.comfort || 0) / 2));
 FC.setEffort = function (S, jid, level) {
   const j = S.jobs.find(x => x.id === jid); const e = D.EFFORT.find(x => x[0] === level); if (!j || !e || j.stage !== 'shoot') return { ok: false, t: 'Not shooting.' };
-  const prev = j.wk ? D.EFFORT.find(x => x[0] === j.wk.level)[2] : 0;
-  if (S.energy + prev < e[2]) return { ok: false, t: `You need ${e[2]} energy for that.` };
-  S.energy += prev - e[2]; j.wk = Object.assign(j.wk || { extras: [] }, { level });
+    const cost = l => Math.max(2, D.EFFORT.find(x => x[0] === l)[2] - Math.round((j.comfort || 0) / 2)); const pc = j.wk ? cost(j.wk.level) : 0;
+  if (S.energy + pc < cost(level)) return { ok: false, t: `You need ${cost(level)} energy for that.` };
+  S.energy += pc - cost(level); j.wk = Object.assign(j.wk || { extras: [] }, { level });
   return { ok: true, t: `This week on ${j.title}: ${e[1].toLowerCase()}.` };
 };
 FC.shootExtra = function (S, jid, xid) {
@@ -1009,6 +1046,65 @@ function marquee(S, j) {
   return { score, mine, bnm: score >= 8.5, bp: mine >= 9, by: pick(D.REVIEWERS), cast, text: [p1, p2, p3].filter(Boolean), prep: Math.round(prep), effort: Math.round(eff) };
 }
 FC.marquee = marquee;
+
+FC.closingChoice = function (S, cid, i) {
+  const j = S.credits.find(c => c.id === cid); const k = (D.CLOSING[i] || D.CLOSING[0])[0];
+  if (k === 'speech') { S.rep = clamp(S.rep + 2, 0, 100); gainFame(S, 0.8); return 'The house rises. Reputation +2, Fame +0.8'; }
+  if (k === 'crew') { S.rep = clamp(S.rep + 3, 0, 100); S.happy = clamp(S.happy + 3, 0, 100); return 'The crew gets the loudest cheer of the night. Reputation +3'; }
+  S.happy = clamp(S.happy + 6, 0, 100); return 'You will remember this forever. Happiness +6';
+};
+
+// ------------------------------------------------------------------ social media: camera roll, Lens, Clapper
+FC.ROLL_MAX = 24;
+FC.addPhoto = function (S, p) {
+  S.roll = S.roll || []; p.id = p.id || uid(); p.w = S.week; S.roll.unshift(p); S.rollNew = (S.rollNew || 0) + 1;
+  if (S.roll.length > FC.ROLL_MAX) S.roll.length = FC.ROLL_MAX; return p;
+};
+FC.photoLook = (S, p) => p.look || S.look;
+FC.SELFIE_SPOTS = [['home', 'At home'], ['street', 'Night out'], ['gym', 'At the gym'], ['diner', 'Diner'], ['forest', 'Hiking'], ['city', 'Rooftop'], ['desert', 'Desert trip'], ['carpet', 'Event']];
+FC.SELFIE_POSES = [['selfie', 'Selfie'], ['pose', 'Strike a pose'], ['wave', 'Wave'], ['cheer', 'Celebrate'], ['hero', 'Power pose']];
+FC.takeSelfie = function (S, spot, pose) {
+  if (S.energy < 3) return { ok: false, t: 'Too tired.' };
+  S.energy -= 3; const p = FC.addPhoto(S, { kind: 'selfie', set: spot || 'home', look: Object.assign({}, S.look), anim: pose === 'selfie' ? null : pose, cam: pose === 'selfie' ? 'selfie' : 'close' });
+  return { ok: true, t: 'Saved to your camera roll.', photo: p };
+};
+FC.captions = (S, p) => { const j = p.jobId ? (S.jobs.find(x => x.id === p.jobId) || S.credits.find(x => x.id === p.jobId)) : null;
+  return (D.CAPTIONS[p.kind] || D.CAPTIONS.selfie).map(t => FC.fill(t, { day: p.day || 12, title: j ? j.title : 'the movie', role: j && j.char ? j.char.name : 'my character' })); };
+FC.postLens = function (S, pid, caption) {
+  const p = (S.roll || []).find(x => x.id === pid); if (!p) return { ok: false, t: 'Photo not found.' };
+  if (S.energy < 8) return { ok: false, t: 'You need 8 energy to post.' };
+  S.energy -= 8;
+  const j = p.jobId ? (S.jobs.find(x => x.id === p.jobId) || S.credits.find(x => x.id === p.jobId)) : null; const unreleased = j && S.jobs.includes(j);
+  const mult = { bts: 1.5, promo: 1.25, carpet: 1.4, stage: 1.1, awards: 1.9, selfie: 0.85, tv: 1 }[p.kind] || 1;
+  const recent = (S.lens || []).filter(x => S.week - x.w < 2).length;
+  const likes = Math.round(S.followers * rnd(0.03, 0.09) * mult * (1 + S.skills.looks / 200) * Math.pow(0.7, recent) + rnd(20, 200));
+  const gain = Math.round(likes * rnd(0.05, 0.12)); S.followers += gain; gainFame(S, Math.min(1.5, Math.log10(1 + likes) / 8) * (recent ? 0.5 : 1));
+  const post = { id: uid(), photo: p, caption: (caption || '').slice(0, 140), likes, w: S.week, comments: [] };
+  let t = `Posted. ${FC.num(likes)} likes, +${FC.num(gain)} followers.`;
+  if (p.kind === 'bts' && unreleased && FC.brand(j.studio) >= 0.5 && R() < 0.35) { studioShift(S, j.studio, -8); S.rep = clamp(S.rep - 2, 0, 100); post.leak = true; addNews(S, `${S.me.name}'s set photo from ${j.title} leaks plot details. ${j.studio} is reportedly furious.`, 'scandal'); t += ` But ${j.studio} says you leaked the costume. Studio -8.`; post.comments.push(['studio_insider', 'Someone is getting a call from legal.']); }
+  else if (unreleased && (p.kind === 'promo' || p.kind === 'bts')) { j.promo = (j.promo || 0) + (p.kind === 'promo' ? 0.025 : 0.015); t += ' Buzz for ' + j.title + ' went up.'; }
+  const tone = likes > S.followers * 0.06 ? 'good' : 'mixed';
+  for (let i = 0; i < 3; i++) post.comments.push([pick(D.INFLUENCERS), pick(D.FAN_POSTS[tone])]);
+  if (R() < 0.3) post.comments.push([pick(D.ACTORS)[0].replace(/\s+/g, '').toLowerCase(), pick(['😍', '🔥🔥', 'Iconic.', 'Miss you!', 'Proud of you.'])]);
+  S.lens = S.lens || []; S.lens.unshift(post); if (S.lens.length > 30) S.lens.length = 30;
+  S.roll = S.roll.filter(x => x.id !== pid);
+  return { ok: true, t, post };
+};
+FC.postClapper = function (S, kind, text) {
+  const k = D.CLAPPER_KINDS.find(x => x.id === kind) || D.CLAPPER_KINDS[0];
+  if (S.energy < 5) return { ok: false, t: 'You need 5 energy to post.' };
+  S.energy -= 5;
+  const friend = pick(D.ACTORS)[0]; const body = (text && text.trim()) ? text.trim().slice(0, 200) : FC.fill(pick(k.t), { friend });
+  let likes = Math.round(S.followers * rnd(0.01, 0.05) * (1 + S.skills.charisma / 150) + rnd(5, 80)); let t = '';
+  if (kind === 'take') { if (R() < 0.3) { S.rep = clamp(S.rep - 2, 0, 100); likes *= 3; t = 'You got ratioed. Reputation -2, but everyone is talking.'; gainFame(S, 0.8); } else { gainFame(S, 0.5); t = 'Your take is trending.'; } }
+  if (kind === 'joke') { if (S.skills.comedy + rnd(-20, 20) > 45) { likes *= 4; gainFame(S, 0.8); t = 'It went viral.'; } else t = 'A few chuckles.'; }
+  if (kind === 'thanks') { S.rep = clamp(S.rep + 1, 0, 100); t = 'Fans loved it.'; }
+  if (kind === 'hype') { const j = S.jobs.find(x => x.stage !== 'prep') || S.jobs[0]; if (j) { j.promo = (j.promo || 0) + 0.01; t = `Fans are guessing what ${j.title} is.`; } else t = 'Fans are guessing.'; }
+  if (kind === 'support') { if (R() < 0.4) { S.contacts++; t = `${friend} reposted it. New contact.`; } else t = `${friend} liked it.`; }
+  S.followers += Math.round(likes * 0.06);
+  addFeed(S, S.me.name, body, likes); S.feed[0].mine = true; S.feed[0].replies = [0, 1].map(() => [pick(D.INFLUENCERS), pick(D.FAN_POSTS[likes > S.followers * 0.03 ? 'good' : 'mixed'])]);
+  return { ok: true, t: `Posted. ${FC.num(likes)} likes. ${t}` };
+};
 
 // ------------------------------------------------------------------ live TV: talk shows and SNL
 FC.livePress = function (S, jid, pid) {
@@ -1126,6 +1222,7 @@ FC.applyEffects = function (S, fx, ctx = {}, job) {
 };
 FC.resolve = function (S, pend, i) {
   if (pend.type === 'set') { const ev = D.SET_EVENTS[pend.ev]; const job = S.jobs.find(j => j.id === pend.jobId); const c = ev.c[i] || ev.c[0]; if (c[1].req && !reqOk(S, c[1].req)) return 'You tried, but it did not land.'; return FC.applyEffects(S, c[1], {}, job); }
+  if (pend.type === 'rehearsal') { const ev = D.REHEARSAL_EVENTS[pend.ev]; const job = S.jobs.find(j => j.id === pend.jobId); const c = ev.c[i] || ev.c[0]; if (c[1].req && !reqOk(S, c[1].req)) return 'You tried. It did not quite land.'; return FC.applyEffects(S, c[1], {}, job) || 'Noted.'; }
   if (pend.type === 'stage') { const ev = D.STAGE_EVENTS[pend.ev]; const job = S.jobs.find(j => j.id === pend.jobId); const c = ev.c[i] || ev.c[0]; if (c[1].req && !reqOk(S, c[1].req)) { if (job) job.perf = clamp(job.perf - 1, 0, 100); return 'You tried. It did not quite land.'; } return FC.applyEffects(S, c[1], {}, job) || 'The show goes on.'; }
   if (pend.type === 'opening') { const job = S.jobs.find(j => j.id === pend.jobId); if (!job) return '';
     const pick_ = D.STAGE_OPENING[i] || D.STAGE_OPENING[0]; if (pick_[0] === 'ritual') job.perfAdj = (job.perfAdj || 0) + 2; if (pick_[0] === 'cast') { job.costarRel = clamp(job.costarRel + 10, 0, 100); job.perfAdj = (job.perfAdj || 0) + 1; } if (pick_[0] === 'alone') job.perfAdj = (job.perfAdj || 0) + (has(S, 'method') ? 4 : 1); job.perf = FC.calcPerf(job);
@@ -1208,7 +1305,7 @@ FC.retire = function (S, why = 'choice') {
 // ------------------------------------------------------------------ save / load
 const KEY = s => 'fc-slot-' + s;
 FC.save = S => { try { localStorage.setItem(KEY(S.slot), JSON.stringify(S)); return true; } catch (e) { return false; } };
-FC.load = slot => { try { const s = localStorage.getItem(KEY(slot)); if (!s) return null; const S = JSON.parse(s); S.offers = S.offers || []; if (!S.stageBoard) { S.stageBoard = []; refreshStage(S); } return S; } catch (e) { return null; } };
+FC.load = slot => { try { const s = localStorage.getItem(KEY(slot)); if (!s) return null; const S = JSON.parse(s); S.offers = S.offers || []; if (!S.stageBoard) { S.stageBoard = []; refreshStage(S); } S.roll = S.roll || []; S.lens = S.lens || []; return S; } catch (e) { return null; } };
 FC.slots = () => [1, 2, 3].map(i => { const S = FC.load(i); return S ? { slot: i, name: S.me.name, date: FC.dateLabel(S), fame: Math.round(S.fame), look: S.look, ended: !!S.ended } : { slot: i, empty: true }; });
 FC.del = slot => { try { localStorage.removeItem(KEY(slot)); } catch (e) { } };
 FC.hof = () => { try { return JSON.parse(localStorage.getItem('fc-hof') || '[]'); } catch (e) { return []; } };
@@ -1219,6 +1316,6 @@ FC.autoWork = (S, level = 'steady') => {
   for (const j of FC.needsEffort(S)) FC.setEffort(S, j.id, S.energy >= 40 ? level : 'coast');
   for (const { j, p } of FC.pressOpen(S)) { if (S.energy < 35) break; const r = FC.doPress(S, j.id, p.id, 'charm'); if (r.live) { if (FC.livePress(S, j.id, p.id).ok) { while (S.live && S.live.step < S.live.steps.length - 1) { const k = S.live.steps[S.live.step]; if (['cold', 'intro'].includes(k)) FC.liveNext(S); else FC.liveChoose(S, 0); } FC.liveFinish(S); } } }
 };
-FC.autoResolve = S => { while (S.pending.length) { const p = S.pending.shift(); if (p.type === 'set' || p.type === 'event') FC.resolve(S, p, Math.floor(Math.random() * 2)); if (p.type === 'love') FC.loveAnswer(S, true); if (p.type === 'stage' || p.type === 'opening') FC.resolve(S, p, 0); if (p.type === 'finale') FC.tvFinale(S, p.id, 'trust'); if (p.type === 'announce') FC.announceRespond(S, p.jobId, 1); if (p.type === 'midseason') FC.tvMoment(S, p.id, p.ev, 0); }
+FC.autoResolve = S => { while (S.pending.length) { const p = S.pending.shift(); if (p.type === 'set' || p.type === 'event') FC.resolve(S, p, Math.floor(Math.random() * 2)); if (p.type === 'love') FC.loveAnswer(S, true); if (p.type === 'stage' || p.type === 'opening') FC.resolve(S, p, 0); if (p.type === 'finale') FC.tvFinale(S, p.id, 'trust'); if (p.type === 'announce') FC.announceRespond(S, p.jobId, 1); if (p.type === 'rehearsal') FC.resolve(S, p, 0); if (p.type === 'fitting') { const j = S.jobs.find(x => x.id === p.jobId); if (j) FC.chooseCostume(S, j.id, 0); } if (p.type === 'midseason') FC.tvMoment(S, p.id, p.ev, 0); }
   for (const m of S.inbox.slice()) if (m.kind === 'talk' && FC.liveStart(S, m.id).ok) { while (S.live && S.live.step < S.live.steps.length - 1) { const k = S.live.steps[S.live.step]; if (['cold', 'intro'].includes(k)) FC.liveNext(S); else FC.liveChoose(S, 0); } FC.liveFinish(S); } };
 })(typeof window !== 'undefined' ? window : globalThis);
