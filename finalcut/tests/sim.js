@@ -36,7 +36,7 @@ for (let r = 0; r < runs; r++) {
     if (S.company && S.weekActs < 5 && S.energy > 30 && Math.random() < 0.2) FC.doActivity(S, 'write');
     FC.autoWork(S, 'all'); FC.endWeek(S); FC.autoResolve(S);
     const y = Math.round(S.week / 52 * 10) / 10; M.lead = M.lead || (S.credits.some(c => c.size === 'lead') && y); M.fr = M.fr || (S.myChars.length && y); M.f50 = M.f50 || (S.fame >= 50 && y); M.mil = M.mil || (S.money >= 1e6 && y); M.osc = M.osc || (S.awards.some(a => a.show === 'oscars') && y);
-    if (!isFinite(S.money) || isNaN(S.fame)) throw new Error('NaN state at week ' + S.week);
+    if (!isFinite(S.money) || isNaN(S.fame)) { console.log(JSON.stringify({ money: S.money, fame: S.fame, followers: S.followers, log: S.log, studios: S.studios }).slice(0, 800)); throw new Error('NaN state at week ' + S.week); }
   }
   if (!S.ended) FC.retire(S);
   const wins = S.awards.filter(a => a.won && a.weight);

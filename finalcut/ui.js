@@ -145,14 +145,14 @@ UI.lookEditor = function (look, tab, ns) {
 UI.mountPreview = function (look) {
   const el = $('#prev3d'); if (!el || !window.L3 || !L3.available()) return;
   if (UI.prevCtl && UI.prevCtl.r && el.contains(UI.prevCtl.r.domElement)) { UI.prevCtl.update(look); return; }
-  UI.prevCtl = L3.preview(el, look, { close: false });
+  UI.prevCtl = L3.preview(el, look, { close: ['face', 'hair'].includes(UI.cr ? UI.cr.ltab : UI.ltab) });
 };
 function updateLookUI(look, ns) {
   // re-render only the option panel so the 3D preview keeps spinning
   const panel = document.querySelector('.look-wrap > div:last-child'); const tab = ns === 'cr' ? UI.cr.ltab : UI.ltab;
   const tmp = document.createElement('div'); tmp.innerHTML = UI.lookEditor(look, tab, ns);
   if (panel) panel.replaceWith(tmp.querySelector('.look-wrap > div:last-child'));
-  if (UI.prevCtl) UI.prevCtl.update(look);
+  if (UI.prevCtl) { UI.prevCtl.update(look); if (UI.prevCtl.zoom) UI.prevCtl.zoom(['face', 'hair'].includes(tab)); }
 }
 
 // ------------------------------------------------------------------ main render
@@ -403,7 +403,7 @@ function workCard(j) {
       ${eff.length ? `<div class="lbl" style="margin-top:8px">Effort so far</div><div class="effbars">${eff.map(v => `<span style="height:${Math.max(8, v)}%" title="${v}"></span>`).join('')}</div>` : ''}
       <p class="small" style="margin-top:8px">Your acting so far: <b class="gold mono">${(FC.calcPerf(j) / 10).toFixed(1)}</b><span class="muted"> / 10 · prep ${j.prepScore || 0} · effort ${Math.round(avg(eff)) || '–'}</span></p>`
       : `<p class="small muted">One quick day of work.</p>`;
-  } else if (j.stage === 'post') body = `<p class="small muted">${j.tv ? 'Editing. Premieres' : 'In post-production. Releases'} in ${j.left} week${j.left === 1 ? '' : 's'}. Your acting score: <b class="gold mono">${(j.perf / 10).toFixed(1)}</b>.</p>`;
+  } else if (j.stage === 'post') body = `<p class="small muted">${j.tv ? 'Editing. Premieres' : 'In post-production. Releases'} in ${j.left} week${j.left === 1 ? '' : 's'}. Your acting score: <b class="gold mono">${(j.perf / 10).toFixed(1)}</b>.</p>${bar('Buzz', FC.buzz(s, j))}${j.trailer ? `<p class="small">Trailer: <b>${FC.num(j.trailer.views)}</b> views · ${j.trailer.react}% liked it <button class="btn sm dark" data-a="watchTrailer" data-id="${j.id}">Watch</button></p>` : `<p class="tiny muted">The trailer drops a few weeks before release.</p>`}`;
   const press = j.press && j.press.length ? `<div class="lbl" style="margin-top:12px">Press · ${j.press.filter(p => p.done).length} of ${j.press.length} done · ${{ fr: 'franchise tour', big: 'studio push', indie: 'light indie press', tv: 'series launch', stage: 'opening press' }[j.pressTier] || ''}</div>
     ${j.press.map(p => { const P = D.PRESS.find(x => x.id === p.type); const open = p.from <= s.week && s.week < p.due; return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px"><b>${P.name}</b>${p.done ? '<span class="pill good">Done</span>' : open ? `<span class="pill gold">Due in ${p.due - s.week} wk</span>` : `<span class="pill">Opens in ${p.from - s.week} wk</span>`}</div><small class="muted">${P.d} −${P.cost}⚡</small>
       ${!p.done && open ? `<div class="btns" style="margin-top:6px">${P.live ? `<button class="btn sm" data-a="pressDo" data-j="${j.id}" data-id="${p.id}" ${s.energy < P.cost ? 'disabled' : ''}>Go on the show</button>` : D.PRESS_STYLE.map(st => `<button class="btn sm ${st[0] === 'charm' ? '' : 'dark'}" data-a="pressDo" data-j="${j.id}" data-id="${p.id}" data-v="${st[0]}" ${s.energy < P.cost ? 'disabled' : ''}>${st[1]}</button>`).join('')}</div>` : ''}</div>`; }).join('')}` : '';
@@ -433,7 +433,7 @@ function careerView() {
     const cr = s.credits.slice().reverse();
     body = `<div class="card"><h2>Filmography</h2><p class="small muted">${s.credits.length} credits · ${M(s.lifetimeBO)} lifetime box office · ${M(s.lifetimeEarn)} career earnings</p>
       <div class="scroll-x"><table class="tbl"><thead><tr><th>Year</th><th>Title</th><th>Role</th><th class="n">Critics</th><th class="n">Gross</th></tr></thead><tbody>
-      ${cr.map(c => `<tr><td class="mono">${FC.year(s, c.released || c.signed)}</td><td>${c.review ? `<button class="linkish" data-a="review" data-id="${c.id}">${esc(c.title)}</button>` : `<b>${esc(c.title)}</b>`}${c.season > 1 ? ' S' + c.season : ''}${c.review ? ` <span class="pill">You ${c.review.mine.toFixed(1)}</span>` : ''}<br><span class="tiny muted">${esc(c.studio)}${c.verdict ? ' · ' + esc(c.verdict) : ''}${c.directedByMe ? ' · Directed' : ''}</span></td><td class="small">${esc(roleLabel(c))}</td><td class="n">${c.critics != null ? c.critics + '%' : '–'}</td><td class="n">${c.ww ? M(c.ww) : c.viewers ? FC.num(c.viewers) + ' views' : '–'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">No credits yet.</td></tr>'}
+      ${cr.map(c => `<tr><td class="mono">${FC.year(s, c.released || c.signed)}</td><td>${c.review ? `<button class="linkish" data-a="review" data-id="${c.id}">${esc(c.title)}</button>` : `<b>${esc(c.title)}</b>`}${c.season > 1 ? ' S' + c.season : ''}${c.review ? ` <span class="pill">You ${c.review.mine.toFixed(1)}</span>` : ''}${c.trailer ? ` <button class="linkish tiny" data-a="watchTrailer" data-id="${c.id}">▶ trailer</button>` : ''}<br><span class="tiny muted">${esc(c.studio)}${c.verdict ? ' · ' + esc(c.verdict) : ''}${c.directedByMe ? ' · Directed' : ''}</span></td><td class="small">${esc(roleLabel(c))}</td><td class="n">${c.critics != null ? c.critics + '%' : '–'}</td><td class="n">${c.ww ? M(c.ww) : c.viewers ? FC.num(c.viewers) + ' views' : '–'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">No credits yet.</td></tr>'}
       </tbody></table></div></div>`;
   }
   if (sub === 'chars') body = s.myChars.length ? s.myChars.map(m => { const F = D.FRANCHISES.find(f => f.id === m.fid); return `<div class="card role"><span class="stripe" style="background:${F.color}"></span><div class="eyebrow">${esc(F.name)}</div><div class="role-title">${esc(m.name)}</div>
@@ -500,7 +500,7 @@ UI.liveDone = function (r) {
 // ------------------------------------------------------------------ hollywood (world)
 function worldView() {
   const s = S(); const sub = UI.sub.world;
-  const tabs = [['box', 'Box office'], ['marquee', 'Marquee'], ['fr', 'Franchises'], ['news', 'News'], ['feed', 'Clapper']];
+  const tabs = [['box', 'Box office'], ['marquee', 'Marquee'], ['studios', 'Studios'], ['fr', 'Franchises'], ['news', 'News'], ['feed', 'Clapper']];
   let body = '';
   if (sub === 'box') body = `<div class="card"><h2>Weekend box office</h2><p class="small muted">Domestic, ${FC.dateLabel(s)}</p><div class="scroll-x"><table class="tbl"><thead><tr><th>#</th><th>Film</th><th class="n">Weekend</th><th class="n">Total</th><th class="n">Wks</th></tr></thead><tbody>
     ${(s.chart || []).map(r => `<tr class="${r.mine ? 'mine' : ''}"><td class="mono">${r.rank}</td><td><b>${esc(r.title)}</b><br><span class="tiny muted">${esc(r.studio)}${r.mine ? ' · You' : r.star ? ' · ' + esc(r.star) : ''}</span></td><td class="n">${M(r.wk)}</td><td class="n">${M(r.total)}</td><td class="n">${r.weeks}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">The chart updates when you end the week.</td></tr>'}</tbody></table></div>
@@ -514,6 +514,9 @@ function worldView() {
       ${F.legacy.length ? `<h3>Legacy mantles</h3><p class="small muted">${F.legacy.map(l => `${esc(l[0])} (${esc(l[1])})`).join(' · ')}</p>` : ''}
       <h3>Coming up</h3><p class="small muted">${F.titles.filter(t => !st.used.includes(t)).slice(0, 5).map(esc).join(' · ') || 'Nothing announced.'}</p></div>`;
   }
+  if (sub === 'studios') { const rows = D.STUDIOS.filter(st => st.brand >= 0.35).sort((a, b) => b.brand - a.brand);
+    body = `<div class="card"><h2>Studios</h2><p class="small muted">How each studio feels about you. Hits, good press and hard work on set raise it. Flops, skipped press and broken contracts lower it. Studios that like you cast you more easily, pay more and call you with direct offers.</p>
+      ${rows.map(st => { const v = FC.studioRel(s, st.name); const lbl = v >= 25 ? 'They love you' : v >= 10 ? 'Warm' : v > -10 ? 'Neutral' : v > -25 ? 'Cool' : 'Burned bridge'; return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(st.name)}</b><span class="pill ${v >= 10 ? 'good' : v <= -10 ? 'bad' : ''}">${lbl}</span></div><small class="muted">${esc(D.STUDIO_BLURB[st.id] || '')} Brand power ${Math.round(st.brand * 100)}.</small><div class="meter" style="height:8px"><span style="left:50%;width:0"></span><span style="${v >= 0 ? `left:50%;width:${v}%` : `left:${50 + v}%;width:${-v}%`};background:${v >= 0 ? 'var(--teal)' : 'var(--red)'}"></span><i style="left:50%"></i></div></div>`; }).join('')}</div>`; }
   if (sub === 'marquee') { const revs = s.credits.filter(c => c.review).slice().reverse();
     body = `<div class="card"><div class="marquee-brand">MARQUEE</div><p class="small muted">Reviews of everything you've been in, with a score for every cast member.</p>
       ${revs.length ? revs.map(c => `<button class="row rev-row" data-a="review" data-id="${c.id}"><span class="mq-score ${c.review.score >= 8 ? 'hi' : c.review.score >= 5.5 ? '' : 'lo'}">${c.review.score.toFixed(1)}</span><div class="grow"><b>${esc(c.title)}</b><small>${esc(c.studio)} · ${FC.year(s, c.released)}${c.review.bnm ? ' · <span class="gold">Best New Movie</span>' : ''}</small><small>You: ${c.review.mine.toFixed(1)}${c.review.bp ? ' · <span class="gold">Best Performance</span>' : ''}</small></div><span class="muted">›</span></button>`).join('') : '<p class="empty">Reviews show up here when your projects come out.</p>'}</div>`; }
@@ -571,34 +574,52 @@ UI.nextPending = function () {
   const p = s.pending.shift(); save();
   UI.afterModal = () => UI.nextPending();
   const job = id => s.credits.find(c => c.id === id) || s.jobs.find(c => c.id === id);
-  if (p.type === 'set') { const ev = D.SET_EVENTS[p.ev]; const j = s.jobs.find(x => x.id === p.jobId); const ctx = { costar: j && j.costars[0] || 'your co-star' };
-    UI.modal(`<div class="eyebrow">On set · ${esc(j ? j.title : '')}</div><h2>${esc(FC.fill(ev.t, ctx))}</h2><div class="scene3d" id="ev3d"></div><div class="choices">${ev.c.map((c, i) => `<button class="choice" data-a="resolve" data-i="${i}">${esc(c[0])}</button>`).join('')}</div>`, { noClose: true });
-    UI.cur = p; const el = $('#ev3d'); if (el && window.L3 && L3.available()) L3.scene(el, j && j.fid ? Object.assign({}, s.look, { top: 'hero', topColor: (D.FRANCHISES.find(f => f.id === j.fid) || {}).color }) : s.look, { mode: 'set' }); else if (el) el.remove(); return; }
-  if (p.type === 'event') { const ev = D.RANDOM_EVENTS.find(e => e.id === p.id);
-    UI.modal(`<div class="eyebrow">This week</div><h2>${esc(FC.fill(ev.t, p.ctx))}</h2><div class="choices">${ev.c.map((c, i) => `<button class="choice" data-a="resolve" data-i="${i}">${esc(c[0])}</button>`).join('')}</div>`, { noClose: true }); UI.cur = p; return; }
+  if (p.type === 'set') { const ev = D.SET_EVENTS[p.ev]; const j = s.jobs.find(x => x.id === p.jobId); if (!j) return UI.nextPending(); const ctx = { costar: j.costars[0] || 'your co-star' };
+    const sc = ev.sc || {}; const set = sc.set || L3set(j); const day = Math.max(1, (j.weeks.shoot - j.left) * 5 + 1);
+    UI.cur = p;
+    UI.eventCard({ big: j.title, small: `Day ${day} of ${j.weeks.shoot * 5} · On set`, kicker: `${j.studio}${j.director ? ' · Dir. ' + j.director.name : ''}`, title: FC.fill(ev.t, ctx),
+      look: UI.costume(j, set), scene: { set, crew: sc.crew !== false, cast: UI.castLooks(j.costars, sc.castSuits), anim: sc.anim, castAnim: sc.castAnim, fx: sc.fx, director: j.director && j.director.name },
+      choices: ev.c.map(c => c[0]), pick: i => ({ text: FC.resolve(s, p, i) }) }); return; }
+  if (p.type === 'announce') { const j = s.jobs.find(x => x.id === p.jobId); if (!j) return UI.nextPending();
+    const react = FC.announceReaction(s, j); const tone = react >= 65 ? 'good' : react >= 42 ? 'mixed' : 'bad';
+    const posts = D.FAN_POSTS[tone].slice().sort(() => Math.random() - 0.5).slice(0, 3);
+    const handles = ['@reelqueen', '@cinephile_dan', '@fanboy4life', '@popcornpapi', '@thefilmfeed', '@castingwatch'];
+    UI.eventCard({ big: 'Breaking', small: j.studio, kicker: `Casting announcement · ${j.studio}`, title: `${j.studio} announces ${s.me.name} as ${j.char ? j.char.name : 'the lead'} in ${j.title}.`,
+      sub: `<div class="lbl" style="margin-top:8px">Fan reaction</div><div class="meter"><span style="width:${react}%;background:${tone === 'good' ? 'var(--teal)' : tone === 'bad' ? 'var(--red)' : 'var(--gold)'}"></span></div><p class="small"><b>${react}% positive.</b> ${tone === 'good' ? 'The internet is thrilled.' : tone === 'mixed' ? 'The internet is split.' : 'The internet is not happy.'}</p>${posts.map((t, i) => `<div class="post"><b>${handles[(i + react) % handles.length]}</b><div>${esc(t)}</div></div>`).join('')}`,
+      look: UI.costume(j, 'hallh'), scene: { mode: 'awards', anim: 'wave' },
+      choices: ['Post a cryptic teaser', 'Thank the fans', 'Say nothing, let the mystery build'], pick: i => ({ text: FC.announceRespond(s, j.id, i), good: react >= 42 || i === 1 }) }); return; }
+  if (p.type === 'trailer') { const j = s.jobs.find(x => x.id === p.id) || job(p.id); if (!j || !j.trailer) return UI.nextPending(); UI.playTrailer(j, true); return; }
+  if (p.type === 'event') { const ev = D.RANDOM_EVENTS.find(e => e.id === p.id); const sc = ev.sc || {};
+    UI.cur = p;
+    UI.eventCard({ big: 'This week', small: FC.dateLabel(s), kicker: 'Your life', title: FC.fill(ev.t, p.ctx), look: s.look,
+      scene: { set: sc.set || 'home', cast: sc.castAnim || sc.castSuits ? UI.castLooks([p.ctx.actor || p.ctx.costar], sc.castSuits) : [], anim: sc.anim, castAnim: sc.castAnim, fx: sc.fx },
+      choices: ev.c.map(c => c[0]), pick: i => ({ text: FC.resolve(s, p, i) }) }); return; }
   if (p.type === 'release') { const j = job(p.id); if (!j) return UI.nextPending();
     if (j.tv) { UI.modal(`<div class="eyebrow">Premiere</div><h2>${esc(j.title)}${j.season > 1 ? ' · Season ' + j.season : ''}</h2><div class="bigstat"><div><b>${j.critics}%</b><span>Critics</span></div><div><b>${FC.num(j.viewers)}</b><span>Viewers</span></div><div><b>${j.rating}</b><span>Rating</span></div></div>${j.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}${j.review ? `<button class="btn dark" data-a="review" data-id="${j.id}">Read the Marquee review · ${j.review.score.toFixed(1)}</button> ` : ''}<button class="btn" data-a="closeModal">Continue</button>`); return; }
     UI.modal(`<div class="eyebrow">Opening weekend</div><h2>${esc(j.title)}</h2><div class="scene3d" id="rel3d"></div>
       <div class="bigstat"><div><b>${M(s.theaters.find(f => f.id === j.id) ? s.theaters.find(f => f.id === j.id).open : j.dom)}</b><span>Opening</span></div><div><b>${j.critics}%</b><span>Critics</span></div><div><b>${j.grade}</b><span>CinemaScore</span></div></div>
       <p class="small muted">Audience score ${j.aud}%. ${j.festival ? 'Premiered at ' + esc(j.festival) + '.' : ''}</p>${j.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}<div class="btns">${j.review ? `<button class="btn dark" data-a="review" data-id="${j.id}">Read the Marquee review · ${j.review.score.toFixed(1)}</button>` : ''}<button class="btn" data-a="closeModal">Continue</button></div>`);
-    const el = $('#rel3d'); if (el && window.L3 && L3.available()) L3.scene(el, Object.assign({}, s.look, s.look.top === 'tee' || s.look.top === 'hoodie' ? { top: S().me.cat === 's' ? 'gown' : 'tux', topColor: '#15151b' } : {}), { mode: 'carpet', title: j.title }); else if (el) el.remove(); return; }
+    const el = $('#rel3d'); if (el && window.L3 && L3.available()) L3.scene(el, Object.assign({}, s.look, ['tee', 'hoodie', 'tank', 'puffer'].includes(s.look.top) ? { top: S().me.cat === 's' ? 'gown' : 'tux', topColor: '#15151b' } : {}), { mode: 'carpet', title: j.title, cast: UI.castLooks(j.costars), castAnim: 'pose' }); else if (el) el.remove(); return; }
   if (p.type === 'closed') { const j = job(p.id); if (!j) return UI.nextPending(); UI.modal(`<div class="eyebrow">Final box office</div><h2>${esc(j.title)}</h2><div class="bigstat"><div><b>${M(j.dom)}</b><span>Domestic</span></div><div><b>${M(j.ww)}</b><span>Worldwide</span></div><div><b class="${/Flop/.test(j.verdict) ? 'bad' : 'gold'}" style="font-size:1.05rem">${esc(j.verdict)}</b><span>Verdict</span></div></div><p class="small muted">Budget ${M(j.budget || 0)}.${j.terms && j.terms.points ? ` Your ${j.terms.points} backend points paid out.` : ''}</p><button class="btn" data-a="closeModal">Continue</button>`); return; }
   if (p.type === 'noms') { const show = D.AWARDS.find(a => a.id === p.show); const n = s.awardNoms[p.show]; if (!n) return UI.nextPending();
     UI.modal(`<div class="eyebrow">Nominations</div><h2>${show.id === 'razzies' ? 'Uh oh.' : "You're nominated!"}</h2><p>${esc(show.name)}</p>${n.noms.map(x => `<div class="row"><div class="grow"><b>${esc(x.cat)}</b><small>${esc(x.film)}</small></div></div>`).join('')}<p class="small muted">The ceremony is in week ${show.week}.${show.id !== 'razzies' ? ' Campaign spending on the Career tab can help.' : ''}</p><button class="btn" data-a="closeModal">Continue</button>`); return; }
   if (p.type === 'ceremony') { UI.cer = { p, i: 0, open: false }; return UI.renderCeremony(); }
   if (p.type === 'festival') { UI.modal(`<div class="eyebrow">${esc(p.fest)}</div><h2>${esc(p.film)} premieres</h2><p>${p.ovation >= 3 ? `A ${p.ovation}-minute standing ovation. The trades are calling it ${p.q > 75 ? 'an awards frontrunner' : 'a strong contender'}.` : 'Polite applause. The reviews will tell.'}</p><button class="btn" data-a="closeModal">Continue</button>`); return; }
   if (p.type === 'opening' || p.type === 'stage') { const j = s.jobs.find(x => x.id === p.jobId); if (!j) return UI.nextPending();
-    const ev = p.type === 'stage' ? D.STAGE_EVENTS[p.ev] : null;
-    UI.modal(`<div class="eyebrow">${esc(j.title)} · ${esc(j.studio)}</div><h2>${p.type === 'opening' ? 'Opening night. Places in five minutes.' : esc(ev.t)}</h2><div class="scene3d" id="st3d"></div>
-      ${p.type === 'opening' ? `<p class="small muted">The critics are in the house. ${j.house ? Math.min(100, j.house) + '% of seats sold.' : ''}</p>` : `<p class="small muted">${Math.min(100, j.house || 0)}% houses this week · ${j.nights || 0} performances so far.</p>`}
-      <div class="choices">${(p.type === 'opening' ? D.STAGE_OPENING : ev.c).map((c, i) => `<button class="choice" data-a="resolve" data-i="${i}">${esc(c[1] && typeof c[1] === 'string' ? c[1] : c[0])}</button>`).join('')}</div>`, { noClose: true });
-    UI.cur = p; const el = $('#st3d'); if (el && window.L3 && L3.available()) L3.scene(el, Object.assign({}, s.look, j.genre === 'musical' ? { top: 'sequin' } : {}), { mode: 'theater' }); else if (el) el.remove(); return; }
+    const ev = p.type === 'stage' ? D.STAGE_EVENTS[p.ev] : null; UI.cur = p;
+    UI.eventCard({ big: p.type === 'opening' ? 'Opening night' : 'Tonight', small: `${j.title} · ${j.studio.split(',')[0]}`, kicker: `${j.stageRole || roleLabel(j)} · ${Math.min(100, j.house || 0)}% sold · ${j.nights || 0} shows`,
+      title: p.type === 'opening' ? 'Places in five minutes. The critics are in the house.' : ev.t, look: Object.assign({}, s.look, j.genre === 'musical' ? { top: 'sequin' } : {}),
+      scene: { mode: 'theater', cast: UI.castLooks(j.costars), anim: 'pose' },
+      choices: (p.type === 'opening' ? D.STAGE_OPENING.map(c => c[1]) : ev.c.map(c => c[0])),
+      pick: i => { const out = FC.resolve(s, p, i); if (out && typeof out === 'object') return { good: out.critics >= 55, headline: out.text, html: `<div class="bigstat"><div><b>${out.critics}%</b><span>Critics</span></div></div>${out.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}` }; return { text: out }; } }); return; }
   if (p.type === 'closing') { const j = job(p.id); if (!j) return UI.nextPending(); const avg = j.houses && j.houses.length ? Math.round(j.houses.reduce((a, b) => a + b, 0) / j.houses.length) : 0;
     UI.modal(`<div class="eyebrow">Closing night</div><h2>${esc(j.title)}</h2><div class="bigstat"><div><b>${j.nights || 0}</b><span>Performances</span></div><div><b>${Math.min(100, avg)}%</b><span>Avg houses</span></div><div><b>${j.openingCritics != null ? j.openingCritics : j.critics}%</b><span>Critics</span></div></div><p>The cast takes one last bow. ${avg > 90 ? 'The run sold out almost every night.' : avg > 70 ? 'A healthy run.' : 'Some empty seats by the end, but you grew as an actor.'} Tony nominations are announced in the spring.</p><button class="btn" data-a="closeModal">Continue</button>`); return; }
   if (p.type === 'midseason') { const c = job(p.id); if (!c) return UI.nextPending(); const ev = D.TV_MIDSEASON[p.ev];
-    UI.modal(`<div class="eyebrow">${esc(c.title)} · Episode ${p.ep}</div><h2>${esc(FC.fill(ev.t, { ep: p.ep }))}</h2>${epBars(c)}<div class="choices" style="margin-top:12px">${ev.c.map((x, i) => `<button class="choice" data-a="tvMoment" data-i="${i}">${esc(x[0])}</button>`).join('')}</div>`, { noClose: true }); UI.cur = p; return; }
+    UI.eventCard({ big: `Episode ${p.ep}`, small: c.title, kicker: 'Airing now', title: FC.fill(ev.t, { ep: p.ep }), sub: epBars(c), look: s.look, scene: { set: 'home', anim: 'phone' },
+      choices: ev.c.map(x => x[0]), pick: i => ({ text: FC.tvMoment(s, p.id, p.ev, i) }) }); return; }
   if (p.type === 'finale') { const c = job(p.id); if (!c) return UI.nextPending();
-    UI.modal(`<div class="eyebrow">${esc(c.title)} · Finale next week</div><h2>The writers want your input on the finale.</h2>${epBars(c)}<div class="choices" style="margin-top:12px">${D.TV_FINALE.map(x => `<button class="choice" data-a="tvFinale" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>`, { noClose: true }); UI.cur = p; return; }
+    UI.eventCard({ big: 'The finale', small: c.title, kicker: 'Writers room', title: 'The writers want your input on the finale.', sub: epBars(c), look: s.look, scene: { set: 'office', anim: 'talk', cast: UI.castLooks(c.costars), castAnim: 'talk' },
+      choices: D.TV_FINALE.map(x => x[1]), pick: i => ({ good: true, headline: FC.tvFinale(s, p.id, D.TV_FINALE[i][0]) }) }); return; }
   if (p.type === 'seasonEnd') { const c = job(p.id); if (!c) return UI.nextPending(); const a = c.airing;
     UI.modal(`<div class="eyebrow">Season ${c.season || 1} finale</div><h2>${esc(c.title)}</h2>${epBars(c)}<div class="bigstat"><div><b>${FC.num(c.viewers)}</b><span>Avg viewers</span></div><div><b>${FC.num(a.eps[a.eps.length - 1])}</b><span>Finale</span></div><div><b>${c.rating}</b><span>Rating</span></div></div><p class="small muted">${a.eps[a.eps.length - 1] > a.eps[0] ? 'The audience grew all season.' : 'Viewers drifted off as the season went on.'} The network decides on renewal in two weeks.</p><button class="btn" data-a="closeModal">Continue</button>`); return; }
   if (p.type === 'note') { UI.modal(`<h2>${esc(p.title)}</h2><p>${esc(p.text)}</p><button class="btn" data-a="closeModal">Continue</button>`); return; }
@@ -616,6 +637,61 @@ UI.renderCeremony = function () {
     ${c.open ? `<div class="envelope"><div class="eyebrow">And the ${show.id === 'razzies' ? 'Razzie' : 'award'} goes to</div><div class="winner">${esc(r.winner)}</div>${r.won && show.id !== 'razzies' ? `<p class="small muted">Your speech:</p><div class="btns" style="justify-content:center"><button class="btn sm" data-a="speech" data-v="thanks">Thank everyone</button><button class="btn sm dark" data-a="speech" data-v="moment">Speak about something bigger</button><button class="btn sm dark" data-a="speech" data-v="funny">Make them laugh</button></div>` : `<button class="btn" data-a="cerNext">${c.i + 1 < c.p.res.length ? 'Next category' : 'Continue'}</button>`}</div>`
       : `<div class="envelope"><button class="btn" data-a="cerOpen">Open the envelope</button></div>`}`, { noClose: true });
   if (c.open && r.won) { const el = $('#aw3d'); if (el && window.L3 && L3.available()) L3.scene(el, Object.assign({}, s.look, { top: s.me.cat === 's' ? 'gown' : 'tux', topColor: s.me.cat === 's' ? '#8f1d2c' : '#15151b' }), { mode: 'awards', win: true }); else if (el) el.remove(); }
+};
+
+// ------------------------------------------------------------------ cinematic event cards
+const L3set = j => window.L3 && L3.setFor ? L3.setFor(j) : 'home';
+UI.castLooks = (names, suits) => (names || []).filter(Boolean).slice(0, 2).map(n => { const a = D.ACTORS.find(x => x[0] === n); if (!window.L3 || !L3.lookFor) return null; return L3.lookFor(n, Object.assign({ fem: a ? a[1] === 's' : undefined }, suits ? { top: 'suit' } : {})); }).filter(Boolean);
+UI.costume = (j, set) => {
+  const s = S(); const lk = Object.assign({}, s.look); if (!j) return lk; const fem = s.me.cat === 's';
+  const F = j.fid ? D.FRANCHISES.find(f => f.id === j.fid) : null;
+  if (F && (F.kind === 'superhero' || F.kind === 'animation')) return Object.assign(lk, { top: 'hero', topColor: F.color, accColor: '#d8b04a' });
+  if (set === 'period' || set === 'castle') return Object.assign(lk, fem ? { top: 'gown', topColor: set === 'castle' ? '#2f5d50' : '#5a1d24' } : { top: 'suit', topColor: '#2a221a', accColor: '#8f1d2c' });
+  if (set === 'space') return Object.assign(lk, { top: 'jacket', topColor: '#c0c4cc', bottom: 'slacks', bottomColor: '#c0c4cc', shoes: 'boots', shoesColor: '#3a3f4c' });
+  if (set === 'desert') return Object.assign(lk, { top: 'jacket', topColor: '#8a6a4f', bottom: 'slacks', bottomColor: '#5b4a3a', shoes: 'boots', shoesColor: '#3a2a1a' });
+  if (set === 'street' && ['action', 'thriller'].includes(j.genre)) return Object.assign(lk, { top: 'jacket', topColor: '#1d1d24', bottom: 'leather', bottomColor: '#111', shoes: 'boots', shoesColor: '#111' });
+  return lk;
+};
+UI.eventCard = function (o) {
+  UI.ev = o; UI.evCtl = null;
+  UI.modal(`<div class="scene3d tall" id="ev3d"><div class="titlecard"><div class="tc-small">${esc(o.small || '')}</div><div class="tc-big">${esc(o.big || '')}</div></div></div>
+    <div class="eyebrow">${esc(o.kicker || '')}</div><h2>${esc(o.title)}</h2>${o.sub ? `<div class="small muted">${o.sub}</div>` : ''}
+    <div id="ev-body"><div class="choices" style="margin-top:10px">${o.choices.map((c, i) => `<button class="choice" data-a="evPick" data-i="${i}">${esc(c)}</button>`).join('')}</div></div>`, { noClose: true });
+  const el = $('#ev3d'); if (el && window.L3 && L3.available()) UI.evCtl = L3.scene(el, o.look || S().look, Object.assign({ mode: 'set' }, o.scene || {})); else if (el) el.classList.add('noscene');
+};
+UI.evPick = function (i) {
+  const o = UI.ev; if (!o || o.done) return; o.done = true; UI.cur = null;
+  const r = o.pick(i) || {}; save();
+  const txt = r.text || ''; const good = r.good != null ? r.good : !/-\d|annoyed|cools|hurt|lost|wrong|did not|not quite|backfire|\$-/i.test(txt);
+  if (UI.evCtl && UI.evCtl.react) UI.evCtl.react(good);
+  const parts = txt ? (/[+-]\d|likes|annoyed|warms|cools|Followers/.test(txt) ? txt.split(', ') : [txt.replace(/\.$/, '')]) : [];
+  const isFx = x => /[+-]\d|likes|annoyed|warms|cools|contact|Followers|\$|edge|casting call/i.test(x);
+  const chips = parts.filter(isFx), prose = parts.filter(x => !isFx(x));
+  $('#ev-body').innerHTML = `<div class="ev-result ${good ? 'good' : 'bad'}"><b>${esc(r.headline || o.choices[i])}</b>${prose.length ? `<p class="small">${esc(prose.join('. '))}.</p>` : ''}${chips.length ? `<div class="btns" style="margin-top:6px">${chips.map(c => `<span class="pill ${/-\d|annoyed|cools/.test(c) ? 'bad' : 'good'}">${esc(c)}</span>`).join('')}</div>` : ''}${r.html || ''}</div><button class="btn" data-a="closeModal" style="margin-top:12px">Continue</button>`;
+  UI.afterModal = () => UI.nextPending(); flushAch();
+};
+
+// ------------------------------------------------------------------ trailers
+UI.trailerCards = j => {
+  const s = S(); const lines = D.TRAILER_LINES[j.genre] || D.TRAILER_LINES.drama; const rel = j.released != null ? j.released : s.week + (j.left || 0);
+  const when = j.tv ? `Streaming ${FC.monthYear(s, rel)}` : j.theater ? 'Now playing' : `Only in theaters ${FC.monthYear(s, rel)}`;
+  return [`${j.studio.split(',')[0]} presents`, j.director ? `From director ${j.director.name}` : lines[1 % lines.length], lines[0], lines[2 % lines.length] || lines[0], [s.me.name].concat((j.costars || []).slice(0, 2)).join('   ·   '), j.title, when];
+};
+UI.playTrailer = function (j, fresh) {
+  const s = S(); const set = L3set(j);
+  UI.modal(`<div class="eyebrow">${fresh ? 'Trailer drop' : 'Watch the trailer'}</div><h2>${esc(j.title)}</h2>
+    <div class="trailer" id="tr"><div class="tr-view" id="trv"></div><div class="tr-card" id="tr-card"></div><button class="btn sm dark tr-skip" data-a="trSkip">Skip</button></div><div id="tr-after"></div>`, { noClose: true });
+  const card = $('#tr-card');
+  const end = () => { const t = j.trailer; const after = $('#tr-after'); if (!after) return; card.className = 'tr-card show title'; card.textContent = j.title;
+    after.innerHTML = `<div class="bigstat"><div><b>${FC.num(t.views)}</b><span>Views in 24h</span></div><div><b>${t.react}%</b><span>Liked it</span></div><div><b>${FC.buzz(s, j)}</b><span>Buzz</span></div></div>
+      ${(t.react >= 60 ? D.FAN_POSTS.good : t.react >= 40 ? D.FAN_POSTS.mixed : D.FAN_POSTS.bad).slice(0, 2).map(x => `<div class="post"><b>@${['trailerwatch', 'filmtok', 'boxofficebuzz'][Math.floor(Math.random() * 3)]}</b><div>${esc(x)}</div></div>`).join('')}
+      <div class="btns" style="margin-top:10px"><button class="btn dark" data-a="trAgain" data-id="${j.id}">Watch again</button><button class="btn" data-a="closeModal">${fresh ? 'Continue' : 'Close'}</button></div>`;
+    if (fresh) UI.afterModal = () => UI.nextPending(); };
+  if (!window.L3 || !L3.available()) { const cards = UI.trailerCards(j); let k = 0; const step = () => { if (!$('#tr-card')) return; if (k >= cards.length) return end(); card.className = 'tr-card show' + (k === cards.length - 2 ? ' title' : ''); card.textContent = cards[k++]; setTimeout(step, 1300); }; step(); return; }
+  const F = j.fid ? D.FRANCHISES.find(f => f.id === j.fid) : null;
+  UI.trCtl = L3.trailer($('#trv'), { look: UI.costume(j, set), cast: UI.castLooks(j.costars), set, genre: j.genre, color: F ? F.color : null, cards: UI.trailerCards(j),
+    onCard: (txt, kind, black) => { if (!$('#tr-card')) return; card.className = 'tr-card' + (txt ? ' show' : '') + (kind === 'title' ? ' title' : '') + (black ? ' black' : ''); card.textContent = txt || ''; },
+    onEnd: () => { const sk = document.querySelector('.tr-skip'); if (sk) sk.remove(); end(); } });
 };
 
 // ------------------------------------------------------------------ ending and extras
@@ -695,6 +771,10 @@ const A = {
     if (out && typeof out === 'object') UI.modal(`<div class="eyebrow">Opening night reviews</div><h2>${esc(out.text)}</h2><div class="bigstat"><div><b>${out.critics}%</b><span>Critics</span></div></div>${out.quotes.map(q => `<div class="quote ${q.good ? 'good' : 'bad'}">"${esc(q.t)}"<small>${esc(q.o)}</small></div>`).join('')}<button class="btn" data-a="closeModal">Continue</button>`);
     else UI.modal(`<p>${esc(out || 'Noted.')}</p><button class="btn" data-a="closeModal">Continue</button>`);
     UI.afterModal = () => UI.nextPending(); },
+  evPick: d => UI.evPick(+d.i),
+  trSkip: () => { if (UI.trCtl && UI.trCtl.skip) UI.trCtl.skip(); },
+  trAgain: d => { const s = S(); const j = s.jobs.find(x => x.id === d.id) || s.credits.find(x => x.id === d.id); if (j) { const f = UI.afterModal; UI.afterModal = null; UI.playTrailer(j, false); UI.afterModal = f; } },
+  watchTrailer: d => { const s = S(); const j = s.jobs.find(x => x.id === d.id) || s.credits.find(x => x.id === d.id); if (j) UI.playTrailer(j, false); },
   tvMoment: d => { const p = UI.cur; UI.cur = null; const out = FC.tvMoment(S(), p.id, p.ev, +d.i); save(); UI.modal(`<p>${esc(out || 'Noted.')}</p><button class="btn" data-a="closeModal">Continue</button>`); UI.afterModal = () => UI.nextPending(); },
   tvFinale: d => { const p = UI.cur; UI.cur = null; const out = FC.tvFinale(S(), p.id, d.v); save(); UI.modal(`<p>${esc(out)}</p><button class="btn" data-a="closeModal">Continue</button>`); UI.afterModal = () => UI.nextPending(); },
   live: d => { const r = FC.liveStart(S(), d.id); if (!r.ok) return UI.toast(r.t); save(); UI.render(); UI.renderLive(); },

@@ -15,7 +15,7 @@ D.NOSES = [{ id: 'small', name: 'Small', s: 0.8 }, { id: 'med', name: 'Medium', 
 D.LIPS = [{ id: 'thin', name: 'Thin', s: 0.8 }, { id: 'med', name: 'Medium', s: 1 }, { id: 'full', name: 'Full', s: 1.3 }];
 D.BROWS = [{ id: 'soft', name: 'Soft' }, { id: 'straight', name: 'Straight' }, { id: 'arched', name: 'Arched' }, { id: 'thick', name: 'Thick' }];
 D.FACIAL = [{ id: 'none', name: 'None' }, { id: 'stubble', name: 'Stubble' }, { id: 'beard', name: 'Beard' }, { id: 'mustache', name: 'Mustache' }, { id: 'goatee', name: 'Goatee' }];
-D.HAIRS = [['short', 'Short'], ['buzz', 'Buzz cut'], ['long', 'Long'], ['bob', 'Bob'], ['curly', 'Curly'], ['bun', 'Bun'], ['ponytail', 'Ponytail'], ['braids', 'Braids'], ['spiky', 'Textured'], ['slick', 'Slicked back']];
+D.HAIRS = [['short', 'Short'], ['quiff', 'Quiff'], ['sidepart', 'Side part'], ['buzz', 'Buzz cut'], ['slick', 'Slicked back'], ['spiky', 'Textured'], ['mullet', 'Mullet'], ['curly', 'Curly'], ['afro', 'Afro'], ['locs', 'Locs'], ['braids', 'Braids'], ['long', 'Long'], ['waves', 'Waves'], ['curtain', 'Curtain bangs'], ['bob', 'Bob'], ['pixie', 'Pixie'], ['ponytail', 'Ponytail'], ['bun', 'Bun'], ['manbun', 'Top knot']];
 D.TOPS = [['tee', 'T-shirt'], ['hoodie', 'Hoodie'], ['jacket', 'Jacket'], ['suit', 'Suit'], ['tux', 'Tuxedo'], ['gown', 'Gown'], ['tank', 'Tank top'], ['corset', 'Corset top'], ['sequin', 'Sequin top'], ['puffer', 'Puffer'], ['hero', 'Hero suit']];
 D.BOTTOMS = [['jeans', 'Jeans'], ['slacks', 'Slacks'], ['shorts', 'Shorts'], ['skirt', 'Skirt'], ['leather', 'Leather pants']];
 D.SHOES = [['sneakers', 'Sneakers'], ['boots', 'Boots'], ['loafers', 'Loafers'], ['heels', 'Heels']];
@@ -85,13 +85,13 @@ D.ACTIVITIES = [
 
 // ------------------------------------------------------------------ industry
 D.STUDIOS = [
-  { id: 'marvel', name: 'Marvel Studios', tier: 5 }, { id: 'dc', name: 'DC Studios', tier: 5 }, { id: 'lucas', name: 'Lucasfilm', tier: 5 },
-  { id: 'wb', name: 'Warner Bros.', tier: 5 }, { id: 'uni', name: 'Universal', tier: 5 }, { id: 'para', name: 'Paramount', tier: 4 },
-  { id: 'sony', name: 'Sony Pictures', tier: 4 }, { id: 'disney', name: 'Disney', tier: 5 }, { id: 'lion', name: 'Lionsgate', tier: 3 },
-  { id: 'a24', name: 'A24', tier: 3, prestige: true }, { id: 'neon', name: 'Neon', tier: 2, prestige: true }, { id: 'search', name: 'Searchlight', tier: 3, prestige: true },
-  { id: 'focus', name: 'Focus Features', tier: 3, prestige: true }, { id: 'netflix', name: 'Netflix', tier: 4, stream: true }, { id: 'apple', name: 'Apple', tier: 4, stream: true },
-  { id: 'amazon', name: 'Amazon MGM', tier: 4 }, { id: 'hbo', name: 'HBO', tier: 4, tv: true }, { id: 'blum', name: 'Blumhouse', tier: 2 }, { id: 'legend', name: 'Legendary', tier: 4 },
-  { id: 'eon', name: 'Amazon MGM / Eon', tier: 5 },
+  { id: 'marvel', brand: 1, name: 'Marvel Studios', tier: 5 }, { id: 'dc', brand: 0.85, name: 'DC Studios', tier: 5 }, { id: 'lucas', brand: 0.85, name: 'Lucasfilm', tier: 5 },
+  { id: 'wb', brand: 0.6, name: 'Warner Bros.', tier: 5 }, { id: 'uni', brand: 0.6, name: 'Universal', tier: 5 }, { id: 'para', brand: 0.5, name: 'Paramount', tier: 4 },
+  { id: 'sony', brand: 0.55, name: 'Sony Pictures', tier: 4 }, { id: 'disney', brand: 0.75, name: 'Disney', tier: 5 }, { id: 'lion', brand: 0.4, name: 'Lionsgate', tier: 3 },
+  { id: 'a24', brand: 0.5, name: 'A24', tier: 3, prestige: true }, { id: 'neon', brand: 0.35, name: 'Neon', tier: 2, prestige: true }, { id: 'search', brand: 0.4, name: 'Searchlight', tier: 3, prestige: true },
+  { id: 'focus', brand: 0.35, name: 'Focus Features', tier: 3, prestige: true }, { id: 'netflix', brand: 0.55, name: 'Netflix', tier: 4, stream: true }, { id: 'apple', brand: 0.45, name: 'Apple', tier: 4, stream: true },
+  { id: 'amazon', brand: 0.45, name: 'Amazon MGM', tier: 4 }, { id: 'hbo', brand: 0.6, name: 'HBO', tier: 4, tv: true }, { id: 'blum', brand: 0.35, name: 'Blumhouse', tier: 2 }, { id: 'legend', brand: 0.55, name: 'Legendary', tier: 4 },
+  { id: 'eon', brand: 0.8, name: 'Amazon MGM / Eon', tier: 5 },
 ];
 // [name, prestige 1-5, genres, tag]
 D.DIRECTORS = [
@@ -333,31 +333,31 @@ D.BEAT_HINTS = {
 // ------------------------------------------------------------------ on-set events (set during shoots)
 // each: text, choices [label, effects]; effects keys: perf, rep, energy, happy, health, rel (director), costar, money, fame
 D.SET_EVENTS = [
-  { t: 'The director wants a 40th take of the same line.', c: [['Give it everything again', { perf: 3, energy: -8 }], ['Ask what they are looking for', { perf: 2, rel: 2 }], ['Refuse, take 39 was fine', { perf: -1, rel: -6, rep: -2 }]] },
-  { t: 'Your co-star {costar} keeps improvising and stepping on your lines.', c: [['Improvise right back', { perf: 2, costar: 3, req: 'comedy' }], ['Talk to them privately', { costar: 4, rep: 1 }], ['Complain to the director', { costar: -8, rel: 1 }]] },
-  { t: 'The stunt coordinator offers to let you do the big fall yourself.', c: [['Do it yourself', { perf: 4, fame: 1, risk: 'injury', req: 'action' }], ['Let the double do it', {}], ['Do half, double finishes', { perf: 2 }]] },
-  { t: 'A crew member leaks a photo of you in costume.', c: [['Post your own reveal first', { fame: 2, rel: -3 }], ['Stay silent', {}], ['Joke about it on Clapper', { fame: 1, rep: 1 }]] },
-  { t: 'You found something real in the scene and the script supervisor says it is off-book.', c: [['Fight to keep it', { perf: 3, rel: -2 }], ['Do both versions', { perf: 2, energy: -6 }], ['Drop it', { perf: -1 }]] },
-  { t: 'Night shoot in the rain. Everyone is miserable.', c: [['Buy the crew coffee and tacos', { money: -2500, rep: 3, happy: 2 }], ['Stay in your trailer between takes', { energy: 6, rep: -1 }], ['Lead a crew sing-along', { rep: 2, energy: -4, req: 'voice' }]] },
-  { t: 'The studio sends rewrites that cut your best scene.', c: [['Push back through your agent', { perf: 2, rel: -3, rep: -1 }], ['Accept and make the new scene work', { perf: 1, rel: 3 }], ['Ask the director to fight for it', { rel: 1, perf: 1 }]] },
-  { t: 'You and {costar} have real chemistry. The tabloids are already guessing.', c: [['Lean into it for promo', { fame: 3, costar: 2 }], ['Shut the rumors down', { rep: 2 }], ['Say nothing', { fame: 1 }]] },
-  { t: 'Your trainer says you can drop the last 2% body fat for the shirtless scene.', c: [['Go extreme', { perf: 2, health: -10, fame: 2 }], ['Stay healthy', { health: 2 }]] },
-  { t: 'Production is behind schedule. The director asks if you can work Saturday.', c: [['Yes', { rel: 4, energy: -12 }], ['Only for half a day', { rel: 1, energy: -5 }], ['No, your contract says six days', { rel: -4 }]] },
-  { t: 'A method moment: staying in character between takes is unnerving the cast.', c: [['Stay in character', { perf: 4, costar: -5, rep: -1, req: 'method' }], ['Break between takes', { costar: 2 }]] },
-  { t: 'The VFX supervisor needs you to react to a tennis ball for three hours.', c: [['Commit like it is Shakespeare', { perf: 3, energy: -6 }], ['Phone it in', { perf: -2 }], ['Ask for concept art to look at', { perf: 2 }]] },
-  { t: 'A set visit from studio executives. They want a word.', c: [['Charm them', { rep: 2, energy: -4, req: 'charisma' }], ['Keep it brief', {}], ['Pitch them your passion project', { rep: 1, contacts: 1 }]] },
+  { sc: { anim: 'talk', crew: true }, t: 'The director wants a 40th take of the same line.', c: [['Give it everything again', { perf: 3, energy: -8 }], ['Ask what they are looking for', { perf: 2, rel: 2 }], ['Refuse, take 39 was fine', { perf: -1, rel: -6, rep: -2 }]] },
+  { sc: { castAnim: 'talk', anim: 'idle' }, t: 'Your co-star {costar} keeps improvising and stepping on your lines.', c: [['Improvise right back', { perf: 2, costar: 3, req: 'comedy' }], ['Talk to them privately', { costar: 4, rep: 1 }], ['Complain to the director', { costar: -8, rel: 1 }]] },
+  { sc: { anim: 'fight', fx: ['boom'], crew: true }, t: 'The stunt coordinator offers to let you do the big fall yourself.', c: [['Do it yourself', { perf: 4, fame: 1, risk: 'injury', req: 'action' }], ['Let the double do it', {}], ['Do half, double finishes', { perf: 2 }]] },
+  { sc: { anim: 'phone' }, t: 'A crew member leaks a photo of you in costume.', c: [['Post your own reveal first', { fame: 2, rel: -3 }], ['Stay silent', {}], ['Joke about it on Clapper', { fame: 1, rep: 1 }]] },
+  { sc: { anim: 'talk', crew: true }, t: 'You found something real in the scene and the script supervisor says it is off-book.', c: [['Fight to keep it', { perf: 3, rel: -2 }], ['Do both versions', { perf: 2, energy: -6 }], ['Drop it', { perf: -1 }]] },
+  { sc: { fx: ['rain'], anim: 'idle', crew: true }, t: 'Night shoot in the rain. Everyone is miserable.', c: [['Buy the crew coffee and tacos', { money: -2500, rep: 3, happy: 2 }], ['Stay in your trailer between takes', { energy: 6, rep: -1 }], ['Lead a crew sing-along', { rep: 2, energy: -4, req: 'voice' }]] },
+  { sc: { anim: 'phone' }, t: 'The studio sends rewrites that cut your best scene.', c: [['Push back through your agent', { perf: 2, rel: -3, rep: -1 }], ['Accept and make the new scene work', { perf: 1, rel: 3 }], ['Ask the director to fight for it', { rel: 1, perf: 1 }]] },
+  { sc: { castAnim: 'talk', anim: 'talk' }, t: 'You and {costar} have real chemistry. The tabloids are already guessing.', c: [['Lean into it for promo', { fame: 3, costar: 2 }], ['Shut the rumors down', { rep: 2 }], ['Say nothing', { fame: 1 }]] },
+  { sc: { anim: 'fight' }, t: 'Your trainer says you can drop the last 2% body fat for the shirtless scene.', c: [['Go extreme', { perf: 2, health: -10, fame: 2 }], ['Stay healthy', { health: 2 }]] },
+  { sc: { anim: 'talk', crew: true }, t: 'Production is behind schedule. The director asks if you can work Saturday.', c: [['Yes', { rel: 4, energy: -12 }], ['Only for half a day', { rel: 1, energy: -5 }], ['No, your contract says six days', { rel: -4 }]] },
+  { sc: { anim: 'sad' }, t: 'A method moment: staying in character between takes is unnerving the cast.', c: [['Stay in character', { perf: 4, costar: -5, rep: -1, req: 'method' }], ['Break between takes', { costar: 2 }]] },
+  { sc: { set: 'green', anim: 'point', crew: true }, t: 'The VFX supervisor needs you to react to a tennis ball for three hours.', c: [['Commit like it is Shakespeare', { perf: 3, energy: -6 }], ['Phone it in', { perf: -2 }], ['Ask for concept art to look at', { perf: 2 }]] },
+  { sc: { castSuits: true, castAnim: 'talk', anim: 'talk' }, t: 'A set visit from studio executives. They want a word.', c: [['Charm them', { rep: 2, energy: -4, req: 'charisma' }], ['Keep it brief', {}], ['Pitch them your passion project', { rep: 1, contacts: 1 }]] },
 ];
 D.RANDOM_EVENTS = [
-  { id: 'paps', t: 'Paparazzi caught you leaving a restaurant at 2 a.m.', min: 25, c: [['Wave and smile', { fame: 1 }], ['Hide your face', { rep: 1 }], ['Confront them', { fame: 3, rep: -4 }]] },
-  { id: 'oldpost', t: 'Someone dug up an old post of yours. It has not aged well.', min: 20, scandal: true, c: [['Apologize sincerely', { rep: -2 }], ['Delete and ignore', { rep: -5 }], ['Double down', { rep: -10, fame: 3 }]] },
-  { id: 'fancast', t: 'Fans keep fan-casting you as {char} in the {fr}.', min: 15, c: [['Hint you are interested', { fame: 2, fancast: 1 }], ['Say you are focused on other work', { rep: 1 }]] },
-  { id: 'charity', t: 'A children\'s hospital asks you to visit.', min: 10, c: [['Visit, quietly', { rep: 4, happy: 4, energy: -10 }], ['Visit with cameras', { rep: 2, fame: 2, energy: -10 }], ['Send a signed photo', { rep: 1 }]] },
-  { id: 'feud', t: '{actor} said in an interview that franchise actors "are not really acting".', min: 30, c: [['Fire back on Clapper', { fame: 3, rep: -3 }], ['Laugh it off on a talk show', { rep: 3, req: 'comedy' }], ['Ignore it', {}]] },
-  { id: 'meme', t: 'A clip of you from an old audition is going viral.', min: 1, c: [['Recreate it', { fame: 3, followers: 1 }], ['Ignore it', { fame: 1 }]] },
-  { id: 'lawsuit', t: 'A former assistant is threatening to sue.', min: 35, scandal: true, c: [['Settle quietly', { money: -150000, rep: -1 }], ['Fight it in court', { lawsuit: 1 }]] },
-  { id: 'burn', t: 'You have not had a day off in months. Your body is telling you.', min: 0, burn: true, c: [['Take a week off', { energy: 30, health: 10, skip: 1 }], ['Push through', { health: -10 }]] },
-  { id: 'friend', t: '{actor} invites you to their birthday party.', min: 20, c: [['Go', { contacts: 1, energy: -8, happy: 3 }], ['Send a gift', { rep: 1, money: -500 }]] },
-  { id: 'heckle', t: 'A critic called your last performance "wooden".', min: 10, c: [['Take more classes', { drama: 2, money: -500 }], ['Post a sarcastic reply', { rep: -2, fame: 1 }], ['Let it go', {}]] },
+  { id: 'paps', sc: { set: 'street', fx: ['flashes'], anim: 'wave' }, t: 'Paparazzi caught you leaving a restaurant at 2 a.m.', min: 25, c: [['Wave and smile', { fame: 1 }], ['Hide your face', { rep: 1 }], ['Confront them', { fame: 3, rep: -4 }]] },
+  { id: 'oldpost', sc: { set: 'home', anim: 'phone' }, t: 'Someone dug up an old post of yours. It has not aged well.', min: 20, scandal: true, c: [['Apologize sincerely', { rep: -2 }], ['Delete and ignore', { rep: -5 }], ['Double down', { rep: -10, fame: 3 }]] },
+  { id: 'fancast', sc: { set: 'home', anim: 'phone' }, t: 'Fans keep fan-casting you as {char} in the {fr}.', min: 15, c: [['Hint you are interested', { fame: 2, fancast: 1 }], ['Say you are focused on other work', { rep: 1 }]] },
+  { id: 'charity', sc: { set: 'home', anim: 'talk' }, t: 'A children\'s hospital asks you to visit.', min: 10, c: [['Visit, quietly', { rep: 4, happy: 4, energy: -10 }], ['Visit with cameras', { rep: 2, fame: 2, energy: -10 }], ['Send a signed photo', { rep: 1 }]] },
+  { id: 'feud', sc: { set: 'office', anim: 'phone' }, t: '{actor} said in an interview that franchise actors "are not really acting".', min: 30, c: [['Fire back on Clapper', { fame: 3, rep: -3 }], ['Laugh it off on a talk show', { rep: 3, req: 'comedy' }], ['Ignore it', {}]] },
+  { id: 'meme', sc: { set: 'home', anim: 'phone' }, t: 'A clip of you from an old audition is going viral.', min: 1, c: [['Recreate it', { fame: 3, followers: 1 }], ['Ignore it', { fame: 1 }]] },
+  { id: 'lawsuit', sc: { set: 'office', anim: 'sad', castSuits: true }, t: 'A former assistant is threatening to sue.', min: 35, scandal: true, c: [['Settle quietly', { money: -150000, rep: -1 }], ['Fight it in court', { lawsuit: 1 }]] },
+  { id: 'burn', sc: { set: 'home', anim: 'sad' }, t: 'You have not had a day off in months. Your body is telling you.', min: 0, burn: true, c: [['Take a week off', { energy: 30, health: 10, skip: 1 }], ['Push through', { health: -10 }]] },
+  { id: 'friend', sc: { set: 'street', anim: 'dance', castAnim: 'dance', fx: ['embers'] }, t: '{actor} invites you to their birthday party.', min: 20, c: [['Go', { contacts: 1, energy: -8, happy: 3 }], ['Send a gift', { rep: 1, money: -500 }]] },
+  { id: 'heckle', sc: { set: 'home', anim: 'phone' }, t: 'A critic called your last performance "wooden".', min: 10, c: [['Take more classes', { drama: 2, money: -500 }], ['Post a sarcastic reply', { rep: -2, fame: 1 }], ['Let it go', {}]] },
 ];
 
 D.ACHIEVEMENTS = [
@@ -441,6 +441,7 @@ D.TV_FINALE = [['cliff', 'Push for a cliffhanger ending'], ['close', 'Push for a
 
 // newest first. Bump FC_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
+  { build: 8, date: 'Nov 14, 2026', notes: ['Brand-new 3D characters: real faces with eyes, brows, lips and ears, fuller bodies, and 19 hair styles including waves, curtain bangs, locs, an afro and a top knot.', 'Events now play as cinematic 3D cards: a title card, you on a themed set (rooftop, spaceship, ballroom, castle, desert and more) with your co-stars and the crew, your choice, then a reaction.', 'Big studios now announce your casting, with a live fan reaction. Each studio remembers how you treat it, and studios that like you pay more and offer roles directly.', 'Every film and series gets a 3D trailer before release, with views and fan reaction. Rewatch trailers from your filmography.'] },
   { build: 7, date: 'Nov 13, 2026', notes: ['New Theatre tab: audition for Broadway and West End musicals and plays, from ensemble and understudy parts to leads in Wicked, Hamilton, Sweeney Todd, Hamlet and new musicals.', 'Stage auditions have a song or monologue, the scenes, then a dance call or a director callback.', 'Understudies can get called on when the lead is out. Shows that don\'t sell can close early.', 'The Tony Awards now have musical and play categories, and the Olivier Awards cover the West End.'] },
   { build: 6, date: 'Nov 13, 2026', notes: ['New Work tab: prep for each role, choose your effort every shooting week, and do your press.', 'Your acting score now comes from your audition, your prep and your effort on set.', 'Every film, series and stage show has a press schedule from the director. Franchise press tours are big, indie press is light.', 'Marquee, the critics app: a score out of 10 for every project and every cast member, plus a full review.'] },
   { build: 5, date: 'Nov 13, 2026', notes: ['The game now tells you when an update is live, with a button to load it.', 'Version number and this list of changes on the title screen.'] },
@@ -526,7 +527,7 @@ D.STAGE_SHOWS = [
   ['The Importance of Being Earnest', 'play', 'classic', [['Jack Worthing', 'lead'], ['Lady Bracknell', 'lead'], ['Gwendolen', 'supporting']]],
   ['Long Day\'s Journey into Night', 'play', 'classic', [['Mary Tyrone', 'lead'], ['James Tyrone', 'lead'], ['Edmund Tyrone', 'supporting']]],
 ];
-D.NEW_MUSICALS = ['Laurel Canyon', 'The Lighthouse Keeper', 'Gilded', 'Northern Lights', 'Paper Planes', 'The Last Dance Hall', 'Velvet Underground Railroad', 'Small Town Saints', 'Kingfisher', 'Rust Belt', 'Midnight at the Majestic', 'The Understudy'];
+D.NEW_MUSICALS = ['Laurel Canyon', 'The Lighthouse Keeper', 'Gilded', 'Northern Lights', 'Paper Planes', 'The Last Dance Hall', 'Velvet Hour', 'Small Town Saints', 'Kingfisher', 'Rust Belt', 'Midnight at the Majestic', 'The Understudy'];
 D.NEW_PLAYS = ['The Inheritance Tax', 'Salt', 'A Quiet Kind of War', 'Second Act', 'The Glass Hour', 'Fathers and Sons', 'Low Ceiling', 'The Interview'];
 D.VENUES = {
   broadway: ['Gershwin Theatre', 'Richard Rodgers Theatre', 'Majestic Theatre', 'Walter Kerr Theatre', 'Imperial Theatre', 'Shubert Theatre', 'St. James Theatre', 'Booth Theatre', 'Hudson Theatre', 'Lyceum Theatre', 'Ethel Barrymore Theatre', 'Al Hirschfeld Theatre'],
@@ -539,6 +540,10 @@ D.SONG_TYPES = [['ballad', 'A soaring ballad'], ['uptempo', 'An up-tempo belt'],
 D.MONO_TYPES = [['classical', 'A classical monologue'], ['contemporary', 'A contemporary monologue'], ['comic', 'A comic monologue']];
 D.DANCE_CALL = [['nail', 'Nail every count', 'fitness'], ['sell', 'Sell it, even if a step goes', 'charisma'], ['mark', 'Mark it and stay safe', null]];
 D.PLAY_CALLBACK = [['note', 'Take the director\'s note fully', 'drama'], ['defend', 'Defend your choice', 'charisma'], ['wild', 'Try something wild', 'comedy']];
+
+D.STUDIO_BLURB = { marvel: 'The biggest brand in movies. One announcement and the whole internet knows your name.', dc: 'A rebuilt universe with a lot to prove.', lucas: 'A galaxy far, far away, and the most protective fandom on earth.', wb: 'Prestige blockbusters and auteurs.', uni: 'Franchises, horror and event films.', disney: 'Family films and live-action remakes.', eon: 'Guardians of James Bond.', hbo: 'Prestige TV.', netflix: 'Everything, everywhere, all the time.', a24: 'Taste-making indies.', apple: 'Expensive prestige.', legend: 'Big sci-fi and monsters.' };
+D.FAN_POSTS = { good: ['PERFECT casting. I am screaming.', 'I literally called this months ago.', 'They were born to play this.', 'Take my money.', 'This is the best news of the year.', 'OK I am seated for this one.'], mixed: ['Interesting choice. Let\'s see.', 'Not who I pictured, but OK.', 'I will reserve judgment.', 'Could work?'], bad: ['Who??', 'This franchise is cooked.', 'Hard pass.', 'They have never done anything like this.', 'Petition to recast starts now.'] };
+D.TRAILER_LINES = { superhero: ['This summer', 'Every hero has a beginning', 'The world needs', 'More than a hero'], action: ['No rules', 'One last job', 'This time it\'s personal'], scifi: ['Beyond the stars', 'The future is not written', 'Humanity\'s last hope'], fantasy: ['An ancient power awakens', 'Legends never die'], horror: ['Don\'t look back', 'It knows your name', 'Some doors should stay closed'], thriller: ['Trust no one', 'Everyone has a secret'], drama: ['Based on a true story', 'Some moments change everything', 'A story of love and loss'], comedy: ['From the people who brought you nothing like this', 'What could go wrong?'], romance: ['Love finds a way', 'One summer. Two strangers.'], musical: ['Let them hear you', 'The stage is calling'], period: ['Based on true events', 'History remembers the brave'], biopic: ['Based on a true story', 'The untold story'], animation: ['This holiday season', 'Every adventure starts somewhere'] };
 
 D.HELP = [
   ['Weeks and energy', 'Each turn is one week. Classes, auditions, parties and posts cost energy. Shooting a project uses most of your week. Ending weeks with no energy hurts your health, and if health hits zero you burn out.'],

@@ -15,7 +15,7 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
   const shot = n => page.screenshot({ path: `${shots}/${mode}-${n}.png` });
   const click = async sel => { await page.locator(sel).first().click(); await page.waitForTimeout(120); };
   const step = async (name, fn) => { const b = errors.length; console.log('step', name); try { await fn(); } catch (e) { errors.push(`step ${name}: ${e.message.split('\n')[0]}`); } if (errors.length > b) console.log('ERR', errors.slice(b)); };
-  const drain = async (n = 12) => { for (let i = 0; i < n; i++) { const m = page.locator('#modal'); if (!(await m.count())) return; const btn = m.locator('[data-a="endWeekForce"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="closeModal"]').first(); if (await btn.count()) await btn.click(); else break; await page.waitForTimeout(120); } };
+  const drain = async (n = 12) => { for (let i = 0; i < n; i++) { const m = page.locator('#modal'); if (!(await m.count())) return; const btn = m.locator('[data-a="endWeekForce"], [data-a="evPick"], [data-a="trSkip"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="closeModal"]').first(); if (await btn.count()) await btn.click(); else break; await page.waitForTimeout(120); } };
 
   await page.goto(`http://localhost:${port}/index.html`);
   await page.waitForSelector('.title', { timeout: 15000 }); await shot('01-title');
@@ -90,9 +90,9 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
     for (let i = 0; i < 60; i++) {
       await page.evaluate(() => { UI.S.energy = 90; UI.S.health = 90; }); await click('[data-a="endWeek"]');
       for (let k = 0; k < 8; k++) { const m = page.locator('#modal'); if (!(await m.count())) break;
-        if (!shotStage && await page.locator('#st3d').count()) { await page.waitForTimeout(500); await shot('22-stage'); shotStage = true; }
-        if (!shotTv && await page.locator('#modal [data-a="tvFinale"]').count()) { await shot('23-tv-finale'); shotTv = true; }
-        const b = m.locator('[data-a="endWeekForce"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="closeModal"]').first(); if (!(await b.count())) break; await b.click(); await page.waitForTimeout(80); }
+        if (!shotStage && await page.locator('#modal .tc-big', { hasText: /Opening night|Tonight/i }).count()) { await page.waitForTimeout(500); await shot('22-stage'); shotStage = true; }
+        if (!shotTv && await page.locator('#modal .tc-big', { hasText: /finale/i }).count()) { await shot('23-tv-finale'); shotTv = true; }
+        const b = m.locator('[data-a="endWeekForce"], [data-a="evPick"], [data-a="trSkip"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="closeModal"]').first(); if (!(await b.count())) break; await b.click(); await page.waitForTimeout(80); }
     }
     console.log('stage shot', shotStage, 'tv finale shot', shotTv);
     await click('[data-a="go"][data-tab="career"]'); await click('[data-a="sub"][data-s="films"]'); await shot('24-films');

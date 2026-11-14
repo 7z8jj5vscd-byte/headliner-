@@ -217,6 +217,26 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--gold); }
 .linkish { background: none; border: 0; padding: 0; color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .effbars { display: flex; gap: 3px; align-items: flex-end; height: 34px; margin-top: 4px; } .effbars span { flex: 1; max-width: 22px; background: var(--gold); border-radius: 3px 3px 0 0; }
 #nav button { font-size: .6rem; min-width: 0; padding: 6px 0; } #nav { gap: 0; }
+.scene3d { position: relative; }
+.scene3d.tall { aspect-ratio: 16 / 11; }
+.scene3d.noscene { aspect-ratio: auto; height: 120px; background: radial-gradient(circle at 50% 40%, #232a3a, #07080b); }
+.titlecard { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 12px; pointer-events: none;
+  background: linear-gradient(transparent, rgba(0,0,0,.55) 35%, rgba(0,0,0,.55) 65%, transparent); animation: tcfade 2.6s ease-in forwards; z-index: 2; }
+.scene3d.noscene .titlecard { animation: none; }
+.tc-big { font-family: var(--display); font-weight: 900; font-size: clamp(1.6rem, 7vw, 2.6rem); line-height: 1; color: var(--ink); text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 2px 18px rgba(0,0,0,.7); }
+.tc-small { font-family: var(--mono); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+@keyframes tcfade { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
+.scene3d canvas { position: absolute; inset: 0; }
+.ev-result { border-left: 3px solid var(--line); padding: 4px 0 4px 12px; margin-top: 12px; } .ev-result.good { border-color: var(--teal); } .ev-result.bad { border-color: var(--red); }
+@media (prefers-reduced-motion: reduce) { .titlecard { animation-duration: .01s; animation-delay: 1.4s; } }
+.trailer { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; margin: 8px 0 10px; }
+.tr-view { position: absolute; left: 0; right: 0; top: 12%; bottom: 12%; }
+.tr-card { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 8%; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s;
+  font-family: var(--display); font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #ece7dc; font-size: clamp(.9rem, 3.6vw, 1.3rem); text-shadow: 0 2px 14px #000; }
+.tr-card.show { opacity: 1; } .tr-card.black { background: #000; } .tr-card.title { font-size: clamp(1.8rem, 8vw, 3rem); font-weight: 900; letter-spacing: .06em; color: var(--gold); }
+.tr-card:not(.black):not(.title) { align-items: flex-end; padding-bottom: 14%; font-size: clamp(.75rem, 3vw, 1.05rem); background: linear-gradient(transparent 55%, rgba(0,0,0,.7) 88%); }
+.tr-card.title:not(.black) { background: rgba(0,0,0,.45); }
+.tr-skip { position: absolute; right: 8px; top: 8px; z-index: 3; }
 .loading { text-align: center; padding: 60px 0; color: var(--muted); }
 </style>
 </head>
@@ -227,11 +247,11 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--gold); }
 <nav id="nav" aria-label="Main"></nav>
 <div id="toasts" aria-live="polite"></div>
 <noscript><p style="padding:20px">Final Cut needs JavaScript to run.</p></noscript>
-<script>window.FC_BUILD = 7;</script>
-<script src="data.js?v=7"></script>
-<script src="engine.js?v=7"></script>
-<script src="three3d.js?v=7"></script>
-<script src="ui.js?v=7"></script>
+<script>window.FC_BUILD = 8;</script>
+<script src="data.js?v=8"></script>
+<script src="engine.js?v=8"></script>
+<script src="three3d.js?v=8"></script>
+<script src="ui.js?v=8"></script>
 <script>
 (function () {
   // three.js is optional: the game runs with 2D portraits if it can't load
