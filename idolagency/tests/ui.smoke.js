@@ -50,6 +50,7 @@ const out = process.argv[2] || '.';
     }
     if (await p.$('#tut:not([hidden]) [data-a="tipClose"]')) await click('[data-a="tipClose"]');
   }
+  await click('[data-tab="hq"]'); await p.waitForTimeout(300); await shot('s12a_hq_after_debut');
   await click('[data-tab="groups"]'); await p.waitForTimeout(300); await shot('s12_group');
   await click('[data-a="schedMenu"]'); await shot('s13_sched'); await click('[data-a="close"]');
   await click('[data-a="tourMenu"]'); await click('[data-a="tpAdd"]'); await shot('s14_tour'); await click('[data-a="close"]');

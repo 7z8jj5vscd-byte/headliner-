@@ -5,6 +5,10 @@ const D = root.KD = {};
 // ------------------------------------------------------------------ changelog
 // Newest first. Bump IA_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
+  { build: 3, date: 'Nov 17, 2026', notes: [
+    'The agency is now a flat office floor plan: rooms side by side in two rows, a hallway where your debuted idols walk around, and a lobby.',
+    'Swipe sideways to see every room. Tap a room to build or upgrade it.'
+  ] },
   { build: 2, date: 'Nov 17, 2026', notes: [
     'Brand new look: bright sky, a cutaway agency building as your home screen, and soft rounded windows.',
     'New top bar with the date, money, total fans and an agency level bar.',
@@ -420,7 +424,7 @@ D.ACH = [
 D.TUTORIAL = [
   { t: 'Hi CEO! I\'m Bora, your manager. Welcome to your new agency. It\'s just a basement for now, but we\'re going to make it the biggest name in K-pop!' },
   { t: 'Up top you can see the date, our money, our total fans and the agency level. Every turn is one week. We pay salaries at the start of every month, so keep an eye on the money.', sel: '#topbar' },
-  { t: 'This is our building. Each floor is a room. Tap a room to upgrade it. Better rooms make training faster.', sel: '#bldg' },
+  { t: 'This is our office. Swipe sideways to see every room, and tap a room to build or upgrade it. Better rooms make training faster. Debuted idols hang out in the hallway.', sel: '#bldg' },
   { t: 'First we need trainees! Open the Trainees tab.', sel: '[data-tab="trainees"]', go: 'tab:trainees' },
   { t: 'Tap Scout to hold an audition. Different auditions find different kinds of trainees.', sel: '[data-a="scoutMenu"]', go: 'scouted' },
   { t: 'Nice signing! Each trainee has a training plan. Tap a trainee to change their plan, check their stats and find their hidden trait.', sel: '.tr-list' },

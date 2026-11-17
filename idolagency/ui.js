@@ -96,18 +96,23 @@ function hqTab() {
     }
     return ppl.slice(0, 7);
   };
-  const order = ['office', 'mvset', 'content', 'studio', 'stylist', 'vocal', 'practice', 'gym', 'dorm'];
-  const floors = order.map(id => {
+  // Flat office floor plan: two rows of rooms with a hallway between them. It scrolls sideways.
+  const top = ['office', 'studio', 'vocal', 'mvset', 'content'], bottom = ['practice', 'stylist', 'gym', 'dorm', 'lobby'];
+  const deco = { office: ['🗄️', '🖥️', '🪴'], mvset: ['🎥', '💡', '🎬'], content: ['📹', '🛋️', '🎙️'], studio: ['🎛️', '🎹', '🎧'], stylist: ['👗', '🪞', '👠'], vocal: ['🎤', '🎼', '🔊'], practice: ['🪞', '🔊', '💿'], gym: ['🏋️', '🚴', '🥤'], dorm: ['🛏️', '🍜', '🧸'] };
+  const room = id => {
+    if (id === 'lobby') return `<div class="rm lobby"><span class="lbl">🚪 Lobby</span><div class="furn"><span>🛎️</span><span>🪴</span><span>🖼️</span></div><div class="ppl">${av({ g: 'f', skin: 0, hair: 3, hairC: 1, top: 'suit', topC: 1, botC: 2, acc: 0, eye: 2 }, 46)}</div></div>`;
     const R = D.ROOMS.find(r => r.id === id), lv = S.rooms[id];
-    if (!lv) return `<div class="floor locked" data-a="room" data-v="${id}"><span class="lbl">${R.e} ${R.n}</span><span class="dim" style="font-family:var(--px)">🔒 Build for ${won(R.cost[0])}</span></div>`;
-    const ppl = roomPpl(id);
-    const deco = { office: ['🗄️', '🪴'], mvset: ['🎥', '💡'], content: ['📹', '🎙️'], studio: ['🎚️', '🎧'], stylist: ['👗', '🪞'], vocal: ['🎤', '🎼'], practice: ['🪞', '🔊'], gym: ['🏋️', '🥤'], dorm: ['🛏️', '🍜'] }[id];
-    const ceo = id === 'office' ? av({ g: 'm', skin: 1, hair: 0, hairC: 0, top: 'suit', topC: 2, botC: 2, acc: 3, eye: 0 }, 50) + av(D.MANAGER.look, 50, false, 'walk') : '';
-    return `<div class="floor" style="background:${R.col}" data-a="room" data-v="${id}"><span class="lbl">${R.e} ${R.n}</span><span class="lv">Lv ${lv}</span><span class="deco l">${deco[0]}</span><span class="deco r">${deco[1]}</span><div class="ppl">${ceo}${ppl.map((i, k) => av(i.look, 50, id === 'practice' || id === 'stylist', k % 2 ? '' : 'walk')).join('')}</div></div>`;
-  }).join('');
+    if (!lv) return `<div class="rm locked" data-a="room" data-v="${id}"><span class="lbl">${R.e} ${R.n}</span><span class="lock">🔒<br>${won(R.cost[0])}</span></div>`;
+    const ppl = roomPpl(id).slice(0, 4);
+    const ceo = id === 'office' ? av({ g: 'm', skin: 1, hair: 0, hairC: 0, top: 'suit', topC: 2, botC: 2, acc: 3, eye: 0 }, 46) + av(D.MANAGER.look, 46) : '';
+    return `<div class="rm" style="--wall:${R.col}" data-a="room" data-v="${id}"><span class="lbl">${R.e} ${R.n}</span><span class="lv">Lv ${lv}</span><div class="furn">${deco[id].map(d => `<span>${d}</span>`).join('')}</div><div class="ppl">${ceo}${ppl.map(i => av(i.look, 46, id === 'practice' || id === 'stylist' || id === 'vocal')).join('')}</div></div>`;
+  };
+  const walkers = Object.values(S.idols).filter(i => i.status === 'idol' && !(KA.group(S, i.gid) || {}).tour).slice(0, 8);
+  const hall = walkers.map((i, k) => `<span class="walker" style="animation-duration:${9 + (k * 3) % 7}s;animation-delay:-${k * 2.3}s">${av(i.look, 46)}</span>`).join('');
+  const floors = `<div class="map"><div class="sign"><span>${esc(S.agency)} Entertainment</span></div>${top.map(room).join('')}<div class="hall">${hall || '<small class="dim">Debuted idols hang out in the hallway</small>'}</div>${bottom.map(room).join('')}</div>`;
   const cost = KA.monthlyCost(S);
   return `<div class="stack">
-    <div><section class="bldg" id="bldg"><div class="roof"><span>${esc(S.agency)} Entertainment</span></div>${floors}</section><div class="ground"></div></div>
+    <section class="office" id="bldg">${floors}</section><p class="center dim small" style="margin:-4px 0 0">← swipe to see every room · tap a room to upgrade →</p>
     <section class="panel"><div class="between"><h2>Agency</h2><span class="pill gold">${esc(D.RANKS[KA.rank(S)].n)}</span></div>
       <div class="kpis"><div class="kpi"><b>${KA.trainees(S).length}/${KA.maxTrainees(S)}</b><small>Trainees</small></div><div class="kpi"><b>${KA.active(S).length}/${KA.maxGroups(S)}</b><small>Groups</small></div><div class="kpi"><b>${won(cost)}</b><small>Monthly bills</small></div></div>
       ${S.debt > 0 ? `<p class="small">Loan left: <b>${won(S.debt)}</b> (₩12M a month)</p>` : ''}
