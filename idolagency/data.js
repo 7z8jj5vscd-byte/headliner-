@@ -5,6 +5,15 @@ const D = root.KD = {};
 // ------------------------------------------------------------------ changelog
 // Newest first. Bump IA_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
+  { build: 4, date: 'Nov 17, 2026', notes: [
+    'Much harder to go bankrupt: lower monthly bills, four months in the red before bankruptcy, an investor rescue every two years, and room sell-backs.',
+    'New Business window: monthly quests with cash rewards, a mailbox with brand deals and fan donations, a merch shop with 7 product lines, official fan clubs, 6 side businesses and a bank with 4 kinds of loans.',
+    'Trends: one concept is hot at a time. Releases that match it get better quality, hype and pre-orders.',
+    'Solo jobs: 10 kinds, from radio DJ to musical lead and solo brand ambassador.',
+    'Member bonds, group chemistry that boosts live stages, and team dinners.',
+    'Member popularity poll, a global fanbase map, and vacations for tired groups.',
+    'Album pre-orders, back-catalog royalties, cash rewards for every trophy, 8 new trophies, a calendar and a year-in-review recap.'
+  ] },
   { build: 3, date: 'Nov 17, 2026', notes: [
     'The agency is now a flat office floor plan: rooms side by side in two rows, a hallway where your debuted idols walk around, and a lobby.',
     'Swipe sideways to see every room. Tap a room to build or upgrade it.'
@@ -431,6 +440,7 @@ D.TUTORIAL = [
   { t: 'Watch their condition bar. If it drops too low, they get sick or upset. Rest fixes it.', sel: '.tr-list' },
   { t: 'When you have 3 or more good trainees, you can send them to the survival show or debut a group directly. Debut needs an album and a music video.', sel: '[data-a="debutMenu"]' },
   { t: 'Groups get schedules for money and fans, comebacks, tours and their own content. Fans send requests on the SNS tab. Answer them to build trust!', sel: '[data-tab="sns"]' },
+  { t: 'The Business tab is where the money is: monthly quests, brand offers in the mailbox, merch, fan clubs, side businesses and the bank. If we stay in the red for four months in a row, we go bankrupt, so check it often!', sel: '[data-tab="biz"]' },
   { t: 'Now tap Next week to train. Good luck, CEO! You can replay this tutorial any time from the menu.', sel: '[data-a="next"]', go: 'next' }
 ];
 // Short one-time tips for later moments

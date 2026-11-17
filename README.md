@@ -278,7 +278,10 @@ A standalone K-pop agency management game in `idolagency/`. You are the CEO. Sta
 - **Groups:** names, fandoms, lightstick colors, auto positions, several groups at once, a stylist room with pixel outfits, and seven-year contracts with renewals.
 - **Albums and MVs:** format, concept, genre, producer (or self-produced), line distribution with fan reactions, and a music video you direct shot by shot that plays back as a pixel MV with a synth beat. Dance challenges can go viral.
 - **Career:** weekly schedules, own content (vlogs to documentaries), world tours with demand by region and lightstick-ocean concerts, fan requests, a social feed, hate trains with six responses, random events, a weekly Top 30 and brand reputation ranking against real K-pop groups, music shows with first wins and triple crowns, and four fictional year-end award shows with real-group nominees.
-- **Extras:** a guided tutorial with Manager Bora, one-time tips, 26 trophies, three save slots, three difficulty levels, and an update banner with a What's new list.
+- **Business:** monthly quests with cash rewards, a mailbox with brand deals and fan donations, a merch shop with seven product lines, official fan clubs, six side businesses, and a bank with four kinds of loans.
+- **More systems:** trending concepts that boost matching releases, ten kinds of solo jobs, member bonds and group chemistry, team dinners, vacations, a member popularity poll, a global fanbase map, album pre-orders, back-catalog royalties, a calendar and a year-in-review recap.
+- **Money trouble:** bankruptcy only after four month-ends in a row in the red, an investor rescue at most once every two years, and rooms you can sell back for cash.
+- **Extras:** a guided tutorial with Manager Bora, one-time tips, 34 trophies that pay cash, three save slots, three difficulty levels, and an update banner with a What's new list.
 
 Real K-pop groups appear only on the charts, music shows, brand rankings and award nominations, with no made-up drama about them. Agencies, trainees, award shows and music shows are fictional. It is an unofficial fan game.
 

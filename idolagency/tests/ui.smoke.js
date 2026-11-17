@@ -56,6 +56,12 @@ const out = process.argv[2] || '.';
   await click('[data-a="tourMenu"]'); await click('[data-a="tpAdd"]'); await shot('s14_tour'); await click('[data-a="close"]');
   await click('[data-tab="charts"]'); await shot('s15_chart');
   await click('[data-tab="sns"]'); await shot('s16_sns');
+  await click('[data-tab="biz"]'); await shot('s16b_biz');
+  await p.evaluate(() => { IA.S.money += 5e8; });
+  await click('[data-tab="biz"]'); await click('[data-a="club"]'); await click('[data-a="merch"]'); await click('[data-a="bizBuy"]'); await click('[data-a="loan"]'); await shot('s16c_biz2');
+  await click('[data-tab="groups"]'); await click('[data-a="soloMenu"]'); await click('[data-a="solo"]'); await shot('s16d_solo'); await click('[data-a="close"]');
+  await click('[data-a="dinner"]'); await shot('s16e_group_more');
+  await click('[data-tab="hq"]'); await click('[data-a="calendar"]'); await shot('s16f_cal'); await click('[data-a="close"]');
   // force a music show + award modal
   await p.evaluate(() => { const S = IA.S; const g = S.groups[0]; KA.startHate(S, g, 'lipsync'); S.q.push({ k: 'award', id: 'sama' }); });
   await click('[data-tab="sns"]'); await shot('s17_hate');

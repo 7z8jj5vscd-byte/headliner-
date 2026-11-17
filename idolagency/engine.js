@@ -107,15 +107,11 @@ KA.hire = function (S, id) {
 };
 KA.monthlyCost = function (S) {
   let c = 0;
-  for (const i of Object.values(S.idols)) if (i.status === 'trainee') c += 1.5e6; else if (i.status === 'idol') c += 3e6;
+  for (const i of Object.values(S.idols)) if (i.status === 'trainee') c += 8e5; else if (i.status === 'idol') c += 2e6;
   for (const s of D.STAFF) c += (S.staff[s.id] || 0) * s.pay;
-  c += Object.values(S.rooms).reduce((a, v) => a + v, 0) * 1e6 + 3e6;
-  if (S.debt > 0) c += Math.min(S.debt, 1.2e7);
+  c += Object.values(S.rooms).reduce((a, v) => a + v, 0) * 5e5 + 2e6;
+  c += KA.loanPay ? KA.loanPay(S) : 0;
   return c;
-};
-KA.loan = function (S) {
-  if (S.debt > 0) return { ok: false, msg: 'Pay back the current loan first.' };
-  S.money += 3e8; S.debt = 4.3e8; log(S, 'An investor loaned you ₩300M. You pay ₩12M a month until it is paid back.', '🏦'); return { ok: true };
 };
 
 // ------------------------------------------------------------------ scouting
@@ -827,7 +823,7 @@ KA.endWeek = function (S) {
   snsWeek(S); requestsWeek(S); hateWeek(S); randomEvent(S);
   // month start: bills and evaluations
   if (S.week % 4 === 0) {
-    const c = KA.monthlyCost(S); S.money -= c; if (S.debt > 0) S.debt = Math.max(0, S.debt - Math.min(S.debt, 1.2e7));
+    const c = KA.monthlyCost(S); S.money -= c; if (KA.payLoans) KA.payLoans(S);
     q(S, { k: 'bills', cost: c });
     monthlyEval(S);
     for (const i of Object.values(S.idols)) if (i.status !== 'left' && S.week % KA.WPY === 0) i.age++;
@@ -841,9 +837,7 @@ KA.endWeek = function (S) {
   const br = KA.brand(S); if (br[0] && br[0].us) KA.ach(S, 'brand1');
   const rk = KA.rank(S); if (rk >= 4) KA.ach(S, 'big4'); if (rk > (S.maxRank || 0)) { S.maxRank = rk; q(S, { k: 'rank', r: rk }); }
   if (S.money >= 1e10) KA.ach(S, 'billion');
-  // bankruptcy
-  if (S.money < -3e8) { S.over = 'bankrupt'; q(S, { k: 'over' }); }
-  else if (S.money < 0 && S.week % 4 === 0) q(S, { k: 'msg', e: '💸', t: 'You are in the red', b: 'The agency is out of money. Take schedules, release music, or take an investor loan from the HQ tab before you go bankrupt.' });
+  // money trouble is handled in more.js (grace months, bank loans and a one-time rescue)
   return reports;
 };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

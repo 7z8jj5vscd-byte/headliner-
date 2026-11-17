@@ -34,9 +34,9 @@ function render() {
   UI.looks = [];
   const app = $('#app');
   if (!S) { app.innerHTML = titleScreen(); return; }
-  const tabs = [['hq', '🏢', 'Agency'], ['trainees', '🌱', 'Trainees'], ['groups', '🌟', 'Artists'], ['charts', '📈', 'Charts'], ['sns', '💬', 'Fans'], ['more', '⚙️', 'Menu']];
-  const dot = { sns: S.hate.length || S.reqs.length, trainees: !!S.show };
-  const winBody = UI.tab === 'hq' ? '' : { trainees: trTab, groups: grTab, charts: chTab, sns: snsTab, more: moreTab }[UI.tab]();
+  const tabs = [['hq', '🏢', 'Agency'], ['trainees', '🌱', 'Trainees'], ['groups', '🌟', 'Artists'], ['charts', '📈', 'Charts'], ['sns', '💬', 'Fans'], ['biz', '💼', 'Business'], ['more', '⚙️', 'Menu']];
+  const dot = { sns: S.hate.length || S.reqs.length, trainees: !!S.show, biz: S.mail.length || S.quests.list.some(x => !x.done && x.prog >= x.goal) };
+  const winBody = UI.tab === 'hq' ? '' : { trainees: trTab, groups: grTab, charts: chTab, sns: snsTab, biz: bizTab, more: moreTab }[UI.tab]();
   const T = tabs.find(t => t[0] === UI.tab);
   const fans = S.groups.reduce((a, g) => a + (g.status === 'active' ? g.fans : 0), 0);
   const rk = KA.rank(S), f = S.groups.reduce((a, g) => a + g.fans, 0) + S.rep * 1000;
@@ -113,10 +113,12 @@ function hqTab() {
   const cost = KA.monthlyCost(S);
   return `<div class="stack">
     <section class="office" id="bldg">${floors}</section><p class="center dim small" style="margin:-4px 0 0">← swipe to see every room · tap a room to upgrade →</p>
+    <div class="trend" data-a="tab" data-v="biz"><b>🔥 TREND</b><span><b>${esc(KA.trend(S).n)}</b> concepts are hot · changes in ${S.trend.left} wk</span></div>
+    <section class="panel lemon"><div class="between"><h2>📜 Monthly quests</h2>${B('Open', 'tab', 'biz', 'sm ghost')}</div>${questList(true)}</section>
     <section class="panel"><div class="between"><h2>Agency</h2><span class="pill gold">${esc(D.RANKS[KA.rank(S)].n)}</span></div>
       <div class="kpis"><div class="kpi"><b>${KA.trainees(S).length}/${KA.maxTrainees(S)}</b><small>Trainees</small></div><div class="kpi"><b>${KA.active(S).length}/${KA.maxGroups(S)}</b><small>Groups</small></div><div class="kpi"><b>${won(cost)}</b><small>Monthly bills</small></div></div>
-      ${S.debt > 0 ? `<p class="small">Loan left: <b>${won(S.debt)}</b> (₩12M a month)</p>` : ''}
-      <div class="row" style="margin-top:8px">${B('🤝 Hire staff', 'staffMenu', '', 'sm alt')}${S.money < 1.5e8 && !S.debt ? B('🏦 Investor loan', 'loan', '', 'sm lemon') : ''}</div></section>
+      ${KA.debt(S) > 0 ? `<p class="small">Loans left: <b>${won(KA.debt(S))}</b></p>` : ''}${S.red ? `<p class="small bad"><b>In the red: month ${S.red} of 4.</b> Fix it before you go bankrupt!</p>` : ''}
+      <div class="row" style="margin-top:8px">${B('🤝 Hire staff', 'staffMenu', '', 'sm alt')}${B('💼 Business & bank', 'tab', 'biz', 'sm lemon')}${B('📆 Calendar', 'calendar', '', 'sm sky')}</div></section>
     <section class="panel"><h2>Agency log</h2><div class="list">${S.log.slice(0, 8).map(l => `<div class="li"><span>${l.ic}</span><div class="grow small">${esc(l.t)}</div></div>`).join('')}</div></section>
   </div>`;
 }
@@ -161,12 +163,14 @@ function grTab() {
     </section>
     <section class="panel"><h2>This week</h2>
       ${g.status === 'predebut' ? `<p class="small">Plan the debut album. The group debuts the week it comes out.</p>${up ? '<p><b>Debut is set for next week!</b></p>' : B('💿 Plan debut album', 'albumNew', g.id, 'block')}` : `
-      <div class="grid2">${B('📅 Schedules' + (g.sched.length ? ` (${g.sched.length})` : ''), 'schedMenu', g.id, 'sm')}${B('💿 New album', 'albumNew', g.id, 'sm alt', !!up)}${B('📹 Own content', 'contentMenu', g.id, 'sm sky')}${B('🌍 World tour', 'tourMenu', g.id, 'sm mint')}${B('👗 Stylist', 'styleGroup', g.id, 'sm lemon')}${B('🎤 Rehearse live', 'rehearse', g.id, 'sm ghost', !g.promo || g.flags.rehearsed === S.week)}</div>
+      <div class="grid2">${B('📅 Schedules' + (g.sched.length ? ` (${g.sched.length})` : ''), 'schedMenu', g.id, 'sm')}${B('💿 New album', 'albumNew', g.id, 'sm alt', !!up)}${B('📹 Own content', 'contentMenu', g.id, 'sm sky')}${B('🌍 World tour', 'tourMenu', g.id, 'sm mint')}${B('👗 Stylist', 'styleGroup', g.id, 'sm lemon')}${B('🎤 Rehearse live', 'rehearse', g.id, 'sm ghost', !g.promo || g.flags.rehearsed === S.week)}${B('🎬 Solo jobs' + (ms.filter(m => m.solo).length ? ` (${ms.filter(m => m.solo).length})` : ''), 'soloMenu', g.id, 'sm alt')}${B('🍖 Team dinner', 'dinner', g.id, 'sm red', g.dinner === S.week)}${B('🏖️ Vacation', 'vacation', g.id, 'sm sky', !!(g.promo || g.tour || g.hiatus))}${B('🛍️ Merch & fan club', 'tab', 'biz', 'sm mint')}</div>
+      ${g.deal ? `<p class="small" style="margin:8px 0 0">🤝 ${esc(g.deal.brand)} campaign · ${g.deal.left} week${g.deal.left > 1 ? 's' : ''} left</p>` : ''}
       ${g.sched.length ? `<p class="small" style="margin:8px 0 0">Booked: ${g.sched.map(id => { const s = D.SCHEDULES.find(x => x.id === id); return s.e + ' ' + esc(s.n); }).join(', ')}</p>` : ''}
       ${g.content ? `<p class="small" style="margin:6px 0 0">Filming: <b>${esc(D.CONTENT.find(c => c.id === g.content.id).n)}</b> · ${g.content.left} week${g.content.left > 1 ? 's' : ''} left</p>` : ''}
       ${g.tour ? `<p class="small" style="margin:6px 0 0">Next tour stop: <b>${esc(g.tour.stops[g.tour.at].city)}</b></p>` : ''}`}
     </section>
-    <section class="panel"><h2>Members</h2><div class="list">${ms.map(m => `<div class="li tap" data-a="idol" data-v="${m.id}">${av(m.look, 46)}<div class="grow"><b>${esc(m.name)}</b> <small class="dim">${m.flag}</small><br><small class="dim">${esc(m.pos)}</small></div><div style="width:80px">${bar(m.cond, 'c')}<small class="dim">OVR ${KA.overall(m)}</small></div></div>`).join('')}</div></section>
+    <section class="panel"><h2>Members</h2><div class="list">${ms.map(m => `<div class="li tap" data-a="idol" data-v="${m.id}">${av(m.look, 46)}<div class="grow"><b>${esc(m.name)}</b> <small class="dim">${m.flag}</small>${m.solo ? ` <span class="pill vio">${D.SOLO.find(j => j.id === m.solo).e} solo</span>` : ''}<br><small class="dim">${esc(m.pos)}</small></div><div style="width:80px">${bar(m.cond, 'c')}<small class="dim">OVR ${KA.overall(m)}</small></div></div>`).join('')}</div></section>
+    ${g.status === 'active' ? popPanel(g, ms) : ''}
     ${rel.length ? `<section class="panel"><h2>Discography</h2><div class="list">${rel.map(a => `<div class="li"><span style="font-size:24px">💿</span><div class="grow"><b>${esc(a.title)}</b> <small class="dim">${esc(D.ALBUM_TYPES.find(t => t.id === a.type).n)}</small><br><small class="dim">Peak #${a.peak < 99 ? a.peak : '-'} · ${num(a.sales)} sold · ${num(a.mv.views)} views · ${a.wins} wins</small></div>${B('▶ MV', 'replayMV', a.id, 'sm ghost')}</div>`).join('')}</div></section>` : ''}
     ${g.status === 'active' ? `<div class="row">${B('Disband group', 'disband', g.id, 'sm ghost')}</div>` : ''}
   </div>`;
@@ -195,6 +199,48 @@ function snsTab() {
 }
 
 // ------------------------------------------------------------------ More tab
+function questList(short) {
+  const Q = S.quests; if (!Q) return '';
+  return `<div class="list">${Q.list.map((x, k) => `<div class="li"><span style="font-size:20px">${x.done ? '✅' : '📜'}</span><div class="grow"><b class="small">${esc(x.t)}</b>${bar(x.prog / x.goal * 100, 'l')}<small class="dim">${x.prog}/${x.goal} · reward ${won(x.reward)}</small></div>${x.done ? '<span class="pill mint">Done</span>' : B('Claim', 'claim', k, 'sm mint', x.prog < x.goal)}</div>`).join('')}</div>${short ? '' : '<p class="small dim" style="margin:6px 0 0">New quests every month.</p>'}`;
+}
+function popPanel(g, ms) {
+  const pop = ms.slice().sort((a, b) => b.fans - a.fans), top = Math.max(1, pop[0] ? pop[0].fans : 1);
+  const pairs = []; for (let i = 0; i < ms.length; i++) for (let j = i + 1; j < ms.length; j++) pairs.push([ms[i], ms[j], KA.bond(S, ms[i].id, ms[j].id)]);
+  pairs.sort((a, b) => b[2] - a[2]);
+  const pr = p => `<div class="li small"><b class="grow">${esc(p[0].name.split(' ').pop())} & ${esc(p[1].name.split(' ').pop())}</b><div style="width:90px">${bar(p[2], p[2] >= 50 ? 'c' : '')}</div><b style="width:28px;text-align:right">${Math.round(p[2])}</b></div>`;
+  return `<section class="panel"><h2>🗳️ Member popularity poll</h2><div class="list">${pop.map((m, k) => `<div class="li"><span class="rk">${k + 1}</span>${av(m.look, 36)}<div class="grow"><b class="small">${esc(m.name)}</b>${bar(m.fans / top * 100, 'v')}</div><small>${num(m.fans)}</small></div>`).join('')}</div></section>
+  <section class="panel"><div class="between"><h2>💞 Member bonds</h2><span class="pill ${KA.chem(S, g) >= 55 ? 'mint' : ''}">Chemistry ${Math.round(KA.chem(S, g))}</span></div><p class="small dim" style="margin:0 0 4px">Good chemistry raises live stage scores. Team dinners help.</p><div class="list">${pairs.slice(0, 3).map(pr).join('')}${pairs.length > 3 ? pr(pairs[pairs.length - 1]) : ''}</div></section>
+  <section class="panel"><h2>🌍 Global fanbase</h2><div class="stack" style="gap:6px">${D.REGIONS.map(r => `<div class="row" style="flex-wrap:nowrap"><small style="width:110px">${esc(r.n)}</small><div class="grow">${bar(g.reg[r.id], 'c')}</div><b style="width:30px;text-align:right">${Math.round(g.reg[r.id])}</b></div>`).join('')}</div></section>`;
+}
+function bizTab() {
+  const gs = KA.debuted(S);
+  const mail = S.mail.map(m => `<div class="li"><span style="font-size:24px">${m.kind === 'gift' ? '🎁' : '💌'}</span><div class="grow"><small class="dim">${esc(m.from)}${m.exp ? ` · ${m.exp - S.week} wk left` : ''}</small><br><b>${esc(m.t)}</b><br><small>${esc(m.b)}</small></div><div class="stack" style="gap:4px">${m.kind === 'gift' ? B('Claim', 'mail', m.id + ':1', 'sm mint') : B('Accept', 'mail', m.id + ':1', 'sm mint') + B('No', 'mail', m.id + ':0', 'sm ghost')}</div></div>`).join('');
+  const merch = gs.map(g => { g.merch = g.merch || {}; const t = KA.fameTier(g.fans); return `<h3 style="margin-top:8px">${esc(g.name)} <small class="dim">· ~${won(KA.merchWeekly(S, g))}/week</small></h3><div class="list">${D.MERCH.map(M => `<div class="li"><span style="font-size:22px">${M.e}</span><div class="grow"><b class="small">${esc(M.n)}</b><br><small class="dim">${g.merch[M.id] ? 'On sale' : M.fame > t ? '🔒 ' + D.FAME[M.fame].n + ' fame' : won(M.cost) + ' to launch'}</small></div>${g.merch[M.id] ? '<span class="pill mint">Selling</span>' : B('Launch', 'merch', g.id + ':' + M.id, 'sm', M.fame > t || S.money < M.cost)}</div>`).join('')}</div>`; }).join('');
+  const clubs = gs.map(g => `<div class="li"><span style="font-size:22px">💳</span><div class="grow"><b>${esc(g.fandom)} fan club</b><br><small class="dim">${g.club ? `${num(g.club.members)} members · ${won(KA.clubMonthly(g))}/month` : 'Paid memberships every month, and fans trust you more. Needs Rookie fame.'}</small></div>${g.club ? '<span class="pill mint">Open</span>' : B('Launch ₩20M', 'club', g.id, 'sm', KA.fameTier(g.fans) < 1 || S.money < 2e7)}</div>`).join('');
+  const biz = D.BIZ.map(Bz => { const lv = S.biz[Bz.id] || 0, c = KA.bizCost(S, Bz.id), lock = KA.rank(S) < Bz.rank; return `<div class="li"><span style="font-size:22px">${Bz.e}</span><div class="grow"><b class="small">${esc(Bz.n)}</b> ${lv ? `<span class="pill vio">Lv ${lv}</span>` : ''}<br><small class="dim">${lock ? '🔒 ' + esc(D.RANKS[Bz.rank].n) : `${lv ? won(Bz.income[lv - 1]) + '/month now' : 'Earns ' + won(Bz.income[0]) + '/month'}${Bz.fans ? ' · grows fans' : ''}`}</small></div>${c == null ? '<span class="pill gold">Max</span>' : B(`${lv ? 'Expand' : 'Open'} ${won(c)}`, 'bizBuy', Bz.id, 'sm alt', lock || S.money < c)}</div>`; }).join('');
+  const bank = `${S.loans.length ? `<div class="list">${S.loans.map((l, k) => `<div class="li"><span>🏦</span><div class="grow"><b class="small">${esc(l.n)}</b><br><small class="dim">${won(l.left)} left · ${won(l.pay)}/month</small></div>${B('Pay off', 'repay', k, 'sm ghost', S.money < l.left)}</div>`).join('')}</div>` : '<p class="small dim">No loans.</p>'}
+    <div class="list">${D.LOANS.map(L => `<div class="li"><div class="grow"><b class="small">${esc(L.n)}</b><br><small class="dim">${KA.rank(S) < L.rank ? '🔒 ' + esc(D.RANKS[L.rank].n) : `Get ${won(L.amt)} · repay ${won(L.amt * (1 + L.rate))} over ${L.months} months`}</small></div>${B('Borrow', 'loan', L.id, 'sm lemon', KA.rank(S) < L.rank || S.loans.some(l => l.id === L.id))}</div>`).join('')}</div>`;
+  return `<div class="stack">
+    <div class="kpis"><div class="kpi"><b>${won(KA.monthlyCost(S))}</b><small>Monthly bills</small></div><div class="kpi"><b>${won(KA.bizMonthly(S) + gs.reduce((a, g) => a + KA.clubMonthly(g) + KA.merchWeekly(S, g) * 4, 0))}</b><small>Monthly side income</small></div><div class="kpi"><b class="${S.red ? 'bad' : ''}">${S.red ? S.red + '/4' : 'OK'}</b><small>Red months</small></div></div>
+    <section class="panel lemon"><h2>📜 Monthly quests</h2>${questList()}</section>
+    <section class="panel pink"><h2>📬 Mailbox</h2>${mail ? `<div class="list">${mail}</div>` : '<p class="small dim">No mail. Brands send offers to debuted groups.</p>'}</section>
+    <section class="panel"><h2>🛍️ Merch shop</h2>${merch || '<p class="small dim">Debut a group to sell merch.</p>'}</section>
+    <section class="panel"><h2>💳 Fan clubs</h2>${clubs ? `<div class="list">${clubs}</div>` : '<p class="small dim">Debut a group first.</p>'}</section>
+    <section class="panel"><h2>🏢 Side businesses</h2><p class="small dim" style="margin:0">They pay out at the start of every month.</p><div class="list">${biz}</div></section>
+    <section class="panel mint"><h2>🏦 Bank</h2><p class="small dim" style="margin:0 0 4px">Four month-ends in a row in the red means bankruptcy. Loans keep you afloat.</p>${bank}</section>
+  </div>`;
+}
+function soloMenu(gid) {
+  const g = KA.group(S, gid), ms = KA.members(S, g).filter(m => m.status === 'idol');
+  modal(`${head(g.name, 'Solo jobs this week')}<p class="small">Each member can take one solo job a week. Jobs unlock as their skills grow. They earn money and personal fans.</p>
+    ${ms.map(m => `<div class="panel violet" style="margin-top:8px;padding:10px"><div class="row" style="flex-wrap:nowrap">${av(m.look, 44)}<div class="grow"><b>${esc(m.name)}</b><br><small class="dim">${num(m.fans)} personal fans · condition ${Math.round(m.cond)}</small></div></div>
+      <div class="row" style="gap:4px;margin-top:6px">${D.SOLO.map(J => { const ok = KA.soloOK(S, m, J); return `<button class="chip ${m.solo === J.id ? 'on' : ''} ${ok ? '' : 'lock'}" data-a="solo" data-v="${m.id}:${J.id}" title="${esc(J.stat)} ${J.need}">${J.e} ${esc(J.n)}${ok ? '' : ' 🔒'}</button>`; }).join('')}</div></div>`).join('')}
+    ${closeBtn('Done')}`);
+}
+function calendarModal() {
+  const ev = KA.calendar(S);
+  modal(`${head('Calendar', 'Coming up')}<div class="list">${ev.map(e => `<div class="li"><span style="font-size:22px">${e.e}</span><div class="grow"><b class="small">${esc(e.t)}</b><br><small class="dim">${e.at === S.week ? 'This week' : e.at - S.week === 1 ? 'Next week' : 'In ' + (e.at - S.week) + ' weeks'}</small></div></div>`).join('')}</div>${closeBtn()}`);
+}
 function moreTab() {
   return `<div class="stack"><section class="panel stack"><h2>Menu</h2>
     ${B('💾 Save & quit to title', 'quit', '', 'block')}
@@ -246,7 +292,7 @@ function scoutResults() {
 function roomModal(id) {
   const R = D.ROOMS.find(r => r.id === id), lv = S.rooms[id], c = KA.roomCost(S, id);
   modal(`${head('HQ', R.e + ' ' + esc(R.n))}<p>${esc(R.d)}</p><p><b>Level ${lv}</b> of 5</p>${bar(lv * 20, 'v')}
-    <div class="btns">${c != null ? B(`${lv ? 'Upgrade' : 'Build'} for ${won(c)}`, 'upgrade', id, 'block', S.money < c) : '<p class="center"><b>Fully upgraded!</b></p>'}${B('Close', 'close', '', 'block ghost')}</div>`);
+    <div class="btns">${c != null ? B(`${lv ? 'Upgrade' : 'Build'} for ${won(c)}`, 'upgrade', id, 'block', S.money < c) : '<p class="center"><b>Fully upgraded!</b></p>'}${lv && !(id === 'office' && lv <= 1) ? B(`Sell one level for ${won(Math.round(R.cost[lv - 1] * .5 || 5e6))}`, 'sellRoom', id, 'block ghost') : ''}${B('Close', 'close', '', 'block ghost')}</div>`);
 }
 function staffMenu() {
   modal(`${head('HQ', 'Hire staff')}<p class="small dim">One-time signing fee, then a monthly salary.</p><div class="list">${D.STAFF.map(s => { const lv = S.staff[s.id] || 0, c = KA.staffCost(S, s.id); return `<div class="li"><div class="grow"><b>${esc(s.n)}</b> ${lv ? `<span class="pill vio">${D.STAFF_LV[lv]}</span>` : ''}<br><small class="dim">${esc(s.d)} Salary ${won(s.pay * Math.max(1, lv))}/mo per level.</small></div>${c != null ? B(lv ? `Upgrade ${won(c)}` : `Hire ${won(c)}`, 'hire', s.id, 'sm', S.money < c) : '<span class="pill gold">Max</span>'}</div>`; }).join('')}</div>${closeBtn()}`);
@@ -299,7 +345,8 @@ function alRender() {
   if (a.step === 1) body = `
     <label class="f">Title track<div class="row" style="flex-wrap:nowrap"><input type="text" id="al-title" maxlength="28" data-in="al.title" value="${esc(a.title)}" autocomplete="off">${B('🎲', 'alRoll', '', 'sm ghost')}</div></label>
     <h3 style="margin-top:10px">Format</h3><div class="row">${D.ALBUM_TYPES.map(t => `<button class="chip ${a.type === t.id ? 'on' : ''}" data-a="alSet" data-v="type:${t.id}">${esc(t.n)} · ${won(t.cost)}</button>`).join('')}</div>
-    <h3 style="margin-top:10px">Concept</h3><div class="row">${D.CONCEPTS.map(c => `<button class="chip ${a.concept === c.id ? 'on' : ''}" data-a="alSet" data-v="concept:${c.id}">${esc(c.n)}</button>`).join('')}</div>
+    <h3 style="margin-top:10px">Concept</h3><div class="row">${D.CONCEPTS.map(c => `<button class="chip ${a.concept === c.id ? 'on' : ''}" data-a="alSet" data-v="concept:${c.id}">${c.id === S.trend.c ? '🔥 ' : ''}${esc(c.n)}</button>`).join('')}</div>
+    <p class="small" style="margin:4px 0 0">🔥 Trending now: <b>${esc(KA.trend(S).n)}</b>. Matching the trend boosts quality, hype and pre-orders.</p>
     <p class="small dim" style="margin:4px 0 0">Outfit fit for this concept: <b>${Math.round(KA.conceptFit(S, g, a.concept) * 100)}%</b> of members. Change outfits in the stylist room.</p>
     <h3 style="margin-top:10px">Genre</h3><div class="row">${D.GENRES.map(x => `<button class="chip ${a.genre === x.id ? 'on' : ''}" data-a="alSet" data-v="genre:${x.id}">${esc(x.n)}</button>`).join('')}</div>
     <p class="small dim" style="margin:4px 0 0">This genre leans on <b>${D.GENRES.find(x => x.id === a.genre).skill}</b>. Group average: ${Math.round(KA.groupStat(S, g, D.GENRES.find(x => x.id === a.genre).skill))}</p>
@@ -475,7 +522,7 @@ function runQueue() {
     const a = S.albums.find(x => x.id === it.aid), g = KA.group(S, a.gid), pos = S.chart.findIndex(r => r.aid === a.id) + 1;
     modal(`${head(it.first ? 'DEBUT!' : 'Comeback', `${esc(g.name)} · "${esc(a.title)}"`)}${mvHTML(a)}
       <div class="kpis" style="margin-top:8px"><div class="kpi"><b>${num(a.mv.day1)}</b><small>MV views (24h)</small></div><div class="kpi"><b>${num(a.sales)}</b><small>First-week sales</small></div><div class="kpi"><b>${pos ? '#' + pos : 'Out'}</b><small>Chart debut</small></div></div>
-      <p class="small">Song quality ${stars(a.q)} · MV ${stars(a.mv.score)}</p>${it.first ? `<p>${esc(g.name)} take the stage for their debut showcase. ${esc(g.fandom)} is officially born!</p>` : ''}<div class="btns">${next}</div>`);
+      <p class="small">Song quality ${stars(a.q)} · MV ${stars(a.mv.score)}${a.pre ? ` · Pre-orders ${num(a.pre)}` : ''}${a.trend ? ' · <b>🔥 On trend!</b>' : ''}</p>${it.first ? `<p>${esc(g.name)} take the stage for their debut showcase. ${esc(g.fandom)} is officially born!</p>` : ''}<div class="btns">${next}</div>`);
     setTimeout(() => playMV(a), 60);
   } else if (it.k === 'mshow') {
     const g = KA.group(S, it.mine.gid);
@@ -510,6 +557,11 @@ function runQueue() {
     modal(`<div class="trophy">⭐</div>${head(g.name, `Now: ${D.FAME[it.t].n}!`)}<p>${esc(g.name)} reached <b>${D.FAME[it.t].n}</b> fame with ${num(g.fans)} fans. New schedules and venues unlocked.</p><div class="btns">${next}</div>`);
   } else if (it.k === 'rank') {
     modal(`<div class="trophy">🏢</div>${head('Agency rank up', esc(D.RANKS[it.r].n))}<p>${esc(S.agency)} Entertainment is now a <b>${esc(D.RANKS[it.r].n.toLowerCase())}</b>.</p><div class="btns">${next}</div>`);
+  } else if (it.k === 'recap') {
+    modal(`<div class="trophy">📊</div>${head('Year in review', 'Year ' + it.y + ' recap')}
+      <div class="kpis"><div class="kpi"><b class="${it.money >= 0 ? '' : 'bad'}">${it.money >= 0 ? '+' : ''}${won(it.money)}</b><small>Money</small></div><div class="kpi"><b>+${num(Math.max(0, it.fans))}</b><small>New fans</small></div><div class="kpi"><b>${num(it.sold)}</b><small>Albums sold</small></div></div>
+      <div class="kpis" style="margin-top:8px"><div class="kpi"><b>${it.wins}</b><small>Music show wins</small></div><div class="kpi"><b>${it.awards}</b><small>Awards</small></div><div class="kpi"><b>${S.qdone}</b><small>Quests done</small></div></div>
+      ${it.best.length ? `<p>Song of the year at ${esc(S.agency)}: <b>${it.best.map(esc).join(', ')}</b></p>` : ''}<div class="btns">${next}</div>`);
   } else if (it.k === 'newyear') {
     modal(`<div class="trophy">🎆</div>${head('Happy new year', 'Year ' + it.y)}<p>A new year of comebacks begins. Award points reset, and a new batch of rookie groups is coming.</p><div class="btns">${next}</div>`);
   } else if (it.k === 'over') {
@@ -618,7 +670,19 @@ const A = {
   upgrade(v) { const r = KA.upgradeRoom(S, v); if (!r.ok) return toast(r.msg); snd(880); toast('Upgraded!'); save(); render(); roomModal(v); },
   staffMenu() { staffMenu(); },
   hire(v) { const r = KA.hire(S, v); if (!r.ok) return toast(r.msg); snd(880); save(); render(); staffMenu(); },
-  loan() { const r = KA.loan(S); toast(r.ok ? 'Loan received: ₩300M' : r.msg); save(); render(); },
+  calendar() { calendarModal(); },
+  sellRoom(v) { const r = KA.sellRoom(S, v); toast(r.msg); save(); render(); roomModal(v); },
+  claim(v) { const r = KA.claimQuest(S, +v); if (r.ok) { snd(990); toast(r.msg); } save(); render(); },
+  mail(v) { const [id, y] = v.split(':'); const r = KA.mailAct(S, +id, y === '1'); toast(r.msg || ''); snd(880); save(); render(); },
+  loan(v) { const r = KA.takeLoan(S, v); toast(r.msg); save(); render(); },
+  repay(v) { const r = KA.repayAll(S, +v); toast(r.msg); save(); render(); },
+  merch(v) { const [g, id] = v.split(':'); const r = KA.launchMerch(S, +g, id); toast(r.ok ? 'On sale now!' : r.msg); save(); render(); },
+  club(v) { const r = KA.launchClub(S, +v); toast(r.ok ? 'Fan club launched!' : r.msg); save(); render(); },
+  bizBuy(v) { const r = KA.buyBiz(S, v); toast(r.ok ? 'Business opened!' : r.msg); save(); render(); },
+  soloMenu(v) { soloMenu(+v); },
+  solo(v) { const [m, j] = v.split(':'); const r = KA.setSolo(S, +m, j); if (!r.ok) toast(r.msg); save(); render(); soloMenu(S.idols[+m].gid); },
+  dinner(v) { const r = KA.teamDinner(S, +v); toast(r.msg); save(); render(); },
+  vacation(v) { const g = KA.group(S, +v); g.hiatus = 2; g.sched = []; KA.members(S, g).forEach(m => m.solo = null); toast(`${g.name} are off to Jeju for two weeks! 🏖️`); save(); render(); },
   // trainees
   scoutMenu() { UI.scoutG = UI.scoutG || 'any'; scoutMenu(); },
   scoutG(v) { UI.scoutG = v; scoutMenu(); },
@@ -631,7 +695,7 @@ const A = {
   practice(v) {
     const i = S.idols[+v];
     rhythm(`${i.name}'s practice session`, pct => {
-      i.pw = S.week; const k = pick(['vocal', 'dance', 'rap']); const gain = Math.round(pct / 25 * 10) / 10;
+      i.pw = S.week; KA.qProg(S, 'practice'); const k = pick(['vocal', 'dance', 'rap']); const gain = Math.round(pct / 25 * 10) / 10;
       i.stats.dance = clamp(i.stats.dance + gain, 0, 99); i.stats[k] = clamp(i.stats[k] + gain / 2, 0, 99); i.cond = clamp(i.cond - 4, 0, 100);
       save(); render();
       modal(`${head('Practice', pct >= 80 ? 'Amazing session! 🌟' : pct >= 50 ? 'Good work ✨' : 'Keep practicing 💦')}<p>Score: <b>${pct}%</b>. Dance +${gain}, ${k} +${gain / 2}.</p>${closeBtn()}`);
@@ -683,7 +747,7 @@ const A = {
   stySave() {
     const L = UI.sty.look, O = D.OUTFITS.find(o => o.id === L.top);
     if (!S.owned.includes(O.id)) { if (S.money < O.cost) return toast('Not enough money.'); S.money -= O.cost; S.owned.push(O.id); }
-    S.idols[UI.sty.id].look = Object.assign({}, L); snd(880); toast('Looking good!'); save(); render(); styRender();
+    S.idols[UI.sty.id].look = Object.assign({}, L); KA.qProg(S, 'style'); snd(880); toast('Looking good!'); save(); render(); styRender();
   },
   styAll() { const L = UI.sty.look, g = KA.group(S, UI.sty.gid); KA.members(S, g).forEach(m => { m.look.top = L.top; m.look.topC = L.topC; m.look.botC = L.botC; }); toast('Everyone is matching!'); save(); render(); styRender(); },
   rehearse(v) {

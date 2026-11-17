@@ -14,7 +14,7 @@ const out = process.argv[2] || '.';
     const s = await step(); seen.push(s);
     if (s === 3) { await p.click('[data-tab="trainees"]'); }
     else if (s === 4) { await p.click('[data-a="scoutMenu"]'); await p.click('[data-a="scout"][data-v="street"]'); await p.click('[data-a="sign"]'); await p.click('[data-a="close"]'); }
-    else if (s === 9) { await p.click('#next'); while (await p.$('[data-a="qnext"]')) await p.click('[data-a="qnext"]'); }
+    else if (await p.evaluate(() => KD.TUTORIAL[IA.S.tut.step].go === 'next')) { await p.click('#next'); while (await p.$('[data-a="qnext"]')) await p.click('[data-a="qnext"]'); }
     else { if (s === 5) await p.screenshot({ path: out + '/tut5.png' }); await p.click('[data-a="tutNext"]'); }
     await p.waitForTimeout(150);
   }

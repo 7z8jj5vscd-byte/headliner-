@@ -15,7 +15,7 @@
 <title>K-Pop Idol Agency</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@600;700;800;900&display=swap">
-<script>window.IA_BUILD = 3;</script>
+<script>window.IA_BUILD = 4;</script>
 <style>
 :root{
   /* Bright mobile-sim look: sky backdrop, a cutaway office building, soft rounded windows and candy buttons */
@@ -95,13 +95,17 @@ main.game{padding-top:12px;padding-bottom:calc(170px + env(safe-area-inset-botto
 
 /* bottom dock */
 #tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:linear-gradient(180deg,#8fd16b,#6fbf4f);box-shadow:0 -3px 0 #5aa83d}
-#tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.tab{background:#fff;border:0;border-radius:16px;padding:6px 0 5px;font-family:var(--disp);font-size:12.5px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;position:relative;color:var(--ink2);box-shadow:0 4px 0 rgba(0,0,0,.15)}
+#tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.tab{background:#fff;border:0;border-radius:14px;padding:6px 0 5px;font-family:var(--disp);font-size:11px;min-width:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;position:relative;color:var(--ink2);box-shadow:0 4px 0 rgba(0,0,0,.15)}
 .tab span{font-size:23px;line-height:1.15}
 .tab.on{background:#fff6c7;color:var(--ink)}
 .tab .dot{position:absolute;top:-3px;right:-2px;width:14px;height:14px;background:var(--coral);border-radius:50%;border:2px solid #fff}
 #next{position:fixed;top:auto;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:31;border-radius:999px;padding:12px 22px;box-shadow:0 5px 0 var(--pinkd),0 8px 18px rgba(226,61,140,.35)}
 
+/* trend banner */
+.trend{display:flex;gap:10px;align-items:center;border-radius:999px;background:linear-gradient(90deg,#ff5ca8,#a46bff);color:#fff;padding:6px 14px 6px 6px;cursor:pointer;box-shadow:0 4px 0 rgba(91,63,224,.25)}
+.trend>b{background:#fff;color:var(--pinkd);border-radius:999px;padding:2px 10px;font-family:var(--disp);font-weight:400;font-size:13px;flex:none}
+.trend span{font-size:13.5px;min-width:0}
 /* menu windows over the building */
 .win{position:fixed;left:0;right:0;top:calc(80px + env(safe-area-inset-top,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:25;background:rgba(51,38,77,.28);padding:10px max(10px,env(safe-area-inset-right,0px)) 10px max(10px,env(safe-area-inset-left,0px));overflow:auto;-webkit-overflow-scrolling:touch}
 .win-in{max-width:560px;margin:0 auto;background:#f7f4ff;border-radius:24px;box-shadow:0 10px 30px rgba(51,38,77,.25);overflow:hidden;animation:pop .16s ease-out}
@@ -203,6 +207,7 @@ canvas.scr{width:100%;image-rendering:pixelated;border-radius:16px;background:#0
 <script src="data.js"></script>
 <script src="sprite.js"></script>
 <script src="engine.js"></script>
+<script src="more.js"></script>
 <script src="ui.js"></script>
 </body>
 </html>

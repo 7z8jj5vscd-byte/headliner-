@@ -1,6 +1,6 @@
 // Headless simulation: an automatic CEO plays whole careers to catch crashes and check balance.
 // Usage: node tests/sim.js [runs] [years]
-require('../data.js'); require('../engine.js');
+require('../data.js'); require('../engine.js'); require('../more.js');
 const KA = globalThis.KA, D = globalThis.KD;
 const runs = +process.argv[2] || 4, years = +process.argv[3] || 8;
 for (let r = 0; r < runs; r++) {
@@ -31,7 +31,10 @@ for (let r = 0; r < runs; r++) {
     }
     for (const rq of S.reqs.slice()) KA.answerReq(S, rq.id, Math.random() < .7);
     for (const h of S.hate.slice()) { const rs = KA.hateResponses(S, h); if (rs.length) KA.respondHate(S, h.id, rs[0].id); }
-    if (S.money < 5e7 && !S.debt) KA.loan(S);
+    if (S.money < 5e7) KA.takeLoan(S, 'small');
+    for (let k = 0; k < 3; k++) KA.claimQuest(S, k); for (const m of S.mail.slice()) KA.mailAct(S, m.id, true);
+    for (const g of KA.debuted(S)) { for (const M of D.MERCH) if (S.money > M.cost * 5) KA.launchMerch(S, g.id, M.id); if (S.money > 1e8) KA.launchClub(S, g.id); for (const m of KA.members(S, g)) { const J = D.SOLO.filter(j => KA.soloOK(S, m, j)).pop(); if (J && m.cond > 60) KA.setSolo(S, m.id, J.id); } }
+    for (const B of D.BIZ) if (S.money > (KA.bizCost(S, B.id) || 1e99) * 4) KA.buyBiz(S, B.id);
     KA.endWeek(S);
     while (S.q.length) { const it = S.q.shift(); if (it.k === 'event') KA.resolveEvent(S, it, 0); if (it.k === 'award') { const x = KA.runAward(S, it.id, 1); x.res.forEach(c => c.won.length && (M.award = M.award || KA.year(S))); } if (it.k === 'renew') KA.renew(S, it.gid, true); }
     const g0 = S.groups[0]; if (g0 && S.week % 48 === 0) (M.traj = M.traj || []).push(KA.num(g0.fans) + "/" + KA.won(S.money));
