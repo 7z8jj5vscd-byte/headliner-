@@ -51,6 +51,21 @@ Play it at https://7z8jj5vscd-byte.github.io/headliner-/kpop/
 
 Features 3D idols and a dancing group stage (drag to spin), a Dream board of goals, coach-picked weekly plans, a skip-ahead button, a photocard binder and a fan chat. Every release starts with a costume fitting, and each live stage lets you pick a rehearsal method and an ending fairy pose, then plays out as a live broadcast feed with fanchants, chat, mishaps and fancam views. Mini-games come in sets: trainee tests (Rhythm Lanes, Pose Match, Hit the High Note, Echo the Coach, Rhyme Flow), playable rehearsals (Hit Your Marks, Mirror Mirror, Sound Check, Deep Breaths, Find Your Spot, Quick Change), stage games (Camera Catch, Press Q&A), a weekly Practice room, and full Live Stages for showcases, music shows and concerts that chain them section by section. Live stages have synthesized backing tracks, crowd cheers and fanchants, section-by-section choreography with camera cuts and confetti. Releases show hour-by-hour charts and line distribution, and the career adds fansigns, a playable variety show, trending hashtags, a fan cafe, a contract with a dating ban, and dorm life with roommates, chores and member rivalries.
 
+### K-Pop Idol Agency (Debut Dream expansion)
+
+The first Debut Dream expansion lives in `kpop/agency/`. This time you are the CEO. Start in a rented basement, build your HQ floor by floor (practice room, vocal booth, recording studio, stylist room, gym, dorm, MV set, content studio and CEO office), hire coaches and staff, and grow from a basement startup to an entertainment empire.
+
+- **Trainees:** five kinds of auditions, hidden traits, weekly training plans, condition and mood, monthly F-to-A evaluations, and a rhythm mini-game for practice sessions. Your Debut Dream idol can sign with the agency.
+- **Survival show:** send up to six trainees to a 100-trainee TV show with storyline choices, evil edits, two eliminations and a live finale. Trainees who make the final 9 can debut as a project group.
+- **Groups:** names, fandoms, lightstick colors, auto positions, several groups at once, a stylist room with pixel outfits, and seven-year contracts with renewals.
+- **Albums and MVs:** format, concept, genre, producer (or self-produced), line distribution with fan reactions, and a music video you direct shot by shot that plays back as a pixel MV with a synth beat. Dance challenges can go viral.
+- **Career:** weekly schedules, own content (vlogs to documentaries), world tours with demand by region and lightstick-ocean concerts, fan requests, a social feed, hate trains with six responses, random events, a weekly Top 30 and brand reputation ranking against real K-pop groups, music shows with first wins and triple crowns, and four fictional year-end award shows with real-group nominees.
+- **Extras:** a guided tutorial with Manager Bora, one-time tips, 26 trophies, three save slots, three difficulty levels, and an update banner with a What's new list.
+
+Real K-pop groups appear only on the charts, music shows, brand rankings and award nominations, with no made-up drama about them. Agencies, trainees, award shows and music shows are fictional. It is an unofficial fan game.
+
+Play it at https://7z8jj5vscd-byte.github.io/headliner-/kpop/agency/
+
 ## Decades
 
 Start a band in 1965 and play one year per turn all the way to the present. Manage egos, lineup changes, breakups and reunions while the industry shifts from vinyl to cassettes, music videos, CDs, file-sharing, streaming and viral clips. Your band appears as 3D characters whose clothes and hair follow each decade, a rival band fights you for the charts, and you can replay your whole career as a documentary. Every song plays its own short tune, there are 24 trophies to collect, and the ? button lists every feature and takes you straight to it.
