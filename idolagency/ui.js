@@ -11,10 +11,6 @@ window.IA = { UI, get S() { return S; } };
 // ------------------------------------------------------------------ saves
 const readSlot = n => { try { const r = localStorage.getItem(KEY + n); return r ? JSON.parse(r) : null; } catch (e) { return null; } };
 function save() { if (!S) return; try { localStorage.setItem(KEY + S.slot, JSON.stringify(S)); localStorage.setItem(LAST, String(S.slot)); } catch (e) { } }
-function ddIdol() {
-  for (let n = 1; n <= 3; n++) { try { const r = localStorage.getItem('debutdream_slot_' + n); if (!r) continue; const s = JSON.parse(r); if (s && s.idol) return { name: s.idol.stage || s.idol.name, gender: s.idol.gender, st: s.st || {} }; } catch (e) { } }
-  return null;
-}
 
 // ------------------------------------------------------------------ small helpers
 const POSES = ['idle', 'up1', 'out', 'up2', 'cheer', 'hip', 'heart', 'mic'];
@@ -65,12 +61,12 @@ function titleScreen() {
     <div class="row">${B('Open the agency ▶', 'start', UI.newSlot, 'grow')}${B('Cancel', 'cancelNew', '', 'ghost')}</div></section>` : '';
   return `<main class="wrap stack" style="padding-top:calc(22px + env(safe-area-inset-top,0px));padding-bottom:40px">
     <div class="hero">${hero.map((l, i) => av(l, i === 2 ? 96 : 80, true)).join('')}</div>
-    <h1 class="logo"><small>Debut Dream expansion</small>K-Pop<br>Idol Agency</h1>
+    <h1 class="logo"><small>Run your own</small>K-Pop<br>Idol Agency</h1>
     <p class="subtitle">scout → train → debut → daesang</p>
     ${newForm}
     <section class="panel"><h2>Save slots</h2><div class="list">${slots}</div></section>
     <section class="panel pink stack"><h2>How to play</h2>${HOWTO}</section>
-    <div class="center"><button class="version" data-a="whatsNew">Version ${window.IA_BUILD} · ${esc(D.CHANGELOG[0].date)} · What's new</button><br><a class="version" href="../">← Back to Debut Dream</a></div>
+    <div class="center"><button class="version" data-a="whatsNew">Version ${window.IA_BUILD} · ${esc(D.CHANGELOG[0].date)} · What's new</button></div>
     <p class="center dim"><small>Real K-pop groups appear on the charts, music shows and award nominations only. Agencies, trainees, award shows and music shows are fictional. This is an unofficial fan game.</small></p>
   </main>`;
 }
@@ -116,14 +112,12 @@ function hqTab() {
 // ------------------------------------------------------------------ Trainees tab
 function trTab() {
   const tr = KA.trainees(S).sort((a, b) => KA.overall(b) - KA.overall(a));
-  const dd = !S.flags.ddImported && ddIdol();
   const showCard = S.show ? `<section class="panel lemon"><div class="between"><h2>📺 ${esc(D.SHOW_NAME)}</h2><span class="pill hot">${esc((D.SHOW_EPISODES[S.show.ep] || {}).n || '')}</span></div>
     <p class="small" style="margin:0 0 6px">${esc((D.SHOW_EPISODES[S.show.ep] || {}).d || '')} Pick a storyline for each trainee. The episode airs when you tap Next week.</p>
     <div class="list">${S.show.ids.map(id => { const i = S.idols[id], out = S.show.out.includes(id); return `<div class="li">${av(i.look, 44)}<div class="grow"><b>${esc(i.name)}</b> ${out ? '<span class="pill red">Eliminated</span>' : ''}<br>${out ? '' : `<div class="row" style="gap:4px;margin-top:4px">${D.SHOW_FOCUS.map(f => `<button class="chip ${S.show.focus[id] === f.id ? 'on' : ''}" data-a="focus" data-v="${id}:${f.id}" title="${esc(f.d)}">${esc(f.n)}</button>`).join('')}</div>`}</div></div>`; }).join('')}</div></section>` : '';
   return `<div class="stack">
     <section class="panel"><div class="between"><h2>Trainees</h2><span class="dim small">${tr.length}/${KA.maxTrainees(S)}</span></div>
       <div class="row">${B('🔍 Scout', 'scoutMenu', '', 'sm')}${B('📺 Survival show', 'showMenu', '', 'sm sky', !!S.show)}${B('🌟 Debut a group', 'debutMenu', '', 'sm alt')}</div>
-      ${dd ? `<div class="li" style="margin-top:8px;background:#fff0f7;padding:8px"><span style="font-size:24px">💖</span><div class="grow small"><b>${esc(dd.name)}</b> from your Debut Dream save wants to join!</div>${B('Sign', 'importDD', '', 'sm')}</div>` : ''}
     </section>
     ${showCard}
     <section class="panel tr-list">${tr.length ? `<div class="list">${tr.map(i => `<div class="li tap" data-a="idol" data-v="${i.id}">${av(i.look, 52)}<div class="grow"><div class="between"><b>${esc(i.name)} <small class="dim">${i.flag} ${i.age}</small></b><span class="pill ${i.grade === 'A' ? 'gold' : ''}">${i.grade}</span></div>
@@ -617,7 +611,6 @@ const A = {
   scoutG(v) { UI.scoutG = v; scoutMenu(); },
   scout(v) { const r = KA.scout(S, v, UI.scoutG || 'any'); if (!r.ok) return toast(r.msg || 'Not possible'); save(); render(); scoutResults(); },
   sign(v) { const r = KA.sign(S, +v); if (!r.ok) return toast(r.msg); snd(990); toast(`${r.idol.name} signed!`); save(); render(); scoutResults(); tutGo('scouted'); },
-  importDD() { const d = ddIdol(); if (!d) return; const r = KA.signImport(S, d); toast(r.ok ? `${r.idol.name} joined!` : r.msg); save(); render(); if (r.ok) idolModal(r.idol.id); },
   idol(v) { idolModal(+v); },
   plan(v) { const [id, p] = v.split(':'); KA.setPlan(S, +id, p); save(); render(); idolModal(+id); },
   releaseIdol(v) { modal(`${head('Release', 'Let ' + esc(S.idols[v].name) + ' go?')}<div class="btns">${B('Release', 'releaseYes', v, 'block red')}${B('Keep', 'close', '', 'block ghost')}</div>`); },

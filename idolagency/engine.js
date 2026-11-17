@@ -59,7 +59,7 @@ KA.makeIdol = function (S, o = {}) {
   const i = {
     id, name: o.name || name, g, age: o.age || ri(13, 20), nat, flag, look: o.look || KA.randomLook(g), stats, pot: o.pot || ri(62, 98),
     trait, traitKnown: !!o.traitKnown, status: 'trainee', weeks: 0, grade: '-', grades: [], cond: 90, mood: 75, fans: 0, gid: null, pos: '',
-    plan: 'balanced', joined: S.week, rest: 0, prev: KA.overall({ stats }), dd: !!o.dd
+    plan: 'balanced', joined: S.week, rest: 0, prev: KA.overall({ stats })
   };
   return i;
 };
@@ -147,18 +147,6 @@ KA.sign = function (S, id) {
   if (KA.trainees(S).length >= KA.maxTrainees(S)) return { ok: false, msg: 'The dorm is full. Upgrade the CEO office to sign more trainees.' };
   i.joined = S.week; S.idols[i.id] = i; S.scouted = S.scouted.filter(x => x.id !== id);
   log(S, `Signed ${i.name} (${i.age}, ${i.nat}) as a trainee.`, '✍️'); KA.ach(S, 'scout');
-  return { ok: true, idol: i };
-};
-// Bring the player's Debut Dream idol into the agency.
-KA.signImport = function (S, d) {
-  if (S.flags.ddImported) return { ok: false, msg: 'Your Debut Dream idol is already here.' };
-  const g = d.gender === 'boy' || d.gender === 'm' ? 'm' : 'f';
-  const st = d.st || {};
-  const i = KA.makeIdol(S, { g, name: d.name, foreign: false, base: 20, trait: 'center', traitKnown: true, pot: 96, dd: true });
-  ['vocal', 'dance', 'rap', 'visual', 'variety'].forEach(k => { if (st[k] != null) i.stats[k] = clamp(Math.round(st[k]), 5, 92); });
-  i.stats.stamina = clamp(Math.round(avg(Object.values(i.stats))), 20, 80);
-  S.idols[i.id] = i; S.flags.ddImported = true;
-  log(S, `${i.name} from Debut Dream walks in and signs with ${S.agency}.`, '💖'); KA.ach(S, 'dd');
   return { ok: true, idol: i };
 };
 KA.release = function (S, id) {

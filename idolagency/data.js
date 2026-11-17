@@ -6,12 +6,12 @@ const D = root.KD = {};
 // Newest first. Bump IA_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
   { build: 1, date: 'Nov 17, 2026', notes: [
-    'K-Pop Idol Agency launches as the first Debut Dream expansion.',
+    'K-Pop Idol Agency launches!',
     'Run your own agency: build floors, hire coaches, scout trainees and debut groups.',
     'Survival show, albums with line distribution, a music video director and pixel MV playback.',
     'Schedules, own content, a stylist room, world tours, fan requests, an SNS feed and hate trains.',
     'Weekly charts and music shows against real K-pop groups, and four year-end award shows.',
-    'Sign your Debut Dream idol as a trainee, plus a guided tutorial and an update notice.'
+    'A guided tutorial with Manager Bora, one-time tips and an update notice.'
   ] }
 ];
 
@@ -406,8 +406,7 @@ D.ACH = [
   { id: 'survive', n: 'Survived the hate', d: 'Shut down a hate train.' },
   { id: 'content', n: 'Content king', d: 'Release 5 pieces of content.' },
   { id: 'viral', n: 'Viral challenge', d: 'Have a dance challenge go viral.' },
-  { id: 'renew', n: 'Renewed', d: 'Renew a group\'s contract.' },
-  { id: 'dd', n: 'Old friend', d: 'Sign your Debut Dream idol.' }
+  { id: 'renew', n: 'Renewed', d: 'Renew a group\'s contract.' }
 ];
 
 // ------------------------------------------------------------------ tutorial (guided, with Manager Bora)
