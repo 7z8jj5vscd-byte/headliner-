@@ -258,10 +258,10 @@ SP.playMV = function (canvas, mv, looks, opts = {}) {
     if (shot === 'slowmo') { x.fillStyle = 'rgba(255,255,255,.08)'; x.fillRect(0, 0, w, h); }
     // letterbox and captions
     x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, h - 22, w, 22);
-    x.fillStyle = '#fff'; x.font = 'bold 11px "DotGothic16", monospace'; x.textAlign = 'left';
+    x.fillStyle = '#fff'; x.font = 'bold 11px "Jua", sans-serif'; x.textAlign = 'left';
     x.fillText(D.MV_SECTIONS[si].toUpperCase() + ' · ' + ((D.MV_SHOTS.find(s => s.id === shot) || {}).n || ''), 8, h - 8);
-    if (lines[si]) { x.textAlign = 'center'; x.font = '12px "DotGothic16", monospace'; x.fillStyle = '#fff'; x.fillText(lines[si], w / 2, 20); }
-    if (si === 0 && st < .5 && opts.title) { x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(0, h / 2 - 22, w, 44); x.fillStyle = '#fff'; x.textAlign = 'center'; x.font = 'bold 18px "DotGothic16", monospace'; x.fillText(opts.title, w / 2, h / 2 + 6); }
+    if (lines[si]) { x.textAlign = 'center'; x.font = '12px "Jua", sans-serif'; x.fillStyle = '#fff'; x.fillText(lines[si], w / 2, 20); }
+    if (si === 0 && st < .5 && opts.title) { x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(0, h / 2 - 22, w, 44); x.fillStyle = '#fff'; x.textAlign = 'center'; x.font = 'bold 18px "Jua", sans-serif'; x.fillText(opts.title, w / 2, h / 2 + 6); }
     if (opts.onProgress) opts.onProgress(Math.min(1, t / total));
     if (t >= total) { stopped = true; if (opts.onEnd) opts.onEnd(); return; }
     raf = requestAnimationFrame(frame);
@@ -284,7 +284,7 @@ SP.playStage = function (canvas, looks, opts = {}) {
     // stage + screen
     x.fillStyle = '#251a4a'; x.fillRect(w * .1, h * .08, w * .8, h * .26);
     x.fillStyle = color; x.globalAlpha = .35 + .2 * (beat % 2); x.fillRect(w * .12, h * .1, w * .76, h * .22); x.globalAlpha = 1;
-    if (opts.title) { x.fillStyle = '#fff'; x.font = 'bold 14px "DotGothic16", monospace'; x.textAlign = 'center'; x.fillText(opts.title, w / 2, h * .23); }
+    if (opts.title) { x.fillStyle = '#fff'; x.font = 'bold 14px "Jua", sans-serif'; x.textAlign = 'center'; x.fillText(opts.title, w / 2, h * .23); }
     x.fillStyle = '#3a2c6a'; x.fillRect(0, h * .6, w, 6);
     const n = looks.length, sc = Math.max(1, (h * .3) / SP.H);
     looks.forEach((k, i) => drawIdol(x, k, w / 2 + (i - (n - 1) / 2) * Math.min(w * .85 / n, sc * SP.W), h * .6, sc, POSES[(beat + i) % POSES.length], i % 2 === 1));

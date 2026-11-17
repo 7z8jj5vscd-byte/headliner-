@@ -26,7 +26,7 @@ const bar = (v, cls = '') => `<div class="bar ${cls}"><i style="width:${clamp(v,
 const B = (label, a, v = '', cls = '', dis = false) => `<button class="btn ${cls}" data-a="${a}" data-v="${esc(v)}"${dis ? ' disabled' : ''}>${label}</button>`;
 const stars = v => '★'.repeat(Math.round(clamp(v, 0, 100) / 20)) + '☆'.repeat(5 - Math.round(clamp(v, 0, 100) / 20));
 const fameP = fans => { const t = KA.fameTier(fans); return `<span class="pill" style="background:${D.FAME[t].c};color:#fff">${D.FAME[t].n}</span>`; };
-function toast(t) { const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; const b = $('#toasts'); b.appendChild(el); while (b.children.length > 3) b.firstChild.remove(); setTimeout(() => el.remove(), 3200); }
+function toast(t) { [...document.querySelectorAll('.toast')].forEach(x => { if (x.textContent === t) x.remove(); }); const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; const b = $('#toasts'); b.appendChild(el); while (b.children.length > 3) b.firstChild.remove(); setTimeout(() => el.remove(), 3200); }
 function snd(f) { if (S && S.sound) SP.blip(f); }
 
 // ------------------------------------------------------------------ render
@@ -34,11 +34,18 @@ function render() {
   UI.looks = [];
   const app = $('#app');
   if (!S) { app.innerHTML = titleScreen(); return; }
-  const tabs = [['hq', '🏢', 'HQ'], ['trainees', '🌱', 'Trainees'], ['groups', '🌟', 'Groups'], ['charts', '📈', 'Charts'], ['sns', '💬', 'SNS'], ['more', '☰', 'More']];
+  const tabs = [['hq', '🏢', 'Agency'], ['trainees', '🌱', 'Trainees'], ['groups', '🌟', 'Artists'], ['charts', '📈', 'Charts'], ['sns', '💬', 'Fans'], ['more', '⚙️', 'Menu']];
   const dot = { sns: S.hate.length || S.reqs.length, trainees: !!S.show };
-  const body = { hq: hqTab, trainees: trTab, groups: grTab, charts: chTab, sns: snsTab, more: moreTab }[UI.tab]();
-  app.innerHTML = `<header id="topbar"><div class="in"><span class="money">${won(S.money)}</span><span class="date">${KA.date(S)}</span><span class="rank">${esc(D.RANKS[KA.rank(S)].n)}</span></div></header>
-  <main class="wrap game">${body}</main>
+  const winBody = UI.tab === 'hq' ? '' : { trainees: trTab, groups: grTab, charts: chTab, sns: snsTab, more: moreTab }[UI.tab]();
+  const T = tabs.find(t => t[0] === UI.tab);
+  const fans = S.groups.reduce((a, g) => a + (g.status === 'active' ? g.fans : 0), 0);
+  const rk = KA.rank(S), f = S.groups.reduce((a, g) => a + g.fans, 0) + S.rep * 1000;
+  const nx = D.RANKS[rk + 1], prog = nx ? (f - D.RANKS[rk].need) / (nx.need - D.RANKS[rk].need) * 100 : 100;
+  app.innerHTML = `<header id="topbar"><div class="in">
+    <div class="hud"><div class="hp date"><i>📅</i><span>${KA.date(S).replace(' · ', ' ').replace(' wk ', ' W')}</span></div><div class="hp money"><i>💰</i><span>${won(S.money)}</span></div><div class="hp fans"><i>💗</i><span>${num(fans)}</span></div></div>
+    <div class="lvl"><b>Lv.${rk + 1}</b><div class="xp"><i style="width:${clamp(prog, 2, 100)}%"></i><span>${esc(D.RANKS[rk].n)}${nx ? ' → ' + esc(nx.n) : ''}</span></div></div></div></header>
+  <main class="wrap game">${hqTab()}</main>
+  ${winBody ? `<div class="win" data-a="winBg"><div class="win-in"><div class="win-head"><span>${T[1]} ${T[2]}</span><button class="xbtn" data-a="tab" data-v="hq" aria-label="Close">✕</button></div><div class="win-body">${winBody}</div></div></div>` : ''}
   <button class="btn big" id="next" data-a="next">Next week ▶</button>
   <nav id="tabs"><div class="in">${tabs.map(t => `<button class="tab ${UI.tab === t[0] ? 'on' : ''}" data-tab="${t[0]}" data-a="tab" data-v="${t[0]}"><span>${t[1]}</span>${t[2]}${dot[t[0]] ? '<i class="dot"></i>' : ''}</button>`).join('')}</div></nav>`;
   if (!S.tut.done) setTimeout(showTut, 30);
@@ -59,7 +66,7 @@ function titleScreen() {
     <label class="f">Your CEO name<input type="text" id="f-ceo" maxlength="18" value="${esc(d.ceo)}" placeholder="e.g. Jordan" data-in="ceo" autocomplete="off"></label>
     <div class="f"><b style="font-size:13px">Difficulty</b><div class="row">${[['easy', 'Easy · ₩800M'], ['normal', 'Normal · ₩500M'], ['hard', 'Hard · ₩250M']].map(x => `<button class="chip ${d.diff === x[0] ? 'on' : ''}" data-a="draftDiff" data-v="${x[0]}">${x[1]}</button>`).join('')}</div></div>
     <div class="row">${B('Open the agency ▶', 'start', UI.newSlot, 'grow')}${B('Cancel', 'cancelNew', '', 'ghost')}</div></section>` : '';
-  return `<main class="wrap stack" style="padding-top:calc(22px + env(safe-area-inset-top,0px));padding-bottom:40px">
+  return `<div class="title-bg"><main class="wrap stack" style="padding-top:calc(22px + env(safe-area-inset-top,0px));padding-bottom:40px">
     <div class="hero">${hero.map((l, i) => av(l, i === 2 ? 96 : 80, true)).join('')}</div>
     <h1 class="logo"><small>Run your own</small>K-Pop<br>Idol Agency</h1>
     <p class="subtitle">scout → train → debut → daesang</p>
@@ -68,7 +75,7 @@ function titleScreen() {
     <section class="panel pink stack"><h2>How to play</h2>${HOWTO}</section>
     <div class="center"><button class="version" data-a="whatsNew">Version ${window.IA_BUILD} · ${esc(D.CHANGELOG[0].date)} · What's new</button></div>
     <p class="center dim"><small>Real K-pop groups appear on the charts, music shows and award nominations only. Agencies, trainees, award shows and music shows are fictional. This is an unofficial fan game.</small></p>
-  </main>`;
+  </main></div>`;
 }
 const HOWTO = `<p style="margin:0">You are the CEO of a tiny agency. Every turn is one week.</p>
 <ul style="margin:0;padding-left:18px">
@@ -100,7 +107,7 @@ function hqTab() {
   }).join('');
   const cost = KA.monthlyCost(S);
   return `<div class="stack">
-    <section class="bldg" id="bldg"><div class="roof">${esc(S.agency.toUpperCase())} ENTERTAINMENT</div>${floors}</section>
+    <div><section class="bldg" id="bldg"><div class="roof"><span>${esc(S.agency)} Entertainment</span></div>${floors}</section><div class="ground"></div></div>
     <section class="panel"><div class="between"><h2>Agency</h2><span class="pill gold">${esc(D.RANKS[KA.rank(S)].n)}</span></div>
       <div class="kpis"><div class="kpi"><b>${KA.trainees(S).length}/${KA.maxTrainees(S)}</b><small>Trainees</small></div><div class="kpi"><b>${KA.active(S).length}/${KA.maxGroups(S)}</b><small>Groups</small></div><div class="kpi"><b>${won(cost)}</b><small>Monthly bills</small></div></div>
       ${S.debt > 0 ? `<p class="small">Loan left: <b>${won(S.debt)}</b> (₩12M a month)</p>` : ''}
@@ -572,7 +579,8 @@ function whatsNew(since = 0) {
 
 // ------------------------------------------------------------------ actions
 const A = {
-  tab(v) { UI.tab = v; render(); window.scrollTo(0, 0); tutGo('tab:' + v); },
+  tab(v) { UI.tab = v; render(); if (UI.tab === 'hq') window.scrollTo(0, 0); tutGo('tab:' + v); },
+  winBg(v, el) { },
   close() { closeModal(); render(); },
   qnext() { runQueue(); },
   whatsNew() { whatsNew(); },
@@ -654,7 +662,7 @@ const A = {
     snd(990); closeModal(); save(); render(); toast(`Teasers for "${r.album.title}" are out!`);
   },
   replayMV(v) { const a = S.albums.find(x => x.id === +v); const g = KA.group(S, a.gid); modal(`${head(g.name, '"' + esc(a.title) + '" M/V')}${mvHTML(a)}<p class="small dim">${num(a.mv.views)} views · ${esc(D.MV_SETS.find(s => s.id === a.mv.set).n)} · ${esc(D.MV_STORIES.find(s => s.id === a.mv.story).n)}</p>${closeBtn()}`); setTimeout(() => playMV(a), 60); },
-  mvSkip() { if (UI.stopAnim) { UI.stopAnim(); UI.stopAnim = null; } if (UI.stopSnd) { UI.stopSnd(); UI.stopSnd = null; } const c = $('#mvc'); if (c) { const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#fff'; x.font = '14px DotGothic16, monospace'; x.textAlign = 'center'; x.fillText('Thanks for watching ♥', 160, 95); } },
+  mvSkip() { if (UI.stopAnim) { UI.stopAnim(); UI.stopAnim = null; } if (UI.stopSnd) { UI.stopSnd(); UI.stopSnd = null; } const c = $('#mvc'); if (c) { const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#fff'; x.font = '14px Jua, sans-serif'; x.textAlign = 'center'; x.fillText('Thanks for watching ♥', 160, 95); } },
   schedMenu(v) { schedMenu(+v); },
   sched(v) { const [g, s] = v.split(':'); const r = KA.toggleSched(S, +g, s); if (!r.ok) toast(r.msg); save(); schedMenu(+g); },
   contentMenu(v) { contentMenu(+v); },
@@ -697,6 +705,7 @@ const A = {
 
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]'); if (!el) return;
+  if (el.dataset.a === 'winBg') { if (e.target === el) { UI.tab = 'hq'; render(); } return; }
   const fn = A[el.dataset.a]; if (fn) { e.preventDefault(); fn(el.dataset.v, el); }
 });
 document.addEventListener('input', e => {

@@ -5,6 +5,12 @@ const D = root.KD = {};
 // ------------------------------------------------------------------ changelog
 // Newest first. Bump IA_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
+  { build: 2, date: 'Nov 17, 2026', notes: [
+    'Brand new look: bright sky, a cutaway agency building as your home screen, and soft rounded windows.',
+    'New top bar with the date, money, total fans and an agency level bar.',
+    'Menus now open as pop-up windows over the building, with a new bottom dock.',
+    'New night-stage title screen.'
+  ] },
   { build: 1, date: 'Nov 17, 2026', notes: [
     'K-Pop Idol Agency launches!',
     'Run your own agency: build floors, hire coaches, scout trainees and debut groups.',
@@ -413,7 +419,7 @@ D.ACH = [
 // sel: element to highlight. go: action that moves the tutorial to the next step when the player does it.
 D.TUTORIAL = [
   { t: 'Hi CEO! I\'m Bora, your manager. Welcome to your new agency. It\'s just a basement for now, but we\'re going to make it the biggest name in K-pop!' },
-  { t: 'Up top you can see our money, the date and the agency rank. Every turn is one week. We pay salaries at the start of every month, so keep an eye on the money.', sel: '#topbar' },
+  { t: 'Up top you can see the date, our money, our total fans and the agency level. Every turn is one week. We pay salaries at the start of every month, so keep an eye on the money.', sel: '#topbar' },
   { t: 'This is our building. Each floor is a room. Tap a room to upgrade it. Better rooms make training faster.', sel: '#bldg' },
   { t: 'First we need trainees! Open the Trainees tab.', sel: '[data-tab="trainees"]', go: 'tab:trainees' },
   { t: 'Tap Scout to hold an audition. Different auditions find different kinds of trainees.', sel: '[data-a="scoutMenu"]', go: 'scouted' },
