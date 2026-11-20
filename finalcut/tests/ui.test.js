@@ -14,7 +14,7 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
   await page.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   const shot = n => page.screenshot({ path: `${shots}/${mode}-${n}.png` });
   const click = async sel => { await page.locator(sel).first().click(); await page.waitForTimeout(120); };
-  const step = async (name, fn) => { const b = errors.length; console.log('step', name); try { await fn(); } catch (e) { errors.push(`step ${name}: ${e.message.split('\n')[0]}`); } if (errors.length > b) console.log('ERR', errors.slice(b)); };
+  const step = async (name, fn) => { const b = errors.length; console.log('step', name); try { await page.evaluate(() => { if (window.UI && document.querySelector('#modal')) UI.closeModal(true); }); await fn(); } catch (e) { errors.push(`step ${name}: ${e.message.split('\n')[0]}`); } if (errors.length > b) console.log('ERR', errors.slice(b)); };
   const drain = async (n = 12) => { for (let i = 0; i < n; i++) { const m = page.locator('#modal'); if (!(await m.count())) return; const btn = m.locator('[data-a="endWeekForce"], [data-a="fitWear"], [data-a="evPick"], [data-a="trSkip"], [data-a="resolve"], [data-a="tvMoment"], [data-a="tvFinale"], [data-a="liveNext"], [data-a="liveChoose"], [data-a="liveAfter"], [data-a="liveFinish"], [data-a="cerOpen"], [data-a="speech"], [data-a="cerNext"], [data-a="loveYes"], [data-a="closeModal"]').first(); if (await btn.count()) await btn.click(); else break; await page.waitForTimeout(120); } };
 
   await page.goto(`http://localhost:${port}/index.html`);
@@ -116,6 +116,17 @@ const [port, threePath, shots, mode = 'phone'] = process.argv.slice(2);
   await step('fitting', async () => {
     await page.evaluate(() => { const s = UI.S; s.jobs = []; const a = FC.genFranchiseProject(s, 'mcu', { kind: 'original', size: 'lead' }); a.won = true; a.perf0 = 70; s.offers.push(a); FC.sign(s, a.id); s.pending = s.pending.filter(p => p.type === 'fitting'); UI.render(); UI.nextPending(); });
     await page.waitForTimeout(800); await click('[data-a="fitPick"][data-i="1"]'); await click('[data-a="fitColor"]'); await page.waitForTimeout(500); await shot('40-fitting'); await click('[data-a="fitWear"]');
+  });
+  await step('contacts', async () => {
+    await page.evaluate(() => { UI.closeModal(true); const s = UI.S; s.energy = 100; FC.meet(s, 'Greta Gerwig', 'director', { where: 'an industry party', rel: 70 }); FC.meet(s, 'Zendaya', 'actor', { where: 'Dune', rel: 80 }); FC.meet(s, FC.execFor('Marvel Studios'), 'exec', { studio: 'Marvel Studios', where: 'a party', rel: 60 }); UI.render(); });
+    await click('[data-a="phone"]'); await click('[data-a="phone"][data-v="contacts"]'); await page.waitForTimeout(1500); await shot('41-contacts');
+    await click('[data-a="phone"][data-v="contact"][data-id="Greta Gerwig"]'); await page.waitForTimeout(500); await click('[data-a="cAct"][data-v="text"]'); await page.waitForTimeout(300); await shot('42-contact');
+    if (await page.locator('[data-a="cAct"][data-v="roles"]:not([disabled])').count()) { await click('[data-a="cAct"][data-v="roles"]'); await page.waitForTimeout(600); }
+    if (await page.locator('#modal [data-a="evPick"]').count()) { await shot('43-offer'); await click('#modal [data-a="evPick"][data-i="1"]'); await click('#modal [data-a="closeModal"]'); }
+    await page.evaluate(() => { const s = UI.S; s.chats = s.chats || {}; s.chats.x = { title: 'Test Movie', members: ['Zendaya', 'Greta Gerwig'], msgs: [{ from: 'Zendaya', t: 'Craft services just brought churros!!!', w: s.week }], unread: 1 }; UI.closeModal(true); });
+    await click('[data-a="phone"]'); await click('[data-a="phone"][data-v="messages"]'); await click('[data-a="phone"][data-v="chat"]'); await click('[data-a="chatReply"]'); await shot('44-chat'); await click('#modal [data-a="closeModal"]');
+    await page.evaluate(() => { const s = UI.S; s.offers = []; const o = FC.makeOffer(s, FC.genFranchiseProject(s, 'dcu', { film: true, size: 'lead' }), 'DC Studios loved working with you on Test', 'DC Studios'); s.pending = s.pending.filter(p => p.type === 'offer'); UI.nextPending(); });
+    await page.waitForTimeout(700); await shot('45-offer-card'); await click('#modal [data-a="evPick"][data-i="0"]'); await page.waitForTimeout(300); await shot('46-offer-neg'); if (await page.locator('#modal [data-a="closeModal"]').count()) await click('#modal [data-a="closeModal"]');
   });
   await step('ceremony', async () => {
     await page.evaluate(() => { const s = UI.S; const c = s.credits.find(x => x.critics != null) || { title: 'Test', id: 'x' }; s.pending.push({ type: 'ceremony', show: 'oscars', res: [{ cat: 'Best Actress', film: c.title, won: true, winner: s.me.name, others: ['Zendaya (A)', 'Emma Stone (B)', 'Florence Pugh (C)', 'Viola Davis (D)'] }] }); UI.nextPending(); });

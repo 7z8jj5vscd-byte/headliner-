@@ -40,7 +40,7 @@ FC.newGame = function (o) {
     look: Object.assign(FC.defaultLook(), o.look || {}), skills: Object.assign({}, st.skills),
     energy: 100, health: 100, happy: 70, money: st.money, fame: st.fame, rep: st.rep, followers: st.followers || Math.round(300 + st.fame * 4000), contacts: st.contacts, buzz: st.critics || 0,
     agency: st.id === 'nepo' ? 'gersh' : st.id === 'disney' ? 'boutique' : 'none', team: { manager: 0, publicist: 0, stylist: 0, trainer: 0, lawyer: 0 }, teamNames: {},
-    board: [], offers: [], jobs: [], credits: [], studios: {}, roll: [], lens: [], theaters: [], myChars: [], fr: {}, heroFatigue: 0.15,
+    board: [], offers: [], jobs: [], credits: [], studios: {}, roll: [], lens: [], people: {}, chats: {}, dms: {}, theaters: [], myChars: [], fr: {}, heroFatigue: 0.15,
     news: [], feed: [], inbox: [], pending: [], log: [], awards: [], awardNoms: {}, fyc: {}, festivalsDone: {},
     home: st.money > 200000 ? 'h1' : 'h0', homes: [], cars: [], invest: {}, charity: 0, brands: [], love: null, company: null, scripts: [],
     yearEarn: 0, yearEarnHist: [], taxable: 0, lifetimeEarn: 0, lifetimeBO: 0, achievements: {}, timeline: [], lowPoint: false, burnouts: 0, hiatus: 0,
@@ -72,7 +72,7 @@ FC.starPower = S => {
   const recent = S.credits.filter(c => c.ww && S.week - c.released < 156).slice(-4);
   const bo = recent.length ? recent.reduce((a, c) => a + Math.log10(Math.max(1e6, c.ww)) - 6, 0) / recent.length : 0; // 0..3.3
   const wins = S.awards.filter(a => a.won && a.weight > 0).reduce((a, x) => a + x.weight, 0);
-  return Math.round(clamp(S.fame * 0.55 + bo * 9 + Math.min(15, wins * 4) + (S.rep - 50) * 0.15 + S.myChars.filter(c => c.status === 'active').length * 3, 0, 100));
+  return Math.round(clamp(Math.min(8, FC.network ? FC.network(S) : 0) + S.fame * 0.55 + bo * 9 + Math.min(15, wins * 4) + (S.rep - 50) * 0.15 + S.myChars.filter(c => c.status === 'active').length * 3, 0, 100));
 };
 FC.netWorth = S => S.money + S.homes.reduce((a, h) => a + (D.HOMES.find(x => x.id === h) || {}).price * 0.9, 0) + S.cars.reduce((a, c) => a + (D.CARS.find(x => x.id === c) || {}).price * 0.5, 0) + Object.values(S.invest).reduce((a, v) => a + v, 0);
 FC.agency = S => D.AGENCIES.find(a => a.id === S.agency) || D.AGENCIES[0];
@@ -111,6 +111,115 @@ function payFor(S, size, budget, kind) {
   return Math.round(pay * diffMul(S) / 100) * 100;
 }
 FC.payFor = payFor;
+
+// ------------------------------------------------------------------ contacts (people you know)
+const hashS = t => [...String(t)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+FC.execFor = studio => D.EXEC_NAMES[hashS(studio) % D.EXEC_NAMES.length];
+FC.castingFor = studio => D.CASTING_DIRS[hashS(studio + 'cd') % D.CASTING_DIRS.length];
+FC.relLabel = v => (D.REL_LABELS.find(x => v >= x[0]) || D.REL_LABELS[D.REL_LABELS.length - 1])[1];
+FC.person = (S, name) => (S.people || {})[name];
+FC.meet = function (S, name, role, o = {}) {
+  if (!name || name === S.me.name) return null; S.people = S.people || {};
+  let p = S.people[name];
+  if (!p) { const a = D.ACTORS.find(x => x[0] === name); const d = D.DIRECTORS.find(x => x[0] === name);
+    p = S.people[name] = { name, role, studio: o.studio || null, where: o.where || '', met: S.week, rel: clamp(o.rel != null ? o.rel : 15, 0, 100), star: a ? a[2] : d ? d[1] : 2, fem: a ? a[1] === 's' : D.FEMALE_DIRS.includes(name) ? true : (role === 'director' || role === 'stagedir') ? false : null, last: {}, works: [] };
+    if (o.quiet !== true && role !== 'team' && role !== 'agent') S.log.push(`New contact: ${name}.`); }
+  else if (o.rel) p.rel = clamp(p.rel + o.rel * 0.5, 0, 100);
+  if (o.title && !p.works.includes(o.title)) p.works.push(o.title);
+  if (o.studio && !p.studio) p.studio = o.studio;
+  return p;
+};
+FC.bond = function (S, name, v) { const p = FC.person(S, name); if (!p) return; p.rel = clamp(p.rel + v, 0, 100); };
+FC.network = S => Object.values(S.people || {}).reduce((a, p) => a + (p.rel >= 45 ? (p.rel - 40) / 60 * (['exec', 'director', 'cd', 'stagedir'].includes(p.role) ? 1.5 : 1) * (0.6 + (p.star || 2) / 5) : 0), 0);
+FC.contactActs = (S, p) => D.CONTACT_ACTS.filter(a => (a.roles === 'all' || a.roles.split(' ').includes(p.role)) && (!a.company || S.company)).map(a => {
+  const cd = { text: 1, congrats: 2, coffee: 2, party: 3, roles: p.role === 'agent' ? 8 : 6, rec: 8, pitch: 4 }[a.id] || 1; const since = S.week - (p.last[a.id] != null ? p.last[a.id] : -99);
+  let why = ''; if (p.rel < 5) why = 'They are not answering you.'; else if (a.min && p.rel < a.min) why = `Needs relationship ${a.min}+.`; else if (since < cd) why = `Wait ${cd - since} week${cd - since > 1 ? 's' : ''}.`; else if (S.energy < a.cost) why = `Needs ${a.cost} energy.`; else if (a.money && S.money < a.money) why = `Needs ${FC.money(a.money)}.`;
+  return Object.assign({}, a, { ok: !why, why }); });
+function dm(S, name, from, t) { S.dms = S.dms || {}; (S.dms[name] = S.dms[name] || []).push({ from, t, w: S.week }); if (S.dms[name].length > 40) S.dms[name].shift(); if (from !== 'me') S.unread = (S.unread || 0) + 1; }
+FC.dm = dm;
+FC.contactAct = function (S, name, actId, msg) {
+  const p = FC.person(S, name); if (!p) return { ok: false, t: 'Unknown contact.' };
+  const a = FC.contactActs(S, p).find(x => x.id === actId); if (!a) return { ok: false, t: 'You can\'t do that with them.' }; if (!a.ok) return { ok: false, t: a.why };
+  S.energy -= a.cost; if (a.money) S.money -= a.money; p.last[actId] = S.week;
+  const band = () => p.rel >= 45 ? 'warm' : p.rel >= 15 ? 'cool' : 'cold';
+  const g = a.gain ? rnd(a.gain[0], a.gain[1]) * (0.7 + S.skills.charisma / 150) * (has(S, 'charming') ? 1.2 : 1) : 0;
+  if (actId === 'text' || actId === 'congrats') { dm(S, name, 'me', msg || (actId === 'congrats' ? pick(['Congrats on the new one! So happy for you.', 'Just saw it. You were incredible.', 'Huge news. You deserve it.']) : pick(['Hey! Thinking of you, how\'s everything?', 'Long time! How are you?', 'Saw this and thought of you 😂']))); p.rel = clamp(p.rel + g, 0, 100); dm(S, name, 'them', pick(D.TEXT_REPLIES[band()])); return { ok: true, t: `Relationship +${Math.round(g)}.` }; }
+  if (actId === 'coffee') { p.rel = clamp(p.rel + g, 0, 100); dm(S, name, 'them', pick(['That was fun. Same time next month?', 'Thanks for coffee! ☕', 'Needed that. Thank you.'])); S.happy = clamp(S.happy + 1, 0, 100); return { ok: true, t: `Coffee with ${name}. Relationship +${Math.round(g)}.` }; }
+  if (actId === 'party') { p.rel = clamp(p.rel + g, 0, 100); const others = Object.values(S.people).filter(x => x !== p && x.rel >= 30 && ['actor', 'director', 'exec', 'cd'].includes(x.role)).sort(() => R() - 0.5).slice(0, 3); others.forEach(x => { x.rel = clamp(x.rel + rnd(3, 6), 0, 100); }); S.happy = clamp(S.happy + 3, 0, 100);
+    if (R() < 0.3) { const n = pick(D.ACTORS)[0]; FC.meet(S, n, 'actor', { where: 'your dinner party', rel: 18 }); }
+    dm(S, name, 'them', pick(['Best dinner party of the year. Not kidding.', 'I\'m still full. Thank you!', 'Your friends are amazing.'])); return { ok: true, t: `Dinner party. ${name} +${Math.round(g)}${others.length ? `, and ${others.map(x => x.name).join(', ')} came too` : ''}.` }; }
+  if (actId === 'roles') {
+    const chance = clamp((p.rel - 25) / 110 + FC.starPower(S) / 500, 0.05, 0.6) * (p.role === 'agent' ? 0.6 : 1);
+    dm(S, name, 'me', 'Anything coming up I might be right for?');
+    if (R() < chance) { const off = contactOffer(S, p); if (off) { dm(S, name, 'them', `Actually, yes. ${off.title}. I'm sending it to your agent now.`); p.rel = clamp(p.rel + 2, 0, 100); return { ok: true, t: `${name} is sending you an offer for ${off.title}.`, offer: off }; } }
+    p.rel = clamp(p.rel + 1, 0, 100); dm(S, name, 'them', pick(['Nothing right now, but you\'re on my list.', 'Let me see what I can do.', 'Things are quiet. I\'ll call you.'])); return { ok: true, t: `${name} doesn't have anything right now, but you're on their radar.` }; }
+  if (actId === 'rec') {
+    dm(S, name, 'me', 'If you hear about anything I\'d be good for, would you put my name in?');
+    if (R() < clamp((p.rel - 45) / 50, 0.1, 0.9)) { const b = genProject(S, pick(['film', 'film', 'tv', 'franchise'])); if (b) { b.need = Math.max(5, b.need - 10 - p.star * 2); b.recBy = name; b.costars = [name].concat((b.costars || []).filter(x => x !== name)).slice(0, 2); b.expires = S.week + 5; S.board.unshift(b); dm(S, name, 'them', `Done. I told them about you for ${b.title}. Go get it.`); return { ok: true, t: `${name} recommended you for ${b.title}. It's on your Casting board, and it'll be easier to land.` }; } }
+    dm(S, name, 'them', 'I\'ll keep my ears open!'); return { ok: true, t: `${name} will keep an eye out.` }; }
+  if (actId === 'pitch') { S.pitchBonus = Math.max(S.pitchBonus || 0, Math.round(p.rel / 3)); p.rel = clamp(p.rel + 2, 0, 100); dm(S, name, 'them', p.rel >= 55 ? 'I love it. Bring it to me when the script\'s ready.' : 'Interesting. Send it over.'); return { ok: true, t: `Your next pitch gets a boost from ${name}'s interest.` }; }
+  return { ok: true, t: 'Done.' };
+};
+// a project offered by a contact (or a studio, or on merit)
+function contactOffer(S, p, reason) {
+  let off = null;
+  if (p.role === 'stagedir') { off = genStageProject(S); off.director = { name: p.name, p: (STAGE_DIRS.find(x => x[0] === p.name) || [0, 4])[1] }; }
+  else if (p.role === 'exec') { const st = FC.studioOf(p.studio || ''); const fr = st && D.FRANCHISES.filter(f => f.studio === st.id && !f.tvOnly); off = fr && fr.length && FC.starPower(S) > 25 ? genFranchiseProject(S, pick(fr).id, { film: true }) : genProject(S, 'film'); if (off && p.studio) off.studio = p.studio; }
+  else if (p.role === 'director') { off = genProject(S, pick(['film', 'film', 'indie'])); const d = D.DIRECTORS.find(x => x[0] === p.name); if (off && d) off.director = { name: d[0], p: d[1] }; }
+  else if (p.role === 'cd') off = genProject(S, pick(['film', 'tv', 'indie']));
+  else if (p.role === 'agent') off = genProject(S, pick(['film', 'tv', 'franchise', 'theater']));
+  else off = genProject(S, 'film');
+  if (!off) return null;
+  return makeOffer(S, off, reason || FC.fill(D.OFFER_REASONS[p.role === 'director' || p.role === 'stagedir' ? 'director' : p.role === 'agent' ? 'agent' : 'contact'], { who: p.name }), p.name);
+}
+function makeOffer(S, off, reason, from) {
+  off.direct = true; off.won = true; off.offerFrom = from || off.studio; off.reason = reason; off.expires = S.week + 5;
+  off.perf0 = clamp(Math.round((off.theater ? FC.stageFit(S, off) : FC.skillFit(S, off)) + rnd(-4, 10)), 10, 99);
+  if ((S.offers || []).length >= 6) return null;
+  S.offers.push(off); S.pending.push({ type: 'offer', id: off.id }); return off;
+}
+FC.makeOffer = makeOffer;
+// earned offers: reviews, awards, hits, studios, contacts, fame and stage work all bring calls
+FC.offerTick = function (S) {
+  const sp = FC.starPower(S); const c = [];
+  const recent = S.credits.filter(x => x.review && S.week - x.released < 52);
+  const best = recent.slice().sort((a, b) => b.review.mine - a.review.mine)[0];
+  if (best && best.review.mine >= 7.4) c.push([(best.review.mine - 7) * 0.05, () => { const p = genProject(S, best.theater ? 'theater' : pick(['film', 'film', 'indie'])); if (p && !p.theater) p.genre = best.genre; return makeOffer(S, p, FC.fill(D.OFFER_REASONS[best.theater ? 'stage' : 'reviews'], { score: best.review.mine.toFixed(1), title: best.title })); }]);
+  const win = S.awards.filter(a => a.won && a.weight && S.week - (a.y - FC.START_YEAR) * 52 < 60).slice(-1)[0];
+  if (win) c.push([0.07, () => { const p = genProject(S, win.show === 'tonys' || win.show === 'olivier' ? 'theater' : 'indie'); if (p) { p.size = 'lead'; p.pay = Math.round(p.pay * 1.6); } return makeOffer(S, p, FC.fill(D.OFFER_REASONS.award, { award: win.short })); }]);
+  for (const [nm, v] of Object.entries(S.studios || {})) if (v >= 12) { const last = S.credits.filter(x => x.studio === nm).slice(-1)[0];
+    c.push([(v - 8) / 400, () => { const st = FC.studioOf(nm); const fr = D.FRANCHISES.filter(f => st && f.studio === st.id && !f.tvOnly); const p = fr.length ? genFranchiseProject(S, pick(fr).id, { film: true }) : genProject(S, 'film'); if (p) p.studio = nm; return makeOffer(S, p, last ? FC.fill(D.OFFER_REASONS.studio, { studio: nm, title: last.title }) : `${nm} wants you`); }]); }
+  for (const p of Object.values(S.people || {})) if (['director', 'exec', 'cd', 'stagedir'].includes(p.role) && p.rel >= 45) c.push([(p.rel - 40) / 650, () => contactOffer(S, p)]);
+  if (sp > 50) c.push([(sp - 45) / 500, () => makeOffer(S, R() < 0.55 ? genFranchiseProject(S, null, { size: 'lead', film: true }) : genProject(S, 'film'), D.OFFER_REASONS.fame)]);
+  const stageGood = S.credits.filter(x => x.theater && (x.openingCritics || x.critics || 0) >= 70).length;
+  if (stageGood || S.skills.voice >= 55 || S.skills.drama >= 60) c.push([0.025 + stageGood * 0.02, () => { const p = genStageProject(S); if (stageGood) { p.size = R() < 0.6 ? 'lead' : 'supporting'; } const last = S.credits.filter(x => x.theater).slice(-1)[0]; return makeOffer(S, p, last ? FC.fill(D.OFFER_REASONS.stage, { title: last.title }) : 'the producers saw your work'); }]);
+  if (S.fancast) { const F = D.FRANCHISES.find(f => S.fr[f.id].chars.some(x => x.name === S.fancast && x.status === 'open')); if (F) c.push([0.04, () => { const p = genFranchiseProject(S, F.id, { kind: 'recast', char: S.fancast }); return p ? makeOffer(S, p, D.OFFER_REASONS.fancast) : null; }]); }
+  let made = 0; const max = sp > 70 ? 2 : 1;
+  for (const [pr, fn] of c.sort(() => R() - 0.5)) { if (made >= max) break; if (R() < pr * diffMul(S)) { try { if (fn()) made++; } catch (e) { } } }
+};
+// cast group chats while shooting, contacts texting you, slow drift
+function socialTick(S) {
+  S.chats = S.chats || {};
+  for (const j of S.jobs) if (j.stage === 'shoot' && FC.busyRole(j) && (j.costars || []).length) {
+    const ch = S.chats[j.id] = S.chats[j.id] || { title: j.title, members: j.costars.concat(j.director ? [j.director.name] : []), msgs: [], unread: 0 };
+    if (R() < 0.55) { ch.msgs.push({ from: pick(ch.members), t: pick(D.CHAT_LINES), w: S.week }); ch.unread++; S.unread = (S.unread || 0) + 1; if (ch.msgs.length > 40) ch.msgs.shift(); }
+  }
+  const ppl = Object.values(S.people || {});
+  for (const p of ppl) { if (p.role === 'team' || p.role === 'agent' || p.role === 'love') continue; const quiet = S.week - Math.max(p.met, ...Object.values(p.last).concat([-99])); if (quiet > 26 && p.rel > 30 && R() < 0.08) p.rel -= 1; }
+  if (R() < 0.08) { const fr = ppl.filter(p => p.rel >= 50 && p.role !== 'team'); if (fr.length) { const p = pick(fr); dm(S, p.name, 'them', pick(['Drinks this week?', 'Just saw your post 😂', 'Proud of you. Keep going.', 'Are you going to the party Saturday?', 'Read anything good lately? Scripts I mean.'])); } }
+  if (S.love && S.people && S.people[S.love.name]) S.people[S.love.name].rel = S.love.bond;
+}
+FC.socialTick = socialTick;
+FC.chatReply = function (S, jid, i) {
+  const ch = (S.chats || {})[jid]; if (!ch) return { ok: false, t: 'No chat.' };
+  if (ch.replied === S.week) return { ok: false, t: 'You already replied this week.' };
+  const r = D.CHAT_REPLIES[i] || D.CHAT_REPLIES[0]; ch.replied = S.week;
+  const good = S.skills[r[1]] + rnd(-20, 20) > 35;
+  ch.msgs.push({ from: S.me.name, t: { comedy: pick(['Whoever stole my chair, I will find you.', 'Me pretending to understand the green screen: 🧍', 'Day 40 of eating only craft services. Send help.']), charisma: pick(['Best crew I\'ve ever worked with. Let\'s finish strong!', 'You all are killing it. Seriously.', 'Proud of this one already.']), drama: pick(['Everyone hanging in there? Long week.', 'Anyone need anything? I\'m doing a coffee run.', 'Get some sleep tonight, team.']) }[r[1]], w: S.week });
+  ch.members.forEach(m => FC.bond(S, m, good ? rnd(2, 4) : 1)); const j = S.jobs.find(x => x.id === jid); if (j) j.costarRel = clamp((j.costarRel || 50) + (good ? 3 : 1), 0, 100);
+  if (R() < 0.7) ch.msgs.push({ from: pick(ch.members), t: good ? pick(['😂😂😂', 'This is why we love you.', 'Legend.', '❤️']) : pick(['lol', 'ok', '👍']), w: S.week });
+  ch.unread = 0; return { ok: true, t: good ? 'The cast loved it. Everyone in the chat +3.' : 'A couple of likes.' };
+};
 
 // ------------------------------------------------------------------ which 3D set a project shoots on
 FC.setFor = function (job) {
@@ -251,7 +360,7 @@ FC.stageAudition = function (S, pid, o) {
   const list = st.mus ? D.DANCE_CALL : D.PLAY_CALLBACK; const c = list.find(x => x[0] === o.third) || list[list.length - 1];
   pts += c[2] ? (S.skills[c[2]] - 35) / 6 + rnd(-3, 3) : 1;
   const prep = (S.prepped[pid] || 0) * 3; const name = Math.min(10, FC.starPower(S) * 0.15);
-  const score = fit * 0.72 + pts + prep + name + (has(S, 'charming') ? 2 : 0) + rnd(-6, 6) + (S.diff === 'easy' ? 4 : 0);
+  const kd = FC.person(S, p.director.name); const score = (kd ? kd.rel / 8 : 0) + fit * 0.72 + pts + prep + name + (has(S, 'charming') ? 2 : 0) + rnd(-6, 6) + (S.diff === 'easy' ? 4 : 0);
   const need = p.need + ((D.ACTORS.find(a => a[0] === p.rival) || [0, 0, 2])[2] - 2) * 2;
   const cast = score >= need; S.stageBoard = S.stageBoard.filter(x => x.id !== pid); delete S.prepped[pid];
   const perf = clamp(Math.round(fit * 0.9 + pts + prep + rnd(-5, 8)), 5, 99);
@@ -338,13 +447,15 @@ FC.doActivity = function (S, id) {
     S.skills[k] = clamp(S.skills[k] + g, 0, 100); out.push(`${D.SKILLS.find(s => s[0] === k)[1]} +${g.toFixed(1)}`);
   }
   if (has(S, 'perfectionist') && a.cost > 0) S.energy = Math.max(0, S.energy - 3);
-  if (a.contacts && R() < a.contacts + S.skills.charisma / 300) { S.contacts++; out.push('You made a useful contact'); if (R() < 0.35) S.board.push(genProject(S)); }
+  if (a.contacts && R() < a.contacts + S.skills.charisma / 300 + 0.25) { S.contacts++; const r = R(); const st = pick(D.STUDIOS.filter(x => x.brand >= 0.35));
+    const who = r < 0.4 ? FC.meet(S, pick(D.ACTORS)[0], 'actor', { where: 'an industry party', rel: 14 }) : r < 0.65 ? FC.meet(S, pick(D.DIRECTORS)[0], 'director', { where: 'an industry party', rel: 12 }) : r < 0.88 ? FC.meet(S, FC.castingFor(st.name), 'cd', { studio: st.name, where: 'an industry party', rel: 14 }) : FC.meet(S, FC.execFor(st.name), 'exec', { studio: st.name, where: 'an industry party', rel: 10 });
+    out.push(who ? `You met ${who.name}` : 'You made a useful contact'); if (R() < 0.3) S.board.push(genProject(S)); }
   if (id === 'rest') { S.health = clamp(S.health + 6, 0, 100); S.happy = clamp(S.happy + 3, 0, 100); out.push('Energy +30, health +6'); }
   if (id === 'post') return Object.assign({ ok: true }, FC.post(S));
   if (id === 'write') { const q = Math.round(clamp(S.skills.drama * 0.6 + S.skills.comedy * 0.2 + rnd(0, 30), 10, 99)); const g = pick(['drama', 'thriller', 'comedy', 'horror', 'romance', 'scifi', 'biopic', 'period']);
     S.scripts.push({ id: uid(), title: filmTitle(), genre: g, q }); out.push(`You finished a ${D.GENRES.find(x => x.id === g).name.toLowerCase()} script (quality ${q})`); }
-  if (id === 'premiere') { gainFame(S, 0.6); if (R() < 0.5) { S.contacts++; out.push('You met someone useful'); } addFeed(S, S.me.name, `Proud of my friends tonight. Go see it! 🎬`); out.push('Fame +0.6'); }
-  if (id === 'date') { if (R() < 0.45 + S.skills.charisma / 250) { const n = pick(D.LOVE); S.love = { name: n, job: pick(D.LOVE_JOBS), stage: 'dating', since: S.week, bond: 40 }; out.push(`It clicked. You're seeing ${n}, ${S.love.job}.`); timeline(S, `Started dating ${n}.`); } else out.push('Nice dinner. No spark.'); S.happy = clamp(S.happy + 2, 0, 100); }
+  if (id === 'premiere') { gainFame(S, 0.6); if (R() < 0.6) { S.contacts++; const w = FC.meet(S, pick(D.ACTORS)[0], 'actor', { where: 'a premiere', rel: 12 }); out.push(w ? `You met ${w.name}` : 'You met someone useful'); } addFeed(S, S.me.name, `Proud of my friends tonight. Go see it! 🎬`); out.push('Fame +0.6'); }
+  if (id === 'date') { if (R() < 0.45 + S.skills.charisma / 250) { const n = pick(D.LOVE); S.love = { name: n, job: pick(D.LOVE_JOBS), stage: 'dating', since: S.week, bond: 40 }; FC.meet(S, n, 'love', { where: 'a first date', rel: 40, quiet: true }); out.push(`It clicked. You're seeing ${n}, ${S.love.job}.`); timeline(S, `Started dating ${n}.`); } else out.push('Nice dinner. No spark.'); S.happy = clamp(S.happy + 2, 0, 100); }
   return { ok: true, t: `${a.name}: ${out.join(', ') || 'done'}` };
 };
 FC.post = S => {
@@ -383,14 +494,16 @@ FC.audition = function (S, pid, o) {
   const setup = o.setup || FC.auditionSetup(S, pid);
   const fit = FC.skillFit(S, p);
   let beatPts = 0; (o.tones || []).forEach((t, i) => { if (setup.beats[i] && t === setup.beats[i].ans) beatPts += 3; else if (t === 'grounded') beatPts += 1; else beatPts -= 1; });
-  let chem = 0; if (setup.chem) { const want = pick(['play', 'play', 'lead', 'light']); chem = o.chem === want ? 5 : o.chem === 'play' ? 2 : -2; if (has(S, 'charming')) chem += 3; chem += (S.skills.charisma - 30) / 12; }
+  if (setup.chem) FC.meet(S, setup.chem, 'actor', { where: 'a chemistry read for ' + p.title, rel: 5 });
+  const knowsDir = p.director && FC.person(S, p.director.name) ? FC.person(S, p.director.name).rel : 0; const knowsCo = setup.chem && FC.person(S, setup.chem) ? FC.person(S, setup.chem).rel : 0;
+  let chem = knowsCo / 12; if (setup.chem) { const want = pick(['play', 'play', 'lead', 'light']); chem = o.chem === want ? 5 : o.chem === 'play' ? 2 : -2; if (has(S, 'charming')) chem += 3; chem += (S.skills.charisma - 30) / 12; }
   let screen = 0; if (setup.screen) { const ch = p.char || {}; const want = ch.type === 'villain' ? 'presence' : ch.power === 'no powers, just training' || p.genre === 'action' ? 'physical' : pick(['physical', 'presence', 'heart']);
     screen = (o.screen === want ? 5 : 1) + (S.skills.fitness - 35) / 10 + (S.skills.looks - 35) / 14; }
   const typecast = (S.typecast[p.genre] || 0) > 3 && p.genre !== 'comedy' ? -3 : 0;
   const prep = (S.prepped[pid] || 0) * 3;
   const name = Math.min(14, FC.starPower(S) * 0.2);
   const fancast = p.char && S.fancast && S.fancast === p.char.name ? 6 : 0;
-  const score = fit * 0.72 + beatPts + chem + screen + prep + name + typecast + fancast + (has(S, 'charming') ? 2 : 0) + rnd(-7, 7) + (S.diff === 'easy' ? 4 : 0);
+  const score = knowsDir / 8 + fit * 0.72 + beatPts + chem + screen + prep + name + typecast + fancast + (has(S, 'charming') ? 2 : 0) + rnd(-7, 7) + (S.diff === 'easy' ? 4 : 0);
   const rivalStr = (D.ACTORS.find(a => a[0] === p.rival) || [0, 0, 2])[2];
   const need = p.need + (rivalStr - 2) * 2;
   const cast = score >= need;
@@ -458,6 +571,10 @@ FC.sign = function (S, pid, terms) {
   S.jobs.push(job);
   if (p.theater) makePress(S, job, S.week + job.left + 1);
   if (busyRole(job) && p.size !== 'voice') S.pending.unshift({ type: 'fitting', jobId: job.id });
+  if (busyRole(job)) { (p.costars || []).forEach(n => FC.meet(S, n, 'actor', { where: p.title, title: p.title, rel: 12 }));
+    if (p.director && p.director.name !== S.me.name) FC.meet(S, p.director.name, p.theater ? 'stagedir' : 'director', { where: p.title, title: p.title, rel: 10 });
+    if (!p.theater && FC.studioOf(p.studio) && FC.brand(p.studio) >= 0.5 && p.size !== 'small') FC.meet(S, FC.execFor(p.studio), 'exec', { studio: p.studio, where: p.title, title: p.title, rel: 8 });
+    if (!p.theater && FC.studioOf(p.studio)) FC.meet(S, FC.castingFor(p.studio), 'cd', { studio: p.studio, where: p.title, rel: 10, quiet: true }); }
   // franchise contracts
   if (p.fid) {
     const F = D.FRANCHISES.find(f => f.id === p.fid);
@@ -648,6 +765,7 @@ FC.endWeek = function (S) {
       const gk = Object.keys((D.GENRES.find(x => x.id === j.genre) || D.GENRES[0]).skills)[0]; S.skills[gk] = clamp(S.skills[gk] + 0.35, 0, 100);
       if (j.weekly && j.terms.salary) earn(S, j.terms.salary, `week of ${j.title}`);
       if (j.theater) { stageNight(S, j); if (R() < 0.35) FC.addPhoto(S, { kind: 'stage', jobId: j.id, set: R() < 0.5 ? 'stage' : 'backstage', costume: true, look: Object.assign({}, S.look, (j.costume || {}).look || {}), cast: (j.costars || []).slice(0, 1), anim: pick(['pose', 'cheer', 'talk']), cam: pick(['wide', 'close', 'group']) }); if (j.left <= 0) wrap(S, j); continue; }
+      if (busyRole(j)) { (j.costars || []).forEach(n => FC.bond(S, n, 0.8 + ((j.costarRel || 50) - 50) / 50)); if (j.director) FC.bond(S, j.director.name, 0.6 + (j.director_rel - 50) / 60); }
       if (busyRole(j) && R() < 0.45) FC.addPhoto(S, { kind: 'bts', jobId: j.id, day: (j.weeks.shoot - j.left) * 5, set: FC.setFor(j), look: Object.assign({}, S.look, (j.costume || {}).look || {}), cast: (j.costars || []).slice(0, pick([0, 1, 2])), anim: pick(['pose', 'talk', 'hero', 'wave']), cam: pick(['wide', 'close', 'selfie', 'group']) });
       if (j.weeks.shoot > 1 && R() < 0.45 && j.events < 3 && j.kind !== 'commercial') { j.events++; S.pending.push({ type: 'set', jobId: j.id, ev: D.SET_EVENTS.indexOf(pick(D.SET_EVENTS.filter(e => !e.c.every(c => c[1].req && !reqOk(S, c[1].req))))) }); }
       if (j.left <= 0) wrap(S, j);
@@ -668,7 +786,7 @@ FC.endWeek = function (S) {
   weeklyCosts(S);
   // world
   tickBoxOffice(S);
-  refreshBoard(S); refreshStage(S);
+  refreshBoard(S); refreshStage(S); socialTick(S);
   inboxTick(S);
   loveTick(S);
   airTV(S);
@@ -739,10 +857,7 @@ function refreshBoard(S) {
   S.offers = (S.offers || []).filter(p => p.contracted || p.expires + 3 > S.week);
   const want = 4 + FC.tier(S) + Math.min(3, Math.floor(S.contacts / 3));
   let g = 0; while (S.board.length < want && g++ < 10) { if (R() < 0.6 || S.board.length < 3) S.board.push(genProject(S)); else break; }
-  // direct offers for established stars
-  const fan = Object.entries(S.studios || {}).filter(([n, v]) => v >= 15);
-  if (fan.length && R() < 0.06) { const [nm] = pick(fan); const st = FC.studioOf(nm); const fr = D.FRANCHISES.find(f => f.studio === st.id); const p = fr ? genFranchiseProject(S, fr.id, { film: true }) : genProject(S, 'film'); if (p) { p.studio = nm; p.direct = true; p.won = true; p.perf0 = clamp(Math.round(FC.skillFit(S, p) + rnd(-5, 10)), 10, 99); S.offers.push(p); S.inbox.push({ id: uid(), kind: 'note', from: nm, t: 'They want to work with you again', d: `${nm} offers you ${p.title} directly. No audition. Check Casting.` }); } }
-  if (FC.starPower(S) > 55 && R() < 0.12) { const p = R() < 0.5 ? genFranchiseProject(S, null, { size: 'lead' }) : genProject(S, 'film'); if (p) { p.direct = true; p.won = true; p.perf0 = clamp(Math.round(FC.skillFit(S, p) + rnd(-5, 10)), 10, 99); S.offers.push(p); S.inbox.push({ id: uid(), kind: 'note', from: FC.agency(S).name, t: 'A direct offer', d: `${p.director.name} wants you for ${p.title}. No audition. Check your offers.` }); } }
+  FC.offerTick(S);
 }
 function airTV(S) {
   for (const c of S.credits) {
@@ -1202,8 +1317,8 @@ FC.applyEffects = function (S, fx, ctx = {}, job) {
   for (const [k, v] of Object.entries(fx)) {
     if (k === 'req') continue;
     if (k === 'perf' && job) { const dv = v + (has(S, 'method') && v > 0 ? 1 : 0); job.perfAdj = (job.perfAdj || 0) + dv; job.perf = clamp(job.perf + dv, 0, 100); out.push(`Performance ${v > 0 ? '+' : ''}${v}`); }
-    else if (k === 'rel' && job) { job.director_rel = clamp(job.director_rel + v, 0, 100); out.push(`Director ${v > 0 ? 'likes this' : 'is annoyed'}`); }
-    else if (k === 'costar' && job) { job.costarRel = clamp(job.costarRel + v, 0, 100); out.push(`Co-star ${v > 0 ? 'warms up' : 'cools off'}`); }
+    else if (k === 'rel' && job) { job.director_rel = clamp(job.director_rel + v, 0, 100); if (job.director) FC.bond(S, job.director.name, v * 0.8); out.push(`Director ${v > 0 ? 'likes this' : 'is annoyed'}`); }
+    else if (k === 'costar' && job) { job.costarRel = clamp(job.costarRel + v, 0, 100); if (job.costars && job.costars[0]) FC.bond(S, job.costars[0], v); out.push(`Co-star ${v > 0 ? 'warms up' : 'cools off'}`); }
     else if (k === 'money') { S.money += v; out.push(FC.money(v)); }
     else if (k === 'fame') { gainFame(S, v * (has(S, 'scandal') ? 1.3 : 1) * (has(S, 'private') ? 0.7 : 1)); out.push(`Fame ${v > 0 ? '+' : ''}${v}`); }
     else if (k === 'rep') { const pv = v < 0 ? v * (1 - (S.team.publicist || 0) * 0.2) : v; S.rep = clamp(S.rep + pv, 0, 100); out.push(`Reputation ${pv > 0 ? '+' : ''}${Math.round(pv)}`); }
@@ -1229,7 +1344,8 @@ FC.resolve = function (S, pend, i) {
     const r = reviews(S, job); job.openingCritics = r.critics; job.critics = r.critics; job.q = r.q; job.buzz = (r.critics - 60) / 4 + (FC.promoMul(S, job) - 1) * 20; gainFame(S, 1); job.review = marquee(S, job);
     addNews(S, `${S.me.name} opens in ${job.title} on ${job.studio}. ${r.critics >= 75 ? 'Raves.' : r.critics >= 50 ? 'Respectful reviews.' : 'The critics are not kind.'}`, 'you');
     return { text: r.critics >= 75 ? 'Curtain call. The reviews come in overnight, and they are raves.' : r.critics >= 50 ? 'A solid opening. The reviews are respectful.' : 'A rough night. The first reviews are not kind.', quotes: r.quotes, critics: r.critics }; }
-  if (pend.type === 'event') { const ev = D.RANDOM_EVENTS.find(e => e.id === pend.id); const c = ev.c[i] || ev.c[0]; if (c[1].req && !reqOk(S, c[1].req)) { S.rep -= 1; return 'It came out wrong.'; } if (ev.scandal) addNews(S, FC.fill(ev.t, pend.ctx).replace(/^You|your/g, m => m === 'You' ? S.me.name : 'their'), 'scandal'); return FC.applyEffects(S, c[1], pend.ctx); }
+  if (pend.type === 'event') { const ev = D.RANDOM_EVENTS.find(e => e.id === pend.id); const c = ev.c[i] || ev.c[0];
+    if (pend.ctx && pend.ctx.actor) { if (ev.id === 'feud') { FC.meet(S, pend.ctx.actor, 'actor', { where: 'a public feud', rel: 5, quiet: true }); FC.bond(S, pend.ctx.actor, i === 0 ? -20 : i === 1 ? 6 : -2); } if (ev.id === 'friend') { FC.meet(S, pend.ctx.actor, 'actor', { where: 'a birthday party', rel: 15 }); FC.bond(S, pend.ctx.actor, i === 0 ? 8 : 3); } } if (c[1].req && !reqOk(S, c[1].req)) { S.rep -= 1; return 'It came out wrong.'; } if (ev.scandal) addNews(S, FC.fill(ev.t, pend.ctx).replace(/^You|your/g, m => m === 'You' ? S.me.name : 'their'), 'scandal'); return FC.applyEffects(S, c[1], pend.ctx); }
   return '';
 };
 
@@ -1237,12 +1353,12 @@ FC.resolve = function (S, pend, i) {
 FC.signAgency = function (S, id) {
   const a = D.AGENCIES.find(x => x.id === id); if (!a) return { ok: false };
   if (FC.starPower(S) < a.need) return { ok: false, t: `${a.name} isn't interested yet. They want Star Power ${a.need}.` };
-  S.agency = id; if (id === 'caa') ach(S, 'agent_caa'); timeline(S, `Signed with ${a.name}.`); return { ok: true, t: `You're now repped by ${a.name}.` };
+  S.agency = id; if (id !== 'none') { const ag = FC.meet(S, D.TEAM_NAMES[hashS(id) % D.TEAM_NAMES.length] + (id === 'boutique' ? '' : ''), 'agent', { rel: 45, quiet: true }); if (ag) { ag.title2 = 'Agent at ' + a.name; ag.agency = id; } } if (id === 'caa') ach(S, 'agent_caa'); timeline(S, `Signed with ${a.name}.`); return { ok: true, t: `You're now repped by ${a.name}.` };
 };
 FC.hire = function (S, role, lvl) {
   const t = D.TEAM.find(x => x.id === role); if (!t) return { ok: false };
   if (lvl > 0 && S.fame < (t.need[lvl] || 0)) return { ok: false, t: `Top ${t.name.toLowerCase()}s want clients with fame ${t.need[lvl]}+.` };
-  S.team[role] = lvl; if (lvl) S.teamNames[role] = S.teamNames[role] || pick(D.TEAM_NAMES); else delete S.teamNames[role];
+  S.team[role] = lvl; if (lvl) { S.teamNames[role] = S.teamNames[role] || pick(D.TEAM_NAMES); const tp = FC.meet(S, S.teamNames[role], 'team', { rel: 45, quiet: true }); if (tp) tp.title2 = t.name; } else delete S.teamNames[role];
   return { ok: true, t: lvl ? `${S.teamNames[role]} is your new ${t.name.toLowerCase()}.` : `You let your ${t.name.toLowerCase()} go.` };
 };
 FC.buyHome = function (S, id) { const h = D.HOMES.find(x => x.id === id); if (!h) return { ok: false };
@@ -1267,9 +1383,9 @@ FC.develop = function (S, o) {
   const b = FC.BUDGETS.find(x => x[0] === o.budget) || FC.BUDGETS[1];
   const studioShare = b[2] >= 45e6 ? 0.85 : 0.6; const cost = Math.round(b[2] * (1 - studioShare));
   if (S.money < cost) return { ok: false, t: `Your company needs ${FC.money(cost)} for its share of the budget.` };
-  const pitch = sc.q * 0.5 + FC.starPower(S) * 0.5 + rnd(-15, 15) - (b[2] >= 140e6 ? 25 : b[2] >= 45e6 ? 10 : 0);
+  const pitch = (S.pitchBonus || 0) + sc.q * 0.5 + FC.starPower(S) * 0.5 + rnd(-15, 15) - (b[2] >= 140e6 ? 25 : b[2] >= 45e6 ? 10 : 0);
   if (pitch < 30) return { ok: false, t: 'No studio bit. Try a smaller budget or a better script.', burn: true };
-  S.money -= cost; S.scripts = S.scripts.filter(x => x !== sc);
+  S.money -= cost; S.scripts = S.scripts.filter(x => x !== sc); S.pitchBonus = 0;
   const dirSelf = o.direct; const dir = dirSelf ? { name: S.me.name, p: clamp(Math.round((S.skills.drama + S.skills.charisma) / 40 + (S.company.films || 0) * 0.3), 1, 5) } : director(sc.genre, 3, 5);
   const p = { id: uid(), kind: 'own', title: sc.title, genre: sc.genre, studio: b[2] >= 45e6 ? pick(['Warner Bros.', 'Universal', 'Paramount', 'Sony Pictures', 'Netflix', 'Apple']) : pick(['A24', 'Neon', 'Searchlight', 'Focus Features']), size: o.star ? 'lead' : 'cameo', pay: o.star ? Math.round(b[2] * 0.05) : 0, weeks: { prep: 4, shoot: b[2] >= 45e6 ? 10 : 6, post: 20 },
     budget: b[2], director: dir, script: sc.q, prestige: b[2] < 45e6, wide: b[2] >= 45e6 || R() < 0.3, producer: true, directedByMe: dirSelf, costars: costars(2), won: true, perf0: clamp(Math.round(FC.skillFit(S, { genre: sc.genre }) + rnd(-4, 8)), 10, 99), need: 0, expires: S.week + 20, posted: S.week };
@@ -1305,7 +1421,7 @@ FC.retire = function (S, why = 'choice') {
 // ------------------------------------------------------------------ save / load
 const KEY = s => 'fc-slot-' + s;
 FC.save = S => { try { localStorage.setItem(KEY(S.slot), JSON.stringify(S)); return true; } catch (e) { return false; } };
-FC.load = slot => { try { const s = localStorage.getItem(KEY(slot)); if (!s) return null; const S = JSON.parse(s); S.offers = S.offers || []; if (!S.stageBoard) { S.stageBoard = []; refreshStage(S); } S.roll = S.roll || []; S.lens = S.lens || []; return S; } catch (e) { return null; } };
+FC.load = slot => { try { const s = localStorage.getItem(KEY(slot)); if (!s) return null; const S = JSON.parse(s); S.offers = S.offers || []; if (!S.stageBoard) { S.stageBoard = []; refreshStage(S); } S.roll = S.roll || []; S.lens = S.lens || []; S.people = S.people || {}; S.chats = S.chats || {}; S.dms = S.dms || {}; return S; } catch (e) { return null; } };
 FC.slots = () => [1, 2, 3].map(i => { const S = FC.load(i); return S ? { slot: i, name: S.me.name, date: FC.dateLabel(S), fame: Math.round(S.fame), look: S.look, ended: !!S.ended } : { slot: i, empty: true }; });
 FC.del = slot => { try { localStorage.removeItem(KEY(slot)); } catch (e) { } };
 FC.hof = () => { try { return JSON.parse(localStorage.getItem('fc-hof') || '[]'); } catch (e) { return []; } };
@@ -1316,6 +1432,6 @@ FC.autoWork = (S, level = 'steady') => {
   for (const j of FC.needsEffort(S)) FC.setEffort(S, j.id, S.energy >= 40 ? level : 'coast');
   for (const { j, p } of FC.pressOpen(S)) { if (S.energy < 35) break; const r = FC.doPress(S, j.id, p.id, 'charm'); if (r.live) { if (FC.livePress(S, j.id, p.id).ok) { while (S.live && S.live.step < S.live.steps.length - 1) { const k = S.live.steps[S.live.step]; if (['cold', 'intro'].includes(k)) FC.liveNext(S); else FC.liveChoose(S, 0); } FC.liveFinish(S); } } }
 };
-FC.autoResolve = S => { while (S.pending.length) { const p = S.pending.shift(); if (p.type === 'set' || p.type === 'event') FC.resolve(S, p, Math.floor(Math.random() * 2)); if (p.type === 'love') FC.loveAnswer(S, true); if (p.type === 'stage' || p.type === 'opening') FC.resolve(S, p, 0); if (p.type === 'finale') FC.tvFinale(S, p.id, 'trust'); if (p.type === 'announce') FC.announceRespond(S, p.jobId, 1); if (p.type === 'rehearsal') FC.resolve(S, p, 0); if (p.type === 'fitting') { const j = S.jobs.find(x => x.id === p.jobId); if (j) FC.chooseCostume(S, j.id, 0); } if (p.type === 'midseason') FC.tvMoment(S, p.id, p.ev, 0); }
+FC.autoResolve = S => { while (S.pending.length) { const p = S.pending.shift(); if (p.type === 'set' || p.type === 'event') FC.resolve(S, p, Math.floor(Math.random() * 2)); if (p.type === 'love') FC.loveAnswer(S, true); if (p.type === 'stage' || p.type === 'opening') FC.resolve(S, p, 0); if (p.type === 'finale') FC.tvFinale(S, p.id, 'trust'); if (p.type === 'announce') FC.announceRespond(S, p.jobId, 1); if (p.type === 'offer') { /* stays in offers */ } if (p.type === 'rehearsal') FC.resolve(S, p, 0); if (p.type === 'fitting') { const j = S.jobs.find(x => x.id === p.jobId); if (j) FC.chooseCostume(S, j.id, 0); } if (p.type === 'midseason') FC.tvMoment(S, p.id, p.ev, 0); }
   for (const m of S.inbox.slice()) if (m.kind === 'talk' && FC.liveStart(S, m.id).ok) { while (S.live && S.live.step < S.live.steps.length - 1) { const k = S.live.steps[S.live.step]; if (['cold', 'intro'].includes(k)) FC.liveNext(S); else FC.liveChoose(S, 0); } FC.liveFinish(S); } };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -257,6 +257,14 @@ img.ph.big { aspect-ratio: 1; border-radius: 8px; }
 .lens-post { margin-bottom: 16px; } .lp-head { padding: 4px 0; } .lp-foot { font-size: .86rem; padding: 6px 0; }
 .fit-wrap { display: grid; grid-template-columns: 200px 1fr; gap: 12px; align-items: start; } @media (max-width: 520px) { .fit-wrap { grid-template-columns: 1fr; } }
 .choice.on { border-color: var(--gold); }
+.c-row { display: flex; gap: 10px; align-items: center; width: 100%; background: none; border: 0; border-top: 1px solid var(--line); padding: 9px 0; text-align: left; color: inherit; }
+.c-row .grow { min-width: 0; flex: 1; } .c-row small { display: block; color: var(--muted); font-size: .74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.c-face { border-radius: 50%; object-fit: cover; flex: none; background: var(--card2); } .c-init { display: inline-grid; place-items: center; font-weight: 700; color: var(--gold); }
+.c-grp { width: 40px; height: 40px; border-radius: 50%; background: var(--card2); display: grid; place-items: center; flex: none; }
+.c-bar { height: 4px; border-radius: 4px; background: var(--card2); margin-top: 4px; overflow: hidden; } .c-bar span { display: block; height: 100%; }
+.c-head { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+.thread { display: flex; flex-direction: column; gap: 6px; } .bub { align-self: flex-start; background: var(--card2); border-radius: 14px 14px 14px 4px; padding: 7px 11px; font-size: .86rem; max-width: 85%; }
+.bub.me { align-self: flex-end; background: #2a5bd7; color: #fff; border-radius: 14px 14px 4px 14px; }
 .loading { text-align: center; padding: 60px 0; color: var(--muted); }
 </style>
 </head>
@@ -267,11 +275,11 @@ img.ph.big { aspect-ratio: 1; border-radius: 8px; }
 <nav id="nav" aria-label="Main"></nav>
 <div id="toasts" aria-live="polite"></div>
 <noscript><p style="padding:20px">Final Cut needs JavaScript to run.</p></noscript>
-<script>window.FC_BUILD = 10;</script>
-<script src="data.js?v=10"></script>
-<script src="engine.js?v=10"></script>
-<script src="three3d.js?v=10"></script>
-<script src="ui.js?v=10"></script>
+<script>window.FC_BUILD = 11;</script>
+<script src="data.js?v=11"></script>
+<script src="engine.js?v=11"></script>
+<script src="three3d.js?v=11"></script>
+<script src="ui.js?v=11"></script>
 <script>
 (function () {
   // three.js is optional: the game runs with 2D portraits if it can't load
