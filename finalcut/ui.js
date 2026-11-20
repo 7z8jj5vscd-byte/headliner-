@@ -172,7 +172,7 @@ UI.render = function () {
 function hud() {
   const s = S();
   $('#hud').innerHTML = `<button class="hud-who" data-a="go" data-tab="home"><span class="hud-name">${esc(s.me.name)}</span><span class="hud-date">${FC.dateLabel(s)}</span></button>
-    <div class="hud-stats"><span class="en">⚡<b>${Math.round(s.energy)}</b></span><span>💵<b class="${s.money < 0 ? 'bad' : ''}">${M(s.money)}</b></span><span>★<b>${Math.round(s.fame)}</b></span><span title="Star Power">SP<b>${FC.starPower(s)}</b></span><button class="phone-btn" data-a="phone" aria-label="Open your phone">📱${s.rollNew ? `<em class="badge">${s.rollNew}</em>` : ''}</button></div>`;
+    <div class="hud-stats"><span class="en">⚡<b>${Math.round(s.energy)}</b></span><span>💵<b class="${s.money < 0 ? 'bad' : ''}">${M(s.money)}</b></span><span>★<b>${Math.round(s.fame)}</b></span><span title="Star Power">SP<b>${FC.starPower(s)}</b></span><button class="phone-btn" data-a="phone" aria-label="Open your phone">📱${(s.rollNew || 0) + (s.unread || 0) ? `<em class="badge">${(s.rollNew || 0) + (s.unread || 0)}</em>` : ''}</button></div>`;
 }
 function nav() {
   const s = S(); const offers = (s.offers || []).filter(o => !o.theater).length; const stageOffers = (s.offers || []).filter(o => o.theater).length; const inbox = s.inbox.filter(m => m.kind !== 'note' || !m.read).length;
@@ -244,6 +244,7 @@ function roleCard(p, offer) {
     <div class="role-head"><div style="min-width:0"><div class="eyebrow">${kindName} · ${esc(p.studio)}</div><div class="role-title">${esc(p.title)}</div></div>
       ${offer ? `<span class="pill gold">${p.contracted ? 'Contracted' : p.direct ? 'Direct offer' : 'Offer'}</span>` : `<span class="pill ${o[1]} odds">${o[0]}</span>`}</div>
     <div class="role-meta"><span class="pill">${FC.SIZES[p.size] ? FC.SIZES[p.size].n : p.size}</span><span class="pill">${g ? g.name : p.genre}</span>${p.tv ? `<span class="pill blue">${p.season > 1 ? 'Season ' + p.season : 'Series'}</span>` : ''}${p.prestige ? '<span class="pill gold">Prestige</span>' : ''}${p.teamup ? '<span class="pill gold">Team-up</span>' : ''}<span class="pill">${M(p.pay)}${p.weekly ? '/wk' : ''}</span></div>
+    ${offer && p.reason ? `<p class="small" style="margin:4px 0">From <b>${esc(p.offerFrom || p.studio)}</b>: ${esc(p.reason)}.</p>` : ''}${!offer && p.recBy ? `<p class="small good" style="margin:4px 0">Recommended by ${esc(p.recBy)}. Easier to land.</p>` : ''}${!offer && p.director && FC.person(s, p.director.name) && FC.person(s, p.director.name).rel >= 25 ? `<p class="small good" style="margin:4px 0">You know ${esc(p.director.name)} (${esc(FC.relLabel(FC.person(s, p.director.name).rel))}).</p>` : ''}
     ${charBlock(p)}
     <div class="small muted">${p.director ? 'Dir. ' + esc(p.director.name) + ' · ' : ''}${p.costars && p.costars.length ? 'With ' + esc(p.costars.join(', ')) + ' · ' : ''}${p.weeks.shoot} wk shoot${p.budget ? ' · ' + M(p.budget) + ' budget' : ''}</div>
     ${offer ? '' : `<div class="tiny muted" style="margin-top:3px">Also up for it: ${esc(p.rival)} · Closes ${FC.dateLabel(s, p.expires).split(' · ')[0]}</div>`}
@@ -333,6 +334,7 @@ function stageCard(p, offer) {
     <div class="role-head"><div style="min-width:0"><div class="eyebrow">${p.region === 'broadway' ? 'Broadway' : 'West End'} · ${esc(p.studio.split(',')[0])}</div><div class="role-title">${esc(p.title)}</div><div class="small">as <b>${esc(p.stageRole)}</b></div></div>
       ${offer ? '<span class="pill gold">Offer</span>' : `<span class="pill ${o[1]} odds">${o[0]}</span>`}</div>
     <div class="role-meta"><span class="pill">${p.stageType === 'musical' ? 'Musical' : 'Play'}</span><span class="pill ${p.prod === 'new' ? 'blue' : p.prod === 'revival' ? 'gold' : ''}">${PROD[p.prod]}</span><span class="pill">${p.size === 'small' ? 'Ensemble' : p.size === 'supporting' ? 'Featured' : 'Lead'}</span><span class="pill">${M(p.pay)}/wk</span><span class="pill">${p.weeks.shoot} wk run</span></div>
+    ${offer && p.reason ? `<p class="small" style="margin:4px 0">From <b>${esc(p.offerFrom || p.studio)}</b>: ${esc(p.reason)}.</p>` : ''}
     <div class="small muted">Dir. ${esc(p.director.name)}${p.costars.length ? ' · With ' + esc(p.costars.join(', ')) : ''} · ${p.weeks.prep} wk rehearsal</div>
     ${offer ? '' : `<div class="tiny muted" style="margin-top:3px">Also auditioning: ${esc(p.rival)} · Closes ${FC.dateLabel(s, p.expires).split(' · ')[0]}</div>`}
     ${!can.ok ? `<p class="small bad">${esc(can.t)}</p>` : can.t ? `<p class="small muted">${esc(can.t)}</p>` : ''}
@@ -590,6 +592,14 @@ UI.nextPending = function () {
       sub: `<div class="lbl" style="margin-top:8px">Fan reaction</div><div class="meter"><span style="width:${react}%;background:${tone === 'good' ? 'var(--teal)' : tone === 'bad' ? 'var(--red)' : 'var(--gold)'}"></span></div><p class="small"><b>${react}% positive.</b> ${tone === 'good' ? 'The internet is thrilled.' : tone === 'mixed' ? 'The internet is split.' : 'The internet is not happy.'}</p>${posts.map((t, i) => `<div class="post"><b>${handles[(i + react) % handles.length]}</b><div>${esc(t)}</div></div>`).join('')}`,
       look: UI.costume(j, 'hallh'), scene: { mode: 'awards', anim: 'wave' },
       choices: ['Post a cryptic teaser', 'Thank the fans', 'Say nothing, let the mystery build'], pick: i => ({ text: FC.announceRespond(s, j.id, i), good: react >= 42 || i === 1 }) }); return; }
+  if (p.type === 'offer') { const o = (s.offers || []).find(x => x.id === p.id); if (!o) return UI.nextPending();
+    const F = o.fid ? D.FRANCHISES.find(f => f.id === o.fid) : null; const kind = o.theater ? (o.region === 'westend' ? 'West End' : 'Broadway') : F ? F.short : o.tv ? 'TV series' : 'Film';
+    const sender = FC.person(s, o.offerFrom);
+    UI.eventCard({ big: 'New offer', small: `${kind} · ${o.offerFrom || o.studio}`, kicker: `${o.studio}${o.director ? ' · Dir. ' + o.director.name : ''}`, title: `${o.offerFrom && o.offerFrom !== o.studio ? o.offerFrom + ' wants' : o.studio + ' wants'} you ${o.char ? 'as ' + o.char.name : o.stageRole ? 'as ' + o.stageRole : 'for the ' + (FC.SIZES[o.size] ? FC.SIZES[o.size].n.toLowerCase() : 'role')} in ${o.title}.`,
+      sub: `<p class="small">Why you: <b>${esc(o.reason || 'they like your work')}</b>.</p><div class="role-meta"><span class="pill">${o.theater ? (o.stageType === 'musical' ? 'Musical' : 'Play') : (D.GENRES.find(g => g.id === o.genre) || {}).name || ''}</span><span class="pill">${M(o.pay)}${o.weekly ? '/wk' : ''}</span>${o.pictures > 1 ? `<span class="pill gold">${o.pictures}-picture deal</span>` : ''}<span class="pill good">No audition</span>${sender ? `<span class="pill">${esc(FC.relLabel(sender.rel))}</span>` : ''}</div>`,
+      look: s.look, scene: o.theater ? { mode: 'theater', anim: 'idle' } : { set: sender && (sender.role === 'exec' || sender.role === 'agent') ? 'office' : FC.setFor(o), anim: 'phone' },
+      choices: ['Read the script and negotiate', 'Think about it', 'Pass'],
+      pick: i => { if (i === 0) return { go: () => UI.startNegotiation(o.id) }; if (i === 2) { FC.declineOffer(s, o.id); if (sender) FC.bond(s, sender.name, -2); return { good: false, headline: 'You passed.' }; } return { good: true, headline: `It's waiting in your ${o.theater ? 'Theatre' : 'Casting'} tab.` }; } }); return; }
   if (p.type === 'trailer') { const j = s.jobs.find(x => x.id === p.id) || job(p.id); if (!j || !j.trailer) return UI.nextPending(); UI.playTrailer(j, true); return; }
   if (p.type === 'event') { const ev = D.RANDOM_EVENTS.find(e => e.id === p.id); const sc = ev.sc || {};
     UI.cur = p;
@@ -671,6 +681,7 @@ UI.eventCard = function (o) {
 UI.evPick = function (i) {
   const o = UI.ev; if (!o || o.done) return; o.done = true; UI.cur = null;
   const r = o.pick(i) || {}; save();
+  if (r.go) { UI.closeModal(true); r.go(); return; }
   const txt = r.text || ''; const good = r.good != null ? r.good : !/-\d|annoyed|cools|hurt|lost|wrong|did not|not quite|backfire|\$-/i.test(txt);
   if (UI.evCtl && UI.evCtl.react) UI.evCtl.react(good);
   const parts = txt ? (/[+-]\d|likes|annoyed|warms|cools|Followers/.test(txt) ? txt.split(', ') : [txt.replace(/\.$/, '')]) : [];
@@ -697,6 +708,11 @@ UI.renderFit = function () {
     <div class="btns" style="margin-top:10px"><button class="btn" data-a="fitWear">Wear this on set</button></div>`;
 };
 
+UI.face = (p, size = 44) => {
+  const url = window.L3 && L3.available() && L3.lookFor ? L3.portrait(p.role === 'love' || p.fem == null ? L3.lookFor(p.name) : L3.lookFor(p.name, { fem: p.fem }), 96, '#1d2230') : null;
+  return url ? `<img class="c-face" src="${url}" width="${size}" height="${size}" alt="">` : `<span class="c-face c-init" style="width:${size}px;height:${size}px">${esc(p.name.split(' ').map(x => x[0]).slice(0, 2).join(''))}</span>`;
+};
+
 // ------------------------------------------------------------------ phone: Clapper, Lens, camera roll
 UI.photoSpec = p => ({ id: p.id, set: p.set, look: FC.photoLook(S(), p), cast: UI.castLooks(p.cast || []), anim: p.anim, cam: p.cam, title: p.title, castAnim: p.anim === 'talk' ? 'talk' : 'pose' });
 UI.photoImg = (p, size = 300, cls = '') => `<img class="ph ${cls}" data-ph="${p.id}" data-size="${size}" alt="${esc(p.kind || 'photo')}">`;
@@ -718,7 +734,7 @@ const handle = n => '@' + String(n).replace(/[^A-Za-z0-9]/g, '').toLowerCase();
 UI.phone = function (app = 'home', arg) {
   const s = S(); UI.phoneApp = app; let body = '', title = '';
   if (app === 'home') { title = FC.dateLabel(s).split(' · ')[0];
-    body = `<div class="ph-grid">${[['clapper', 'Clapper', '#1d9bf0', 'C'], ['lens', 'Lens', 'linear-gradient(45deg,#f9b234,#e1306c,#833ab4)', '◉'], ['camera', 'Camera roll', '#2a2f3a', '▣'], ['marquee', 'Marquee', '#e0603c', 'M'], ['news', 'Trades', '#3a3f4c', 'N'], ['inbox', 'Messages', '#3ec28f', '✉']].map(a => `<button class="ph-app" data-a="phone" data-v="${a[0]}"><span class="ph-ico" style="background:${a[2]}">${a[3]}</span>${a[1]}${a[0] === 'camera' && s.rollNew ? `<em class="badge">${s.rollNew}</em>` : ''}</button>`).join('')}</div>
+    body = `<div class="ph-grid">${[['clapper', 'Clapper', '#1d9bf0', 'C'], ['lens', 'Lens', 'linear-gradient(45deg,#f9b234,#e1306c,#833ab4)', '◉'], ['camera', 'Camera roll', '#2a2f3a', '▣'], ['marquee', 'Marquee', '#e0603c', 'M'], ['news', 'Trades', '#3a3f4c', 'N'], ['contacts', 'Contacts', '#7b4dff', '👤'], ['messages', 'Messages', '#3ec28f', '💬'], ['inbox', 'Mail', '#5d7bff', '✉']].map(a => `<button class="ph-app" data-a="phone" data-v="${a[0]}"><span class="ph-ico" style="background:${a[2]}">${a[3]}</span>${a[1]}${a[0] === 'camera' && s.rollNew ? `<em class="badge">${s.rollNew}</em>` : a[0] === 'messages' && s.unread ? `<em class="badge">${s.unread}</em>` : ''}</button>`).join('')}</div>
       <p class="tiny muted center" style="margin-top:14px">${FC.num(s.followers)} followers across your accounts</p>`; }
   if (app === 'camera') { title = 'Camera roll'; s.rollNew = 0; save();
     const sel = UI.selfie || (UI.selfie = { spot: 'home', pose: 'selfie' });
@@ -749,7 +765,31 @@ UI.phone = function (app = 'home', arg) {
   if (app === 'marquee') { UI.closeModal(true); UI.sub.world = 'marquee'; UI.tab = 'world'; UI.render(); return; }
   if (app === 'news') { UI.closeModal(true); UI.sub.world = 'news'; UI.tab = 'world'; UI.render(); return; }
   if (app === 'inbox') { UI.closeModal(true); UI.tab = 'home'; UI.render(); return; }
-  const back = app === 'home' ? '' : `<button class="ph-back" data-a="phone" data-v="${app === 'lensCompose' ? 'camera' : app === 'lensView' ? 'lens' : 'home'}" aria-label="Back">‹</button>`;
+  if (app === 'contacts') { title = 'Contacts'; const f = UI.cFilter || 'all'; const q = (UI.cQuery || '').toLowerCase();
+    const groups = { all: () => true, industry: p => ['director', 'exec', 'cd', 'stagedir'].includes(p.role), actors: p => p.role === 'actor', team: p => ['agent', 'team', 'love'].includes(p.role), close: p => p.rel >= 65 };
+    const list = Object.values(s.people || {}).filter(groups[f]).filter(p => !q || p.name.toLowerCase().includes(q)).sort((a, b) => b.rel - a.rel);
+    body = `<div class="tabs">${[['all', 'All'], ['industry', 'Industry'], ['actors', 'Actors'], ['team', 'Team'], ['close', 'Close']].map(t => `<button class="${f === t[0] ? 'on' : ''}" data-a="cFilter" data-v="${t[0]}">${t[1]}</button>`).join('')}</div>
+      <input id="c-search" placeholder="Search contacts" value="${esc(UI.cQuery || '')}" style="margin:8px 0" autocomplete="off">
+      <p class="tiny muted">${Object.keys(s.people || {}).length} contacts · Network strength ${FC.network(s).toFixed(1)} (adds up to +8 Star Power)</p>
+      ${list.length ? list.map(p => `<button class="c-row" data-a="phone" data-v="contact" data-id="${esc(p.name)}">${UI.face(p, 44)}<div class="grow"><b>${esc(p.name)}</b><small>${esc(p.title2 || D.ROLE_NAMES[p.role] || '')}${p.studio && p.role !== 'agent' ? ' · ' + esc(p.studio) : ''}${p.where ? ' · met on ' + esc(p.where) : ''}</small><div class="c-bar"><span style="width:${p.rel}%;background:${p.rel >= 65 ? 'var(--teal)' : p.rel >= 25 ? 'var(--gold)' : 'var(--red)'}"></span></div></div><span class="tiny muted">${esc(FC.relLabel(p.rel))}</span></button>`).join('') : '<p class="empty">Nobody here yet. You meet people on set, at chemistry reads, industry parties and premieres.</p>'}`; }
+  if (app === 'contact') { const p = FC.person(s, arg); if (!p) return UI.phone('contacts'); title = p.name; UI.cName = p.name;
+    const acts = FC.contactActs(s, p); const thread = (s.dms || {})[p.name] || [];
+    const shared = s.credits.concat(s.jobs).filter(c => (c.costars || []).includes(p.name) || (c.director && c.director.name === p.name)).map(c => c.title);
+    body = `<div class="c-head">${UI.face(p, 88)}<div><b style="font-size:1.1rem">${esc(p.name)}</b><div class="small muted">${esc(p.title2 || D.ROLE_NAMES[p.role] || '')}${p.studio && p.role !== 'agent' ? ' · ' + esc(p.studio) : ''}</div><div class="small muted">Met ${esc(p.where || 'around town')}, ${FC.year(s, p.met)}</div></div></div>
+      ${bar(FC.relLabel(p.rel), p.rel, p.rel >= 65 ? 'hp' : '')}
+      ${shared.length ? `<p class="tiny muted">Worked together on ${shared.map(esc).join(', ')}</p>` : ''}
+      <p class="tiny muted">${{ director: 'Directors who like you cast you without auditions.', exec: 'Executives decide what gets made. Friendly ones send franchise and studio offers.', cd: 'Casting directors put you in rooms and sometimes skip the room.', stagedir: 'Stage directors who like you offer Broadway and West End roles.', actor: 'Close actor friends recommend you for parts and lower the bar at auditions.', agent: 'Your agent can push producers for roles.', team: 'Part of your team.', love: 'Your partner.' }[p.role] || ''}</p>
+      <div class="choices">${acts.map(a => `<button class="choice" data-a="cAct" data-v="${a.id}" ${a.ok ? '' : 'disabled'}><b>${esc(a.name)}</b><small>${esc(a.d)} −${a.cost}⚡${a.money ? ' · ' + M(a.money) : ''}${a.ok ? '' : ' · ' + esc(a.why)}</small></button>`).join('')}</div>
+      ${thread.length ? `<div class="lbl" style="margin-top:12px">Messages</div><div class="thread">${thread.slice(-10).map(m => `<div class="bub ${m.from === 'me' ? 'me' : ''}">${esc(m.t)}</div>`).join('')}</div>` : ''}`; }
+  if (app === 'messages') { title = 'Messages'; s.unread = 0; save();
+    const chats = Object.entries(s.chats || {}).filter(([id, c]) => c.msgs.length).sort((a, b) => (b[1].msgs.slice(-1)[0].w) - (a[1].msgs.slice(-1)[0].w));
+    const dms = Object.entries(s.dms || {}).filter(([n, t]) => t.length).sort((a, b) => b[1].slice(-1)[0].w - a[1].slice(-1)[0].w);
+    body = `${chats.length ? `<div class="lbl">Cast group chats</div>${chats.map(([id, c]) => `<button class="c-row" data-a="phone" data-v="chat" data-id="${id}"><span class="c-grp">🎬</span><div class="grow"><b>${esc(c.title)} cast</b><small>${esc(c.msgs.slice(-1)[0].from)}: ${esc(c.msgs.slice(-1)[0].t)}</small></div>${c.unread ? `<span class="pill gold">${c.unread}</span>` : ''}</button>`).join('')}` : ''}
+      <div class="lbl" style="margin-top:8px">Direct messages</div>${dms.length ? dms.map(([n, t]) => { const p = FC.person(s, n); return `<button class="c-row" data-a="phone" data-v="contact" data-id="${esc(n)}">${p ? UI.face(p, 40) : ''}<div class="grow"><b>${esc(n)}</b><small>${t.slice(-1)[0].from === 'me' ? 'You: ' : ''}${esc(t.slice(-1)[0].t)}</small></div></button>`; }).join('') : '<p class="empty">No messages yet. Text someone from Contacts.</p>'}`; }
+  if (app === 'chat') { const c = (s.chats || {})[arg]; if (!c) return UI.phone('messages'); title = c.title + ' cast'; c.unread = 0; UI.chatId = arg;
+    body = `<p class="tiny muted">${c.members.map(esc).join(', ')}</p><div class="thread">${c.msgs.slice(-16).map(m => `<div class="bub ${m.from === s.me.name ? 'me' : ''}">${m.from === s.me.name ? '' : `<b>${esc(m.from.split(' ')[0])}</b> `}${esc(m.t)}</div>`).join('')}</div>
+      <div class="lbl" style="margin-top:8px">Reply</div><div class="btns">${D.CHAT_REPLIES.map((r, i) => `<button class="btn sm dark" data-a="chatReply" data-i="${i}" ${c.replied === s.week ? 'disabled' : ''}>${r[0]}</button>`).join('')}</div>${c.replied === s.week ? '<p class="tiny muted">You replied this week.</p>' : ''}`; }
+  const back = app === 'home' ? '' : `<button class="ph-back" data-a="phone" data-v="${app === 'lensCompose' ? 'camera' : app === 'lensView' ? 'lens' : app === 'contact' ? 'contacts' : app === 'chat' ? 'messages' : 'home'}" aria-label="Back">‹</button>`;
   UI.modal(`<div class="phone"><div class="ph-bar">${back}<b>${esc(title)}</b><span class="mono tiny">⚡${Math.round(s.energy)}</span></div><div class="ph-body">${body}</div></div>`);
   UI.fillPhotos();
 };
@@ -855,6 +895,9 @@ const A = {
     else UI.modal(`<p>${esc(out || 'Noted.')}</p><button class="btn" data-a="closeModal">Continue</button>`);
     UI.afterModal = () => UI.nextPending(); },
   evPick: d => UI.evPick(+d.i),
+  cFilter: d => { UI.cFilter = d.v; UI.phone('contacts'); },
+  cAct: d => { const s = S(); const r = FC.contactAct(s, UI.cName, d.v); UI.toast(r.t); flushAch(); save(); UI.render(); if (r.offer) { UI.closeModal(true); UI.nextPending(); return; } UI.phone('contact', UI.cName); },
+  chatReply: d => { const r = FC.chatReply(S(), UI.chatId, +d.i); UI.toast(r.t); save(); UI.phone('chat', UI.chatId); },
   phone: d => UI.phone(d.v || 'home', d.id),
   lensTab: d => { UI.lensTab = d.v; UI.phone('lens'); },
   selfieSpot: d => { UI.selfie.spot = d.v; UI.phone('camera'); }, selfiePose: d => { UI.selfie.pose = d.v; UI.phone('camera'); },
@@ -907,6 +950,7 @@ function onInput(e) {
   if (c && t.id === 'cr-age') { c.age = +t.value; const l = t.previousElementSibling; if (l) l.innerHTML = `Age <b>${c.age}</b>`; }
   if (c && t.id === 'cr-city') c.city = t.value;
   if (c && t.id === 'cr-diff') c.diff = t.value;
+  if (t.id === 'c-search') { UI.cQuery = t.value; clearTimeout(UI.cqT); UI.cqT = setTimeout(() => { UI.phone('contacts'); const el = $('#c-search'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 250); }
   const n = UI.neg; if (n) {
     if (t.id === 'ng-sal') { n.ask.salary = +t.value; t.previousElementSibling.querySelector('b').textContent = M(n.ask.salary); }
     if (t.id === 'ng-pts') { n.ask.points = +t.value; t.previousElementSibling.querySelector('b').textContent = n.ask.points; }

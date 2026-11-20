@@ -441,6 +441,7 @@ D.TV_FINALE = [['cliff', 'Push for a cliffhanger ending'], ['close', 'Push for a
 
 // newest first. Bump FC_BUILD in index.html and version.json together with a new entry here.
 D.CHANGELOG = [
+  { build: 11, date: 'Nov 20, 2026', notes: ['Contacts app: everyone you meet (co-stars, directors, studio executives, casting directors, stage directors, your agent and team) is saved, with a relationship level.', 'Text, grab coffee, throw dinner parties, ask about roles, ask friends to recommend you, and pitch projects. Directors you know make auditions easier, and your network adds to your Star Power.', 'Messages app with direct messages and a group chat for every cast you are in.', 'Offers now come to you because of your work: Marquee scores, awards, studio relationships, contacts, fame and stage runs. That includes film, franchise, Broadway and West End offers, each with a 3D card that says why.'] },
   { build: 10, date: 'Nov 14, 2026', notes: ['Fixed the Broadway rehearsal room, the backstage dressing room and the gym showing up sideways.', 'Brighter mirrors in the rehearsal room and the dressing room.'] },
   { build: 9, date: 'Nov 14, 2026', notes: ['Your phone (top right): Clapper for posts and Lens for photos.', 'A camera roll that fills up with 3D photos from your sets, premieres, stage nights and studio promo stills, plus selfies you take yourself. Post them with a caption. Careful: set photos from unreleased franchise films can leak.', 'Costume fittings: try on three costume designs in 3D for every role, pick a color, and wear it on set, in trailers and in photos. Each design helps your acting, your buzz or your energy.', 'Broadway in 3D: rehearsal room events, backstage moments, a 3D stage audition and a closing-night curtain call.'] },
   { build: 8, date: 'Nov 14, 2026', notes: ['Brand-new 3D characters: real faces with eyes, brows, lips and ears, fuller bodies, and 19 hair styles including waves, curtain bangs, locs, an afro and a top knot.', 'Events now play as cinematic 3D cards: a title card, you on a themed set (rooftop, spaceship, ballroom, castle, desert and more) with your co-stars and the crew, your choice, then a reaction.', 'Big studios now announce your casting, with a live fan reaction. Each studio remembers how you treat it, and studios that like you pay more and offer roles directly.', 'Every film and series gets a 3D trailer before release, with views and fan reaction. Rewatch trailers from your filmography.'] },
@@ -616,6 +617,27 @@ D.CLAPPER_KINDS = [
 ];
 D.INFLUENCERS = ['popcornpapi', 'reelqueen', 'filmtok', 'castingwatch', 'boxofficebuzz', 'thefilmfeed', 'cinephile_dan', 'trailerwatch'];
 
+// ------------------------------------------------------------------ contacts
+D.EXEC_NAMES = ['Dana Whitfield', 'Marcus Okafor', 'Lena Castellano', 'Victor Hale', 'Priya Natarajan', 'Graham Ellis', 'Simone Archambault', 'Tom Brennan', 'Celeste Moreau', 'Nate Kaplan', 'Rosa Delgado', 'Julian Price'];
+D.CASTING_DIRS = ['Francine Maisler-Reyes', 'Avy Goldstein', 'Nina Gold-Harper', 'Rich Delia-Ward', 'Carmen Cuba-Lowe', 'Kim Coleman-Hart', 'Lucy Bevan-Shaw', 'Debra Zane-Morris'];
+D.FEMALE_DIRS = ['Greta Gerwig', 'Chloé Zhao', 'Celine Song', 'Kathryn Bigelow', 'Coralie Fargeat', 'Emerald Fennell', 'Halina Reijn', 'Mati Diop', 'Rachel Chavkin', 'Marianne Elliott', 'Diane Paulus', 'Rebecca Frecknall', 'Lyndsey Turner'];
+D.REL_LABELS = [[85, 'Close friend'], [65, 'Friend'], [45, 'Friendly'], [25, 'Acquaintance'], [10, 'Barely know them'], [0, 'Not speaking']];
+D.ROLE_NAMES = { actor: 'Actor', director: 'Director', exec: 'Studio executive', cd: 'Casting director', agent: 'Your agent', team: 'Your team', love: 'Partner', stagedir: 'Stage director' };
+// what you can do with a contact: energy, money, minimum relationship, roles it works on
+D.CONTACT_ACTS = [
+  { id: 'text', name: 'Send a text', cost: 3, gain: [2, 5], roles: 'all', d: 'Check in.' },
+  { id: 'coffee', name: 'Grab coffee', cost: 12, money: 80, gain: [6, 10], roles: 'all', d: 'An hour, one on one.' },
+  { id: 'party', name: 'Invite to a dinner party', cost: 15, money: 600, gain: [8, 13], roles: 'actor director exec cd stagedir love', min: 25, d: 'Your place, good wine, better gossip.' },
+  { id: 'roles', name: 'Ask about upcoming roles', cost: 8, min: 30, roles: 'director exec cd stagedir agent', d: 'They might have something for you.' },
+  { id: 'rec', name: 'Ask for a recommendation', cost: 8, min: 60, roles: 'actor', d: 'Close friends put your name forward.' },
+  { id: 'pitch', name: 'Pitch them a project', cost: 15, min: 40, roles: 'director exec', company: true, d: 'For your production company.' },
+  { id: 'congrats', name: 'Congratulate them', cost: 4, gain: [4, 7], roles: 'actor director', d: 'On their latest work.' },
+];
+D.TEXT_REPLIES = { warm: ['Ha! Miss you. Lunch soon?', 'You\'re the best. Let\'s catch up.', 'Always good to hear from you.', 'Ok this made my day.', 'We need to work together again.'], cool: ['Thanks.', 'Hey. Busy week, talk soon.', '👍', 'Appreciate it.'], cold: ['...', 'Who is this?', '(read)'] };
+D.CHAT_LINES = ['Call time moved to 5am. Pray for us.', 'Who took the last breakfast burrito? 😤', 'That scene today. Chills.', 'Craft services just brought churros!!!', 'Anyone else\'s trailer AC broken?', 'Director said "one more" and we did eleven more.', 'Wrap party ideas?', 'The dailies look incredible apparently.', 'I can\'t feel my legs after that fight rehearsal.', 'Rain delay. Card game in my trailer?', 'Shoutout to the stunt team. Insane today.', 'Night shoot again. Coffee IV please.'];
+D.CHAT_REPLIES = [['Send something funny', 'comedy'], ['Hype up the team', 'charisma'], ['Ask how everyone is doing', 'drama']];
+D.OFFER_REASONS = { reviews: 'after your {score} in Marquee for {title}', award: 'after your {award} win', studio: '{studio} loved working with you on {title}', contact: '{who} recommended you', director: '{who} wants to work with you again', fame: 'you are one of the hottest names in town', stage: 'after your run in {title}', fancast: 'fans have been asking for you', agent: 'your agent {who} pushed for you' };
+
 D.HELP = [
   ['Weeks and energy', 'Each turn is one week. Classes, auditions, parties and posts cost energy. Shooting a project uses most of your week. Ending weeks with no energy hurts your health, and if health hits zero you burn out.'],
   ['Auditions', 'Roles appear on the Casting board. Each one lists what the director wants. Your skills decide most of the score, and you choose how to play each beat of the scene. Bigger roles add a chemistry read and a screen test. You compete with real actors for the part.'],
@@ -626,6 +648,8 @@ D.HELP = [
   ['Marquee', 'Marquee is the critics app. Each project gets a score out of 10, a written review and a score for every cast member, including you.'],
   ['Box office and reviews', 'Films open on a release week and earn money every weekend. Critics and audiences score them. Hits raise your fee and Star Power. Flops lower them.'],
   ['Awards', 'The Golden Globes, Critics Choice, BAFTA, SAG, Oscars, Emmys and Tonys all happen on the calendar. Prestige roles and strong performances get nominated. Spend on a For Your Consideration campaign to improve your chances.'],
+  ['Contacts', 'Everyone you meet is saved in the Contacts app on your phone. Relationships grow when you work together, text, get coffee and invite people to dinner. Directors, studio executives and casting directors who like you send offers. Close actor friends recommend you for parts.'],
+  ['Offers', 'Offers come to you based on your work: strong Marquee scores, awards, hits, studio relationships, fame and your contacts. Each offer says why it came. Film, franchise, TV and stage offers all skip the audition.'],
   ['Star Power', 'Your leverage. It comes from fame, recent box office and awards. It decides your pay and how hard you can negotiate.'],
   ['Real people', 'Real actors, directors and franchises appear by name. Every casting decision, feud, box office number and storyline in this game is made up.'],
 ];
